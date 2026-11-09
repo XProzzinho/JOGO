@@ -513,7 +513,7 @@
     g = ARMAG.espada = grp(maoG); tb(g, 0, 0, 0.55, 0.07, 0.018, 0.78, '#dfe4ee'); part(g, CONE, '#dfe4ee', 0, 0, 0.98, 0.035, 0.1, 0.01).rotation.x = Math.PI / 2; tb(g, 0, 0, 0.14, 0.26, 0.04, 0.05, '#e2c27a'); part(g, CYL, '#4a2a14', 0, 0, 0.03, 0.025, 0.18, 0.025).rotation.x = Math.PI / 2;
     g = ARMAG.glacial = grp(maoG); tb(g, 0, 0, 0.6, 0.08, 0.02, 0.9, '#9ae6ff', true); part(g, CONE, '#9ae6ff', 0, 0, 1.08, 0.04, 0.12, 0.01, 0, true).rotation.x = Math.PI / 2; tb(g, 0, 0, 0.14, 0.3, 0.05, 0.05, '#5ab8ff'); part(g, CYL, '#2a3a5a', 0, 0, 0.03, 0.025, 0.18, 0.025).rotation.x = Math.PI / 2; glowSpr(g, 0, 0, 0.6, 1.1, '#7ad8ff', 0.5);
     g = ARMAG.besta = grp(maoG); tb(g, 0, 0.02, 0.2, 0.07, 0.07, 0.6, '#7a4a2a'); tb(g, 0, 0.04, 0.42, 0.62, 0.04, 0.05, '#5a3a24'); tb(g, 0, 0.05, 0.36, 0.6, 0.008, 0.008, '#e8e0d0'); }
-  function mostraArma() { Object.keys(ARMAG).forEach(k => ARMAG[k].visible = k === AR.arma); const A = ARMAS[AR.arma]; $('atacar').innerHTML = `<span>${A.icone}</span><small>ATACAR</small>`; $('arma').hidden = AR.armas.length < 2; }
+  function mostraArma() { Object.keys(ARMAG).forEach(k => ARMAG[k].visible = k === AR.arma); const A = ARMAS[AR.arma] || ARMAS.bastao; $('atacar').innerHTML = `<span>${A.icone}</span><small>ATACAR</small>`; $('arma').hidden = AR.armas.length < 2; }
   function trocaArma() { if (AR.armas.length < 2) return; const i = AR.armas.indexOf(AR.arma); AR.arma = AR.armas[(i + 1) % AR.armas.length]; salvaAR(); mostraArma(); aviso(ARMAS[AR.arma].icone + ' ' + ARMAS[AR.arma].nome, '#ffd23c'); }
   function atualizaInv() { $('inv-m').textContent = AR.inv.moedas; $('inv-p').textContent = AR.inv.pele; $('inv-c').textContent = AR.inv.carne; $('inv-cw').hidden = !AR.inv.carne; $('inv-pw').hidden = !AR.inv.pele; $('inv-g').hidden = !AR.inv.coracao; }
   function comer() { if (!AR.inv.carne) return; if (vida >= VIDA_MAX) { aviso('Você já está com a vida cheia.', '#8a9aba'); return; } AR.inv.carne--; vida = Math.min(VIDA_MAX, vida + 35); salvaAR(); atualizaInv(); numero(heroi.position, '+35 ❤️', '#7ad87a'); fx('cura', [heroi.position.x, 0, heroi.position.z], 1.2); }
@@ -621,7 +621,7 @@
       acertou = true; const cr = critico(); dano(e, A.dano * mult * atkMult() * (cr ? 2 : 1), A.gelo ? 'gelo' : null, cr); if (BUFF.veneno > 0) e.queima = 3; if (A.gelo && Math.random() < 0.25) congelar(e, 1.5); empurra(e, dx / (d || 1), dz / (d || 1), atkN === 3 ? 1.6 : 0.6); });
     if (acertou) tremor = Math.max(tremor, atkN === 3 ? 0.25 : 0.1); }
   function empurra(e, nx, nz, f) { if (e.T.chefe) return; e.g.position.x += nx * f; e.g.position.z += nz * f; }
-  function armaPose() { const P = heroi.userData.P, A = ARMAS[AR.arma];
+  function armaPose() { const P = heroi.userData.P, A = ARMAS[AR.arma] || ARMAS.bastao;
     if (atkT < 0.34) { const u = eOut(clamp(atkT / 0.3));
       if (A.longe) { P.shR.rotation.set(-1.55, 0, 0); P.elR.rotation.set(0, 0, 0); P.shL.rotation.set(-1.4, 0, 0.3); P.elL.rotation.set(-0.3, 0, 0); }
       else if (atkN === 1) { P.shR.rotation.set(lerp(-2.9, -0.4, u), 0, 0.15); P.elR.rotation.set(-0.15, 0, 0); P.spine.rotation.x = lerp(-0.1, 0.25, u); }
@@ -816,7 +816,7 @@
   // ---- janela do perfil ----
   let abaPerfil = 'status';
   function abrirPerfil() { if (conversa || cenaQ) return; $('perfil').hidden = false; desenhaPerfil(); }
-  function desenhaPerfil() { document.querySelectorAll('#perfil .aba').forEach(b => b.classList.toggle('on', b.dataset.a === abaPerfil)); const C = $('pf-cont'); const A = ARMAS[AR.arma];
+  function desenhaPerfil() { document.querySelectorAll('#perfil .aba').forEach(b => b.classList.toggle('on', b.dataset.a === abaPerfil)); const C = $('pf-cont'); const A = ARMAS[AR.arma] || ARMAS.bastao;
     const CLp = CLA(); $('pf-nome').innerHTML = `${(AR.visual.nome || 'Leonardo').replace(/</g, '')} <b>Nv ${AR.nv}</b><small>${CLp ? CLp.icone + ' ' + CLp.nome : ''}</small>`; const CU = window.CONTA && CONTA.usuario; $('pf-conta').innerHTML = CU ? `<span>👤 ${(CU.displayName || CU.email || '').replace(/</g, '')}</span><button id="pf-sair">Sair da conta</button>` : `<button id="pf-sair">Entrar / criar conta</button>`;
     tapBtn($('pf-sair'), () => { if (CU) CONTA.sair(); else { try { sessionStorage.removeItem('aetherion-convidado'); } catch (e) {} $('perfil').hidden = true; $('login').hidden = false; } }); if (window.CONTA && CONTA.selo) CONTA.selo(); const ev = document.createElement('button'); ev.textContent = '✏️ Editar visual'; $('pf-conta').prepend(ev); tapBtn(ev, () => { $('perfil').hidden = true; abrirCriar(2, true); }); $('pf-xp').style.width = (AR.nv >= NV_MAX ? 100 : AR.xp / xpPara(AR.nv) * 100) + '%'; $('pf-xpt').textContent = AR.nv >= NV_MAX ? 'NÍVEL MÁXIMO' : `XP ${AR.xp} / ${xpPara(AR.nv)}`;
     if (abaPerfil === 'status') { const ab = AR.abates; const tot = Object.values(ab).reduce((s, v) => s + v, 0);
@@ -1036,6 +1036,7 @@
   function aterrissa() { const p = heroi.position; fx('fumo', [p.x, 0, p.z], 1.1); fx('luz', [p.x, 0, p.z], 0.5); tremor = 0.5; area(p.x, p.z, 3.8, e => { dano(e, 40 * atkMult(), null, critico()); e.stun = Math.max(e.stun, 1.5); }); }
   function habsFrame(dt) { Object.keys(BUFF).forEach(k => { if (BUFF[k] > 0) BUFF[k] -= dt; }); if (BUFF.regen > 0) vida = Math.min(VIDA_MAX, vida + 8 * dt); if (BUFF.fortaleza > 0) vida = Math.min(VIDA_MAX, vida + 5 * dt);
     for (let i = LOB.length - 1; i >= 0; i--) { const l = LOB[i]; l.t += dt; const u = Math.min(1, l.t / l.dur); l.s.position.set(lerp(l.a[0], l.b[0], u), lerp(l.a[1], 0.3, u) + Math.sin(u * Math.PI) * 3.5, lerp(l.a[2], l.b[1], u)); if (u >= 1) { world.remove(l.s); LOB.splice(i, 1); l.fn(); } } }
+  if (AR.classe && !CLASSES[AR.classe]) AR.classe = null;
   aplicaNivel(); aplicaVisual(); if (AR.classe) { const v = AR.barra[2]; if (v !== CLASSES[AR.classe].hab) aplicaClasse(AR.classe); else { montaBarra(); mostraArma(); } } else setTimeout(() => abrirCriar(1), 300);
   setTimeout(fazRetrato, 900);
   window.__dbg = { get hora() { return hora; }, set hora(v) { hora = v; }, usarHab2: id => classePoder2(id), BUFF, abrirCriar, aplicaClasse, CLASSES, despertar, get desp() { return desp; }, set desp(v) { desp = v; }, usarHab: id => classePoder(id), renderer, scene, world, ganhaXp, vesteFantasia, abrirPerfil, fazRetrato, irValdren, Q, heroi, ativo, AR, FERAS, golem, atacar, get vida() { return vida; }, set vida(v) { vida = v; }, abrirLoja, usarPoder: id => usarPoder(PW[id]), acao: () => acao(), get alvo() { return alvo; } };
