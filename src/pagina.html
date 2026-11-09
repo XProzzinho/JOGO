@@ -37,6 +37,30 @@
   #lg-convidado{align-self:center}
   #conta-selo{font-size:10px;font-weight:800;opacity:.8;text-align:center}
   #pf-conta{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11px}#pf-conta button{padding:5px 12px;border-radius:999px;border:1px solid #8a9ad8;background:transparent;color:#cfd8ff;font-family:inherit;font-weight:800;font-size:11px}
+  .barras{display:flex;align-items:center;gap:6px}.bcol{display:flex;flex-direction:column;gap:4px}
+  #desp{--p:0;--c:#ffd23c;pointer-events:auto;position:relative;width:40px;height:40px;border-radius:50%;border:2px solid rgba(255,255,255,.7);padding:0;background:conic-gradient(var(--c) calc(var(--p) * 1%),rgba(20,18,46,.75) 0);display:flex;align-items:center;justify-content:center}
+  #desp span{width:30px;height:30px;border-radius:50%;background:rgba(20,18,46,.9);display:flex;align-items:center;justify-content:center;font-size:16px}
+  #desp.pronto{animation:despP .8s ease-in-out infinite;border-color:#fff}@keyframes despP{50%{box-shadow:0 0 18px var(--c),0 0 4px #fff;transform:scale(1.12)}}
+  #desp.ativo{box-shadow:0 0 16px var(--c)}
+  #criar{position:fixed;inset:0;z-index:35;display:flex;align-items:center;justify-content:center;background:radial-gradient(ellipse at 30% 40%,#26386e,#0a0e20 75%);padding:10px max(14px,env(safe-area-inset-right,0px)) 10px max(14px,env(safe-area-inset-left,0px))}
+  #criar .cx{width:min(900px,100%);height:min(420px,100%);display:flex;gap:12px;color:#e8eeff}
+  .cesq{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;gap:4px}
+  #cr-previa{height:calc(100% - 40px);aspect-ratio:3/4;max-width:100%;border-radius:16px;background:radial-gradient(ellipse at 50% 45%,#3a5aa8,#141c38 75%);border:1px solid #3a4a7a}
+  #cr-cls-nome{font-size:15px;font-weight:900;text-align:center}#cr-cls-nome small{display:block;font-size:10px;opacity:.7;font-weight:700}
+  .cdir{flex:1;min-width:0;overflow:auto;padding-right:4px}
+  .cdir h3{margin:2px 0 8px;font-size:18px}
+  #cr-grade{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+  .ccl{display:flex;align-items:center;gap:6px;padding:7px 8px;border-radius:12px;border:2px solid rgba(255,255,255,.12);background:rgba(255,255,255,.06);color:#e8eeff;font-family:inherit;text-align:left}
+  .ccl span{font-size:20px}.ccl b{font-size:11px;line-height:1.1}.ccl.on{border-color:var(--c);background:color-mix(in srgb,var(--c) 22%,transparent);box-shadow:0 0 12px color-mix(in srgb,var(--c) 50%,transparent)}
+  #cr-det p{margin:8px 0 6px;font-size:12px;line-height:1.35;opacity:.9}
+  .csts{display:grid;grid-template-columns:1fr 1fr;gap:4px 12px}.cst{display:flex;align-items:center;gap:6px}.cst small{width:62px;font-size:10px;font-weight:800;opacity:.75}.cst i{flex:1;height:6px;border-radius:3px;background:rgba(255,255,255,.12);overflow:hidden}.cst b{display:block;height:100%;background:linear-gradient(90deg,#4a8aff,#9ad8ff)}
+  .cinfo{display:flex;flex-direction:column;gap:3px;margin-top:6px;font-size:11px;opacity:.9}
+  .cbts{display:flex;gap:8px;justify-content:flex-end;margin-top:10px}.cbts button{padding:10px 18px;border-radius:999px;border:2px solid #5a7ac8;background:transparent;color:#e8eeff;font-family:inherit;font-weight:900;font-size:13px}.cbts .pri{background:#ffd23c;border-color:#ffd23c;color:#1a1a2a}
+  .cnm{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:800;margin-bottom:6px}.cnm input{flex:1;max-width:240px;font:inherit;font-size:14px;padding:7px 10px;border-radius:10px;border:2px solid #3a4a7a;background:#141c38;color:#fff}
+  .crow{display:flex;align-items:center;gap:8px;margin:5px 0}.crow small{width:84px;flex:0 0 auto;font-size:10px;font-weight:800;opacity:.75}.crow>div{display:flex;flex-wrap:wrap;gap:5px}
+  .sw{width:28px;height:28px;border-radius:50%;border:2px solid rgba(255,255,255,.25);padding:0}.sw.on{border-color:#ffd23c;box-shadow:0 0 0 2px #ffd23c}
+  .sw.tx{width:auto;height:28px;padding:0 10px;border-radius:999px;background:rgba(255,255,255,.08);color:#e8eeff;font-family:inherit;font-size:11px;font-weight:800}.sw.tx.on{background:#ffd23c;color:#1a1a2a}
+  #pf-nome small{display:block;text-align:center;font-size:11px;color:#cfd8ff;opacity:.85}
   #perfil{position:fixed;inset:0;background:rgba(6,8,22,.88);display:flex;align-items:center;justify-content:center;z-index:27}
   #perfil .box{width:min(860px,96vw);height:min(400px,94vh);display:flex;gap:12px;padding:12px;border-radius:18px;background:linear-gradient(160deg,#1e2a4e,#121830);border:2px solid #5a7ac8;color:#e8eeff}
   #pf-esq{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;gap:6px}
@@ -171,8 +195,13 @@
 </head>
 <body>
 <canvas id="jogo-cv"></canvas>
-<div id="perfil-btn"><canvas id="retrato" width="128" height="128"></canvas><div class="pi"><div class="pn">Leonardo <b id="nv">Nv 1</b></div><div class="xpb"><i id="xp-fill"></i></div><div id="tit">BRUMAFRIA</div></div></div>
+<div id="perfil-btn"><canvas id="retrato" width="128" height="128"></canvas><div class="pi"><div class="pn"><span id="pn-nome">Leonardo</span> <b id="nv">Nv 1</b></div><div class="xpb"><i id="xp-fill"></i></div><div id="tit">BRUMAFRIA</div></div></div>
 <div id="lvup"></div>
+<div id="criar" hidden><div class="cx"><div class="cesq"><canvas id="cr-previa" width="240" height="320"></canvas><div id="cr-cls-nome"></div></div><div class="cdir">
+<div id="cr-p1"><h3>Escolha sua classe</h3><div id="cr-grade"></div><div id="cr-det"></div><div class="cbts"><button id="cr-prox" class="pri">Próximo: aparência ›</button></div></div>
+<div id="cr-p2" hidden><h3>Edite seu personagem</h3><label class="cnm">Nome<input id="cr-nome" maxlength="16"></label>
+<div class="crow"><small>Pele</small><div id="cr-pele"></div></div><div class="crow"><small>Cabelo</small><div id="cr-cab"></div></div><div class="crow"><small>Cor do cabelo</small><div id="cr-corcab"></div></div><div class="crow"><small>Olhos</small><div id="cr-olhos"></div></div><div class="crow"><small>Roupa</small><div id="cr-roupa"></div></div>
+<div class="cbts"><button id="cr-volta">‹ Classe</button><button id="cr-fim" class="pri">Começar aventura</button></div></div></div></div></div>
 <div id="login" hidden><div class="box"><div class="lg-tit"><small>O ÚLTIMO CONHECIMENTO</small>Jogo do Rafael</div><p class="lg-sub">Entre pra salvar seu progresso na nuvem e continuar em qualquer celular.</p>
 <form id="lg-form" autocomplete="on"><label id="lg-nomewrap" hidden>Nome de jogador<input id="lg-nome" maxlength="20" autocomplete="nickname"></label><label>E-mail<input id="lg-email" type="email" autocomplete="email" inputmode="email"></label><label>Senha<input id="lg-senha" type="password" autocomplete="current-password"></label>
 <div class="lg-bts"><button id="lg-entrar" class="pri">Entrar</button><button id="lg-criar">Criar conta</button></div><button id="lg-esqueci" class="lnk">Esqueci a senha</button></form>
@@ -203,7 +232,7 @@
 <div id="aviso"></div>
 <div id="cena" hidden><div id="cena-quem"></div><div id="cena-txt"></div><div id="cena-mais">toque pra continuar ▸</div></div>
 <div id="fim" hidden><div class="box"><div id="fim-num"></div><div id="fim-nome"></div><p id="fim-nota"></p><div id="fim-selos"></div><div id="fim-cont"></div><div class="row"><button id="fim-volta">Voltar pra Brumafria</button><button class="ghost" id="fim-fica">Explorar Valdren</button></div></div></div>
-<div id="hud"><div id="vida"><div id="vida-fill"></div><div class="vtxt">VIDA&nbsp;<span id="vida-num">100</span></div></div><div id="mana"><div id="mana-fill"></div><div id="mana-txt">MANA&nbsp;<span id="mana-num">100</span></div></div><div id="poderes"></div></div>
+<div id="hud"><div class="barras"><button id="desp" title="Despertar"><span>⚡</span></button><div class="bcol"><div id="vida"><div id="vida-fill"></div><div class="vtxt">VIDA&nbsp;<span id="vida-num">100</span></div></div><div id="mana"><div id="mana-fill"></div><div id="mana-txt">MANA&nbsp;<span id="mana-num">100</span></div></div></div></div><div id="poderes"></div></div>
 __THREE__
 <script>
 __JOGO__

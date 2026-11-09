@@ -69,6 +69,8 @@
   // ---------- PERSONAGENS DO VÍDEO ----------
   const heroi = makeChar({ skin: LEOC.skin, hair: LEOC.hair, hairC: '#1c1a28', hairStyle: 'leo', top: '#8a6a40', top2: '#6a4a2a', pants: '#4a3a2a', shoe: '#3a2a1a', sole: '#2a1a10', iris: LEOC.iris, s: 0.82, ph: 0.6 });
   part(heroi.userData.P.spine, CYL, '#3a2414', 0, 0.06, 0, 0.19, 0.05, 0.14);
+  const HMAT = {}; heroi.traverse(o => { if (o.isMesh && o.material && o.material.isMeshToonMaterial) { const k = '#' + o.material.color.getHexString(); if (!HMAT[k]) HMAT[k] = o.material.clone(); o.material = HMAT[k]; } });
+  var CLASSES;
   const pai = makeChar({ skin: '#e8a880', hairStyle: 'short', hairC: '#3a2214', top: '#6a4a34', top2: '#4a3424', pants: '#3a3030', shoe: '#2a1a10', iris: '#3a2a1a', s: 1.12, ph: 6.1 });
   { const P = pai.userData.P; part(P.head, SPH, '#3a2214', 0, 0.03, 0.06, 0.13, 0.11, 0.1, 0.04); part(P.spine, BOX, '#3a2a20', 0, 0.25, 0.13, 0.3, 0.4, 0.02); }
   const mae = makeChar({ skin: '#f2b48e', hairStyle: 'long', hairC: '#6a3a1a', top: '#5a7a4a', top2: '#4a6a3a', pants: '#5a7a4a', shoe: '#3a2a1a', iris: '#4a3020', ph: 5.2 });
@@ -183,7 +185,7 @@
   const RAMOS = [{ id: 'ciencia', nome: 'Ciência', icone: '🧪', cor: '#4ab870' }, { id: 'mana', nome: 'Mana', icone: '✨', cor: '#3a8ae8' }, { id: 'corpo', nome: 'Corpo', icone: '🏃', cor: '#e88a2a' }, { id: 'fisica', nome: 'Física', icone: '⚛️', cor: '#b84ad8' }];
   const NSLOTS = 8;
   // progresso da árvore (salvo no aparelho)
-  let AR = { pts: 3, tem: ['sabao', 'salto'], barra: ['memoria', 'luz', 'sabao', 'salto', null, null, null, null], ganhos: [] };
+  let AR = { pts: 3, tem: ['sabao', 'salto'], barra: ['memoria', 'luz', null, 'sabao', 'salto', null, null, null], ganhos: [] };
   try { const g = JSON.parse(localStorage.getItem('aetherion-arvore') || 'null'); if (g && g.barra && g.barra.length === NSLOTS) AR = Object.assign(AR, g); } catch (e) {}
   AR.barra[0] = 'memoria'; AR.barra[1] = 'luz';
   function salvaAR() { try { localStorage.setItem('aetherion-arvore', JSON.stringify(AR)); } catch (e) {} if (window.CONTA) CONTA.salvar(); }
@@ -191,10 +193,10 @@
   function atualizaPts() { const b = $('arv-pts'); b.textContent = AR.pts; b.hidden = AR.pts <= 0; }
   const ativo = {}; let saltoPronto = false;
   const barra = $('poderes'); const SLOTS = [];
-  for (let i = 0; i < NSLOTS; i++) { const b = document.createElement('button'); b.className = 'slot' + (i < 2 ? ' fixo' : ''); tapBtn(b, () => { const id = AR.barra[i]; if (id) usarPoder(PW[id]); else abrirArvore(); }); barra.appendChild(b); SLOTS.push(b); }
+  for (let i = 0; i < NSLOTS; i++) { const b = document.createElement('button'); b.className = 'slot' + (i < 3 ? ' fixo' : ''); tapBtn(b, () => { const id = AR.barra[i]; if (id) usarPoder(PW[id]); else abrirArvore(); }); barra.appendChild(b); SLOTS.push(b); }
   function montaBarra() { PODERES.forEach(pw => pw.el = null);
     SLOTS.forEach((b, i) => { const pw = AR.barra[i] && PW[AR.barra[i]]; b.classList.toggle('vazio', !pw); b.classList.remove('on', 'falta');
-      if (pw) { pw.el = b; b.innerHTML = `<span class="ic">${pw.icone}</span><span class="nm">${pw.nome}</span><span class="tc">${i + 1}</span>${i < 2 ? '<span class="cad">🔒</span>' : ''}`; b.classList.toggle('on', pw.tipo === 'liga' && !!ativo[pw.id]); }
+      if (pw) { pw.el = b; b.innerHTML = `<span class="ic">${pw.icone}</span><span class="nm">${pw.nome}</span><span class="tc">${i + 1}</span>${i < 3 ? '<span class="cad">🔒</span>' : ''}`; b.classList.toggle('on', pw.tipo === 'liga' && !!ativo[pw.id]); }
       else b.innerHTML = `<span class="ic">＋</span><span class="tc">${i + 1}</span>`; }); }
   function marca(pw, cls, on) { if (pw.el) pw.el.classList.toggle(cls, on); }
   window.addEventListener('keydown', e => { const n = parseInt(e.key); if (n >= 1 && n <= NSLOTS) { const id = AR.barra[n - 1]; if (id) usarPoder(PW[id]); } if (e.code === 'KeyT') abrirArvore(); });
@@ -217,7 +219,7 @@
     if (pw.id === 'dardo') { const d = glowSpr(world, p.x, p.y + 1.3, p.z, 0.9, '#bfe8ff', 1); dardos.push({ s: d, t: 0, dx: Math.sin(facing), dz: Math.cos(facing) }); }
     if (pw.id === 'clarao') { flash('rgba(255,255,255,.95)'); fx('luz', [p.x, p.y, p.z], 1.2); tremor = 0.25; aviso('CLARÃO! Quem estava olhando ficou vendo estrelas.', '#fff3a0'); }
     if (pw.id === 'impulso') { dashT = 0.28; fx('vento', [p.x, p.y, p.z], 0.8); }
-    combatePoder(pw.id); }
+    combatePoder(pw.id); classePoder(pw.id); }
   function flash(cor) { const f = $('flash'); f.style.transition = 'none'; f.style.background = cor; f.style.opacity = 1; requestAnimationFrame(() => requestAnimationFrame(() => { f.style.transition = 'opacity .9s'; f.style.opacity = 0; })); }
   // partículas de efeito (vapor, cura, fogo, fumaça, luz, vento)
   const FXC = { vapor: ['#ffffff', 0.14, 'sobe'], cura: ['#7aff9a', 0.07, 'espiral'], fogo: ['#ff8a2a', 0.16, 'explode'], fumo: ['#6a625a', 0.3, 'nuvem'], luz: ['#fff6c0', 0.12, 'explode'], vento: ['#dff2ff', 0.06, 'anel'], chama: ['#ff8a2a', 0.14, 'jato'], gelo: ['#bff2ff', 0.1, 'explode'] };
@@ -256,14 +258,14 @@
     det.innerHTML = `<div class="dt"><span class="ic">${pw.icone}</span><div><b>${pw.nome}</b><small>${pw.tipo === 'liga' ? 'Liga/desliga' : 'Uso rápido'} · ${custo}</small></div></div><p>${pw.desc}</p><div id="arv-acoes"></div>`;
     const ac = $('arv-acoes');
     if (!tem) { const b = document.createElement('button'); b.className = 'ab'; const ok = prereq(pw) && AR.pts >= pw.preco; b.disabled = !ok; b.textContent = !prereq(pw) ? '🔒 Aprenda a anterior primeiro' : AR.pts < pw.preco ? `Faltam ${pw.preco - AR.pts} ponto(s)` : `Aprender (${pw.preco} pt)`;
-      if (ok) tapBtn(b, () => { AR.pts -= pw.preco; AR.tem.push(pw.id); const v = AR.barra.indexOf(null, 2); if (v >= 2) AR.barra[v] = pw.id; salvaAR(); atualizaPts(); montaBarra(); aviso('Nova habilidade: ' + pw.icone + ' ' + pw.nome + (v >= 2 ? ' (slot ' + (v + 1) + ')' : ''), '#7ad87a'); desenhaArvore(); });
+      if (ok) tapBtn(b, () => { AR.pts -= pw.preco; AR.tem.push(pw.id); const v = AR.barra.indexOf(null, 3); if (v >= 3) AR.barra[v] = pw.id; salvaAR(); atualizaPts(); montaBarra(); aviso('Nova habilidade: ' + pw.icone + ' ' + pw.nome + (v >= 3 ? ' (slot ' + (v + 1) + ')' : ''), '#7ad87a'); desenhaArvore(); });
       ac.appendChild(b); return; }
     const t = document.createElement('div'); t.className = 'qs'; t.textContent = 'Colocar no slot (troca o que estiver lá):'; ac.appendChild(t);
     const row = document.createElement('div'); row.className = 'slotsel';
-    for (let i = 2; i < NSLOTS; i++) { const o = AR.barra[i] && PW[AR.barra[i]]; const b = document.createElement('button'); b.className = 'ss' + (AR.barra[i] === pw.id ? ' aqui' : ''); b.innerHTML = `<small>${i + 1}</small>${o ? o.icone : '＋'}`;
-      tapBtn(b, () => { if (AR.barra[i] === pw.id) return; const j = AR.barra.indexOf(pw.id); const velho = AR.barra[i]; if (velho && ativo[velho]) ativo[velho] = false; if (j >= 2) AR.barra[j] = null; AR.barra[i] = pw.id; salvaAR(); montaBarra(); aviso(pw.icone + ' ' + pw.nome + ' no slot ' + (i + 1) + (velho && velho !== pw.id ? ' (saiu ' + PW[velho].nome + ')' : ''), '#7ad87a'); desenhaArvore(); }); row.appendChild(b); }
+    for (let i = 3; i < NSLOTS; i++) { const o = AR.barra[i] && PW[AR.barra[i]]; const b = document.createElement('button'); b.className = 'ss' + (AR.barra[i] === pw.id ? ' aqui' : ''); b.innerHTML = `<small>${i + 1}</small>${o ? o.icone : '＋'}`;
+      tapBtn(b, () => { if (AR.barra[i] === pw.id) return; const j = AR.barra.indexOf(pw.id); const velho = AR.barra[i]; if (velho && ativo[velho]) ativo[velho] = false; if (j >= 3) AR.barra[j] = null; AR.barra[i] = pw.id; salvaAR(); montaBarra(); aviso(pw.icone + ' ' + pw.nome + ' no slot ' + (i + 1) + (velho && velho !== pw.id ? ' (saiu ' + PW[velho].nome + ')' : ''), '#7ad87a'); desenhaArvore(); }); row.appendChild(b); }
     ac.appendChild(row);
-    if (AR.barra.indexOf(pw.id) >= 2) { const b = document.createElement('button'); b.className = 'ab tira'; b.textContent = 'Tirar da barra'; tapBtn(b, () => { const j = AR.barra.indexOf(pw.id); AR.barra[j] = null; ativo[pw.id] = false; salvaAR(); montaBarra(); desenhaArvore(); }); ac.appendChild(b); } }
+    if (AR.barra.indexOf(pw.id) >= 3) { const b = document.createElement('button'); b.className = 'ab tira'; b.textContent = 'Tirar da barra'; tapBtn(b, () => { const j = AR.barra.indexOf(pw.id); AR.barra[j] = null; ativo[pw.id] = false; salvaAR(); montaBarra(); desenhaArvore(); }); ac.appendChild(b); } }
   tapBtn($('arv-btn'), abrirArvore); tapBtn($('arv-fecha'), () => { $('arvore').hidden = true; });
   montaBarra(); atualizaPts();
   // fórmulas girando em volta da cabeça
@@ -578,7 +580,7 @@
   SABER.push({ x: FX0, y: 2.6, z: FZ0, t: 'Aço = ferro + um pouco de carbono. Mais duro que ferro puro.' });
 
   function abrirLoja() { if (conversa || cenaQ) return; const L = $('loja-lista'); L.innerHTML = ''; $('loja-m').textContent = AR.inv.moedas;
-    Object.keys(ARMAS).forEach(k => { const A = ARMAS[k], tem = AR.armas.includes(k); const b = document.createElement('div'); b.className = 'item';
+    Object.keys(ARMAS).forEach(k => { const A = ARMAS[k], tem = AR.armas.includes(k); if (A.classe) return; const b = document.createElement('div'); b.className = 'item';
       const preco = A.preco ? `${A.preco} 💰${A.precisa ? ' + 💎 Coração de Gelo' : ''}` : 'Presente do seu pai';
       b.innerHTML = `<span class="ic">${A.icone}</span><div class="tx"><b>${A.nome}</b><small>${A.longe ? 'De longe' : 'Corpo a corpo'} · dano ${A.dano}</small><small>${A.desc}</small></div>`;
       const bt = document.createElement('button'); bt.className = 'cb';
@@ -596,14 +598,15 @@
   function maisPerto(r) { let m = null, md = r; FERAS.forEach(e => { if (!feraAtiva(e)) return; const d = Math.hypot(e.g.position.x - heroi.position.x, e.g.position.z - heroi.position.z) - e.T.raio; if (d < md) { md = d; m = e; } }); return m; }
   function atacar() { if (conversa || cenaQ || desmaiado || !$('fim').hidden) return; if (dentro) { aviso('Dentro de casa não! A mãe briga.', '#ffb04a'); return; } if (atkCd > 0) return; const A = ARMAS[AR.arma];
     const e = maisPerto(A.longe ? 18 : 4.5); if (e) facing = Math.atan2(e.g.position.x - heroi.position.x, e.g.position.z - heroi.position.z);
-    atkN = A.longe ? 1 : comboT > 0 ? (atkN % 3) + 1 : 1; comboT = 0.8; atkT = 0; atkHit = false; atkCd = A.cd * (atkN === 3 ? 1.5 : 1); }
+    atkN = A.longe ? 1 : comboT > 0 ? (atkN % 3) + 1 : 1; comboT = 0.8; atkT = 0; atkHit = false; atkCd = A.cd * (atkN === 3 ? 1.5 : 1) * (despT > 0 ? 0.7 : 1); }
   const virotes = []; const viroteGeo = new T3.BoxGeometry(0.04, 0.04, 0.6);
   function golpe() { const A = ARMAS[AR.arma], p = heroi.position;
-    if (A.longe) { const m = new T3.Mesh(viroteGeo, tm('#5a3a24')); m.position.set(p.x, p.y + 1.2, p.z); m.rotation.y = facing; world.add(m); virotes.push({ m, t: 0, dx: Math.sin(facing), dz: Math.cos(facing) }); return; }
+    if (A.longe && A.proj) { proj(p.x, p.y + 1.25, p.z, facing, A.proj, A.dano * atkMult(), 26, A.alc); return; }
+    if (A.longe) { const m = new T3.Mesh(viroteGeo, tm('#5a3a24')); m.position.set(p.x, p.y + 1.2, p.z); m.rotation.y = facing; world.add(m); virotes.push({ m, t: 0, dx: Math.sin(facing), dz: Math.cos(facing), dano: A.dano * atkMult() }); return; }
     const mult = [1, 1, 1.15, 1.8][atkN]; let acertou = false;
     FERAS.forEach(e => { if (!feraAtiva(e)) return; const dx = e.g.position.x - p.x, dz = e.g.position.z - p.z, d = Math.hypot(dx, dz); if (d > A.alc + e.T.raio) return;
-      let da = Math.atan2(dx, dz) - facing; while (da > Math.PI) da -= Math.PI * 2; while (da < -Math.PI) da += Math.PI * 2; if (atkN !== 3 && Math.abs(da) > 1.25 && d > e.T.raio + 0.4) return;
-      acertou = true; dano(e, A.dano * mult * (1 + (AR.nv - 1) * 0.02), A.gelo ? 'gelo' : null); if (A.gelo && Math.random() < 0.25) congelar(e, 1.5); empurra(e, dx / (d || 1), dz / (d || 1), atkN === 3 ? 1.6 : 0.6); });
+      let da = Math.atan2(dx, dz) - facing; while (da > Math.PI) da -= Math.PI * 2; while (da < -Math.PI) da += Math.PI * 2; if (atkN !== 3 && !A.giro && Math.abs(da) > 1.25 && d > e.T.raio + 0.4) return;
+      acertou = true; const cr = critico(); dano(e, A.dano * mult * atkMult() * (cr ? 2 : 1), A.gelo ? 'gelo' : null, cr); if (A.gelo && Math.random() < 0.25) congelar(e, 1.5); empurra(e, dx / (d || 1), dz / (d || 1), atkN === 3 ? 1.6 : 0.6); });
     if (acertou) tremor = Math.max(tremor, atkN === 3 ? 0.25 : 0.1); }
   function empurra(e, nx, nz, f) { if (e.T.chefe) return; e.g.position.x += nx * f; e.g.position.z += nz * f; }
   function armaPose() { const P = heroi.userData.P, A = ARMAS[AR.arma];
@@ -615,14 +618,14 @@
     else if (A.longe) { P.shR.rotation.x = -0.7; P.elR.rotation.x = -0.9; } }
 
   // ---- dano nos bichos ----
-  function dano(e, n, tipo) { if (e.morto) return; if (e.T.chefe && tipo === 'fogo') n *= 2; if (e.vuln > 0) n *= 1.5; n = Math.round(n); e.vida -= n; e.hitT = 0;
-    numero(e.g.position, String(n), tipo === 'fogo' ? '#ff9a3a' : tipo === 'gelo' ? '#9ae6ff' : tipo === 'raio' ? '#fff27a' : '#ffffff', e.T.alt + 0.3);
+  function dano(e, n, tipo, crit) { if (e.morto) return; if (e.T.chefe && tipo === 'fogo') n *= 2; if (e.vuln > 0) n *= 1.5; n = Math.round(n); e.vida -= n; e.hitT = 0; enche(crit ? 5 : 3);
+    numero(e.g.position, crit ? '💥' + n : String(n), crit ? '#ffd23c' : tipo === 'fogo' ? '#ff9a3a' : tipo === 'gelo' ? '#9ae6ff' : tipo === 'raio' ? '#fff27a' : '#ffffff', e.T.alt + 0.3);
     if (e.estado === 'anda' || e.estado === 'volta') { e.estado = 'caca'; }
     if (e.vida <= 0) morre(e); }
   function congelar(e, s) { if (e.morto) return; e.congela = Math.max(e.congela, e.T.chefe ? s * 0.35 : s); }
   function morre(e) { e.morto = true; e.mortoT = 0; e.hp.style.display = 'none'; const p = e.g.position; const [a, b] = e.T.moedas; solta_loot(p.x, p.z, 'moedas', a + Math.floor(Math.random() * (b - a + 1)));
     e.T.itens.forEach(([it, ch]) => { if (Math.random() < ch) solta_loot(p.x + (Math.random() - .5), p.z + (Math.random() - .5), it, 1); });
-    AR.abates[e.tipo] = (AR.abates[e.tipo] || 0) + 1; ganhaXp(XP_TIPO[e.tipo] || 10, true); const tot = Object.values(AR.abates).reduce((s, v) => s + v, 0); salvaAR();
+    AR.abates[e.tipo] = (AR.abates[e.tipo] || 0) + 1; enche(e.T.chefe ? 60 : 12); ganhaXp(XP_TIPO[e.tipo] || 10, true); const tot = Object.values(AR.abates).reduce((s, v) => s + v, 0); salvaAR();
     if (e.T.chefe) { ganha('golem1', 5, 'derrotou o Golem de Gelo'); aviso('🏆 O GOLEM DE GELO CAIU! Leve o 💎 Coração de Gelo pra Forja.', '#7ad8ff'); }
     else { ganha('abate1:' + e.tipo, 2, 'primeiro ' + e.T.nome); if (tot % 5 === 0) setTimeout(() => ganha('abates:' + tot, 1, tot + ' bichos derrotados'), 900); } }
   // ---- coisas que caem ----
@@ -630,7 +633,7 @@
   function emoTex(t) { return EMO[t] || (EMO[t] = canvasTex(96, 96, (x, w, h) => { x.font = '72px system-ui,"Noto Color Emoji",sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(t, w / 2, h / 2 + 4); })); }
   function solta_loot(x, z, item, n) { const s = new T3.Sprite(new T3.SpriteMaterial({ map: emoTex(ITENS[item]), transparent: true, depthWrite: false, toneMapped: false })); s.scale.set(0.6, 0.6, 1); s.position.set(x, 0.5, z); world.add(s); LOOT.push({ s, item, n, t: 0, zona }); }
   // ---- dano no Leonardo ----
-  function danoHeroi(n, de) { if (desmaiado) return; n *= 1 - defesa() / 100; if (ativo.escudo) { n *= 0.3; fx('luz', [heroi.position.x, heroi.position.y, heroi.position.z], 0.3); } n = Math.round(n); vida -= n; semDanoT = 0; flash('rgba(255,40,40,.35)'); tremor = Math.max(tremor, 0.18);
+  function danoHeroi(n, de) { if (desmaiado) return; const cl = CLA(); if (cl && cl.esq && Math.random() < cl.esq) { numero(heroi.position, 'Desviou!', '#9ae6ff', 2.1); return; } n *= 1 - defesa() / 100; if (muralhaT > 0) n *= 0.2; enche(4); if (ativo.escudo) { n *= 0.3; fx('luz', [heroi.position.x, heroi.position.y, heroi.position.z], 0.3); } n = Math.round(n); vida -= n; semDanoT = 0; flash('rgba(255,40,40,.35)'); tremor = Math.max(tremor, 0.18);
     numero(heroi.position, '-' + n, '#ff5a5a', 2.1); if (vida <= 0) { vida = 0; desmaiar(); } }
   function desmaiar() { desmaiado = true; FERAS.forEach(e => { if (!e.morto) { e.estado = 'volta'; } }); ativo.vento = ativo.escudo = ativo.planar = false; montaBarra();
     setTimeout(() => cena([{ t: 'Tudo ficou escuro...', v: null }, { t: 'Leonardo acordou em casa, na cama. A mãe cuidou dele a noite toda.', n: 'Mãe', v: null }, { t: '"Meu filho, cuidado lá fora! Come alguma coisa antes de sair de novo."', n: 'Mãe', v: null }], () => {
@@ -700,7 +703,7 @@
     $('vida-fill').style.width = (vida / VIDA_MAX * 100) + '%'; $('vida-num').textContent = Math.ceil(vida); $('vida').classList.toggle('baixa', vida < 30);
     atkT += dt; comboT -= dt; atkCd -= dt; if (!atkHit && atkT > 0.12) { atkHit = true; golpe(); }
     ferasFrame(dt, p);
-    for (let i = virotes.length - 1; i >= 0; i--) { const v = virotes[i]; v.t += dt; v.m.position.x += v.dx * 30 * dt; v.m.position.z += v.dz * 30 * dt; const e = acertaFera(v.m.position, 0.5); if (e) { dano(e, ARMAS.besta.dano, null); v.t = 9; } if (v.t > 0.6) { world.remove(v.m); virotes.splice(i, 1); } }
+    for (let i = virotes.length - 1; i >= 0; i--) { const v = virotes[i]; v.t += dt; v.m.position.x += v.dx * 30 * dt; v.m.position.z += v.dz * 30 * dt; const e = acertaFera(v.m.position, 0.5); if (e) { const cr = critico(); dano(e, v.dano * (cr ? 2 : 1), null, cr); v.t = 9; } if (v.t > 0.6) { world.remove(v.m); virotes.splice(i, 1); } }
     for (let i = RAIOS.length - 1; i >= 0; i--) { const r = RAIOS[i]; r.t += dt; r.s.material.opacity = 1 - r.t / 0.3; if (r.t > 0.3) { world.remove(r.s); r.s.material.dispose(); RAIOS.splice(i, 1); } }
     for (let i = LOOT.length - 1; i >= 0; i--) { const l = LOOT[i]; l.t += dt; l.s.visible = l.zona === zona && !dentro; if (!l.s.visible) continue; const s = l.s.position; s.y = 0.5 + Math.sin(gT * 3 + i) * 0.12;
       const d = Math.hypot(s.x - p.x, s.z - p.z); if (l.puxa || (d < 3 && l.t > 0.6)) { const k = clamp(dt * (l.puxa ? 6 : 4)); s.x += (p.x - s.x) * k; s.z += (p.z - s.z) * k; }
@@ -715,7 +718,7 @@
   // ===================== NÍVEL, PERFIL, INVENTÁRIO E FANTASIAS =====================
   AR.nv = AR.nv || 1; AR.xp = AR.xp || 0; AR.fantasias = AR.fantasias || ['comum', 'celeste']; AR.fantasia = AR.fantasia || 'comum';
   const NV_MAX = 100; const xpPara = n => 60 + n * 30;
-  function aplicaNivel() { VIDA_MAX = 100 + (AR.nv - 1) * 5; MANA_MAX = 100 + (AR.nv - 1) * 3; }
+  function aplicaNivel() { const c = CLASSES && CLASSES[AR.classe]; VIDA_MAX = (c ? c.vida : 100) + (AR.nv - 1) * 5; MANA_MAX = (c ? c.mana : 100) + (AR.nv - 1) * 3; }
   function ganhaXp(n, motivo) { if (AR.nv >= NV_MAX) return; AR.xp += n; let subiu = false; while (AR.nv < NV_MAX && AR.xp >= xpPara(AR.nv)) { AR.xp -= xpPara(AR.nv); AR.nv++; subiu = true; AR.pts++; }
     if (AR.nv >= NV_MAX) AR.xp = 0; salvaAR(); atualizaNivel();
     if (subiu) { aplicaNivel(); vida = VIDA_MAX; mana = MANA_MAX; atualizaPts(); fx('luz', [heroi.position.x, 0, heroi.position.z], 1.2); fx('cura', [heroi.position.x, 0, heroi.position.z], 1.6); flash('rgba(255,230,120,.45)');
@@ -783,7 +786,7 @@
       const ft = P['ft' + s]; A(ft, SPH2, MALHA, 0, 0.005, 0.05, 0.075, 0.062, 0.142); for (let k = 0; k < 3; k++) A(ft, SPH2, k % 2 ? AZ2 : PR, 0, 0.02 - k * 0.004, 0.1 + k * 0.04, 0.072 - k * 0.006, 0.05, 0.05); A(ft, BOX, COU, 0, -0.048, 0.05, 0.125, 0.02, 0.27); });
     armadura.forEach(m => m.visible = false); }
   function vesteFantasia(k) { AR.fantasia = k; salvaAR(); const on = k === 'celeste'; armadura.forEach(m => m.visible = on); roupaBase.forEach(([o, mt]) => o.material = on ? MALHA : mt); setTimeout(fazRetrato, 60); }
-  function defesa() { return FANT[AR.fantasia].def || 0; }
+  function defesa() { const c = CLASSES && CLASSES[AR.classe]; return Math.min(85, (FANT[AR.fantasia].def || 0) + (c ? c.def : 0) + (despT > 0 ? 15 : 0)); }
   function armaduraFrame() { if (!tabardo || AR.fantasia !== 'celeste') return; const P = heroi.userData.P; const f = Math.min(P.thL.rotation.x, P.thR.rotation.x), b = Math.max(P.thL.rotation.x, P.thR.rotation.x); tabardo.rotation.x = Math.min(0, f) * 0.95; tabardo.userData.costas.rotation.x = Math.max(0, b) * 0.95; }
 
   // ---- retrato e prévia (render do próprio Leonardo) ----
@@ -796,16 +799,16 @@
   const vR = new T3.Vector3();
   function fazRetrato() { const P = heroi.userData.P; heroi.updateMatrixWorld(true); P.head.getWorldPosition(vR); const a = heroi.rotation.y + 0.35; camR.position.set(vR.x + Math.sin(a) * 0.95, vR.y + 0.14, vR.z + Math.cos(a) * 0.95); camR.lookAt(vR.x, vR.y + 0.06, vR.z); renderPara(rtR, camR, bufR, $('retrato'), 128, 128); }
   let girar = 0;
-  function fazPrevia(dt) { girar += dt * 0.6; const p = heroi.position; const a = heroi.rotation.y + Math.sin(girar) * 0.9; camV.position.set(p.x + Math.sin(a) * 3.6, p.y + 1.0, p.z + Math.cos(a) * 3.6); camV.lookAt(p.x, p.y + 0.78, p.z); renderPara(rtV, camV, bufV, $('previa'), 240, 320); }
+  function fazPrevia(dt, alvoCv) { girar += dt * 0.6; const p = heroi.position; const a = heroi.rotation.y + Math.sin(girar) * 0.9; camV.position.set(p.x + Math.sin(a) * 3.6, p.y + 1.0, p.z + Math.cos(a) * 3.6); camV.lookAt(p.x, p.y + 0.78, p.z); renderPara(rtV, camV, bufV, alvoCv || $('previa'), 240, 320); }
 
   // ---- janela do perfil ----
   let abaPerfil = 'status';
   function abrirPerfil() { if (conversa || cenaQ) return; $('perfil').hidden = false; desenhaPerfil(); }
   function desenhaPerfil() { document.querySelectorAll('#perfil .aba').forEach(b => b.classList.toggle('on', b.dataset.a === abaPerfil)); const C = $('pf-cont'); const A = ARMAS[AR.arma];
-    $('pf-nome').innerHTML = `Leonardo <b>Nv ${AR.nv}</b>`; const CU = window.CONTA && CONTA.usuario; $('pf-conta').innerHTML = CU ? `<span>👤 ${(CU.displayName || CU.email || '').replace(/</g, '')}</span><button id="pf-sair">Sair da conta</button>` : `<button id="pf-sair">Entrar / criar conta</button>`;
-    tapBtn($('pf-sair'), () => { if (CU) CONTA.sair(); else { try { sessionStorage.removeItem('aetherion-convidado'); } catch (e) {} $('perfil').hidden = true; $('login').hidden = false; } }); if (window.CONTA && CONTA.selo) CONTA.selo(); $('pf-xp').style.width = (AR.nv >= NV_MAX ? 100 : AR.xp / xpPara(AR.nv) * 100) + '%'; $('pf-xpt').textContent = AR.nv >= NV_MAX ? 'NÍVEL MÁXIMO' : `XP ${AR.xp} / ${xpPara(AR.nv)}`;
+    const CLp = CLA(); $('pf-nome').innerHTML = `${(AR.visual.nome || 'Leonardo').replace(/</g, '')} <b>Nv ${AR.nv}</b><small>${CLp ? CLp.icone + ' ' + CLp.nome : ''}</small>`; const CU = window.CONTA && CONTA.usuario; $('pf-conta').innerHTML = CU ? `<span>👤 ${(CU.displayName || CU.email || '').replace(/</g, '')}</span><button id="pf-sair">Sair da conta</button>` : `<button id="pf-sair">Entrar / criar conta</button>`;
+    tapBtn($('pf-sair'), () => { if (CU) CONTA.sair(); else { try { sessionStorage.removeItem('aetherion-convidado'); } catch (e) {} $('perfil').hidden = true; $('login').hidden = false; } }); if (window.CONTA && CONTA.selo) CONTA.selo(); const ev = document.createElement('button'); ev.textContent = '✏️ Editar visual'; $('pf-conta').prepend(ev); tapBtn(ev, () => { $('perfil').hidden = true; abrirCriar(2, true); }); $('pf-xp').style.width = (AR.nv >= NV_MAX ? 100 : AR.xp / xpPara(AR.nv) * 100) + '%'; $('pf-xpt').textContent = AR.nv >= NV_MAX ? 'NÍVEL MÁXIMO' : `XP ${AR.xp} / ${xpPara(AR.nv)}`;
     if (abaPerfil === 'status') { const ab = AR.abates; const tot = Object.values(ab).reduce((s, v) => s + v, 0);
-      const L = [['❤️', 'Vida', `${Math.ceil(vida)} / ${VIDA_MAX}`], ['🔷', 'Mana', `${Math.round(mana)} / ${MANA_MAX}`], ['⚔️', 'Ataque', `${Math.round(A.dano * (1 + (AR.nv - 1) * 0.02))} (${A.icone} ${A.nome})`], ['🛡️', 'Defesa', `${defesa()}% (${FANT[AR.fantasia].nome})`],
+      const L = [['❤️', 'Vida', `${Math.ceil(vida)} / ${VIDA_MAX}`], ['🔷', 'Mana', `${Math.round(mana)} / ${MANA_MAX}`], ['⚔️', 'Ataque', `${Math.round(A.dano * atkMult())} (${A.icone} ${A.nome})`], ['🎯', 'Crítico / Esquiva', `${Math.round(((CLA() || {}).crit || 0.05) * 100)}% / ${Math.round(((CLA() || {}).esq || 0) * 100)}%`], ['🛡️', 'Defesa', `${defesa()}% (${FANT[AR.fantasia].nome})`],
         ['🌳', 'Pontos de habilidade', AR.pts], ['🐺', 'Bichos derrotados', `${tot}${ab.golem ? ' · Golem ✔' : ''}`], ['🏆', 'Finais', `${finais.length} / 6`], ['💰', 'Moedas', AR.inv.moedas]];
       C.innerHTML = '<div class="stats">' + L.map(([i, n, v]) => `<div class="st"><span>${i}</span><small>${n}</small><b>${v}</b></div>`).join('') + '</div><p class="dica">Cada nível dá +5 de vida, +3 de mana, +2% de ataque e 1 ponto de habilidade. Ganhe XP derrotando bichos, falando com as pessoas e fazendo as missões.</p>'; return; }
     C.innerHTML = '';
@@ -814,7 +817,7 @@
     let g = sec('👕 Fantasias');
     Object.keys(FANT).forEach(k => { const F = FANT[k], tem = AR.fantasias.includes(k); cel(g, F.icone, F.nome, tem ? (F.def ? 'Defesa +' + F.def + '%' : 'Sem defesa') : '🔒', AR.fantasia === k, tem && AR.fantasia !== k ? () => { vesteFantasia(k); aviso('Vestiu: ' + F.icone + ' ' + F.nome, '#7ac8ff'); desenhaPerfil(); } : null, AR.fantasia === k ? 'VESTIDO' : ''); });
     g = sec('⚔️ Armas');
-    Object.keys(ARMAS).forEach(k => { const W = ARMAS[k], tem = AR.armas.includes(k); cel(g, tem ? W.icone : '🔒', W.nome, tem ? 'Dano ' + W.dano : 'Na Forja', AR.arma === k, tem && AR.arma !== k ? () => { AR.arma = k; salvaAR(); mostraArma(); desenhaPerfil(); } : null, AR.arma === k ? 'NA MÃO' : ''); });
+    Object.keys(ARMAS).forEach(k => { const W = ARMAS[k], tem = AR.armas.includes(k); if (W.classe && !tem) return; cel(g, tem ? W.icone : '🔒', W.nome, tem ? 'Dano ' + W.dano : 'Na Forja', AR.arma === k, tem && AR.arma !== k ? () => { AR.arma = k; salvaAR(); mostraArma(); desenhaPerfil(); } : null, AR.arma === k ? 'NA MÃO' : ''); });
     g = sec('🎒 Itens');
     cel(g, '💰', 'Moedas', AR.inv.moedas + 'x', false, null); cel(g, '🐺', 'Pele de lobo', AR.inv.pele + 'x · vende na Forja', false, null);
     cel(g, '🍖', 'Carne', AR.inv.carne + 'x · toque pra comer', false, AR.inv.carne ? () => { comer(); desenhaPerfil(); } : null); if (AR.inv.coracao) cel(g, '💎', 'Coração de Gelo', AR.inv.coracao + 'x · Espada Glacial', false, null); }
@@ -822,7 +825,148 @@
   tapBtn($('perfil-btn'), abrirPerfil); tapBtn($('pf-fecha'), () => { $('perfil').hidden = true; });
   let previaT = 0; function perfilFrame(dt) { if ($('perfil').hidden) return; previaT += dt; if (previaT > 0.06) { fazPrevia(previaT); previaT = 0; } }
   aplicaNivel(); atualizaNivel(); vesteFantasia(AR.fantasia); setTimeout(fazRetrato, 700);
-  window.__dbg = { renderer, scene, world, ganhaXp, vesteFantasia, abrirPerfil, fazRetrato, irValdren, Q, heroi, ativo, AR, FERAS, golem, atacar, get vida() { return vida; }, set vida(v) { vida = v; }, abrirLoja, usarPoder: id => usarPoder(PW[id]), acao: () => acao(), get alvo() { return alvo; } };
+  // ===================== CLASSES E CRIAÇÃO DO PERSONAGEM =====================
+  CLASSES = {
+    guerreiro: { nome: 'Guerreiro', icone: '⚔️', papel: 'Força bruta', cor: '#e04a32', roupa: '#7a2a22', vida: 140, mana: 80, atk: 1.25, def: 15, vel: 1.0, crit: 0.05, esq: 0, arma: 'espadao', hab: 'sismico', desc: 'Muita vida, defesa alta e o maior ataque do jogo. Usa um espadão de duas mãos. Ótimo pra começar.' },
+    duelista: { nome: 'Duelista', icone: '🗡️', papel: 'Velocidade e crítico', cor: '#e8b030', roupa: '#2a2a3a', vida: 100, mana: 90, atk: 1.05, def: 5, vel: 1.15, crit: 0.25, esq: 0.18, arma: 'laminas', hab: 'danca', desc: 'Duas lâminas, ataque muito rápido, desvia dos golpes e acerta muito crítico. Excelente pra jogar sozinho.' },
+    mago: { nome: 'Mago', icone: '🔮', papel: 'Magia em área', cor: '#4a8aff', roupa: '#2a3a8a', vida: 80, mana: 150, atk: 1.2, def: 0, vel: 0.95, crit: 0.1, esq: 0, arma: 'cajado', hab: 'meteoro', desc: 'O dano em área mais forte do jogo, de longe. Mas tem pouca defesa: mantenha distância!' },
+    arqueiro: { nome: 'Arqueiro Arcano', icone: '🏹', papel: 'Distância e cura', cor: '#3ac86a', roupa: '#2a5a3a', vida: 95, mana: 120, atk: 1.05, def: 5, vel: 1.1, crit: 0.12, esq: 0.1, arma: 'arco', hab: 'rajada', desc: 'Arco mágico, ótima mobilidade e cura forte. Um dos melhores pra caçar sozinho.' },
+    guardiao: { nome: 'Guardião Arcano', icone: '🛡️', papel: 'Tanque', cor: '#9aaccc', roupa: '#4a5a7a', vida: 160, mana: 90, atk: 0.9, def: 30, vel: 0.95, crit: 0.05, esq: 0, arma: 'escudo', hab: 'muralha', desc: 'O tanque: defesa máxima e escudo grande. Segura qualquer pancada e protege o grupo.' },
+    espadachim: { nome: 'Espadachim Arcano', icone: '✴️', papel: 'Espada e magia', cor: '#b46aff', roupa: '#4a2a6a', vida: 105, mana: 120, atk: 1.1, def: 10, vel: 1.05, crit: 0.12, esq: 0.05, arma: 'runica', hab: 'runa', desc: 'Híbrido de espada e magia. Enfraquece os inimigos pra eles tomarem mais dano.' },
+    gladiador: { nome: 'Gladiador', icone: '🌀', papel: 'Área de perto', cor: '#ff8a3a', roupa: '#8a4a1a', vida: 125, mana: 85, atk: 1.1, def: 15, vel: 1.0, crit: 0.08, esq: 0.03, arma: 'chakram', hab: 'tufao', desc: 'Chakrams que acertam tudo em volta. Muito resistente e fácil de jogar.' },
+    atirador: { nome: 'Atirador Arcano', icone: '🔫', papel: 'Tiro de longe', cor: '#ffe04a', roupa: '#3a3a2a', vida: 90, mana: 110, atk: 1.15, def: 5, vel: 1.05, crit: 0.15, esq: 0.05, arma: 'arcana', hab: 'carregado', desc: 'Arma de fogo arcana: alcance enorme e tiros rápidos sem parar.' },
+    magonegro: { nome: 'Mago Negro', icone: '🌑', papel: 'Magia sombria', cor: '#a050ff', roupa: '#1a1424', vida: 95, mana: 140, atk: 1.3, def: 10, vel: 1.0, crit: 0.1, esq: 0, arma: 'sombrio', hab: 'drenar', desc: 'Uma das classes mais fortes no fim do jogo. Rouba a vida dos inimigos pra se curar.' },
+  };
+  const HABS = [
+    { id: 'sismico', nome: 'Sísmico', icone: '💢', custo: 25, desc: 'Golpe Sísmico: bate o espadão no chão. Dano em volta e deixa os bichos tontos.' },
+    { id: 'danca', nome: 'Dança', icone: '🌪️', custo: 20, desc: 'Dança das Lâminas: pula no bicho mais perto e corta 4 vezes. O último corte é sempre crítico.' },
+    { id: 'meteoro', nome: 'Meteoro', icone: '☄️', custo: 35, desc: 'Chuva de Meteoros: pedras de fogo caem em cima do bicho mais perto, em área.' },
+    { id: 'rajada', nome: 'Rajada', icone: '🍃', custo: 22, desc: 'Rajada Arcana: 3 flechas de luz em leque e cura 25 de vida.' },
+    { id: 'muralha', nome: 'Muralha', icone: '🧱', custo: 25, desc: 'Muralha: por 6 segundos você recebe 80% menos dano e empurra os bichos pra longe.' },
+    { id: 'runa', nome: 'Runa', icone: '✴️', custo: 22, desc: 'Lâmina Rúnica: corte mágico na frente que deixa os bichos fracos (+50% de dano) por 6 segundos.' },
+    { id: 'tufao', nome: 'Tufão', icone: '🌀', custo: 28, desc: 'Tufão de Chakrams: chakrams giram em volta de você por 4 segundos acertando tudo.' },
+    { id: 'carregado', nome: 'Carregado', icone: '💥', custo: 28, desc: 'Tiro Carregado: um raio que atravessa todos os bichos em linha reta.' },
+    { id: 'drenar', nome: 'Drenar', icone: '🩸', custo: 25, desc: 'Drenar Alma: rouba a vida do bicho mais perto e cura você.' },
+  ];
+  HABS.forEach(h => { h.tipo = 'uso'; h.classe = true; PODERES.push(h); PW[h.id] = h; });
+  Object.assign(ARMAS, {
+    espadao: { nome: 'Espadão', icone: '🗡️', dano: 26, alc: 2.7, cd: 0.55, classe: 'guerreiro', desc: 'Espada enorme de duas mãos.' },
+    laminas: { nome: 'Lâminas Gêmeas', icone: '⚔️', dano: 13, alc: 2.0, cd: 0.22, classe: 'duelista', desc: 'Uma lâmina em cada mão. Muito rápida.' },
+    cajado: { nome: 'Cajado Arcano', icone: '🪄', dano: 22, alc: 18, cd: 0.55, longe: true, proj: '#7ac8ff', classe: 'mago', desc: 'Dispara bolas de mana.' },
+    arco: { nome: 'Arco Mágico', icone: '🏹', dano: 18, alc: 20, cd: 0.42, longe: true, proj: '#8aff9a', classe: 'arqueiro', desc: 'Flechas de luz.' },
+    escudo: { nome: 'Espada e Escudo', icone: '🛡️', dano: 14, alc: 2.0, cd: 0.4, classe: 'guardiao', desc: 'Espada curta e escudo grande.' },
+    runica: { nome: 'Espada Rúnica', icone: '✴️', dano: 18, alc: 2.3, cd: 0.34, classe: 'espadachim', desc: 'Lâmina com runas que brilham.' },
+    chakram: { nome: 'Chakrams', icone: '🌀', dano: 15, alc: 2.6, cd: 0.34, giro: true, classe: 'gladiador', desc: 'Acertam tudo em volta.' },
+    arcana: { nome: 'Arma Arcana', icone: '🔫', dano: 16, alc: 22, cd: 0.3, longe: true, proj: '#ffe24a', classe: 'atirador', desc: 'Tiros de mana em sequência.' },
+    sombrio: { nome: 'Cajado Sombrio', icone: '🌑', dano: 25, alc: 16, cd: 0.6, longe: true, proj: '#b05aff', classe: 'magonegro', desc: 'Magia das sombras.' },
+  });
+  // ---- modelos das armas de classe ----
+  const maoE = grp(heroi.userData.P.elL, 0, -0.33, 0.05); const ARMAE = {};
+  { const AÇO = met('#d4dbe6', 0.25, 0.95), ESC = met('#3a3440', 0.5, 0.6), OURO = met('#e2c27a', 0.3, 0.9), MAD = met('#6a4426', 0.75, 0.05), MADN = met('#241a2e', 0.6, 0.2);
+    const G = (cor) => new T3.MeshBasicMaterial({ color: cor, toneMapped: false });
+    let g = ARMAG.espadao = grp(maoG); pc(g, BOX, AÇO, 0, 0, 0.82, 0.13, 0.025, 1.25); pc(g, CONE2, AÇO, 0, 0, 1.5, 0.065, 0.16, 0.012, Math.PI / 2, 0, 0); pc(g, BOX, met('#7a2a22', 0.4, 0.6), 0, 0, 0.16, 0.44, 0.06, 0.07); pc(g, CYL2, COU, 0, 0, 0.0, 0.03, 0.26, 0.03, Math.PI / 2, 0, 0); pc(g, SPH2, OURO, 0, 0, -0.14, 0.045, 0.045, 0.045); pc(g, BOX, met('#7a2a22', 0.4, 0.6), 0, 0.014, 0.6, 0.03, 0.006, 0.7);
+    const lam = p => { pc(p, BOX, AÇO, 0, 0, 0.42, 0.05, 0.014, 0.66); pc(p, CONE2, AÇO, 0, 0, 0.79, 0.025, 0.1, 0.007, Math.PI / 2, 0, 0); pc(p, CYL2, OURO, 0, 0, 0.08, 0.05, 0.02, 0.05, Math.PI / 2, 0, 0); pc(p, CYL2, ESC, 0, 0, -0.02, 0.022, 0.16, 0.022, Math.PI / 2, 0, 0); };
+    g = ARMAG.laminas = grp(maoG); lam(g); ARMAE.laminas = grp(maoE); lam(ARMAE.laminas);
+    g = ARMAG.cajado = grp(maoG); pc(g, CYL2, MAD, 0, 0.25, 0.04, 0.026, 1.55, 0.026); pc(g, TORF, OURO, 0, 1.0, 0.04, 0.09, 0.09, 0.09); pc(g, SPH2, G('#9ad8ff'), 0, 1.06, 0.04, 0.07, 0.07, 0.07); glowSpr(g, 0, 1.06, 0.04, 0.8, '#5ab8ff', 0.8);
+    g = ARMAG.arco = grp(maoG); { const arc = new T3.Mesh(new T3.TorusGeometry(0.5, 0.022, 8, 40, Math.PI), met('#2a5a3a', 0.4, 0.5)); arc.rotation.set(0, -Math.PI / 2, -Math.PI / 2); arc.position.set(0, 0.05, 0.02); g.add(arc); pc(g, BOX, G('#bfffc8'), 0, 0.05, 0.02, 0.004, 1.0, 0.004); glowSpr(g, 0, 0.05, 0.5, 0.6, '#8aff9a', 0.6); }
+    g = ARMAG.escudo = grp(maoG); pc(g, BOX, AÇO, 0, 0, 0.36, 0.06, 0.016, 0.52); pc(g, BOX, OURO, 0, 0, 0.08, 0.2, 0.04, 0.04); pc(g, CYL2, COU, 0, 0, -0.02, 0.022, 0.14, 0.022, Math.PI / 2, 0, 0);
+    ARMAE.escudo = grp(maoE); { const e = ARMAE.escudo; const s = pc(e, BEV, BR, -0.06, 0.12, 0.05, 0.48, 0.66, 0.04, 0, Math.PI / 2, Math.PI); pc(e, SPH2, GEMA, -0.12, 0.08, 0.05, 0.012, 0.05, 0.05); pc(e, TORF, OURO, -0.115, 0.08, 0.05, 0.1, 0.1, 0.1, 0, Math.PI / 2, 0); }
+    g = ARMAG.runica = grp(maoG); pc(g, BOX, met('#3a3050', 0.3, 0.9), 0, 0, 0.5, 0.08, 0.02, 0.82); pc(g, BOX, G('#d8a8ff'), 0, 0.012, 0.5, 0.016, 0.004, 0.7); pc(g, CONE2, met('#3a3050', 0.3, 0.9), 0, 0, 0.95, 0.04, 0.12, 0.01, Math.PI / 2, 0, 0); pc(g, BOX, OURO, 0, 0, 0.1, 0.24, 0.04, 0.04); glowSpr(g, 0, 0, 0.55, 0.9, '#b46aff', 0.35);
+    ARMAE.runica = grp(maoE); pc(ARMAE.runica, SPH2, G('#e0c0ff'), 0, -0.02, 0.1, 0.05, 0.05, 0.05); glowSpr(ARMAE.runica, 0, -0.02, 0.1, 0.55, '#b46aff', 0.9);
+    const chak = p => { const r = pc(p, TOR2, AÇO, 0, -0.02, 0.12, 0.17, 0.17, 0.4, 0, Math.PI / 2, 0); for (let k = 0; k < 6; k++) { const a = k / 6 * Math.PI * 2; pc(p, CONE2, OURO, 0, -0.02 + Math.sin(a) * 0.2, 0.12 + Math.cos(a) * 0.2, 0.018, 0.08, 0.008, a, 0, 0); } return r; };
+    g = ARMAG.chakram = grp(maoG); chak(g); ARMAE.chakram = grp(maoE); chak(ARMAE.chakram);
+    g = ARMAG.arcana = grp(maoG); pc(g, BOX, ESC, 0, 0.03, 0.18, 0.08, 0.11, 0.42); pc(g, CYL2, AÇO, 0, 0.05, 0.45, 0.03, 0.2, 0.03, Math.PI / 2, 0, 0); pc(g, TORF, G('#ffe24a'), 0, 0.05, 0.52, 0.035, 0.035, 0.035); pc(g, BOX, COU, 0, -0.06, 0.04, 0.06, 0.14, 0.07, 0.3, 0, 0); pc(g, BOX, G('#ffe24a'), 0, 0.09, 0.2, 0.012, 0.012, 0.3); glowSpr(g, 0, 0.05, 0.56, 0.4, '#ffe24a', 0.7);
+    g = ARMAG.sombrio = grp(maoG); pc(g, CYL2, MADN, 0, 0.25, 0.04, 0.026, 1.55, 0.026); { const lua = new T3.Mesh(new T3.TorusGeometry(0.16, 0.022, 8, 30, Math.PI * 1.3), met('#c8c0d8', 0.3, 0.9)); lua.position.set(0, 1.05, 0.04); lua.rotation.set(0, Math.PI / 2, 0.6); g.add(lua); } pc(g, CONE2, G('#c890ff'), 0, 1.06, 0.04, 0.05, 0.18, 0.05); glowSpr(g, 0, 1.06, 0.04, 0.9, '#a050ff', 0.85);
+    Object.values(ARMAE).forEach(x => x.visible = false); Object.values(ARMAG).forEach(x => x.traverse(o => { if (o.isMesh) o.castShadow = true; })); }
+  const mostraArma0 = mostraArma; mostraArma = function () { mostraArma0(); Object.keys(ARMAE).forEach(k => ARMAE[k].visible = k === AR.arma); };
+
+  // ---- aparência ----
+  const PELES = ['#f2b48e', '#f8d0b8', '#e8a878', '#c88a5e', '#9a6440', '#6a4430'];
+  const COR_CAB = ['#1c1a28', '#5a3a1e', '#a8742e', '#e8d27a', '#f0f0fa', '#c83a2a', '#3a6ae8', '#9a4ad8'];
+  const OLHOS = ['#6a3e1e', '#2a8a4a', '#2a6ac8', '#8a8a9a', '#c83a3a', '#e8a018'];
+  const ROUPAS = ['classe', '#2a3a8a', '#7a2a22', '#2a5a3a', '#4a2a6a', '#2a2a2a', '#e8e0d0', '#8a6a40'];
+  const ESTILOS = [['espetado', 'Espetado'], ['curto', 'Curto'], ['longo', 'Longo'], ['rabo', 'Rabo de cavalo'], ['moicano', 'Moicano'], ['careca', 'Careca']];
+  AR.visual = Object.assign({ nome: 'Leonardo', pele: PELES[0], cabelo: 'espetado', corCab: COR_CAB[0], olhos: OLHOS[0], roupa: 'classe' }, AR.visual || {});
+  const HM = k => HMAT[k]; const MH = { pele: HM('#f2b48e'), cab: HM('#1c1a28'), olho: HM('#6a3e1e'), top: HM('#8a6a40'), top2: HM('#6a4a2a'), calca: HM('#4a3a2a') };
+  const cabOrig = []; heroi.userData.P.head.children.forEach(o => { if (o.isMesh && o.material === MH.cab && o.geometry !== BOX) cabOrig.push(o); });
+  const CABG = {}; { const H = heroi.userData.P.head, hr = 0.14; const C = (g, geo, ...a) => { const m = part(g, geo, '#1c1a28', ...a); m.material = MH.cab; m.traverse(o => { if (o.isMesh && o !== m) {} }); return m; };
+    let g = CABG.curto = grp(H); C(g, SPH, 0, 0.18, -0.025, hr * 1.05, hr * 0.92, hr * 1.04, 0.04); for (let i = 0; i < 5; i++) { const c = C(g, CONE, -hr * 0.5 + i * hr * 0.25, 0.235, hr * 0.78, hr * 0.13, hr * 0.28, hr * 0.1); c.rotation.x = 2.5; }
+    g = CABG.longo = grp(H); C(g, SPH, 0, 0.17, -0.02, hr * 1.07, hr * 1.0, hr * 1.05, 0.04); C(g, CAP, 0, -0.02, -0.08, hr * 2.0, hr * 1.5, hr * 1.1, 0.04); for (let i = 0; i < 6; i++) { const c = C(g, CONE, -hr * 0.6 + i * hr * 0.24, 0.24, hr * 0.8, hr * 0.14, hr * 0.32, hr * 0.1); c.rotation.x = 2.6; }
+    g = CABG.rabo = grp(H); C(g, SPH, 0, 0.18, -0.025, hr * 1.06, hr * 0.95, hr * 1.04, 0.04); C(g, SPH, 0, 0.2, -0.16, hr * 0.38, hr * 0.38, hr * 0.38, 0.04); const rb = C(g, CAP, 0, 0.03, -0.24, hr * 0.5, hr * 0.9, hr * 0.5, 0.04); rb.rotation.x = 0.5;
+    g = CABG.moicano = grp(H); C(g, SPH, 0, 0.15, -0.02, hr * 1.02, hr * 0.85, hr * 1.02); for (let i = 0; i < 6; i++) { const a = -0.6 + i * 0.32; const c = C(g, CONE, 0, 0.13 + Math.cos(a) * hr * 1.0, Math.sin(a) * hr * 1.0, hr * 0.13, hr * 0.7, hr * 0.3); c.rotation.x = a; }
+    Object.values(CABG).forEach(x => x.visible = false); }
+  function tom(c, k) { const x = new T3.Color(c); x.multiplyScalar(k); return '#' + x.getHexString(); }
+  function aplicaVisual(cls) { const V = AR.visual; const CLx = CLASSES[cls || AR.classe];
+    MH.pele.color.set(V.pele); MH.cab.color.set(V.corCab); MH.olho.color.set(V.olhos);
+    const r = V.roupa === 'classe' ? (CLx ? CLx.roupa : '#8a6a40') : V.roupa; MH.top.color.set(r); MH.top2.color.set(tom(r, 0.72)); MH.calca.color.set(tom(r, 0.55));
+    cabOrig.forEach(o => o.visible = V.cabelo === 'espetado'); Object.keys(CABG).forEach(k => CABG[k].visible = V.cabelo === k);
+    const n = (V.nome || 'Leonardo').slice(0, 16); $('pn-nome').textContent = n; }
+
+  // ---- aplicar classe ----
+  function CLA() { return CLASSES[AR.classe] || null; }
+  function atkMult() { const c = CLA(); return (1 + (AR.nv - 1) * 0.02) * (c ? c.atk : 1) * (despT > 0 ? 1.5 : 1); }
+  function critico() { const c = CLA(); return Math.random() < (c ? c.crit : 0.05) + (despT > 0 ? 0.1 : 0); }
+  function aplicaClasse(id) { const c = CLASSES[id]; AR.classe = id; if (!AR.armas.includes(c.arma)) AR.armas.push(c.arma); AR.arma = c.arma;
+    const v = AR.barra[2]; if (v && !(PW[v] && PW[v].classe)) { const k = AR.barra.indexOf(null, 3); if (k >= 3 && !AR.barra.slice(3).includes(v)) AR.barra[k] = v; }
+    AR.barra[2] = c.hab; HABS.forEach(h => { const i = AR.barra.indexOf(h.id); if (i > 2) AR.barra[i] = null; });
+    aplicaNivel(); vida = VIDA_MAX; mana = MANA_MAX; salvaAR(); montaBarra(); mostraArma(); aplicaVisual(); setTimeout(fazRetrato, 100); }
+
+  // ---- habilidades das classes ----
+  let muralhaT = 0, tufaoT = 0, tufaoH = 0, despT = 0, desp = 0; const METEOROS = [], PROJ = [];
+  const muralha = new T3.Mesh(new T3.SphereGeometry(1.3, 24, 16), new T3.MeshBasicMaterial({ color: '#ffc85a', transparent: true, opacity: 0.25, depthWrite: false, toneMapped: false, blending: T3.AdditiveBlending })); muralha.visible = false; world.add(muralha);
+  const chakG = grp(world); for (let k = 0; k < 3; k++) { const c = grp(chakG); pc(c, TOR2, met('#d4dbe6', 0.25, 0.95), 0, 0, 0, 0.22, 0.22, 0.5, Math.PI / 2, 0, 0); glowSpr(c, 0, 0, 0, 0.7, '#ff9a3a', 0.6); } chakG.visible = false;
+  const despAura = glowSpr(world, 0, 0, 0, 3.4, '#ffffff', 0);
+  function proj(x, y, z, ang, cor, dano, vel, alc) { const s = glowSpr(world, x, y, z, 0.7, cor, 1); PROJ.push({ s, t: 0, dx: Math.sin(ang), dz: Math.cos(ang), dano, vel: vel || 26, vida: (alc || 18) / (vel || 26), cor }); }
+  function linhaLuz(a, b, cor, n) { n = n || 14; for (let i = 0; i <= n; i++) { const u = i / n; const s = glowSpr(world, lerp(a.x, b.x, u), lerp(a.y, b.y, u), lerp(a.z, b.z, u), 0.8, cor, 1); RAIOS.push({ s, t: 0 }); } }
+  function classePoder(id) { const p = heroi.position, M = atkMult(); const perto = r => FERAS.filter(e => feraAtiva(e) && Math.hypot(e.g.position.x - p.x, e.g.position.z - p.z) < r + e.T.raio);
+    if (id === 'sismico') { atkT = 0; atkN = 1; atkHit = true; fx('fumo', [p.x, 0, p.z], 1.2); fx('luz', [p.x, 0, p.z], 0.6); tremor = 0.5; flash('rgba(255,120,60,.3)'); perto(3.8).forEach(e => { dano(e, 45 * M, null, critico()); e.stun = Math.max(e.stun, 1.5); const dx = e.g.position.x - p.x, dz = e.g.position.z - p.z, d = Math.hypot(dx, dz) || 1; empurra(e, dx / d, dz / d, 1.8); }); }
+    if (id === 'danca') { const e = maisPerto(8); if (!e) { dashT = 0.2; fx('vento', [p.x, 0, p.z], 0.6); return; } const dx = e.g.position.x - p.x, dz = e.g.position.z - p.z, d = Math.hypot(dx, dz) || 1; facing = Math.atan2(dx, dz); p.x = e.g.position.x - dx / d * (e.T.raio + 0.9); p.z = e.g.position.z - dz / d * (e.T.raio + 0.9); fx('vento', [p.x, 0, p.z], 0.7);
+      [0, 130, 260, 390].forEach((t, i) => setTimeout(() => { if (e.morto) return; atkT = 0; atkN = (i % 3) + 1; atkHit = true; dano(e, 16 * M * (i === 3 ? 2 : 1), null, i === 3); fx('luz', [e.g.position.x, 0.4, e.g.position.z], 0.3); }, t)); }
+    if (id === 'meteoro') { const e = maisPerto(14); const c = e ? [e.g.position.x, e.g.position.z] : [p.x + Math.sin(facing) * 6, p.z + Math.cos(facing) * 6]; if (e) facing = Math.atan2(c[0] - p.x, c[1] - p.z);
+      for (let k = 0; k < 6; k++) { const a = Math.random() * 6.28, r = Math.random() * 2.4; METEOROS.push({ x: c[0] + Math.cos(a) * r, z: c[1] + Math.sin(a) * r, t: -k * 0.14, s: glowSpr(world, 0, -50, 0, 1.4, '#ff8a2a', 1), M }); } aviso('Chuva de Meteoros!', '#ff8a3a'); }
+    if (id === 'rajada') { const e = maisPerto(20); if (e) facing = Math.atan2(e.g.position.x - p.x, e.g.position.z - p.z); [-0.25, 0, 0.25].forEach(o => proj(p.x, p.y + 1.25, p.z, facing + o, '#8aff9a', 22 * M, 28, 20)); vida = Math.min(VIDA_MAX, vida + 25); numero(p, '+25 ❤️', '#7ad87a'); fx('cura', [p.x, 0, p.z], 1); }
+    if (id === 'muralha') { muralhaT = 6; perto(3.2).forEach(e => { const dx = e.g.position.x - p.x, dz = e.g.position.z - p.z, d = Math.hypot(dx, dz) || 1; empurra(e, dx / d, dz / d, 2.5); e.stun = Math.max(e.stun, 0.8); }); aviso('Muralha: 80% menos dano por 6 segundos.', '#ffc85a'); }
+    if (id === 'runa') { atkT = 0; atkN = 2; atkHit = true; const f = [p.x + Math.sin(facing) * 2, p.y, p.z + Math.cos(facing) * 2]; fx('luz', f, 0.6); FERAS.forEach(e => { if (!feraAtiva(e)) return; const dx = e.g.position.x - p.x, dz = e.g.position.z - p.z, d = Math.hypot(dx, dz); if (d > 4.5 + e.T.raio) return; let da = Math.atan2(dx, dz) - facing; while (da > Math.PI) da -= Math.PI * 2; while (da < -Math.PI) da += Math.PI * 2; if (Math.abs(da) > 0.9 && d > 1.2) return; dano(e, 35 * M, null, critico()); e.vuln = 6; numero(e.g.position, 'FRACO', '#d8a8ff', e.T.alt + 0.9); }); }
+    if (id === 'tufao') { tufaoT = 4; tufaoH = 0; }
+    if (id === 'carregado') { const e = maisPerto(22); if (e) facing = Math.atan2(e.g.position.x - p.x, e.g.position.z - p.z); const dx = Math.sin(facing), dz = Math.cos(facing); const a = { x: p.x + dx * 0.6, y: p.y + 1.2, z: p.z + dz * 0.6 }, b = { x: p.x + dx * 22, y: p.y + 1.2, z: p.z + dz * 22 }; linhaLuz(a, b, '#ffe24a', 26); flash('rgba(255,240,150,.3)'); tremor = 0.2;
+      FERAS.forEach(e => { if (!feraAtiva(e)) return; const ex = e.g.position.x - p.x, ez = e.g.position.z - p.z; const along = ex * dx + ez * dz; if (along < 0 || along > 22) return; const perp = Math.abs(ex * dz - ez * dx); if (perp < e.T.raio + 0.7) dano(e, 55 * M, 'raio', critico()); }); }
+    if (id === 'drenar') { const e = maisPerto(10); if (!e) { aviso('Nenhum bicho perto pra drenar.', '#b05aff'); return; } facing = Math.atan2(e.g.position.x - p.x, e.g.position.z - p.z); linhaLuz({ x: e.g.position.x, y: e.T.alt * 0.6, z: e.g.position.z }, { x: p.x, y: p.y + 1.2, z: p.z }, '#b05aff', 14); const n = Math.round(40 * M); dano(e, n, null, false); vida = Math.min(VIDA_MAX, vida + n); numero(p, '+' + n + ' ❤️', '#c890ff'); } }
+
+  // ---- DESPERTAR: a barra enche lutando; cheia, deixa você muito mais forte por 15 s ----
+  function enche(n) { if (despT > 0) return; desp = Math.min(100, desp + n); }
+  function despertar() { if (desp < 100 || despT > 0 || conversa || cenaQ || desmaiado) { if (desp < 100 && !despT) aviso('Despertar: lute pra encher a barra (' + Math.floor(desp) + '%).', '#ffd23c'); return; } const c = CLA(); despT = 15; desp = 0; despAura.material.color.set(c ? c.cor : '#ffd23c'); flash('rgba(255,255,255,.6)'); tremor = 0.35; fx('luz', [heroi.position.x, 0, heroi.position.z], 1.2); fx('cura', [heroi.position.x, 0, heroi.position.z], 1.4);
+    const el = $('lvup'); el.innerHTML = `<small>${c ? c.nome.toUpperCase() : ''}</small>DESPERTAR!<em>+50% ataque · ataque mais rápido · +15% defesa · 15 s</em>`; el.classList.remove('on'); void el.offsetWidth; el.classList.add('on'); }
+  tapBtn($('desp'), despertar); window.addEventListener('keydown', e => { if (e.code === 'KeyR') despertar(); });
+
+  function classeFrame(dt, p) {
+    if (muralhaT > 0) muralhaT -= dt; muralha.visible = muralhaT > 0; if (muralha.visible) { muralha.position.set(p.x, p.y + 0.95, p.z); muralha.material.opacity = 0.18 + Math.sin(gT * 6) * 0.06; }
+    if (tufaoT > 0) { tufaoT -= dt; tufaoH -= dt; chakG.visible = true; chakG.position.set(p.x, p.y + 0.9, p.z); chakG.children.forEach((c, k) => { const a = gT * 7 + k * 2.094; c.position.set(Math.cos(a) * 1.7, 0, Math.sin(a) * 1.7); c.rotation.y = -a; });
+      if (tufaoH <= 0) { tufaoH = 0.35; FERAS.forEach(e => { if (feraAtiva(e) && Math.hypot(e.g.position.x - p.x, e.g.position.z - p.z) < 2.3 + e.T.raio) dano(e, 14 * atkMult(), null, critico()); }); } } else chakG.visible = false;
+    for (let i = METEOROS.length - 1; i >= 0; i--) { const m = METEOROS[i]; m.t += dt; if (m.t < 0) continue; const u = m.t / 0.5; m.s.position.set(m.x - 3 + u * 3, 12 * (1 - u), m.z - 1.5 + u * 1.5); if (u >= 1) { fx('fogo', [m.x, 0, m.z], 0.8); tremor = Math.max(tremor, 0.2); FERAS.forEach(e => { if (feraAtiva(e) && Math.hypot(e.g.position.x - m.x, e.g.position.z - m.z) < 2.2 + e.T.raio) dano(e, 30 * m.M, 'fogo', critico()); }); world.remove(m.s); METEOROS.splice(i, 1); } }
+    for (let i = PROJ.length - 1; i >= 0; i--) { const v = PROJ[i]; v.t += dt; v.s.position.x += v.dx * v.vel * dt; v.s.position.z += v.dz * v.vel * dt; const e = acertaFera(v.s.position, 0.5); if (e) { const cr = critico(); dano(e, v.dano * (cr ? 2 : 1), null, cr); fx('luz', [v.s.position.x, v.s.position.y - 0.8, v.s.position.z], 0.3); v.t = 99; } if (v.t > v.vida) { world.remove(v.s); PROJ.splice(i, 1); } }
+    if (despT > 0) { despT -= dt; despAura.position.set(p.x, p.y + 1.0, p.z); despAura.material.opacity = 0.45 + Math.sin(gT * 8) * 0.12; if (Math.random() < dt * 3) fx('luz', [p.x, 0, p.z], 0.6); } else despAura.material.opacity = 0;
+    const d = $('desp'); d.style.setProperty('--p', despT > 0 ? despT / 15 * 100 : desp); d.classList.toggle('pronto', desp >= 100 && despT <= 0); d.classList.toggle('ativo', despT > 0); const c = CLA(); d.style.setProperty('--c', c ? c.cor : '#ffd23c'); }
+
+  // ---- tela de criação: classe + aparência ----
+  let crSel = null, crTrava = false;
+  function abrirCriar(passo, trava) { crTrava = !!trava; crSel = AR.classe || crSel || 'guerreiro'; $('criar').hidden = false; desenhaCriar(passo || 1); }
+  function previewClasse(id) { crSel = id; const c = CLASSES[id]; Object.keys(ARMAG).forEach(k => ARMAG[k].visible = k === c.arma); Object.keys(ARMAE).forEach(k => ARMAE[k].visible = k === c.arma); aplicaVisual(id); }
+  function barraStat(n, v, max) { return `<div class="cst"><small>${n}</small><i><b style="width:${Math.min(100, v / max * 100)}%"></b></i></div>`; }
+  function desenhaCriar(passo) { $('cr-p1').hidden = passo !== 1; $('cr-p2').hidden = passo !== 2; $('cr-volta').hidden = crTrava; previewClasse(crSel); const c = CLASSES[crSel]; $('cr-cls-nome').innerHTML = `${c.icone} ${c.nome}<small>${c.papel}</small>`;
+    if (passo === 1) { const G = $('cr-grade'); G.innerHTML = ''; Object.keys(CLASSES).forEach(k => { const C = CLASSES[k]; const b = document.createElement('button'); b.className = 'ccl' + (k === crSel ? ' on' : ''); b.style.setProperty('--c', C.cor); b.innerHTML = `<span>${C.icone}</span><b>${C.nome}</b>`; tapBtn(b, () => { crSel = k; desenhaCriar(1); }); G.appendChild(b); });
+      const A = ARMAS[c.arma], H = PW[c.hab]; $('cr-det').innerHTML = `<p>${c.desc}</p><div class="csts">${barraStat('Vida', c.vida, 160)}${barraStat('Mana', c.mana, 150)}${barraStat('Ataque', c.atk, 1.3)}${barraStat('Defesa', c.def + 5, 35)}${barraStat('Velocidade', c.vel - 0.8, 0.35)}${barraStat('Crítico', c.crit, 0.25)}</div><div class="cinfo"><span>${A.icone} <b>${A.nome}</b></span><span>${H.icone} <b>${H.nome}</b>: ${H.desc}</span></div>`; return; }
+    const V = AR.visual; $('cr-nome').value = V.nome || 'Leonardo';
+    const linha = (id, lista, campo, rot) => { const el = $(id); el.innerHTML = ''; lista.forEach(v => { const val = Array.isArray(v) ? v[0] : v; const b = document.createElement('button'); b.className = 'sw' + (V[campo] === val ? ' on' : '') + (rot ? ' tx' : ''); if (rot) b.textContent = v[1]; else if (val === 'classe') { b.textContent = 'Classe'; b.classList.add('tx'); } else b.style.background = val; tapBtn(b, () => { V[campo] = val; aplicaVisual(crSel); desenhaCriar(2); }); el.appendChild(b); }); };
+    linha('cr-pele', PELES, 'pele'); linha('cr-cab', ESTILOS, 'cabelo', true); linha('cr-corcab', COR_CAB, 'corCab'); linha('cr-olhos', OLHOS, 'olhos'); linha('cr-roupa', ROUPAS, 'roupa'); }
+  $('cr-nome').addEventListener('input', () => { AR.visual.nome = $('cr-nome').value.slice(0, 16); aplicaVisual(crSel); });
+  ['keydown', 'keyup'].forEach(t => $('criar').addEventListener(t, e => e.stopPropagation()));
+  tapBtn($('cr-prox'), () => desenhaCriar(2)); tapBtn($('cr-volta'), () => desenhaCriar(1));
+  tapBtn($('cr-fim'), () => { AR.visual.nome = ($('cr-nome').value.trim() || 'Leonardo').slice(0, 16); const nova = AR.classe !== crSel; if (nova) aplicaClasse(crSel); else { mostraArma(); aplicaVisual(); salvaAR(); setTimeout(fazRetrato, 100); } $('criar').hidden = true;
+    if (nova) { const c = CLASSES[crSel]; aviso(c.icone + ' Você agora é ' + c.nome + '! Habilidade no slot 3 e o ⚡ Despertar ao lado da vida.', c.cor); } });
+  let criarT = 0; function criarFrame(dt) { if ($('criar').hidden) return; criarT += dt; if (criarT > 0.06) { fazPrevia(criarT, $('cr-previa')); criarT = 0; } }
+  aplicaNivel(); aplicaVisual(); if (AR.classe) { const v = AR.barra[2]; if (v !== CLASSES[AR.classe].hab) aplicaClasse(AR.classe); else { montaBarra(); mostraArma(); } } else setTimeout(() => abrirCriar(1), 300);
+  setTimeout(fazRetrato, 900);
+  window.__dbg = { abrirCriar, aplicaClasse, CLASSES, despertar, get desp() { return desp; }, set desp(v) { desp = v; }, usarHab: id => classePoder(id), renderer, scene, world, ganhaXp, vesteFantasia, abrirPerfil, fazRetrato, irValdren, Q, heroi, ativo, AR, FERAS, golem, atacar, get vida() { return vida; }, set vida(v) { vida = v; }, abrirLoja, usarPoder: id => usarPoder(PW[id]), acao: () => acao(), get alvo() { return alvo; } };
   // ---------- laço do jogo ----------
   let vy = 0, noChao = true, facing = 0, vel = 0, gT = 0, last = performance.now();
   const ANDAR = 3.0, CORRER = 6.5, GRAV = 22, PULO = 7.6; const tmp = new T3.Vector3();
@@ -834,7 +978,7 @@
     if (conversa || cenaQ || !$('fim').hidden || Q.naCarroca || desmaiado) { ix = 0; iy = 0; }
     const mag = Math.min(1, Math.hypot(ix, iy)); const correndo = input.run || keys.ShiftLeft || mag > 0.92;
     const fx = -Math.sin(camYaw), fz = -Math.cos(camYaw); let mx = fx * -iy + -fz * ix, mz = fz * -iy + fx * ix; const ml = Math.hypot(mx, mz);
-    vel = lerp(vel, mag > 0.08 ? (correndo ? CORRER : ANDAR) * (ativo.vento ? 1.6 : 1) * mag : 0, clamp(dt * 8));
+    vel = lerp(vel, mag > 0.08 ? (correndo ? CORRER : ANDAR) * (ativo.vento ? 1.6 : 1) * ((CLASSES && CLASSES[AR.classe]) ? CLASSES[AR.classe].vel : 1) * mag : 0, clamp(dt * 8));
     if (ml > 0.001 && mag > 0.08) { mx /= ml; mz /= ml; const want = Math.atan2(mx, mz); let d = want - facing; while (d > Math.PI) d -= Math.PI * 2; while (d < -Math.PI) d += Math.PI * 2; facing += d * clamp(dt * 12); }
     const p = heroi.position; const dash = dashT > 0 ? 22 : 0; dashT -= dt; p.x += Math.sin(facing) * (vel + dash) * dt; p.z += Math.cos(facing) * (vel + dash) * dt;
     if (zona === 'valdren') { colide(p, COLV); const rx = p.x - VX, r = Math.hypot(rx, p.z); if (r > 44) { p.x = VX + rx * 44 / r; p.z *= 44 / r; } } else if (dentro) { p.x = clamp(p.x, IX - 4.6, IX + 4.6); p.z = clamp(p.z, -4.6, 4.6); colide(p, COLC); } else { colide(p, COL); const r = Math.hypot(p.x, p.z + 6); if (r > 60) { p.x *= 60 / r; } }
@@ -865,7 +1009,7 @@
     neve.visible = !dentro && zona === 'vila'; if (neve.visible) neve.userData.place((i, d) => { const R = rng(i + 91); const k = ((gT * (0.08 + R() * 0.06) + R()) % 1); d.position.set(p.x + (R() - .5) * 30 + Math.sin(gT + i) * 0.4, 12 - k * 12, p.z + (R() - .5) * 30); d.scale.setScalar(d.position.distanceTo(cam.position) < 2.5 ? 0.0001 : 0.03 + R() * 0.04); });
     fumaca.visible = !dentro && zona === 'vila'; if (fumaca.visible) fumaca.userData.place((i, d) => { const c = CHIM[i % CHIM.length]; const R = rng(i + 5); const k = ((gT * 0.12 + R()) % 1); c[0].updateMatrixWorld(); v3.set(c[1], c[2], c[3]); c[0].localToWorld(v3); d.position.set(v3.x + k * 1.6 + Math.sin(gT + i) * 0.2, v3.y + k * 4, v3.z); d.scale.setScalar(0.25 + k * 0.9); });
     fogoL.intensity = dentro ? 3.2 + Math.sin(gT * 13) * 0.4 : 0; chamas.forEach((f, i) => f.scale.y = 0.5 * (1 + Math.sin(gT * 15 + i * 2) * 0.2));
-    poderesFrame(dt, p); combateFrame(dt, p); perfilFrame(dt); miniT += dt; if (miniT > 0.08) { miniT = 0; desenhaMini(p); }
+    poderesFrame(dt, p); combateFrame(dt, p); classeFrame(dt, p); perfilFrame(dt); criarFrame(dt); miniT += dt; if (miniT > 0.08) { miniT = 0; desenhaMini(p); }
     // câmera
     if (camId === null && vel > 0.5 && !dentro) { let d = (facing + Math.PI) - camYaw; while (d > Math.PI) d -= Math.PI * 2; while (d < -Math.PI) d += Math.PI * 2; camYaw += d * clamp(dt * 0.9); }
     const cd = dentro ? Math.min(camDist, 3.8) : camDist; const cp = dentro ? Math.max(camPitch, 0.45) : camPitch;
