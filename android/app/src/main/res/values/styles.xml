@@ -1,0 +1,5 @@
+<resources>
+    <style name="Tela" parent="android:Theme.Material.NoActionBar.Fullscreen">
+        <item name="android:windowBackground">#9fd3f5</item>
+    </style>
+</resources>
