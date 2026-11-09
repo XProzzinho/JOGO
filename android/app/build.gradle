@@ -3,7 +3,7 @@ android {
     namespace 'com.xprozzinho.jogo'
     compileSdk 34
     defaultConfig {
-        applicationId 'com.xprozzinho.jogo'
+        applicationId 'com.brumafria.app'
         minSdk 24
         targetSdk 34
         versionCode 11
