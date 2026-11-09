@@ -144,6 +144,69 @@
       else { const c = Math.cos(-o.ry), s = Math.sin(-o.ry); let lx = (p.x - o.x) * c + (p.z - o.z) * s, lz = -(p.x - o.x) * s + (p.z - o.z) * c; const px = o.hw + r - Math.abs(lx), pz = o.hd + r - Math.abs(lz);
         if (px > 0 && pz > 0) { if (px < pz) lx += Math.sign(lx) * px; else lz += Math.sign(lz) * pz; p.x = o.x + lx * c - lz * s; p.z = o.z + lx * s + lz * c; } } } }
 
+  // ---------- PODERES (a bênção da Elysia no vídeo) ----------
+  // Memória do Mundo Antigo: ele lembra de tudo (fórmulas, máquinas, receitas) + "um pouco de mana"
+  let mana = 100; const MANA_MAX = 100;
+  const PODERES = [
+    { id: 'memoria', nome: 'Memória', icone: '🧠', tipo: 'liga', custo: 0, desc: 'Memória do Mundo Antigo: você enxerga o que a ciência sabe sobre tudo em volta.' },
+    { id: 'luz', nome: 'Luz', icone: '✨', tipo: 'liga', custo: 7, desc: 'Um pouco de mana vira uma bola de luz que te segue. Gasta mana enquanto está ligada.' },
+    { id: 'sabao', nome: 'Sabão', icone: '🫧', tipo: 'uso', custo: 20, desc: '"Num mundo sem sabão, quem sabe fazer sabão vale mais que um dragão."' },
+    { id: 'salto', nome: 'Salto', icone: '⬆️', tipo: 'uso', custo: 25, desc: 'A mana empurra seus pés: um pulo bem mais alto.' },
+  ];
+  const ativo = {}; let saltoPronto = false;
+  const barra = $('poderes');
+  PODERES.forEach((pw, i) => { const b = document.createElement('button'); b.className = 'slot'; b.innerHTML = `<span class="ic">${pw.icone}</span><span class="nm">${pw.nome}</span><span class="tc">${i + 1}</span>`; tapBtn(b, () => usarPoder(pw)); barra.appendChild(b); pw.el = b; });
+  window.addEventListener('keydown', e => { const n = parseInt(e.key); if (n >= 1 && n <= PODERES.length) usarPoder(PODERES[n - 1]); });
+  let avisoT = null; function aviso(t, cor) { const el = $('aviso'); el.textContent = t; el.style.borderColor = cor || '#5ab8ff'; el.classList.add('on'); clearTimeout(avisoT); avisoT = setTimeout(() => el.classList.remove('on'), 3200); }
+  function usarPoder(pw) { if (conversa) return;
+    if (pw.tipo === 'liga') { ativo[pw.id] = !ativo[pw.id]; if (ativo[pw.id] && pw.custo && mana < 5) { ativo[pw.id] = false; aviso('Sem mana! Espera ela voltar.', '#ff6a6a'); return; } pw.el.classList.toggle('on', !!ativo[pw.id]); if (ativo[pw.id]) aviso(pw.desc, pw.id === 'memoria' ? '#ffd23c' : '#5ab8ff'); return; }
+    if (mana < pw.custo) { aviso('Sem mana! Precisa de ' + pw.custo + '.', '#ff6a6a'); pw.el.classList.add('erro'); setTimeout(() => pw.el.classList.remove('erro'), 400); return; }
+    mana -= pw.custo; pw.el.classList.add('on'); setTimeout(() => pw.el.classList.remove('on'), 500);
+    if (pw.id === 'sabao') { bolhasT = 0; aviso('Sabão: gordura + cinza (soda). Mãos limpas = menos doença na vila!', '#9ad8ff'); }
+    if (pw.id === 'salto') { saltoPronto = true; if (noChao) input.jump = true; aviso(pw.desc, '#5ab8ff'); } }
+  // fórmulas girando em volta da cabeça
+  const FORM = ['E=mc²', 'H₂O', 'F=m·a', 'NaOH', 'π', 'Fe', 'CO₂', 'V=R·I', '∫dx', 'PÃO'].map((t, i) => { const tx = canvasTex(256, 96, (x, w, h) => { x.font = '800 60px system-ui, sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillStyle = '#e8f8ff'; x.shadowColor = i % 2 ? '#ffc83a' : '#5ad0ff'; x.shadowBlur = 18; x.fillText(t, w / 2, h / 2); });
+    const m = new T3.Sprite(new T3.SpriteMaterial({ map: tx, transparent: true, depthWrite: false, toneMapped: false, blending: T3.AdditiveBlending })); m.scale.set(0.5, 0.19, 1); m.visible = false; world.add(m); return m; });
+  const memAura = glowSpr(world, 0, 0, 0, 1.6, '#ffd890', 0); 
+  // dicas da Memória espalhadas pela vila (aparecem só com o poder ligado)
+  const SABER = [
+    { x: 0, y: 3.2, z: 0, t: 'Poço: ferva a água a 100 °C e os germes morrem.' },
+    { x: 3.2, y: 1.4, z: -5.4, t: 'Lenha seca queima melhor e solta menos fumaça.' },
+    { x: -3.4, y: 1.4, z: -5.6, t: 'Madeira guarda energia do Sol (fotossíntese).' },
+    { x: 8.5, y: 1.5, z: -1.5, t: 'Barril de sal: o sal conserva a carne tirando a água.' },
+    { x: -8.6, y: 1.5, z: -1.2, t: 'Ferro enferruja com água e ar: óleo protege.' },
+    { x: 0, y: 5.6, z: -8, t: 'Telhado inclinado: a neve escorrega e não quebra a casa.' },
+    { x: 7, y: 5.2, z: -5, t: 'Chaminé: o ar quente sobe e puxa a fumaça pra fora.' },
+    { x: -12, y: 4.6, z: 2, t: 'Neve derretida não é água limpa. Só depois de ferver.' },
+    { x: 0, y: 2.4, z: 9, t: 'Cerca de madeira: madeira tratada com piche dura anos.' },
+    { x: IX - 2.4, y: 1.5, z: -1.2, t: 'Pão: farinha + água + fermento. O fermento solta CO₂ e a massa cresce.', dentro: true },
+    { x: IX + 2.2, y: 2.9, z: -4.6, t: 'Fogo precisa de 3 coisas: combustível, calor e oxigênio.', dentro: true },
+    { x: IX - 2.6, y: 1.5, z: -3.8, t: 'Bebês precisam de mãos lavadas. Sabão salva vidas.', dentro: true },
+  ];
+  const camadaSaber = $('saber'); SABER.forEach(sb => { const d = document.createElement('div'); d.className = 'tag'; d.textContent = sb.t; camadaSaber.appendChild(d); sb.el = d; });
+  // bola de luz de mana
+  const orbe = grp(world); part(orbe, SPH, '#bfe6ff', 0, 0, 0, 0.12, 0.12, 0.12, 0, true); const orbeG = glowSpr(orbe, 0, 0, 0, 2.2, '#7ac8ff', 0.9); const orbeL = new T3.PointLight(0x9ad0ff, 0, 16, 1.4); orbe.add(orbeL); orbe.visible = false;
+  // bolhas de sabão e explosão do salto
+  const bolhas = particles(world, 70, '#cfefff', 0.08); let bolhasT = 99; const burst = particles(world, 40, '#7ac8ff', 0.06); let burstT = 99, burstP = [0, 0, 0];
+  const vtmp = new T3.Vector3();
+  function poderesFrame(dt, p) {
+    mana = clamp(mana + dt * 6 - (ativo.luz ? dt * PODERES[1].custo : 0), 0, MANA_MAX); if (ativo.luz && mana <= 0) { ativo.luz = false; PODERES[1].el.classList.remove('on'); aviso('A mana acabou. A luz apagou.', '#ff6a6a'); }
+    $('mana-fill').style.width = (mana / MANA_MAX * 100).toFixed(1) + '%'; $('mana-num').textContent = Math.round(mana);
+    PODERES.forEach(pw => pw.el.classList.toggle('falta', pw.tipo === 'uso' && mana < pw.custo));
+    // memória
+    const h = headOf(heroi); FORM.forEach((m, i) => { m.visible = !!ativo.memoria; if (!m.visible) return; const a = i / FORM.length * Math.PI * 2 + gT * 0.6; m.position.set(h[0] + Math.cos(a) * 0.75, h[1] + 0.15 + Math.sin(a * 2 + i) * 0.18, h[2] + Math.sin(a) * 0.75); });
+    memAura.position.set(h[0], h[1], h[2]); memAura.material.opacity = ativo.memoria ? 0.35 + Math.sin(gT * 3) * 0.1 : 0;
+    const vis = []; SABER.forEach(sb => { sb.el.style.display = 'none'; if (!ativo.memoria || !!sb.dentro !== dentro) return; vtmp.set(sb.x, sb.y, sb.z); const dist = vtmp.distanceTo(p); vtmp.project(cam);
+      if (vtmp.z > 1 || dist > 11 || Math.abs(vtmp.x) > 0.95 || Math.abs(vtmp.y) > 0.95) return; vis.push({ sb, dist, x: vtmp.x, y: vtmp.y }); });
+    vis.sort((a, b) => a.dist - b.dist).slice(0, 2).forEach(v => { const el = v.sb.el; el.style.display = 'block'; el.style.left = ((v.x * 0.5 + 0.5) * window.innerWidth) + 'px'; el.style.top = ((-v.y * 0.5 + 0.5) * window.innerHeight) + 'px'; el.style.opacity = clamp(1.5 - v.dist / 10).toFixed(2); });
+    // luz
+    orbe.visible = !!ativo.luz; if (orbe.visible) { orbe.position.set(p.x + Math.sin(gT * 1.3) * 0.7, p.y + 2.1 + Math.sin(gT * 2.1) * 0.15, p.z + Math.cos(gT * 1.3) * 0.7); orbeL.intensity = modo === 'noite' || dentro ? 6 : 2.5; orbeG.material.opacity = 0.8 + Math.sin(gT * 6) * 0.15; }
+    // sabão
+    bolhasT += dt; bolhas.visible = bolhasT < 4; if (bolhas.visible) bolhas.userData.place((i, d) => { const R = rng(i + 400); const k = clamp((bolhasT - R() * 0.8) / 3.2); if (k <= 0 || k >= 1) return false; const a = R() * 6.28; d.position.set(p.x + Math.cos(a) * (0.3 + k * 1.6), p.y + 0.6 + k * 2.6 + R(), p.z + Math.sin(a) * (0.3 + k * 1.6)); d.scale.setScalar((0.05 + R() * 0.08) * (1 - k * 0.3)); });
+    // salto
+    burstT += dt; burst.visible = burstT < 0.8; if (burst.visible) burst.userData.place((i, d) => { const a = i / 40 * 6.28; const k = burstT / 0.8; d.position.set(burstP[0] + Math.cos(a) * k * 1.6, burstP[1] + 0.1 + k * 0.3, burstP[2] + Math.sin(a) * k * 1.6); d.scale.setScalar(0.07 * (1 - k)); });
+  }
+
   // ---------- laço do jogo ----------
   let vy = 0, noChao = true, facing = 0, vel = 0, gT = 0, last = performance.now();
   const ANDAR = 3.0, CORRER = 6.5, GRAV = 22, PULO = 7.6; const tmp = new T3.Vector3();
@@ -159,7 +222,7 @@
     if (ml > 0.001 && mag > 0.08) { mx /= ml; mz /= ml; const want = Math.atan2(mx, mz); let d = want - facing; while (d > Math.PI) d -= Math.PI * 2; while (d < -Math.PI) d += Math.PI * 2; facing += d * clamp(dt * 12); }
     const p = heroi.position; p.x += Math.sin(facing) * vel * dt; p.z += Math.cos(facing) * vel * dt;
     if (dentro) { p.x = clamp(p.x, IX - 4.6, IX + 4.6); p.z = clamp(p.z, -4.6, 4.6); colide(p, COLC); } else { colide(p, COL); const r = Math.hypot(p.x, p.z + 6); if (r > 60) { p.x *= 60 / r; } }
-    if (input.jump && noChao && !conversa) { vy = PULO; noChao = false; } input.jump = false;
+    if (input.jump && noChao && !conversa) { vy = saltoPronto ? PULO * 1.75 : PULO; if (saltoPronto) { burstT = 0; burstP = [p.x, p.y, p.z]; } saltoPronto = false; noChao = false; } input.jump = false;
     if (!noChao) { vy -= GRAV * dt; p.y += vy * dt; if (p.y <= 0) { p.y = 0; vy = 0; noChao = true; } }
     heroi.rotation.y = facing;
     if (!noChao) pose(heroi, gT, { mood: 'smile', arms: { shL: [-2.6, 0, -0.3], shR: [-2.6, 0, 0.3], elL: [-0.3, 0, 0], elR: [-0.3, 0, 0] }, legs: { thL: -0.9, knL: 1.4, thR: -0.3, knR: 0.6 } });
@@ -184,6 +247,7 @@
     neve.visible = !dentro; if (!dentro) neve.userData.place((i, d) => { const R = rng(i + 91); const k = ((gT * (0.08 + R() * 0.06) + R()) % 1); d.position.set(p.x + (R() - .5) * 30 + Math.sin(gT + i) * 0.4, 12 - k * 12, p.z + (R() - .5) * 30); d.scale.setScalar(d.position.distanceTo(cam.position) < 2.5 ? 0.0001 : 0.03 + R() * 0.04); });
     fumaca.visible = !dentro; if (!dentro) fumaca.userData.place((i, d) => { const c = CHIM[i % CHIM.length]; const R = rng(i + 5); const k = ((gT * 0.12 + R()) % 1); c[0].updateMatrixWorld(); v3.set(c[1], c[2], c[3]); c[0].localToWorld(v3); d.position.set(v3.x + k * 1.6 + Math.sin(gT + i) * 0.2, v3.y + k * 4, v3.z); d.scale.setScalar(0.25 + k * 0.9); });
     fogoL.intensity = dentro ? 3.2 + Math.sin(gT * 13) * 0.4 : 0; chamas.forEach((f, i) => f.scale.y = 0.5 * (1 + Math.sin(gT * 15 + i * 2) * 0.2));
+    poderesFrame(dt, p);
     // câmera
     if (camId === null && vel > 0.5 && !dentro) { let d = (facing + Math.PI) - camYaw; while (d > Math.PI) d -= Math.PI * 2; while (d < -Math.PI) d += Math.PI * 2; camYaw += d * clamp(dt * 0.9); }
     const cd = dentro ? Math.min(camDist, 3.8) : camDist; const cp = dentro ? Math.max(camPitch, 0.45) : camPitch;

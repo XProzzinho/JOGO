@@ -23,6 +23,19 @@
   #ciclo{right:calc(16px + env(safe-area-inset-right,0px));top:calc(14px + env(safe-area-inset-top,0px));width:50px;height:50px;font-size:24px}
   #lugar{position:fixed;left:50%;top:28%;transform:translate(-50%,-10px);font-weight:900;font-size:34px;color:#fff;letter-spacing:2px;text-shadow:0 4px 18px rgba(0,0,0,.6);opacity:0;transition:opacity .6s,transform .6s;pointer-events:none;white-space:nowrap}
   #lugar.on{opacity:1;transform:translate(-50%,0)}
+  #hud{position:fixed;left:50%;bottom:calc(10px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:6px;pointer-events:none}
+  #mana{position:relative;width:260px;height:14px;border-radius:8px;background:rgba(10,20,50,.6);border:2px solid rgba(255,255,255,.7);overflow:hidden}
+  #mana-fill{position:absolute;left:0;top:0;bottom:0;width:100%;background:linear-gradient(90deg,#3a8aff,#7ad8ff);transition:width .1s}
+  #mana-txt{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;color:#fff;letter-spacing:1px;text-shadow:0 1px 2px #000}
+  #poderes{display:flex;gap:6px;pointer-events:auto}
+  .slot{position:relative;width:60px;height:60px;border-radius:12px;border:3px solid rgba(255,255,255,.75);background:rgba(20,18,46,.7);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;padding:0;font-family:inherit}
+  .slot .ic{font-size:24px;line-height:1}.slot .nm{font-size:10px;font-weight:800}.slot .tc{position:absolute;left:4px;top:2px;font-size:9px;opacity:.6}
+  .slot.on{border-color:#ffd23c;background:rgba(90,70,10,.85);box-shadow:0 0 18px rgba(255,210,60,.8)}
+  .slot.falta{opacity:.45}.slot.erro{border-color:#ff5a5a}
+  #aviso{position:fixed;left:50%;bottom:calc(112px + env(safe-area-inset-bottom,0px));transform:translate(-50%,8px);max-width:min(520px,70vw);padding:8px 14px;border-radius:12px;border:2px solid #5ab8ff;background:rgba(10,14,40,.82);color:#fff;font-size:13px;font-weight:700;text-align:center;opacity:0;transition:opacity .3s,transform .3s;pointer-events:none}
+  #aviso.on{opacity:1;transform:translate(-50%,0)}
+  #saber .tag{position:fixed;transform:translate(-50%,-100%);max-width:200px;padding:6px 10px;border-radius:10px;background:rgba(255,246,220,.94);color:#3a2a10;font-size:11px;font-weight:800;line-height:1.25;text-align:center;border:2px solid #e8b030;box-shadow:0 0 14px rgba(255,210,80,.6);pointer-events:none;display:none}
+  #saber .tag::before{content:"💡 "}
   #fala{position:fixed;left:50%;top:calc(70px + env(safe-area-inset-top,0px));transform:translateX(-50%);width:min(620px,70vw);padding:14px 18px 12px;border-radius:18px;background:rgba(250,246,236,.96);color:#2a2230;box-shadow:0 10px 30px rgba(0,0,0,.35);border:3px solid #6a4a2a}
   #fala-nome{display:inline-block;margin:-30px 0 6px;padding:4px 12px;border-radius:10px;background:#6a4a2a;color:#fff;font-weight:900;font-size:15px}
   #fala-txt{font-size:18px;line-height:1.35;font-weight:600}
@@ -40,6 +53,9 @@
 <button class="btn" id="pular">PULAR</button>
 <button class="btn" id="acao" hidden>FALAR</button>
 <button class="btn" id="ciclo">☾</button>
+<div id="saber"></div>
+<div id="aviso"></div>
+<div id="hud"><div id="mana"><div id="mana-fill"></div><div id="mana-txt">MANA&nbsp;<span id="mana-num">100</span></div></div><div id="poderes"></div></div>
 __THREE__
 <script>
 __JOGO__
