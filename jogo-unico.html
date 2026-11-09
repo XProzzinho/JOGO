@@ -23,6 +23,20 @@
   #lvup{position:fixed;left:50%;top:30%;transform:translate(-50%,-50%) scale(.6);text-align:center;color:#ffe680;font-weight:900;font-size:40px;text-shadow:0 0 18px rgba(255,200,60,.9),0 3px 6px #000;opacity:0;pointer-events:none;z-index:14}
   #lvup small{display:block;font-size:14px;letter-spacing:3px;color:#fff}#lvup em{display:block;font-style:normal;font-size:13px;color:#fff;margin-top:4px}
   #lvup.on{animation:lv 2.8s ease-out forwards}@keyframes lv{0%{opacity:0;transform:translate(-50%,-50%) scale(.6)}12%{opacity:1;transform:translate(-50%,-50%) scale(1.08)}20%{transform:translate(-50%,-50%) scale(1)}80%{opacity:1}100%{opacity:0;transform:translate(-50%,-60%) scale(1)}}
+  #login{position:fixed;inset:0;z-index:40;display:flex;align-items:center;justify-content:center;background:radial-gradient(ellipse at 50% 30%,rgba(40,60,120,.82),rgba(6,8,22,.95));padding:12px max(16px,env(safe-area-inset-right,0px)) 12px max(16px,env(safe-area-inset-left,0px));overflow:auto}
+  #login .box{width:min(560px,100%);max-height:100%;overflow:auto;padding:14px 18px;border-radius:18px;background:#f6f1e6;color:#1e2236;box-shadow:0 20px 50px rgba(0,0,0,.5);display:flex;flex-direction:column;gap:8px}
+  .lg-tit{font-size:24px;font-weight:900;line-height:1.1}.lg-tit small{display:block;font-size:10px;letter-spacing:3px;color:#8a6a3a}
+  .lg-sub{margin:0;font-size:12px;color:#5a5a6a}
+  #lg-form{display:grid;grid-template-columns:1fr 1fr;gap:8px 10px}
+  #lg-form label{display:flex;flex-direction:column;gap:3px;font-size:11px;font-weight:800;color:#4a4a5a}#lg-nomewrap{grid-column:1/-1}
+  #lg-form input{font:inherit;font-size:15px;padding:9px 11px;border-radius:10px;border:2px solid #d8cfbc;background:#fff;color:#1e2236}#lg-form input:focus{outline:none;border-color:#3a6ae8}
+  .lg-bts{grid-column:1/-1;display:flex;gap:8px}.lg-bts button{flex:1;padding:11px;border-radius:999px;border:2px solid #3a6ae8;background:#fff;color:#3a6ae8;font-family:inherit;font-weight:900;font-size:14px}.lg-bts .pri{background:#3a6ae8;color:#fff}
+  #login .lnk{background:none;border:0;color:#3a6ae8;font-family:inherit;font-weight:800;font-size:12px;padding:4px;justify-self:start}
+  #login button:disabled{opacity:.6}
+  #lg-msg{font-size:12px;font-weight:700;color:#2a6a3a;min-height:16px}#lg-msg.erro{color:#c83a3a}
+  #lg-convidado{align-self:center}
+  #conta-selo{font-size:10px;font-weight:800;opacity:.8;text-align:center}
+  #pf-conta{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11px}#pf-conta button{padding:5px 12px;border-radius:999px;border:1px solid #8a9ad8;background:transparent;color:#cfd8ff;font-family:inherit;font-weight:800;font-size:11px}
   #perfil{position:fixed;inset:0;background:rgba(6,8,22,.88);display:flex;align-items:center;justify-content:center;z-index:27}
   #perfil .box{width:min(860px,96vw);height:min(400px,94vh);display:flex;gap:12px;padding:12px;border-radius:18px;background:linear-gradient(160deg,#1e2a4e,#121830);border:2px solid #5a7ac8;color:#e8eeff}
   #pf-esq{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;gap:6px}
@@ -159,7 +173,11 @@
 <canvas id="jogo-cv"></canvas>
 <div id="perfil-btn"><canvas id="retrato" width="128" height="128"></canvas><div class="pi"><div class="pn">Leonardo <b id="nv">Nv 1</b></div><div class="xpb"><i id="xp-fill"></i></div><div id="tit">BRUMAFRIA</div></div></div>
 <div id="lvup"></div>
-<div id="perfil" hidden><div class="box"><div id="pf-esq"><canvas id="previa" width="240" height="320"></canvas><div id="pf-nome">Leonardo</div><div class="pfx"><div id="pf-xp"></div></div><div id="pf-xpt"></div></div><div id="pf-dir"><div class="hd"><button class="aba on" data-a="status">📊 Status</button><button class="aba" data-a="inv">🎒 Inventário</button><button id="pf-fecha">Fechar</button></div><div id="pf-cont"></div></div></div></div>
+<div id="login" hidden><div class="box"><div class="lg-tit"><small>O ÚLTIMO CONHECIMENTO</small>Jogo do Rafael</div><p class="lg-sub">Entre pra salvar seu progresso na nuvem e continuar em qualquer celular.</p>
+<form id="lg-form" autocomplete="on"><label id="lg-nomewrap" hidden>Nome de jogador<input id="lg-nome" maxlength="20" autocomplete="nickname"></label><label>E-mail<input id="lg-email" type="email" autocomplete="email" inputmode="email"></label><label>Senha<input id="lg-senha" type="password" autocomplete="current-password"></label>
+<div class="lg-bts"><button id="lg-entrar" class="pri">Entrar</button><button id="lg-criar">Criar conta</button></div><button id="lg-esqueci" class="lnk">Esqueci a senha</button></form>
+<div id="lg-msg"></div><button id="lg-convidado" class="lnk">Jogar sem conta ›</button></div></div>
+<div id="perfil" hidden><div class="box"><div id="pf-esq"><canvas id="previa" width="240" height="320"></canvas><div id="pf-nome">Leonardo</div><div class="pfx"><div id="pf-xp"></div></div><div id="pf-xpt"></div><div id="conta-selo"></div><div id="pf-conta"></div></div><div id="pf-dir"><div class="hd"><button class="aba on" data-a="status">📊 Status</button><button class="aba" data-a="inv">🎒 Inventário</button><button id="pf-fecha">Fechar</button></div><div id="pf-cont"></div></div></div></div>
 <div id="dica">Arraste do lado <b>esquerdo</b> pra andar · do <b>direito</b> pra girar a câmera · chegue perto das pessoas pra conversar</div>
 <div id="lugar"></div>
 <div id="obj" hidden><b>OBJETIVO</b><span id="obj-txt"></span></div>
@@ -481,7 +499,7 @@
   let AR = { pts: 3, tem: ['sabao', 'salto'], barra: ['memoria', 'luz', 'sabao', 'salto', null, null, null, null], ganhos: [] };
   try { const g = JSON.parse(localStorage.getItem('aetherion-arvore') || 'null'); if (g && g.barra && g.barra.length === NSLOTS) AR = Object.assign(AR, g); } catch (e) {}
   AR.barra[0] = 'memoria'; AR.barra[1] = 'luz';
-  function salvaAR() { try { localStorage.setItem('aetherion-arvore', JSON.stringify(AR)); } catch (e) {} }
+  function salvaAR() { try { localStorage.setItem('aetherion-arvore', JSON.stringify(AR)); } catch (e) {} if (window.CONTA) CONTA.salvar(); }
   function ganha(chave, n, msg) { if (AR.ganhos.includes(chave)) return; AR.ganhos.push(chave); const tp = chave.split(':')[0]; const xx = { npc: 10, saber: 5, passo: 40, final: 150 }[tp]; if (xx) setTimeout(() => ganhaXp(xx, true), 0); AR.pts += n; salvaAR(); atualizaPts(); aviso('🌳 +' + n + ' ponto' + (n > 1 ? 's' : '') + ' de habilidade' + (msg ? ' · ' + msg : '') + '!', '#7ad87a'); }
   function atualizaPts() { const b = $('arv-pts'); b.textContent = AR.pts; b.hidden = AR.pts <= 0; }
   const ativo = {}; let saltoPronto = false;
@@ -708,7 +726,7 @@
       NAR_F('Leonardo escreveu as instruções. Seraphine as transformou em ordens reais. Os guardas fecharam os poços do porto, distribuíram lenha pra ferver a água e queimaram as roupas dos doentes.', 'sab18'), NAR_F('A peste parou. A Igreja disse que foi um milagre. Leonardo deixou que dissessem.', 'sab19'),
       NAR_F('Uma prensa de tipos móveis apareceu, por acaso, numa oficina da capital. Livros começaram a custar o preço de um pão. Gente comum aprendeu a ler.', 'sab20'), NAR_F('Vinte anos depois, quando Seraphine virou rainha, Valdren tinha escolas em todas as vilas, estradas de pedra e um cometa previsto com três anos de antecedência. Ninguém sabia o nome de Leonardo.', 'sab21'),
       { n: 'Rainha Seraphine', t: 'Você podia ser famoso.', v: 'sab22' }, LEO_F('Famoso morre na fogueira. Eu queria era ver o mundo andar.', 'sab23')], () => final('A2', 'A Revolução Silenciosa', 'Você escolheu mudar o mundo sem aparecer. Ninguém lembra de você, mas todos vivem melhor.')) }); }
-  function final(k, nome, nota) { if (!finais.includes(k)) { finais.push(k); try { localStorage.setItem('aetherion-finais', JSON.stringify(finais)); } catch (e) {} } objetivo(null);
+  function final(k, nome, nota) { if (!finais.includes(k)) { finais.push(k); try { localStorage.setItem('aetherion-finais', JSON.stringify(finais)); } catch (e) {} if (window.CONTA) CONTA.salvar(); } objetivo(null);
     $('fim-num').textContent = 'Final ' + (FINAIS.indexOf(k) + 1) + ' de 6'; $('fim-nome').textContent = nome; $('fim-nota').textContent = nota; $('fim-selos').innerHTML = FINAIS.map(f => `<span class="selo${finais.includes(f) ? ' on' : ''}"></span>`).join(''); $('fim-cont').textContent = `Finais descobertos: ${finais.length} de 6`; $('fim').hidden = false; }
   tapBtn($('fim-volta'), () => { $('fim').hidden = true; zona = 'vila'; dentro = false; modo = 'dia'; Q.passo = 0; Q.tigela = 0; Q.serOn = false; heroi.position.set(-5.2, 0, 4.4); facing = Math.PI; camYaw = 0; cam.position.set(-5, 3, 10); mostrarLugar('Vila de Brumafria'); });
   tapBtn($('fim-fica'), () => { $('fim').hidden = true; objetivo('Explore Valdren à vontade. Fale com o Professor em Brumafria pra jogar de novo.'); });
@@ -1097,7 +1115,8 @@
   let abaPerfil = 'status';
   function abrirPerfil() { if (conversa || cenaQ) return; $('perfil').hidden = false; desenhaPerfil(); }
   function desenhaPerfil() { document.querySelectorAll('#perfil .aba').forEach(b => b.classList.toggle('on', b.dataset.a === abaPerfil)); const C = $('pf-cont'); const A = ARMAS[AR.arma];
-    $('pf-nome').innerHTML = `Leonardo <b>Nv ${AR.nv}</b>`; $('pf-xp').style.width = (AR.nv >= NV_MAX ? 100 : AR.xp / xpPara(AR.nv) * 100) + '%'; $('pf-xpt').textContent = AR.nv >= NV_MAX ? 'NÍVEL MÁXIMO' : `XP ${AR.xp} / ${xpPara(AR.nv)}`;
+    $('pf-nome').innerHTML = `Leonardo <b>Nv ${AR.nv}</b>`; const CU = window.CONTA && CONTA.usuario; $('pf-conta').innerHTML = CU ? `<span>👤 ${(CU.displayName || CU.email || '').replace(/</g, '')}</span><button id="pf-sair">Sair da conta</button>` : `<button id="pf-sair">Entrar / criar conta</button>`;
+    tapBtn($('pf-sair'), () => { if (CU) CONTA.sair(); else { try { sessionStorage.removeItem('aetherion-convidado'); } catch (e) {} $('perfil').hidden = true; $('login').hidden = false; } }); if (window.CONTA && CONTA.selo) CONTA.selo(); $('pf-xp').style.width = (AR.nv >= NV_MAX ? 100 : AR.xp / xpPara(AR.nv) * 100) + '%'; $('pf-xpt').textContent = AR.nv >= NV_MAX ? 'NÍVEL MÁXIMO' : `XP ${AR.xp} / ${xpPara(AR.nv)}`;
     if (abaPerfil === 'status') { const ab = AR.abates; const tot = Object.values(ab).reduce((s, v) => s + v, 0);
       const L = [['❤️', 'Vida', `${Math.ceil(vida)} / ${VIDA_MAX}`], ['🔷', 'Mana', `${Math.round(mana)} / ${MANA_MAX}`], ['⚔️', 'Ataque', `${Math.round(A.dano * (1 + (AR.nv - 1) * 0.02))} (${A.icone} ${A.nome})`], ['🛡️', 'Defesa', `${defesa()}% (${FANT[AR.fantasia].nome})`],
         ['🌳', 'Pontos de habilidade', AR.pts], ['🐺', 'Bichos derrotados', `${tot}${ab.golem ? ' · Golem ✔' : ''}`], ['🏆', 'Finais', `${finais.length} / 6`], ['💰', 'Moedas', AR.inv.moedas]];
@@ -1174,6 +1193,71 @@
   cam.position.set(0, 2.6, 9.6); requestAnimationFrame(loop);
   mostrarLugar('Vila de Brumafria');
   setTimeout(() => $('dica').classList.add('some'), 7000);
+})();
+
+</script>
+<script src="https://cdn.jsdelivr.net/npm/firebase@10.12.2/firebase-app-compat.js"></script><script src="https://cdn.jsdelivr.net/npm/firebase@10.12.2/firebase-auth-compat.js"></script><script src="https://cdn.jsdelivr.net/npm/firebase@10.12.2/firebase-firestore-compat.js"></script>
+<script>
+// Cole aqui a configuração do app da Web do Firebase (Configurações do projeto > Seus apps > Config).
+window.FIREBASE_CONFIG = null;
+
+// CONTA — login com Firebase (e-mail e senha) e progresso salvo na nuvem
+(function () {
+  const $ = id => document.getElementById(id);
+  const CHAVES = ['aetherion-arvore', 'aetherion-finais'];
+  const C = window.CONTA = { usuario: null, online: false, salvar() {}, sair() {} };
+  const tela = $('login'), msg = $('lg-msg');
+  ['keydown', 'keyup'].forEach(t => tela.addEventListener(t, e => e.stopPropagation()));
+  const tap = (el, fn) => { el.addEventListener('click', e => { e.preventDefault(); fn(); }); };
+  function mostra(t, erro) { msg.textContent = t || ''; msg.className = erro ? 'erro' : ''; }
+  function ocupado(on) { tela.querySelectorAll('button,input').forEach(b => b.disabled = on); }
+  function fecha() { tela.hidden = true; }
+  function lerLocal() { const o = {}; CHAVES.forEach(k => { try { o[k] = localStorage.getItem(k); } catch (e) {} }); return o; }
+  const ERROS = { 'auth/invalid-email': 'Esse e-mail não é válido.', 'auth/missing-password': 'Digite a senha.', 'auth/weak-password': 'A senha precisa ter pelo menos 6 letras ou números.',
+    'auth/email-already-in-use': 'Já existe uma conta com esse e-mail. Toque em Entrar.', 'auth/invalid-credential': 'E-mail ou senha errados.', 'auth/wrong-password': 'Senha errada.', 'auth/user-not-found': 'Não existe conta com esse e-mail.',
+    'auth/too-many-requests': 'Muitas tentativas. Espera um pouquinho e tenta de novo.', 'auth/network-request-failed': 'Sem internet. Verifique a conexão.' };
+  const erroTxt = e => ERROS[e && e.code] || 'Deu um erro: ' + ((e && (e.code || e.message)) || 'desconhecido');
+
+  // jogar sem conta (fica salvo só no celular)
+  tap($('lg-convidado'), () => { try { sessionStorage.setItem('aetherion-convidado', '1'); } catch (e) {} fecha(); });
+  let convidado = false; try { convidado = sessionStorage.getItem('aetherion-convidado') === '1'; } catch (e) {}
+
+  const cfg = window.FIREBASE_CONFIG;
+  if (!cfg || !window.firebase) { $('lg-form').hidden = true; mostra(!cfg ? 'O login ainda não foi ligado ao Firebase. Dá pra jogar sem conta (o progresso fica salvo no celular).' : 'Sem conexão com o servidor agora. Jogue sem conta e tente de novo depois.', !!cfg); if (convidado) fecha(); return; }
+
+  let app, auth, db;
+  try { app = firebase.initializeApp(cfg); auth = firebase.auth(); db = firebase.firestore(); } catch (e) { $('lg-form').hidden = true; mostra('Não deu pra ligar o Firebase: ' + e.message, true); return; }
+  try { auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL); } catch (e) {}
+  const docDe = uid => db.collection('jogadores').doc(uid);
+
+  // salvar na nuvem (espera uns segundos pra juntar várias mudanças)
+  let tSalvar = null, pendente = false;
+  async function enviar() { tSalvar = null; if (!C.usuario) return; pendente = false; const L = lerLocal(); let nv = 1; try { nv = JSON.parse(L['aetherion-arvore'] || '{}').nv || 1; } catch (e) {}
+    try { await docDe(C.usuario.uid).set({ nome: C.usuario.displayName || '', email: C.usuario.email || '', arvore: L['aetherion-arvore'] || null, finais: L['aetherion-finais'] || null, nv, atualizado: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true }); C.online = true; atualizaSelo(); }
+    catch (e) { C.online = false; pendente = true; atualizaSelo(); } }
+  C.salvar = function () { if (!C.usuario) return; pendente = true; clearTimeout(tSalvar); tSalvar = setTimeout(enviar, 3000); };
+  document.addEventListener('visibilitychange', () => { if (document.hidden && pendente) { clearTimeout(tSalvar); enviar(); } });
+  C.sair = async function () { if (pendente) await enviar(); await auth.signOut(); CHAVES.forEach(k => { try { localStorage.removeItem(k); } catch (e) {} }); try { sessionStorage.removeItem('aetherion-convidado'); } catch (e) {} location.reload(); };
+  function atualizaSelo() { const s = $('conta-selo'); if (!s) return; s.textContent = C.usuario ? (C.online ? '☁️ Salvo na nuvem' : '⚠️ Sem internet: salva quando voltar') : '📱 Sem conta: salvo só neste celular'; }
+  C.selo = atualizaSelo;
+
+  // quando entra: puxa o progresso da nuvem; conta nova: sobe o progresso do celular
+  async function aoEntrar(u) { C.usuario = u; mostra('Carregando seu progresso...'); ocupado(true);
+    try { const d = await docDe(u.uid).get();
+      if (d.exists && d.data().arvore) { const dt = d.data(); const L = lerLocal();
+        if (L['aetherion-arvore'] !== dt.arvore || L['aetherion-finais'] !== dt.finais) { try { localStorage.setItem('aetherion-arvore', dt.arvore); if (dt.finais) localStorage.setItem('aetherion-finais', dt.finais); } catch (e) {} location.reload(); return; } }
+      else await enviar();
+      C.online = true; } catch (e) { C.online = false; }
+    ocupado(false); mostra(''); fecha(); atualizaSelo(); }
+  let primeira = true;
+  auth.onAuthStateChanged(u => { const era = primeira; primeira = false; if (u) aoEntrar(u); else { C.usuario = null; if (convidado) fecha(); else { tela.hidden = false; if (era) mostra(''); } atualizaSelo(); } });
+
+  const email = () => $('lg-email').value.trim(), senha = () => $('lg-senha').value;
+  tap($('lg-entrar'), async () => { mostra('Entrando...'); ocupado(true); try { await auth.signInWithEmailAndPassword(email(), senha()); } catch (e) { mostra(erroTxt(e), true); } ocupado(false); });
+  tap($('lg-criar'), async () => { const nome = $('lg-nome'); if ($('lg-nomewrap').hidden) { $('lg-nomewrap').hidden = false; nome.focus(); mostra('Escolha seu nome de jogador e toque em Criar conta de novo.'); return; }
+    if (!nome.value.trim()) { mostra('Escolha um nome de jogador.', true); return; } mostra('Criando sua conta...'); ocupado(true);
+    try { const r = await auth.createUserWithEmailAndPassword(email(), senha()); await r.user.updateProfile({ displayName: nome.value.trim() }); C.usuario = r.user; await enviar(); } catch (e) { mostra(erroTxt(e), true); } ocupado(false); });
+  tap($('lg-esqueci'), async () => { if (!email()) { mostra('Digite seu e-mail primeiro.', true); return; } try { await auth.sendPasswordResetEmail(email()); mostra('Mandamos um e-mail pra trocar a senha. Olhe a caixa de entrada (e o spam).'); } catch (e) { mostra(erroTxt(e), true); } });
 })();
 
 </script>

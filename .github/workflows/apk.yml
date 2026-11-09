@@ -20,10 +20,15 @@ jobs:
           gradle-version: '8.7'
       - name: Montar o jogo
         run: python3 build.py
+      - name: Baixar o Firebase
+        run: |
+          mkdir -p firebase
+          for f in firebase-app-compat.js firebase-auth-compat.js firebase-firestore-compat.js; do curl -fsSL "https://cdn.jsdelivr.net/npm/firebase@10.12.2/$f" -o "firebase/$f"; done
+          ls -la firebase
       - name: Copiar o jogo pro APK
         run: |
           mkdir -p android/app/src/main/assets
-          cp -r index.html three.min.js vozes android/app/src/main/assets/
+          cp -r index.html three.min.js vozes firebase android/app/src/main/assets/
       - name: Compilar o APK
         working-directory: android
         run: gradle assembleDebug --no-daemon

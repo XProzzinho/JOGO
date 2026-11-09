@@ -4,6 +4,10 @@ from pathlib import Path
 R = Path(__file__).parent
 js = (R / 'src/base.js').read_text() + (R / 'src/personagens.js').read_text() + (R / 'src/jogo.js').read_text()
 pg = (R / 'src/pagina.html').read_text()
-(R / 'index.html').write_text(pg.replace('__THREE__', '<script src="three.min.js"></script>').replace('__JOGO__', js))
-(R / 'jogo-unico.html').write_text(pg.replace('__THREE__', '<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>').replace('__JOGO__', js))
+conta = (R / 'src/firebase-config.js').read_text() + '\n' + (R / 'src/conta.js').read_text()
+FB = ['firebase-app-compat.js', 'firebase-auth-compat.js', 'firebase-firestore-compat.js']
+def fb(base): return ''.join(f'<script src="{base}{f}"></script>' for f in FB)
+pg = pg.replace('__CONTA__', conta)
+(R / 'index.html').write_text(pg.replace('__FIREBASE__', fb('firebase/')).replace('__THREE__', '<script src="three.min.js"></script>').replace('__JOGO__', js))
+(R / 'jogo-unico.html').write_text(pg.replace('__FIREBASE__', fb('https://cdn.jsdelivr.net/npm/firebase@10.12.2/')).replace('__THREE__', '<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>').replace('__JOGO__', js))
 print('ok', len(js))

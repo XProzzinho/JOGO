@@ -186,7 +186,7 @@
   let AR = { pts: 3, tem: ['sabao', 'salto'], barra: ['memoria', 'luz', 'sabao', 'salto', null, null, null, null], ganhos: [] };
   try { const g = JSON.parse(localStorage.getItem('aetherion-arvore') || 'null'); if (g && g.barra && g.barra.length === NSLOTS) AR = Object.assign(AR, g); } catch (e) {}
   AR.barra[0] = 'memoria'; AR.barra[1] = 'luz';
-  function salvaAR() { try { localStorage.setItem('aetherion-arvore', JSON.stringify(AR)); } catch (e) {} }
+  function salvaAR() { try { localStorage.setItem('aetherion-arvore', JSON.stringify(AR)); } catch (e) {} if (window.CONTA) CONTA.salvar(); }
   function ganha(chave, n, msg) { if (AR.ganhos.includes(chave)) return; AR.ganhos.push(chave); const tp = chave.split(':')[0]; const xx = { npc: 10, saber: 5, passo: 40, final: 150 }[tp]; if (xx) setTimeout(() => ganhaXp(xx, true), 0); AR.pts += n; salvaAR(); atualizaPts(); aviso('🌳 +' + n + ' ponto' + (n > 1 ? 's' : '') + ' de habilidade' + (msg ? ' · ' + msg : '') + '!', '#7ad87a'); }
   function atualizaPts() { const b = $('arv-pts'); b.textContent = AR.pts; b.hidden = AR.pts <= 0; }
   const ativo = {}; let saltoPronto = false;
@@ -413,7 +413,7 @@
       NAR_F('Leonardo escreveu as instruções. Seraphine as transformou em ordens reais. Os guardas fecharam os poços do porto, distribuíram lenha pra ferver a água e queimaram as roupas dos doentes.', 'sab18'), NAR_F('A peste parou. A Igreja disse que foi um milagre. Leonardo deixou que dissessem.', 'sab19'),
       NAR_F('Uma prensa de tipos móveis apareceu, por acaso, numa oficina da capital. Livros começaram a custar o preço de um pão. Gente comum aprendeu a ler.', 'sab20'), NAR_F('Vinte anos depois, quando Seraphine virou rainha, Valdren tinha escolas em todas as vilas, estradas de pedra e um cometa previsto com três anos de antecedência. Ninguém sabia o nome de Leonardo.', 'sab21'),
       { n: 'Rainha Seraphine', t: 'Você podia ser famoso.', v: 'sab22' }, LEO_F('Famoso morre na fogueira. Eu queria era ver o mundo andar.', 'sab23')], () => final('A2', 'A Revolução Silenciosa', 'Você escolheu mudar o mundo sem aparecer. Ninguém lembra de você, mas todos vivem melhor.')) }); }
-  function final(k, nome, nota) { if (!finais.includes(k)) { finais.push(k); try { localStorage.setItem('aetherion-finais', JSON.stringify(finais)); } catch (e) {} } objetivo(null);
+  function final(k, nome, nota) { if (!finais.includes(k)) { finais.push(k); try { localStorage.setItem('aetherion-finais', JSON.stringify(finais)); } catch (e) {} if (window.CONTA) CONTA.salvar(); } objetivo(null);
     $('fim-num').textContent = 'Final ' + (FINAIS.indexOf(k) + 1) + ' de 6'; $('fim-nome').textContent = nome; $('fim-nota').textContent = nota; $('fim-selos').innerHTML = FINAIS.map(f => `<span class="selo${finais.includes(f) ? ' on' : ''}"></span>`).join(''); $('fim-cont').textContent = `Finais descobertos: ${finais.length} de 6`; $('fim').hidden = false; }
   tapBtn($('fim-volta'), () => { $('fim').hidden = true; zona = 'vila'; dentro = false; modo = 'dia'; Q.passo = 0; Q.tigela = 0; Q.serOn = false; heroi.position.set(-5.2, 0, 4.4); facing = Math.PI; camYaw = 0; cam.position.set(-5, 3, 10); mostrarLugar('Vila de Brumafria'); });
   tapBtn($('fim-fica'), () => { $('fim').hidden = true; objetivo('Explore Valdren à vontade. Fale com o Professor em Brumafria pra jogar de novo.'); });
@@ -802,7 +802,8 @@
   let abaPerfil = 'status';
   function abrirPerfil() { if (conversa || cenaQ) return; $('perfil').hidden = false; desenhaPerfil(); }
   function desenhaPerfil() { document.querySelectorAll('#perfil .aba').forEach(b => b.classList.toggle('on', b.dataset.a === abaPerfil)); const C = $('pf-cont'); const A = ARMAS[AR.arma];
-    $('pf-nome').innerHTML = `Leonardo <b>Nv ${AR.nv}</b>`; $('pf-xp').style.width = (AR.nv >= NV_MAX ? 100 : AR.xp / xpPara(AR.nv) * 100) + '%'; $('pf-xpt').textContent = AR.nv >= NV_MAX ? 'NÍVEL MÁXIMO' : `XP ${AR.xp} / ${xpPara(AR.nv)}`;
+    $('pf-nome').innerHTML = `Leonardo <b>Nv ${AR.nv}</b>`; const CU = window.CONTA && CONTA.usuario; $('pf-conta').innerHTML = CU ? `<span>👤 ${(CU.displayName || CU.email || '').replace(/</g, '')}</span><button id="pf-sair">Sair da conta</button>` : `<button id="pf-sair">Entrar / criar conta</button>`;
+    tapBtn($('pf-sair'), () => { if (CU) CONTA.sair(); else { try { sessionStorage.removeItem('aetherion-convidado'); } catch (e) {} $('perfil').hidden = true; $('login').hidden = false; } }); if (window.CONTA && CONTA.selo) CONTA.selo(); $('pf-xp').style.width = (AR.nv >= NV_MAX ? 100 : AR.xp / xpPara(AR.nv) * 100) + '%'; $('pf-xpt').textContent = AR.nv >= NV_MAX ? 'NÍVEL MÁXIMO' : `XP ${AR.xp} / ${xpPara(AR.nv)}`;
     if (abaPerfil === 'status') { const ab = AR.abates; const tot = Object.values(ab).reduce((s, v) => s + v, 0);
       const L = [['❤️', 'Vida', `${Math.ceil(vida)} / ${VIDA_MAX}`], ['🔷', 'Mana', `${Math.round(mana)} / ${MANA_MAX}`], ['⚔️', 'Ataque', `${Math.round(A.dano * (1 + (AR.nv - 1) * 0.02))} (${A.icone} ${A.nome})`], ['🛡️', 'Defesa', `${defesa()}% (${FANT[AR.fantasia].nome})`],
         ['🌳', 'Pontos de habilidade', AR.pts], ['🐺', 'Bichos derrotados', `${tot}${ab.golem ? ' · Golem ✔' : ''}`], ['🏆', 'Finais', `${finais.length} / 6`], ['💰', 'Moedas', AR.inv.moedas]];
