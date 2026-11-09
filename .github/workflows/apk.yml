@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
-    paths: ['index.html', 'src/**', 'android/**', 'three.min.js']
+    paths: ['index.html', 'src/**', 'android/**', 'three.min.js', 'vozes/**']
 permissions:
   contents: write
 jobs:
@@ -23,7 +23,7 @@ jobs:
       - name: Copiar o jogo pro APK
         run: |
           mkdir -p android/app/src/main/assets
-          cp index.html three.min.js android/app/src/main/assets/
+          cp -r index.html three.min.js vozes android/app/src/main/assets/
       - name: Compilar o APK
         working-directory: android
         run: gradle assembleDebug --no-daemon

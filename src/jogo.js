@@ -88,16 +88,16 @@
     const staff = grp(P.elL, 0, -0.29, 0.03); part(staff, CYL, '#ece0b8', 0, 0.2, 0, 0.018, 1.75, 0.018, 0.05); const ring = part(staff, TOR, gold, 0, 1.08, 0, 0.09, 0.09, 0.09); ring.rotation.x = Math.PI / 2; part(staff, SPH, '#4ab0ff', 0, 1.1, 0, 0.07, 0.095, 0.07, 0, true); P.gemGlow = glowSpr(staff, 0, 1.1, 0, 0.9, '#5ab8ff', 0.9); P.staff = staff; }
   const elyAura = glowSpr(world, 0, 0, 0, 5, '#ffe8a0', 0.45);
   const NPCS = [
-    { c: pai, nome: 'Pai', x: 1.6, z: -4.9, ry: 0.3, falas: ['Bem-vindo de volta, Leonardo!', 'Você nasceu aqui em Brumafria, numa noite de inverno. Fui eu que te dei esse nome.'] },
-    { c: mae, nome: 'Mãe', x: -1.8, z: -5.0, ry: -0.2, falas: ['Meu filho! Você chorou uma vez só quando nasceu...', 'E parecia que olhava pras minhas mãos. Até hoje eu lavo elas antes de te abraçar!'] },
-    { c: prof, nome: 'Professor', x: -6.5, z: 3.0, ry: 0.8, falas: ['A Academia Real quer você, garoto.', 'Com tudo que tem na sua cabeça, você pode mudar o reino inteiro.'] },
-    { c: kaela, nome: 'Kaela', x: 6.4, z: 3.2, ry: -0.8, falas: ['Esquece os livros. A Guilda dos Aventureiros precisa de você!', 'Lá fora tem dragão, ouro e aventura. Bora?'] },
-    { c: mens, nome: 'Mensageiro do Duque', x: 3.4, z: 6.2, ry: Math.PI - 0.4, falas: ['Por ordem do Duque Aldric, você está convocado!', 'Academia, Guilda ou Duque... qual caminho você vai seguir?'] },
-    { c: ely, nome: 'Elysia', x: -10, z: -13, ry: 0.6, deusa: true, falas: ['Vamos ver o que você faz com o meu mundo, humano.', 'Bênção concedida: Memória do Mundo Antigo.', 'E um pouco de mana. Porque sem isso você morre na primeira semana.'] },
+    { c: pai, nome: 'Pai', x: 1.6, z: -4.9, ry: 0.3, vozes: ['pai1', 'pai2'], falas: ['Bem-vindo de volta, Leonardo!', 'Você nasceu aqui em Brumafria, numa noite de inverno. Fui eu que te dei esse nome.'] },
+    { c: mae, nome: 'Mãe', x: -1.8, z: -5.0, ry: -0.2, vozes: ['mae1', 'mae2'], falas: ['Meu filho! Você chorou uma vez só quando nasceu...', 'E parecia que olhava pras minhas mãos. Até hoje eu lavo elas antes de te abraçar!'] },
+    { c: prof, nome: 'Professor', x: -6.5, z: 3.0, ry: 0.8, vozes: ['prof1', 'prof2'], falas: ['A Academia Real quer você, garoto.', 'Com tudo que tem na sua cabeça, você pode mudar o reino inteiro.'] },
+    { c: kaela, nome: 'Kaela', x: 6.4, z: 3.2, ry: -0.8, vozes: ['kae1', 'kae2'], falas: ['Esquece os livros. A Guilda dos Aventureiros precisa de você!', 'Lá fora tem dragão, ouro e aventura. Bora?'] },
+    { c: mens, nome: 'Mensageiro do Duque', x: 3.4, z: 6.2, ry: Math.PI - 0.4, vozes: ['mes1', 'mes2'], falas: ['Por ordem do Duque Aldric, você está convocado!', 'Academia, Guilda ou Duque... qual caminho você vai seguir?'] },
+    { c: ely, nome: 'Elysia', x: -10, z: -13, ry: 0.6, deusa: true, vozes: ['ely1', 'ely2', 'ely3'], falas: ['Vamos ver o que você faz com o meu mundo, humano.', 'Bênção concedida: Memória do Mundo Antigo.', 'E um pouco de mana. Porque sem isso você morre na primeira semana.'] },
   ];
   NPCS.forEach(n => { n.c.position.set(n.x, 0, n.z); n.c.rotation.y = n.ry; n.ry0 = n.ry; COL.push({ t: 'c', x: n.x, z: n.z, r: 0.45, npc: n }); });
-  const OBJS = [{ nome: 'Pão da avó', x: IX - 2.4, z: -1.2, dentro: true, falas: ['O pão da avó...', 'Desde que nasceu, você lembra da receita inteirinha. Fórmulas, mapas, máquinas... e esse pão.'] },
-    { nome: 'Berço', x: IX - 2.6, z: -3.8, dentro: true, falas: ['O seu berço. Foi aqui que tudo começou, numa noite de inverno.'] }];
+  const OBJS = [{ nome: 'Pão da avó', x: IX - 2.4, z: -1.2, dentro: true, vozes: ['pao1', 'pao2'], falas: ['O pão da avó...', 'Desde que nasceu, você lembra da receita inteirinha. Fórmulas, mapas, máquinas... e esse pão.'] },
+    { nome: 'Berço', x: IX - 2.6, z: -3.8, dentro: true, vozes: ['berco'], falas: ['O seu berço. Foi aqui que tudo começou, numa noite de inverno.'] }];
   [heroi, ...NPCS.map(n => n.c)].forEach(c => c.traverse(o => { if (o.isMesh) o.castShadow = true; }));
   const sombra = new T3.Mesh(new T3.CircleGeometry(0.4, 24), new T3.MeshBasicMaterial({ color: '#000', transparent: true, opacity: 0.2, depthWrite: false })); sombra.rotation.x = -Math.PI / 2; world.add(sombra);
 
@@ -132,8 +132,10 @@
     if (alvo.tipo === 'entrar') { dentro = true; heroi.position.set(IX - 1, 0, 3.6); facing = Math.PI; camYaw = 0; mostrarLugar('Casa da família'); return; }
     if (alvo.tipo === 'sair') { dentro = false; const d = casaFamilia.localToWorld(new T3.Vector3(casaFamilia.userData.door[0], 0, casaFamilia.userData.door[1] + 0.4)); heroi.position.set(d.x, 0, d.z); facing = 0; camYaw = Math.PI; mostrarLugar('Vila de Brumafria'); return; }
     conversa = { quem: alvo, i: 0 }; mostrarFala(); }
-  function mostrarFala() { const q = conversa.quem; $('fala-nome').textContent = q.nome; $('fala-txt').textContent = q.falas[conversa.i]; $('fala').hidden = false; $('fala-mais').textContent = conversa.i < q.falas.length - 1 ? 'toque pra continuar ▸' : 'toque pra fechar ✕'; }
-  function proximaFala() { if (!conversa) return; conversa.i++; if (conversa.i >= conversa.quem.falas.length) { conversa = null; $('fala').hidden = true; } else mostrarFala(); }
+  let voz = null; function calaVoz() { if (voz) { voz.pause(); voz = null; } }
+  function tocaVoz(id) { calaVoz(); if (!id) return; voz = new Audio('vozes/' + id + '.mp3'); voz.play().catch(() => {}); }
+  function mostrarFala() { const q = conversa.quem; tocaVoz(q.vozes && q.vozes[conversa.i]); $('fala-nome').textContent = q.nome; $('fala-txt').textContent = q.falas[conversa.i]; $('fala').hidden = false; $('fala-mais').textContent = conversa.i < q.falas.length - 1 ? 'toque pra continuar ▸' : 'toque pra fechar ✕'; }
+  function proximaFala() { if (!conversa) return; conversa.i++; if (conversa.i >= conversa.quem.falas.length) { conversa = null; $('fala').hidden = true; calaVoz(); } else mostrarFala(); }
   let lugarT = null; function mostrarLugar(s) { const el = $('lugar'); el.textContent = s; el.classList.add('on'); clearTimeout(lugarT); lugarT = setTimeout(() => el.classList.remove('on'), 2600); }
 
   // ---------- colisão ----------
@@ -168,7 +170,7 @@
     alvo = null; let melhor = 2.6;
     NPCS.forEach(n => { const c = n.c; c.visible = !dentro; if (dentro) return; const dx = p.x - n.x, dz = p.z - n.z, d = Math.hypot(dx, dz);
       const want = d < 5 ? Math.atan2(dx, dz) : n.ry0; let a = want - c.rotation.y; while (a > Math.PI) a -= Math.PI * 2; while (a < -Math.PI) a += Math.PI * 2; c.rotation.y += a * clamp(dt * 4);
-      const falando = conversa && conversa.quem === n; const o = { mood: falando ? (n.deusa ? 'smile' : 'smile') : 'neutral', talk: falando, look: [0, d < 5 ? -0.1 : 0] };
+      const falando = conversa && conversa.quem === n && voz && !voz.paused && !voz.ended; const o = { mood: falando ? (n.deusa ? 'smile' : 'smile') : 'neutral', talk: falando, look: [0, d < 5 ? -0.1 : 0] };
       if (n.deusa) { o.arms = { shL: [-0.35, 0, -0.15], elL: [-0.55, 0, 0] }; c.position.y = 0.25 + Math.sin(gT * 1.6) * 0.12; elyAura.position.set(n.x, 1.6 + c.position.y, n.z); elyAura.visible = true; const P = c.userData.P; P.staff.rotation.x = -(P.shL.rotation.x + P.elL.rotation.x); }
       pose(c, gT, o); if (n.deusa) { const P = c.userData.P; P.staff.rotation.x = -(P.shL.rotation.x + P.elL.rotation.x); P.staff.rotation.z = -(P.shL.rotation.z + P.elL.rotation.z); }
       if (d < melhor) { melhor = d; alvo = n; } });
