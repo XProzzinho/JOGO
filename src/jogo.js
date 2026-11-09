@@ -154,7 +154,7 @@
 
   // ---------- PODERES (a bênção da Elysia no vídeo) ----------
   // Memória do Mundo Antigo: ele lembra de tudo (fórmulas, máquinas, receitas) + "um pouco de mana"
-  let mana = 100; const MANA_MAX = 100;
+  let mana = 100; let MANA_MAX = 100;
   // tipo 'liga' = liga/desliga (custo por segundo) · 'uso' = gasta uma vez
   const PODERES = [
     { id: 'memoria', nome: 'Memória', icone: '🧠', tipo: 'liga', custo: 0, fixo: true, desc: 'Memória do Mundo Antigo: você enxerga o que a ciência sabe sobre tudo em volta.' },
@@ -187,7 +187,7 @@
   try { const g = JSON.parse(localStorage.getItem('aetherion-arvore') || 'null'); if (g && g.barra && g.barra.length === NSLOTS) AR = Object.assign(AR, g); } catch (e) {}
   AR.barra[0] = 'memoria'; AR.barra[1] = 'luz';
   function salvaAR() { try { localStorage.setItem('aetherion-arvore', JSON.stringify(AR)); } catch (e) {} }
-  function ganha(chave, n, msg) { if (AR.ganhos.includes(chave)) return; AR.ganhos.push(chave); AR.pts += n; salvaAR(); atualizaPts(); aviso('🌳 +' + n + ' ponto' + (n > 1 ? 's' : '') + ' de habilidade' + (msg ? ' · ' + msg : '') + '!', '#7ad87a'); }
+  function ganha(chave, n, msg) { if (AR.ganhos.includes(chave)) return; AR.ganhos.push(chave); const tp = chave.split(':')[0]; const xx = { npc: 10, saber: 5, passo: 40, final: 150 }[tp]; if (xx) setTimeout(() => ganhaXp(xx, true), 0); AR.pts += n; salvaAR(); atualizaPts(); aviso('🌳 +' + n + ' ponto' + (n > 1 ? 's' : '') + ' de habilidade' + (msg ? ' · ' + msg : '') + '!', '#7ad87a'); }
   function atualizaPts() { const b = $('arv-pts'); b.textContent = AR.pts; b.hidden = AR.pts <= 0; }
   const ativo = {}; let saltoPronto = false;
   const barra = $('poderes'); const SLOTS = [];
@@ -483,7 +483,7 @@
   tapBtn(mini, abrirMapa); tapBtn($('mapa-fecha'), () => { $('mapa').hidden = true; }); tapBtn($('casa'), () => { if (zona === 'vila' && !dentro) { aviso('Você já está em Brumafria, sua cidade natal.', '#ffd23c'); return; } if (dentro) { aviso('Você está dentro de casa. A porta fica atrás de você.', '#ffd23c'); return; } viajar('vila'); });
 
   // ===================== COMBATE: vida, armas, bichos e a forja =====================
-  let vida = 100; const VIDA_MAX = 100; let semDanoT = 99, desmaiado = false;
+  let vida = 100; let VIDA_MAX = 100; let semDanoT = 99, desmaiado = false;
   AR.inv = Object.assign({ moedas: 0, pele: 0, carne: 0, coracao: 0 }, AR.inv || {});
   AR.armas = AR.armas || ['bastao']; AR.arma = AR.armas.includes(AR.arma) ? AR.arma : 'bastao'; AR.abates = AR.abates || {};
   const ARMAS = {
@@ -603,7 +603,7 @@
     const mult = [1, 1, 1.15, 1.8][atkN]; let acertou = false;
     FERAS.forEach(e => { if (!feraAtiva(e)) return; const dx = e.g.position.x - p.x, dz = e.g.position.z - p.z, d = Math.hypot(dx, dz); if (d > A.alc + e.T.raio) return;
       let da = Math.atan2(dx, dz) - facing; while (da > Math.PI) da -= Math.PI * 2; while (da < -Math.PI) da += Math.PI * 2; if (atkN !== 3 && Math.abs(da) > 1.25 && d > e.T.raio + 0.4) return;
-      acertou = true; dano(e, A.dano * mult, A.gelo ? 'gelo' : null); if (A.gelo && Math.random() < 0.25) congelar(e, 1.5); empurra(e, dx / (d || 1), dz / (d || 1), atkN === 3 ? 1.6 : 0.6); });
+      acertou = true; dano(e, A.dano * mult * (1 + (AR.nv - 1) * 0.02), A.gelo ? 'gelo' : null); if (A.gelo && Math.random() < 0.25) congelar(e, 1.5); empurra(e, dx / (d || 1), dz / (d || 1), atkN === 3 ? 1.6 : 0.6); });
     if (acertou) tremor = Math.max(tremor, atkN === 3 ? 0.25 : 0.1); }
   function empurra(e, nx, nz, f) { if (e.T.chefe) return; e.g.position.x += nx * f; e.g.position.z += nz * f; }
   function armaPose() { const P = heroi.userData.P, A = ARMAS[AR.arma];
@@ -622,7 +622,7 @@
   function congelar(e, s) { if (e.morto) return; e.congela = Math.max(e.congela, e.T.chefe ? s * 0.35 : s); }
   function morre(e) { e.morto = true; e.mortoT = 0; e.hp.style.display = 'none'; const p = e.g.position; const [a, b] = e.T.moedas; solta_loot(p.x, p.z, 'moedas', a + Math.floor(Math.random() * (b - a + 1)));
     e.T.itens.forEach(([it, ch]) => { if (Math.random() < ch) solta_loot(p.x + (Math.random() - .5), p.z + (Math.random() - .5), it, 1); });
-    AR.abates[e.tipo] = (AR.abates[e.tipo] || 0) + 1; const tot = Object.values(AR.abates).reduce((s, v) => s + v, 0); salvaAR();
+    AR.abates[e.tipo] = (AR.abates[e.tipo] || 0) + 1; ganhaXp(XP_TIPO[e.tipo] || 10, true); const tot = Object.values(AR.abates).reduce((s, v) => s + v, 0); salvaAR();
     if (e.T.chefe) { ganha('golem1', 5, 'derrotou o Golem de Gelo'); aviso('🏆 O GOLEM DE GELO CAIU! Leve o 💎 Coração de Gelo pra Forja.', '#7ad8ff'); }
     else { ganha('abate1:' + e.tipo, 2, 'primeiro ' + e.T.nome); if (tot % 5 === 0) setTimeout(() => ganha('abates:' + tot, 1, tot + ' bichos derrotados'), 900); } }
   // ---- coisas que caem ----
@@ -630,7 +630,7 @@
   function emoTex(t) { return EMO[t] || (EMO[t] = canvasTex(96, 96, (x, w, h) => { x.font = '72px system-ui,"Noto Color Emoji",sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(t, w / 2, h / 2 + 4); })); }
   function solta_loot(x, z, item, n) { const s = new T3.Sprite(new T3.SpriteMaterial({ map: emoTex(ITENS[item]), transparent: true, depthWrite: false, toneMapped: false })); s.scale.set(0.6, 0.6, 1); s.position.set(x, 0.5, z); world.add(s); LOOT.push({ s, item, n, t: 0, zona }); }
   // ---- dano no Leonardo ----
-  function danoHeroi(n, de) { if (desmaiado) return; if (ativo.escudo) { n *= 0.3; fx('luz', [heroi.position.x, heroi.position.y, heroi.position.z], 0.3); } n = Math.round(n); vida -= n; semDanoT = 0; flash('rgba(255,40,40,.35)'); tremor = Math.max(tremor, 0.18);
+  function danoHeroi(n, de) { if (desmaiado) return; n *= 1 - defesa() / 100; if (ativo.escudo) { n *= 0.3; fx('luz', [heroi.position.x, heroi.position.y, heroi.position.z], 0.3); } n = Math.round(n); vida -= n; semDanoT = 0; flash('rgba(255,40,40,.35)'); tremor = Math.max(tremor, 0.18);
     numero(heroi.position, '-' + n, '#ff5a5a', 2.1); if (vida <= 0) { vida = 0; desmaiar(); } }
   function desmaiar() { desmaiado = true; FERAS.forEach(e => { if (!e.morto) { e.estado = 'volta'; } }); ativo.vento = ativo.escudo = ativo.planar = false; montaBarra();
     setTimeout(() => cena([{ t: 'Tudo ficou escuro...', v: null }, { t: 'Leonardo acordou em casa, na cama. A mãe cuidou dele a noite toda.', n: 'Mãe', v: null }, { t: '"Meu filho, cuidado lá fora! Come alguma coisa antes de sair de novo."', n: 'Mãe', v: null }], () => {
@@ -712,7 +712,116 @@
   mostraArma(); atualizaInv();
   SABER.forEach(sb => { if (!sb.el) { const d = document.createElement('div'); d.className = 'tag'; d.textContent = sb.t; $('saber').appendChild(d); sb.el = d; } });
 
-  window.__dbg = { irValdren, Q, heroi, ativo, AR, FERAS, golem, atacar, get vida() { return vida; }, set vida(v) { vida = v; }, abrirLoja, usarPoder: id => usarPoder(PW[id]), acao: () => acao(), get alvo() { return alvo; } };
+  // ===================== NÍVEL, PERFIL, INVENTÁRIO E FANTASIAS =====================
+  AR.nv = AR.nv || 1; AR.xp = AR.xp || 0; AR.fantasias = AR.fantasias || ['comum', 'celeste']; AR.fantasia = AR.fantasia || 'comum';
+  const NV_MAX = 100; const xpPara = n => 60 + n * 30;
+  function aplicaNivel() { VIDA_MAX = 100 + (AR.nv - 1) * 5; MANA_MAX = 100 + (AR.nv - 1) * 3; }
+  function ganhaXp(n, motivo) { if (AR.nv >= NV_MAX) return; AR.xp += n; let subiu = false; while (AR.nv < NV_MAX && AR.xp >= xpPara(AR.nv)) { AR.xp -= xpPara(AR.nv); AR.nv++; subiu = true; AR.pts++; }
+    if (AR.nv >= NV_MAX) AR.xp = 0; salvaAR(); atualizaNivel();
+    if (subiu) { aplicaNivel(); vida = VIDA_MAX; mana = MANA_MAX; atualizaPts(); fx('luz', [heroi.position.x, 0, heroi.position.z], 1.2); fx('cura', [heroi.position.x, 0, heroi.position.z], 1.6); flash('rgba(255,230,120,.45)');
+      const el = $('lvup'); el.innerHTML = `<small>SUBIU DE NÍVEL!</small>Nível ${AR.nv}<em>+5 vida · +3 mana · +1 ponto de habilidade</em>`; el.classList.remove('on'); void el.offsetWidth; el.classList.add('on'); setTimeout(fazRetrato, 300); }
+    else if (motivo) numero(heroi.position, '+' + n + ' XP', '#c8a8ff', 2.6); }
+  function atualizaNivel() { $('nv').textContent = 'Nv ' + AR.nv; $('xp-fill').style.width = (AR.nv >= NV_MAX ? 100 : AR.xp / xpPara(AR.nv) * 100) + '%'; }
+  const XP_TIPO = { lobo: 15, javali: 25, rato: 8, golem: 300 };
+
+  // ---- reflexo do ambiente pro metal parecer metal ----
+  const envTex = canvasTex(512, 256, (x, w, h) => { const g = x.createLinearGradient(0, 0, 0, h); g.addColorStop(0, '#5a7ab8'); g.addColorStop(0.35, '#cfe2ff'); g.addColorStop(0.5, '#ffffff'); g.addColorStop(0.53, '#8a8a90'); g.addColorStop(1, '#2a2a30'); x.fillStyle = g; x.fillRect(0, 0, w, h);
+    const s = x.createRadialGradient(w * 0.3, h * 0.22, 0, w * 0.3, h * 0.22, 40); s.addColorStop(0, '#ffffff'); s.addColorStop(1, 'rgba(255,255,255,0)'); x.fillStyle = s; x.fillRect(0, 0, w, h); x.fillStyle = 'rgba(255,255,255,.7)'; x.fillRect(w * 0.6, h * 0.3, w * 0.25, 6); });
+  envTex.mapping = T3.EquirectangularReflectionMapping; const pmrem = new T3.PMREMGenerator(renderer); const ENV = pmrem.fromEquirectangular(envTex).texture;
+  const MET = {}; function met(c, r, m) { const k = c + r + m; return MET[k] || (MET[k] = new T3.MeshStandardMaterial({ color: c, roughness: r, metalness: m, envMap: ENV, envMapIntensity: 1.25 })); }
+  const AZ = met('#2a5cc4', 0.28, 0.8), AZ2 = met('#1d3f96', 0.32, 0.82), BR = met('#cdd6e4', 0.22, 0.95), PR = met('#a8b4c4', 0.3, 0.95), TEC = met('#16203a', 0.85, 0.05), COU = met('#2a1c14', 0.7, 0.1);
+  const GEMA = new T3.MeshBasicMaterial({ color: '#7ae8ff', toneMapped: false });
+  const SPH2 = new T3.SphereGeometry(1, 32, 22), CYL2 = new T3.CylinderGeometry(1, 1, 1, 28), CONE2 = new T3.ConeGeometry(1, 1, 20), TOR2 = new T3.TorusGeometry(1, 0.1, 12, 40), TORF = new T3.TorusGeometry(1, 0.028, 8, 56);
+  const HSPH = new T3.SphereGeometry(1, 32, 16, 0, Math.PI * 2, 0, Math.PI * 0.55);
+  const BEV = (() => { const s = new T3.Shape(); s.moveTo(-0.5, -0.5); s.lineTo(0.5, -0.5); s.lineTo(0.5, 0.42); s.quadraticCurveTo(0, 0.62, -0.5, 0.42); s.lineTo(-0.5, -0.5); return new T3.ExtrudeGeometry(s, { depth: 1, bevelEnabled: true, bevelThickness: 0.08, bevelSize: 0.06, bevelSegments: 3 }); })();
+  function pc(p, geo, mat, x, y, z, sx, sy, sz, rx, ry, rz) { const m = new T3.Mesh(geo, mat); m.position.set(x, y, z); m.scale.set(sx, sy, sz); m.rotation.set(rx || 0, ry || 0, rz || 0); m.castShadow = true; p.add(m); return m; }
+  // ---- Armadura Celeste ----
+  const FANT = {
+    comum: { nome: 'Roupa de Brumafria', icone: '🧥', def: 0, desc: 'A roupa de lã que sua mãe costurou. Quentinha, mas não segura mordida de lobo.' },
+    celeste: { nome: 'Armadura Celeste', icone: '🛡️', def: 25, desc: 'Placas de aço azul-celeste com bordas de prata polida. Reduz 25% do dano recebido.' } };
+  const armadura = []; let tabardo = null; const MALHA = met('#5a6274', 0.45, 0.85); const roupaBase = [];
+  { const P = heroi.userData.P; const A = (p, ...a) => { const m = pc(p, ...a); armadura.push(m); return m; };
+    // a roupa de baixo vira cota de malha quando veste a armadura
+    heroi.traverse(o => { if (o.isMesh && o.material && o.material.color && ['#8a6a40', '#6a4a2a', '#4a3a2a', '#3a2a1a', '#3a2414'].some(c => o.material.color.getHexString() === c.slice(1))) roupaBase.push([o, o.material]); });
+    const rebite = (p, x, y, z) => A(p, SPH2, PR, x, y, z, 0.009, 0.009, 0.006);
+    // peitoral (uma peça só, com quilha no meio) e costas
+    A(P.spine, SPH2, AZ, 0, 0.385, 0.0, 0.205, 0.235, 0.15);
+    A(P.spine, BOX, BR, 0, 0.4, 0.143, 0.018, 0.3, 0.02, -0.18);
+    
+    [-1, 1].forEach(s => {
+      for (let k = 0; k < 4; k++) rebite(P.spine, s * (0.07 + k * 0.03), 0.52 - k * 0.035, 0.12 - k * 0.012);
+      A(P.spine, CONE2, BR, s * 0.15, 0.54, 0.05, 0.018, 0.08, 0.018, 0.3, 0, -s * 0.9); });
+    // faixas do abdômen com borda de prata
+    for (let i = 0; i < 3; i++) { A(P.spine, CYL2, AZ, 0, 0.2 - i * 0.048, 0, 0.19 - i * 0.004, 0.044, 0.137); A(P.spine, TORF, BR, 0, 0.178 - i * 0.048, 0, 0.19 - i * 0.004, 0.137, 0.19 - i * 0.004, Math.PI / 2, 0, 0); }
+    // gorjal
+    A(P.spine, CYL2, AZ2, 0, 0.6, -0.01, 0.1, 0.07, 0.085); A(P.spine, TORF, BR, 0, 0.635, -0.01, 0.1, 0.085, 0.1, Math.PI / 2, 0, 0);
+    // cinto e fivela
+    A(P.spine, CYL2, COU, 0, 0.05, 0, 0.193, 0.05, 0.139); A(P.spine, BEV, BR, 0, 0.026, 0.132, 0.07, 0.07, 0.016); A(P.spine, SPH2, GEMA, 0, 0.05, 0.155, 0.017, 0.021, 0.01);
+    // saia de malha
+    A(P.hips, CYL2, MALHA, 0, -0.07, 0, 0.17, 0.14, 0.125);
+    // tabardo azul-escuro com a estrela celeste
+    tabardo = grp(P.hips, 0, -0.03, 0.14); A(tabardo, BOX, BR, 0, -0.2, 0, 0.16, 0.4, 0.01); A(tabardo, BOX, TEC, 0, -0.2, 0.004, 0.13, 0.38, 0.01); A(tabardo, CONE2, BR, 0, -0.415, 0.0, 0.08, 0.06, 0.005, Math.PI, 0, 0);
+    { const st = grp(tabardo, 0, -0.13, 0.011); A(st, TOR2, PR, 0, 0, 0, 0.042, 0.042, 0.3); for (let k = 0; k < 4; k++) A(st, CONE2, BR, Math.sin(k * Math.PI / 2) * 0.05, Math.cos(k * Math.PI / 2) * 0.05, 0, 0.011, 0.05, 0.004, 0, 0, -k * Math.PI / 2); A(st, SPH2, GEMA, 0, 0, 0.004, 0.015, 0.015, 0.006); }
+    const costas = grp(P.hips, 0, -0.03, -0.13); A(costas, BOX, TEC, 0, -0.17, 0, 0.17, 0.34, 0.01); tabardo.userData.costas = costas;
+    ['L', 'R'].forEach((s, i) => { const sx = i ? 1 : -1;
+      // ombreira de 3 lâminas, cada uma com borda de prata
+      const sh = P['sh' + s];
+      [[0.02, 0.16, 0.14], [-0.075, 0.145, 0.09]].forEach(([y, r, h], k) => { const z = -sx * (0.2 + k * 0.15); A(sh, SPH2, k ? AZ2 : AZ, sx * (0.035 + k * 0.012), y, 0, r, h, r * 1.02, 0, 0, z); A(sh, TORF, BR, sx * (0.035 + k * 0.012) + sx * Math.sin(-z) * 0, y - h * 0.18, 0, r * 0.99, r * 1.01, r, Math.PI / 2, 0, z); });
+      [[0.0, 0.13, 0.04, 0.3], [0.06, 0.1, -0.05, 0.24], [0.11, 0.06, 0.0, 0.17]].forEach(([dx, y, z, h]) => A(sh, CONE2, BR, sx * (0.02 + dx), y, z, 0.024, h, 0.024, z * 2, 0, -sx * (0.35 + dx * 6)));
+      for (let k = 0; k < 5; k++) { const a = -0.9 + k * 0.45; rebite(sh, sx * (0.05 + Math.cos(a) * 0.0) + sx * 0.12, 0.0, Math.sin(a) * 0.13); }
+      A(sh, SPH2, GEMA, sx * 0.165, 0.0, 0.0, 0.012, 0.016, 0.016);
+      A(sh, CYL2, AZ, 0, -0.19, 0, 0.064, 0.15, 0.064); A(sh, TORF, BR, 0, -0.265, 0, 0.064, 0.064, 0.064, Math.PI / 2, 0, 0);
+      // cotovelo, braçadeira e manopla
+      const el = P['el' + s]; A(el, SPH2, BR, 0, 0, 0.005, 0.062, 0.06, 0.062); A(el, HSPH, BR, sx * 0.03, 0, -0.02, 0.05, 0.07, 0.05, 0, 0, -sx * Math.PI / 2); A(el, CONE2, BR, 0, 0.0, -0.075, 0.018, 0.08, 0.018, -Math.PI / 2, 0, 0);
+      A(el, CYL2, AZ, 0, -0.14, 0, 0.061, 0.16, 0.059); A(el, TORF, BR, 0, -0.065, 0, 0.061, 0.059, 0.061, Math.PI / 2, 0, 0); A(el, CYL2, AZ2, 0, -0.225, 0, 0.073, 0.05, 0.069); A(el, TORF, BR, 0, -0.25, 0, 0.073, 0.069, 0.073, Math.PI / 2, 0, 0);
+      A(el, SPH2, MALHA, 0, -0.29, 0.01, 0.057, 0.065, 0.051); A(el, HSPH, PR, 0, -0.275, 0.012, 0.06, 0.05, 0.055, -0.3, 0, 0);
+      // coxa, saiote lateral, joelho, canela e pé
+      const th = P['th' + s]; A(th, SPH2, AZ, sx * 0.05, -0.06, 0.0, 0.1, 0.14, 0.115, 0, 0, sx * 0.12); A(th, TORF, BR, sx * 0.055, -0.15, 0, 0.1, 0.115, 0.1, Math.PI / 2, 0, sx * 0.12);
+      A(th, CYL2, AZ, 0, -0.25, 0, 0.078, 0.26, 0.078); A(th, BOX, BR, 0, -0.24, 0.076, 0.016, 0.24, 0.012);
+      const kn = P['kn' + s]; A(kn, SPH2, BR, 0, 0, 0.03, 0.072, 0.072, 0.065); A(kn, SPH2, AZ2, sx * 0.052, 0, 0.015, 0.025, 0.06, 0.05); A(kn, CONE2, BR, 0, 0.0, 0.1, 0.018, 0.06, 0.018, Math.PI / 2, 0, 0);
+      A(kn, CYL2, AZ, 0, -0.21, 0, 0.069, 0.3, 0.069); A(kn, BOX, BR, 0, -0.2, 0.068, 0.018, 0.28, 0.012); A(kn, TORF, BR, 0, -0.06, 0, 0.069, 0.069, 0.069, Math.PI / 2, 0, 0); A(kn, TORF, BR, 0, -0.36, 0, 0.074, 0.074, 0.074, Math.PI / 2, 0, 0);
+      const ft = P['ft' + s]; A(ft, SPH2, MALHA, 0, 0.005, 0.05, 0.075, 0.062, 0.142); for (let k = 0; k < 3; k++) A(ft, SPH2, k % 2 ? AZ2 : PR, 0, 0.02 - k * 0.004, 0.1 + k * 0.04, 0.072 - k * 0.006, 0.05, 0.05); A(ft, BOX, COU, 0, -0.048, 0.05, 0.125, 0.02, 0.27); });
+    armadura.forEach(m => m.visible = false); }
+  function vesteFantasia(k) { AR.fantasia = k; salvaAR(); const on = k === 'celeste'; armadura.forEach(m => m.visible = on); roupaBase.forEach(([o, mt]) => o.material = on ? MALHA : mt); setTimeout(fazRetrato, 60); }
+  function defesa() { return FANT[AR.fantasia].def || 0; }
+  function armaduraFrame() { if (!tabardo || AR.fantasia !== 'celeste') return; const P = heroi.userData.P; const f = Math.min(P.thL.rotation.x, P.thR.rotation.x), b = Math.max(P.thL.rotation.x, P.thR.rotation.x); tabardo.rotation.x = Math.min(0, f) * 0.95; tabardo.userData.costas.rotation.x = Math.max(0, b) * 0.95; }
+
+  // ---- retrato e prévia (render do próprio Leonardo) ----
+  const rtR = new T3.WebGLRenderTarget(128, 128); rtR.texture.colorSpace = T3.SRGBColorSpace; const rtV = new T3.WebGLRenderTarget(240, 320); rtV.texture.colorSpace = T3.SRGBColorSpace;
+  const camR = new T3.PerspectiveCamera(28, 1, 0.05, 60), camV = new T3.PerspectiveCamera(26, 240 / 320, 0.05, 60); const bufR = new Uint8Array(128 * 128 * 4), bufV = new Uint8Array(240 * 320 * 4);
+  function renderPara(rt, c, buf, canvas, w, h) { const esc = []; world.children.forEach(o => { if (o !== heroi && o.visible) { esc.push(o); o.visible = false; } }); const bg = scene.background, fg = scene.fog; scene.background = null; scene.fog = null;
+    renderer.setRenderTarget(rt); renderer.setClearColor(0x000000, 0); renderer.clear(); renderer.render(scene, c); renderer.readRenderTargetPixels(rt, 0, 0, w, h, buf); renderer.setRenderTarget(null);
+    scene.background = bg; scene.fog = fg; esc.forEach(o => o.visible = true);
+    const x = canvas.getContext('2d'); const img = x.createImageData(w, h); for (let y = 0; y < h; y++) img.data.set(buf.subarray((h - 1 - y) * w * 4, (h - y) * w * 4), y * w * 4); x.clearRect(0, 0, w, h); x.putImageData(img, 0, 0); }
+  const vR = new T3.Vector3();
+  function fazRetrato() { const P = heroi.userData.P; heroi.updateMatrixWorld(true); P.head.getWorldPosition(vR); const a = heroi.rotation.y + 0.35; camR.position.set(vR.x + Math.sin(a) * 0.95, vR.y + 0.14, vR.z + Math.cos(a) * 0.95); camR.lookAt(vR.x, vR.y + 0.06, vR.z); renderPara(rtR, camR, bufR, $('retrato'), 128, 128); }
+  let girar = 0;
+  function fazPrevia(dt) { girar += dt * 0.6; const p = heroi.position; const a = heroi.rotation.y + Math.sin(girar) * 0.9; camV.position.set(p.x + Math.sin(a) * 3.6, p.y + 1.0, p.z + Math.cos(a) * 3.6); camV.lookAt(p.x, p.y + 0.78, p.z); renderPara(rtV, camV, bufV, $('previa'), 240, 320); }
+
+  // ---- janela do perfil ----
+  let abaPerfil = 'status';
+  function abrirPerfil() { if (conversa || cenaQ) return; $('perfil').hidden = false; desenhaPerfil(); }
+  function desenhaPerfil() { document.querySelectorAll('#perfil .aba').forEach(b => b.classList.toggle('on', b.dataset.a === abaPerfil)); const C = $('pf-cont'); const A = ARMAS[AR.arma];
+    $('pf-nome').innerHTML = `Leonardo <b>Nv ${AR.nv}</b>`; $('pf-xp').style.width = (AR.nv >= NV_MAX ? 100 : AR.xp / xpPara(AR.nv) * 100) + '%'; $('pf-xpt').textContent = AR.nv >= NV_MAX ? 'NÍVEL MÁXIMO' : `XP ${AR.xp} / ${xpPara(AR.nv)}`;
+    if (abaPerfil === 'status') { const ab = AR.abates; const tot = Object.values(ab).reduce((s, v) => s + v, 0);
+      const L = [['❤️', 'Vida', `${Math.ceil(vida)} / ${VIDA_MAX}`], ['🔷', 'Mana', `${Math.round(mana)} / ${MANA_MAX}`], ['⚔️', 'Ataque', `${Math.round(A.dano * (1 + (AR.nv - 1) * 0.02))} (${A.icone} ${A.nome})`], ['🛡️', 'Defesa', `${defesa()}% (${FANT[AR.fantasia].nome})`],
+        ['🌳', 'Pontos de habilidade', AR.pts], ['🐺', 'Bichos derrotados', `${tot}${ab.golem ? ' · Golem ✔' : ''}`], ['🏆', 'Finais', `${finais.length} / 6`], ['💰', 'Moedas', AR.inv.moedas]];
+      C.innerHTML = '<div class="stats">' + L.map(([i, n, v]) => `<div class="st"><span>${i}</span><small>${n}</small><b>${v}</b></div>`).join('') + '</div><p class="dica">Cada nível dá +5 de vida, +3 de mana, +2% de ataque e 1 ponto de habilidade. Ganhe XP derrotando bichos, falando com as pessoas e fazendo as missões.</p>'; return; }
+    C.innerHTML = '';
+    const sec = (t) => { const h = document.createElement('div'); h.className = 'sec'; h.textContent = t; C.appendChild(h); const g = document.createElement('div'); g.className = 'grade'; C.appendChild(g); return g; };
+    const cel = (g, ic, nome, sub, on, fn, tag) => { const b = document.createElement('button'); b.className = 'cel' + (on ? ' on' : '') + (fn ? '' : ' fixa'); b.innerHTML = `<span class="ic">${ic}</span><b>${nome}</b><small>${sub}</small>${tag ? `<em>${tag}</em>` : ''}`; if (fn) tapBtn(b, fn); g.appendChild(b); };
+    let g = sec('👕 Fantasias');
+    Object.keys(FANT).forEach(k => { const F = FANT[k], tem = AR.fantasias.includes(k); cel(g, F.icone, F.nome, tem ? (F.def ? 'Defesa +' + F.def + '%' : 'Sem defesa') : '🔒', AR.fantasia === k, tem && AR.fantasia !== k ? () => { vesteFantasia(k); aviso('Vestiu: ' + F.icone + ' ' + F.nome, '#7ac8ff'); desenhaPerfil(); } : null, AR.fantasia === k ? 'VESTIDO' : ''); });
+    g = sec('⚔️ Armas');
+    Object.keys(ARMAS).forEach(k => { const W = ARMAS[k], tem = AR.armas.includes(k); cel(g, tem ? W.icone : '🔒', W.nome, tem ? 'Dano ' + W.dano : 'Na Forja', AR.arma === k, tem && AR.arma !== k ? () => { AR.arma = k; salvaAR(); mostraArma(); desenhaPerfil(); } : null, AR.arma === k ? 'NA MÃO' : ''); });
+    g = sec('🎒 Itens');
+    cel(g, '💰', 'Moedas', AR.inv.moedas + 'x', false, null); cel(g, '🐺', 'Pele de lobo', AR.inv.pele + 'x · vende na Forja', false, null);
+    cel(g, '🍖', 'Carne', AR.inv.carne + 'x · toque pra comer', false, AR.inv.carne ? () => { comer(); desenhaPerfil(); } : null); if (AR.inv.coracao) cel(g, '💎', 'Coração de Gelo', AR.inv.coracao + 'x · Espada Glacial', false, null); }
+  document.querySelectorAll('#perfil .aba').forEach(b => tapBtn(b, () => { abaPerfil = b.dataset.a; desenhaPerfil(); }));
+  tapBtn($('perfil-btn'), abrirPerfil); tapBtn($('pf-fecha'), () => { $('perfil').hidden = true; });
+  let previaT = 0; function perfilFrame(dt) { if ($('perfil').hidden) return; previaT += dt; if (previaT > 0.06) { fazPrevia(previaT); previaT = 0; } }
+  aplicaNivel(); atualizaNivel(); vesteFantasia(AR.fantasia); setTimeout(fazRetrato, 700);
+  window.__dbg = { renderer, scene, world, ganhaXp, vesteFantasia, abrirPerfil, fazRetrato, irValdren, Q, heroi, ativo, AR, FERAS, golem, atacar, get vida() { return vida; }, set vida(v) { vida = v; }, abrirLoja, usarPoder: id => usarPoder(PW[id]), acao: () => acao(), get alvo() { return alvo; } };
   // ---------- laço do jogo ----------
   let vy = 0, noChao = true, facing = 0, vel = 0, gT = 0, last = performance.now();
   const ANDAR = 3.0, CORRER = 6.5, GRAV = 22, PULO = 7.6; const tmp = new T3.Vector3();
@@ -734,7 +843,7 @@
     if (!noChao) pose(heroi, gT, { mood: 'smile', arms: { shL: [-2.6, 0, -0.3], shR: [-2.6, 0, 0.3], elL: [-0.3, 0, 0], elR: [-0.3, 0, 0] }, legs: { thL: -0.9, knL: 1.4, thR: -0.3, knR: 0.6 } });
     else if (vel > 0.4) pose(heroi, gT, vel > 4.2 ? { run: true, mood: 'smile' } : { walk: true, mood: 'neutral' });
     else pose(heroi, gT, { mood: conversa ? 'smile' : 'neutral' });
-    armaPose();
+    armaPose(); armaduraFrame();
     sombra.position.set(p.x, 0.012, p.z); sombra.material.opacity = 0.2 * (1 - clamp(p.y / 4));
     // personagens: olham pro herói quando ele chega perto
     alvo = null; let melhor = 2.6;
@@ -755,7 +864,7 @@
     neve.visible = !dentro && zona === 'vila'; if (neve.visible) neve.userData.place((i, d) => { const R = rng(i + 91); const k = ((gT * (0.08 + R() * 0.06) + R()) % 1); d.position.set(p.x + (R() - .5) * 30 + Math.sin(gT + i) * 0.4, 12 - k * 12, p.z + (R() - .5) * 30); d.scale.setScalar(d.position.distanceTo(cam.position) < 2.5 ? 0.0001 : 0.03 + R() * 0.04); });
     fumaca.visible = !dentro && zona === 'vila'; if (fumaca.visible) fumaca.userData.place((i, d) => { const c = CHIM[i % CHIM.length]; const R = rng(i + 5); const k = ((gT * 0.12 + R()) % 1); c[0].updateMatrixWorld(); v3.set(c[1], c[2], c[3]); c[0].localToWorld(v3); d.position.set(v3.x + k * 1.6 + Math.sin(gT + i) * 0.2, v3.y + k * 4, v3.z); d.scale.setScalar(0.25 + k * 0.9); });
     fogoL.intensity = dentro ? 3.2 + Math.sin(gT * 13) * 0.4 : 0; chamas.forEach((f, i) => f.scale.y = 0.5 * (1 + Math.sin(gT * 15 + i * 2) * 0.2));
-    poderesFrame(dt, p); combateFrame(dt, p); miniT += dt; if (miniT > 0.08) { miniT = 0; desenhaMini(p); }
+    poderesFrame(dt, p); combateFrame(dt, p); perfilFrame(dt); miniT += dt; if (miniT > 0.08) { miniT = 0; desenhaMini(p); }
     // câmera
     if (camId === null && vel > 0.5 && !dentro) { let d = (facing + Math.PI) - camYaw; while (d > Math.PI) d -= Math.PI * 2; while (d < -Math.PI) d += Math.PI * 2; camYaw += d * clamp(dt * 0.9); }
     const cd = dentro ? Math.min(camDist, 3.8) : camDist; const cp = dentro ? Math.max(camPitch, 0.45) : camPitch;
