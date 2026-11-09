@@ -19,3 +19,7 @@
   function grp(p, x = 0, y = 0, z = 0) { const g = new T3.Group(); g.position.set(x, y, z); if (p) p.add(g); return g; }
   function resize() { const w = window.innerWidth, h = window.innerHeight; renderer.setSize(w, h, false); cam.aspect = w / h; cam.updateProjectionMatrix(); }
   window.addEventListener('resize', resize); resize();
+  const eOut = x => 1 - Math.pow(1 - x, 3);
+  const BMATS = {}; function bmat(c) { return BMATS[c] || (BMATS[c] = new T3.MeshBasicMaterial({ color: c, toneMapped: false })); }
+  function particles(p, n, color, size) { const im = new T3.InstancedMesh(BOX, bmat(color), n); im.frustumCulled = false; p.add(im); const d = new T3.Object3D();
+    im.userData.place = function (fn) { for (let i = 0; i < n; i++) { d.scale.setScalar(size); d.rotation.set(0, 0, 0); const r = fn(i, d); if (r === false) d.scale.setScalar(0.0001); d.updateMatrix(); im.setMatrixAt(i, d.matrix); } im.instanceMatrix.needsUpdate = true; }; return im; }
