@@ -36,7 +36,7 @@
   #aviso.on{opacity:1;transform:translate(-50%,0)}
   #saber .tag{position:fixed;transform:translate(-50%,-100%);max-width:200px;padding:6px 10px;border-radius:10px;background:rgba(255,246,220,.94);color:#3a2a10;font-size:11px;font-weight:800;line-height:1.25;text-align:center;border:2px solid #e8b030;box-shadow:0 0 14px rgba(255,210,80,.6);pointer-events:none;display:none}
   #saber .tag::before{content:"💡 "}
-  #obj{position:fixed;left:50%;top:calc(12px + env(safe-area-inset-top,0px));transform:translateX(-50%);max-width:min(460px,60vw);padding:6px 14px;border-radius:12px;background:rgba(20,18,46,.78);border:2px solid #ffd23c;color:#fff;font-size:13px;font-weight:800;text-align:center;pointer-events:none}
+  #obj{position:fixed;left:44%;top:calc(12px + env(safe-area-inset-top,0px));transform:translateX(-50%);max-width:min(460px,60vw);padding:6px 14px;border-radius:12px;background:rgba(20,18,46,.78);border:2px solid #ffd23c;color:#fff;font-size:13px;font-weight:800;text-align:center;pointer-events:none}
   #obj b{color:#ffd23c;letter-spacing:1px;font-size:10px;display:block}
   #fala-esc{display:grid;gap:8px;margin-top:8px}
   .esc{display:block;text-align:left;padding:10px 12px;border-radius:12px;border:2px solid #6a4a2a;background:#fff8e8;color:#2a2230;font-family:inherit;font-size:15px;font-weight:700}
@@ -58,6 +58,15 @@
   #fim .row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
   #fim button{font-family:inherit;font-weight:800;font-size:14px;padding:10px 18px;border-radius:999px;border:2px solid #e3b75e;background:#e3b75e;color:#14122e}
   #fim button.ghost{background:transparent;color:#e3b75e}
+  #mini{position:fixed;right:calc(76px + env(safe-area-inset-right,0px));top:calc(10px + env(safe-area-inset-top,0px));width:116px;height:116px;border-radius:50%;box-shadow:0 4px 14px rgba(0,0,0,.35)}
+  #casa{right:calc(16px + env(safe-area-inset-right,0px));top:calc(72px + env(safe-area-inset-top,0px));width:50px;height:50px;font-size:22px}
+  #mapa{position:fixed;inset:0;background:rgba(6,8,18,.86);display:flex;align-items:center;justify-content:center;z-index:25}
+  #mapa .box{width:min(440px,86vw);padding:18px;border-radius:16px;background:#f6efe0;border:3px solid #6a4a2a;color:#2a2230}
+  #mapa h3{margin:0 0 4px;font-size:20px}#mapa p{margin:0 0 12px;font-size:13px;color:#7a6a5a}
+  #mapa-lista{display:grid;gap:10px}
+  .lugar{text-align:left;padding:12px 14px;border-radius:12px;border:2px solid #6a4a2a;background:#fff;font-family:inherit;font-size:16px;color:#2a2230}
+  .lugar small{display:block;font-size:12px;color:#7a6a5a;font-weight:600}.lugar.aqui{background:#ffe9a8}.lugar:disabled{opacity:.5}
+  #mapa-fecha{margin-top:12px;width:100%;padding:10px;border-radius:999px;border:0;background:#6a4a2a;color:#fff;font-family:inherit;font-weight:800;font-size:14px}
   #fala{z-index:15;position:fixed;left:50%;top:calc(70px + env(safe-area-inset-top,0px));transform:translateX(-50%);width:min(620px,70vw);padding:14px 18px 12px;border-radius:18px;background:rgba(250,246,236,.96);color:#2a2230;box-shadow:0 10px 30px rgba(0,0,0,.35);border:3px solid #6a4a2a}
   #fala-nome{display:inline-block;margin:-30px 0 6px;padding:4px 12px;border-radius:10px;background:#6a4a2a;color:#fff;font-weight:900;font-size:15px}
   #fala-txt{font-size:18px;line-height:1.35;font-weight:600}
@@ -76,6 +85,9 @@
 <button class="btn" id="pular">PULAR</button>
 <button class="btn" id="acao" hidden>FALAR</button>
 <button class="btn" id="ciclo">☾</button>
+<canvas id="mini" width="232" height="232"></canvas>
+<button class="btn" id="casa" title="Voltar pra casa">🏠</button>
+<div id="mapa" hidden><div class="box"><h3>🗺️ Mapa de Aetherion</h3><p>Toque num lugar pra viajar.</p><div id="mapa-lista"></div><button id="mapa-fecha">Fechar</button></div></div>
 <div id="saber"></div>
 <div id="aviso"></div>
 <div id="cena" hidden><div id="cena-quem"></div><div id="cena-txt"></div><div id="cena-mais">toque pra continuar ▸</div></div>

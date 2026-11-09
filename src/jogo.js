@@ -354,6 +354,32 @@
   SABER.push({ x: VX + 20, y: 3.2, z: 4, t: 'Cólera! A água do poço está suja de esgoto. Ferver mata a bactéria.' }, { x: VX, y: 2.2, z: -12.5, t: 'Ferver a 100 °C mata os micróbios. Por isso o caldo fervido não estraga.' }, { x: VX - 10, y: 1.4, z: 9.6, t: 'Esgoto a céu aberto: é assim que a doença chega na água.' }, { x: VX, y: 9, z: -17, t: 'Academia Real: aqui ainda acham que doença é castigo.' });
   SABER.forEach(sb => { if (!sb.el) { const d = document.createElement('div'); d.className = 'tag'; d.textContent = sb.t; $('saber').appendChild(d); sb.el = d; } });
 
+  // ---------- MAPA: minimapa e viagem rápida ----------
+  const mini = $('mini'), mx = mini.getContext('2d'); let miniT = 0;
+  function desenhaMini(p) { const W = mini.width, H = mini.height, k = zona === 'valdren' ? 3.6 : dentro ? 9 : 4.8; mx.setTransform(1, 0, 0, 1, 0, 0); mx.clearRect(0, 0, W, H);
+    mx.save(); mx.beginPath(); mx.arc(W / 2, H / 2, W / 2 - 2, 0, 7); mx.clip();
+    mx.fillStyle = zona === 'valdren' ? '#b8ab98' : dentro ? '#7a5a3a' : '#eef3fa'; mx.fillRect(0, 0, W, H);
+    mx.translate(W / 2, H / 2); mx.scale(k, k); mx.translate(-p.x, -p.z);
+    if (zona === 'valdren') { mx.fillStyle = '#4a7a9a'; mx.fillRect(VX + 28, -45, 40, 90); mx.strokeStyle = '#7a7068'; mx.lineWidth = 1.6; mx.beginPath(); mx.arc(VX, 0, 46, 0, 7); mx.stroke(); }
+    else if (!dentro) { mx.fillStyle = '#cbbfae'; mx.beginPath(); mx.arc(0, 0, 5.2, 0, 7); mx.arc(0, 0, 3.2, 0, 7, true); mx.fill(); }
+    const lista = zona === 'valdren' ? COLV : dentro ? COLC : COL;
+    lista.forEach(o => { if (o.t === 'c') { if (o.npc) return; mx.fillStyle = zona === 'vila' && !dentro ? '#3a7a4a' : '#7a7068'; mx.beginPath(); mx.arc(o.x, o.z, Math.max(o.r, 0.5), 0, 7); mx.fill(); }
+      else { mx.save(); mx.translate(o.x, o.z); mx.rotate(-o.ry); mx.fillStyle = zona === 'valdren' ? '#8a6a5a' : '#8a7a8a'; mx.fillRect(-o.hw, -o.hd, o.hw * 2, o.hd * 2); mx.restore(); } });
+    if (zona === 'vila' && !dentro) { const d = casaFamilia.position; mx.fillStyle = '#e8b030'; mx.fillRect(d.x - 2.4, d.z - 2.2, 4.8, 4.4); mx.fillStyle = '#4a2a10'; mx.font = 'bold 3.4px sans-serif'; mx.textAlign = 'center'; mx.fillText('🏠', d.x, d.z + 1.2); }
+    const npcs = zona === 'valdren' ? NPCV : dentro ? [] : NPCS; mx.fillStyle = '#ffd23c'; mx.strokeStyle = '#3a2a10'; mx.lineWidth = 0.4; npcs.forEach(n => { mx.beginPath(); mx.arc(n.x, n.z, 0.9, 0, 7); mx.fill(); mx.stroke(); });
+    if (Q.alvoQ && zona === 'valdren') { const [ax, az] = Q.alvoQ; const t = 1 + Math.sin(gT * 5) * 0.25; mx.fillStyle = '#ff4a3a'; mx.beginPath(); mx.arc(ax, az, 1.4 * t, 0, 7); mx.fill(); }
+    mx.restore();
+    mx.save(); mx.translate(W / 2, H / 2); mx.rotate(-facing + Math.PI); mx.fillStyle = '#2a7aff'; mx.strokeStyle = '#fff'; mx.lineWidth = 2; mx.beginPath(); mx.moveTo(0, -9); mx.lineTo(6, 6); mx.lineTo(0, 3); mx.lineTo(-6, 6); mx.closePath(); mx.fill(); mx.stroke(); mx.restore();
+    mx.strokeStyle = 'rgba(255,255,255,.9)'; mx.lineWidth = 3; mx.beginPath(); mx.arc(W / 2, H / 2, W / 2 - 2, 0, 7); mx.stroke(); mx.fillStyle = '#fff'; mx.font = 'bold 12px sans-serif'; mx.textAlign = 'center'; mx.fillText('N', W / 2, 13); }
+  function abrirMapa() { if (conversa || cenaQ) return; const lib = Q.passo >= 1 || finais.some(f => f[0] === 'A'); const L = [
+      { id: 'vila', nome: 'Vila de Brumafria', sub: 'Sua cidade natal 🏠', on: true },
+      { id: 'valdren', nome: 'Valdren', sub: lib ? 'A capital · Academia Real' : '🔒 Fale com o Professor pra ir', on: lib } ];
+    $('mapa-lista').innerHTML = ''; L.forEach(l => { const b = document.createElement('button'); b.className = 'lugar' + (zona === l.id ? ' aqui' : ''); b.disabled = !l.on; b.innerHTML = `<b>${l.nome}</b><small>${zona === l.id ? '📍 Você está aqui' : l.sub}</small>`; if (l.on && zona !== l.id) tapBtn(b, () => viajar(l.id)); $('mapa-lista').appendChild(b); }); $('mapa').hidden = false; }
+  function viajar(id) { $('mapa').hidden = true; if (Q.naCarroca) return; cena([{ t: id === 'vila' ? 'De volta pra casa... Brumafria' : 'A caminho de Valdren...', v: null }], () => {
+      dentro = false; zona = id; if (id === 'vila') { heroi.position.set(0, 0, 4.2); facing = Math.PI; camYaw = 0; cam.position.set(0, 3, 10); mostrarLugar('Vila de Brumafria'); }
+      else { heroi.position.set(VX, 0, 40); facing = Math.PI; camYaw = 0; cam.position.set(VX, 3, 46); modo = Q.noite ? 'noite' : 'dia'; mostrarLugar('Valdren · a capital'); } }); }
+  tapBtn(mini, abrirMapa); tapBtn($('mapa-fecha'), () => { $('mapa').hidden = true; }); tapBtn($('casa'), () => { if (zona === 'vila' && !dentro) { aviso('Você já está em Brumafria, sua cidade natal.', '#ffd23c'); return; } if (dentro) { aviso('Você está dentro de casa. A porta fica atrás de você.', '#ffd23c'); return; } viajar('vila'); });
+
   window.__dbg = { irValdren, Q, heroi, ativo, acao: () => acao(), get alvo() { return alvo; } };
   // ---------- laço do jogo ----------
   let vy = 0, noChao = true, facing = 0, vel = 0, gT = 0, last = performance.now();
@@ -395,7 +421,7 @@
     neve.visible = !dentro && zona === 'vila'; if (neve.visible) neve.userData.place((i, d) => { const R = rng(i + 91); const k = ((gT * (0.08 + R() * 0.06) + R()) % 1); d.position.set(p.x + (R() - .5) * 30 + Math.sin(gT + i) * 0.4, 12 - k * 12, p.z + (R() - .5) * 30); d.scale.setScalar(d.position.distanceTo(cam.position) < 2.5 ? 0.0001 : 0.03 + R() * 0.04); });
     fumaca.visible = !dentro && zona === 'vila'; if (fumaca.visible) fumaca.userData.place((i, d) => { const c = CHIM[i % CHIM.length]; const R = rng(i + 5); const k = ((gT * 0.12 + R()) % 1); c[0].updateMatrixWorld(); v3.set(c[1], c[2], c[3]); c[0].localToWorld(v3); d.position.set(v3.x + k * 1.6 + Math.sin(gT + i) * 0.2, v3.y + k * 4, v3.z); d.scale.setScalar(0.25 + k * 0.9); });
     fogoL.intensity = dentro ? 3.2 + Math.sin(gT * 13) * 0.4 : 0; chamas.forEach((f, i) => f.scale.y = 0.5 * (1 + Math.sin(gT * 15 + i * 2) * 0.2));
-    poderesFrame(dt, p);
+    poderesFrame(dt, p); miniT += dt; if (miniT > 0.08) { miniT = 0; desenhaMini(p); }
     // câmera
     if (camId === null && vel > 0.5 && !dentro) { let d = (facing + Math.PI) - camYaw; while (d > Math.PI) d -= Math.PI * 2; while (d < -Math.PI) d += Math.PI * 2; camYaw += d * clamp(dt * 0.9); }
     const cd = dentro ? Math.min(camDist, 3.8) : camDist; const cp = dentro ? Math.max(camPitch, 0.45) : camPitch;
