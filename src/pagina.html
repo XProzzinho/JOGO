@@ -18,13 +18,13 @@
   #tit{position:fixed;left:calc(16px + env(safe-area-inset-left,0px));top:calc(14px + env(safe-area-inset-top,0px));padding:8px 14px;border-radius:14px;background:rgba(20,18,46,.6);color:#fff;font-weight:800;font-size:14px;letter-spacing:.5px}
   #dica{position:fixed;left:50%;top:calc(64px + env(safe-area-inset-top,0px));transform:translateX(-50%);padding:10px 16px;border-radius:14px;background:rgba(20,18,46,.7);color:#fff;font-size:14px;text-align:center;max-width:88vw;transition:opacity 1s}
   #dica.some{opacity:0}
-  #acao{right:calc(150px + env(safe-area-inset-right,0px));bottom:calc(130px + env(safe-area-inset-bottom,0px));width:96px;height:96px;font-size:16px;background:#ffd23c;animation:pulsa 1.2s ease-in-out infinite}
+  #acao{right:calc(232px + env(safe-area-inset-right,0px));bottom:calc(150px + env(safe-area-inset-bottom,0px));width:88px;height:88px;font-size:16px;background:#ffd23c;animation:pulsa 1.2s ease-in-out infinite}
   @keyframes pulsa{50%{transform:scale(1.08)}}
   #ciclo{right:calc(16px + env(safe-area-inset-right,0px));top:calc(14px + env(safe-area-inset-top,0px));width:50px;height:50px;font-size:24px}
   #lugar{position:fixed;left:50%;top:28%;transform:translate(-50%,-10px);font-weight:900;font-size:34px;color:#fff;letter-spacing:2px;text-shadow:0 4px 18px rgba(0,0,0,.6);opacity:0;transition:opacity .6s,transform .6s;pointer-events:none;white-space:nowrap}
   #lugar.on{opacity:1;transform:translate(-50%,0)}
   #hud{position:fixed;left:50%;bottom:calc(10px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:6px;pointer-events:none}
-  #mana{position:relative;width:260px;height:14px;border-radius:8px;background:rgba(10,20,50,.6);border:2px solid rgba(255,255,255,.7);overflow:hidden}
+  #mana{position:relative;width:260px;height:13px;border-radius:8px;background:rgba(10,20,50,.6);border:2px solid rgba(255,255,255,.7);overflow:hidden}
   #mana-fill{position:absolute;left:0;top:0;bottom:0;width:100%;background:linear-gradient(90deg,#3a8aff,#7ad8ff);transition:width .1s}
   #mana-txt{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;color:#fff;letter-spacing:1px;text-shadow:0 1px 2px #000}
   #poderes{display:flex;gap:6px;pointer-events:auto}
@@ -36,6 +36,30 @@
   .slot:nth-child(2){margin-right:8px}
   #arv-btn{right:calc(16px + env(safe-area-inset-right,0px));top:calc(130px + env(safe-area-inset-top,0px));width:50px;height:50px;font-size:24px;background:#d8f5d0}
   #arv-pts{position:absolute;right:-4px;top:-4px;min-width:20px;height:20px;border-radius:10px;background:#e8433a;color:#fff;font-size:11px;font-weight:900;display:flex;align-items:center;justify-content:center;padding:0 4px;border:2px solid #fff}
+  #vida{position:relative;width:260px;height:12px;border-radius:7px;background:rgba(50,10,10,.6);border:2px solid rgba(255,255,255,.7);overflow:hidden}
+  #vida-fill{position:absolute;left:0;top:0;bottom:0;width:100%;background:linear-gradient(90deg,#d82a3a,#ff6a5a);transition:width .15s}
+  #vida.baixa{animation:pisca .6s infinite}@keyframes pisca{50%{border-color:#ff3a3a}}
+  #vida .vtxt{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:900;color:#fff;letter-spacing:1px;text-shadow:0 1px 2px #000}
+  #atacar{right:calc(128px + env(safe-area-inset-right,0px));bottom:calc(122px + env(safe-area-inset-bottom,0px));width:84px;height:84px;flex-direction:column;background:#ffe2d0;gap:0}
+  #atacar span{font-size:30px;line-height:1}#atacar small{font-size:11px;font-weight:900}
+  #arma{right:calc(116px + env(safe-area-inset-right,0px));bottom:calc(190px + env(safe-area-inset-bottom,0px));width:38px;height:38px;font-size:17px;z-index:2}
+  #inv{position:fixed;left:calc(16px + env(safe-area-inset-left,0px));top:calc(56px + env(safe-area-inset-top,0px));display:flex;gap:6px;align-items:center;font-size:13px;font-weight:800;color:#fff}
+  #inv>*{padding:4px 9px;border-radius:999px;background:rgba(20,18,46,.72);border:0;color:#fff;font:inherit}
+  #inv-cw{border:2px solid #ffd23c!important}
+  #chefe{position:fixed;left:50%;top:calc(66px + env(safe-area-inset-top,0px));transform:translateX(-50%);width:min(340px,50vw);text-align:center;color:#fff;font-size:12px;letter-spacing:1px;text-shadow:0 1px 3px #000;pointer-events:none}
+  #chefe .br{height:12px;margin-top:3px;border-radius:6px;background:rgba(10,20,40,.7);border:2px solid #9ae6ff;overflow:hidden}#chefe-fill{height:100%;width:100%;background:linear-gradient(90deg,#3a8ae8,#9ae6ff)}
+  .hpb{position:fixed;width:46px;height:6px;transform:translate(-50%,-100%);border-radius:3px;background:rgba(0,0,0,.55);border:1px solid rgba(255,255,255,.7);overflow:hidden;display:none;pointer-events:none}.hpb i{display:block;height:100%;background:#e83a2a}
+  .dn{position:fixed;transform:translate(-50%,-50%);font-size:18px;font-weight:900;text-shadow:0 2px 3px #000,0 0 2px #000;pointer-events:none;animation:sobe .9s ease-out forwards;z-index:13}
+  @keyframes sobe{from{opacity:1;margin-top:0}to{opacity:0;margin-top:-46px}}
+  #loja{position:fixed;inset:0;background:rgba(14,8,4,.86);display:flex;align-items:center;justify-content:center;z-index:26}
+  #loja .box{width:min(620px,94vw);max-height:92vh;overflow:auto;padding:12px 14px;border-radius:16px;background:#f6ecdc;border:3px solid #7a4a2a;color:#2a1a10}
+  #loja .hd{display:flex;align-items:center;gap:10px;margin-bottom:8px}#loja h3{margin:0;font-size:19px;flex:1}
+  #loja .mo{padding:4px 12px;border-radius:999px;background:#3a2a10;color:#ffd23c;font-weight:900;font-size:13px}
+  #loja-fecha{padding:7px 16px;border-radius:999px;border:0;background:#7a4a2a;color:#fff;font-family:inherit;font-weight:800;font-size:13px}
+  #loja-lista{display:grid;gap:8px}
+  #loja .item{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:12px;background:#fffaf0;border:2px solid #e2d2b8}
+  #loja .item .ic{font-size:30px}#loja .item .tx{flex:1;min-width:0;display:flex;flex-direction:column}#loja .item b{font-size:14px}#loja .item small{font-size:11px;color:#7a6a5a}
+  .cb{padding:8px 12px;border-radius:999px;border:0;background:#2a8a4a;color:#fff;font-family:inherit;font-weight:900;font-size:12px;white-space:nowrap}.cb:disabled{background:#b8b0a0}
   #flash{position:fixed;inset:0;pointer-events:none;opacity:0;z-index:12}
   #arvore{position:fixed;inset:0;background:rgba(6,12,10,.86);display:flex;align-items:center;justify-content:center;z-index:26}
   #arvore .box{width:min(820px,96vw);max-height:94vh;overflow:auto;padding:12px 14px;border-radius:16px;background:#f3eedf;border:3px solid #4a6a3a;color:#22302a;display:grid;grid-template-columns:auto minmax(0,1fr);grid-template-rows:auto 1fr;gap:10px 14px}
@@ -43,8 +67,8 @@
   #arvore h3{margin:0;font-size:19px;flex:1}
   #arv-ptsbox{padding:4px 12px;border-radius:999px;background:#2a4a2a;color:#fff;font-weight:900;font-size:13px}
   #arv-fecha{padding:7px 16px;border-radius:999px;border:0;background:#4a6a3a;color:#fff;font-family:inherit;font-weight:800;font-size:13px}
-  #arv-ramos{display:flex;gap:10px}
-  .ramo{display:flex;flex-direction:column;align-items:center;width:86px}
+  #arv-ramos{display:flex;gap:6px}
+  .ramo{display:flex;flex-direction:column;align-items:center;width:80px}
   .ramo .rt{font-size:12px;font-weight:900;color:var(--rc);margin-bottom:5px;white-space:nowrap}
   .ramo .liga{width:4px;height:9px;background:#c8c0ae}.ramo .liga.ok{background:var(--rc)}
   .no{width:78px;height:56px;border-radius:12px;border:3px solid #c8c0ae;background:#fffaf0;color:#22302a;font-family:inherit;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0;gap:0}
@@ -124,12 +148,18 @@
 <button class="btn" id="arv-btn" title="Árvore de habilidades">🌳<span id="arv-pts" hidden>0</span></button>
 <div id="arvore" hidden><div class="box"><div class="hd"><h3>🌳 Árvore de Habilidades</h3><span id="arv-ptsbox"><span id="arv-pts-txt">0 pontos</span></span><button id="arv-fecha">Fechar</button></div><div id="arv-ramos"></div><div id="arv-det"></div></div></div>
 <div id="flash"></div>
+<button class="btn" id="atacar"><span>🪵</span><small>ATACAR</small></button>
+<button class="btn" id="arma" hidden title="Trocar arma">🔄</button>
+<div id="inv"><span>💰 <b id="inv-m">0</b></span><span id="inv-pw">🐺 <b id="inv-p">0</b></span><button id="inv-cw" title="Comer">🍖 <b id="inv-c">0</b></button><span id="inv-g" hidden>💎</span></div>
+<div id="chefe" hidden><b>❄️ GOLEM DE GELO</b><div class="br"><div id="chefe-fill"></div></div></div>
+<div id="hpbs"></div><div id="nums"></div>
+<div id="loja" hidden><div class="box"><div class="hd"><h3>⚒️ Forja de Brumafria</h3><span class="mo">💰 <b id="loja-m">0</b></span><button id="loja-fecha">Fechar</button></div><div id="loja-lista"></div></div></div>
 <div id="mapa" hidden><div class="box"><h3>🗺️ Mapa de Aetherion</h3><p>Toque num lugar pra viajar.</p><div id="mapa-lista"></div><button id="mapa-fecha">Fechar</button></div></div>
 <div id="saber"></div>
 <div id="aviso"></div>
 <div id="cena" hidden><div id="cena-quem"></div><div id="cena-txt"></div><div id="cena-mais">toque pra continuar ▸</div></div>
 <div id="fim" hidden><div class="box"><div id="fim-num"></div><div id="fim-nome"></div><p id="fim-nota"></p><div id="fim-selos"></div><div id="fim-cont"></div><div class="row"><button id="fim-volta">Voltar pra Brumafria</button><button class="ghost" id="fim-fica">Explorar Valdren</button></div></div></div>
-<div id="hud"><div id="mana"><div id="mana-fill"></div><div id="mana-txt">MANA&nbsp;<span id="mana-num">100</span></div></div><div id="poderes"></div></div>
+<div id="hud"><div id="vida"><div id="vida-fill"></div><div class="vtxt">VIDA&nbsp;<span id="vida-num">100</span></div></div><div id="mana"><div id="mana-fill"></div><div id="mana-txt">MANA&nbsp;<span id="mana-num">100</span></div></div><div id="poderes"></div></div>
 __THREE__
 <script>
 __JOGO__
