@@ -28,8 +28,42 @@
   #mana-fill{position:absolute;left:0;top:0;bottom:0;width:100%;background:linear-gradient(90deg,#3a8aff,#7ad8ff);transition:width .1s}
   #mana-txt{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;color:#fff;letter-spacing:1px;text-shadow:0 1px 2px #000}
   #poderes{display:flex;gap:6px;pointer-events:auto}
-  .slot{position:relative;width:60px;height:60px;border-radius:12px;border:3px solid rgba(255,255,255,.75);background:rgba(20,18,46,.7);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;padding:0;font-family:inherit}
-  .slot .ic{font-size:24px;line-height:1}.slot .nm{font-size:10px;font-weight:800}.slot .tc{position:absolute;left:4px;top:2px;font-size:9px;opacity:.6}
+  #poderes{--s:clamp(38px,calc((100vw - 420px) / 8 - 5px),58px);gap:5px}
+  .slot{position:relative;width:var(--s);height:var(--s);border-radius:11px;border:3px solid rgba(255,255,255,.75);background:rgba(20,18,46,.7);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;padding:0;font-family:inherit}
+  .slot .ic{font-size:calc(var(--s) * .4);line-height:1}.slot .nm{font-size:9px;font-weight:800;white-space:nowrap}.slot .tc{position:absolute;left:4px;top:1px;font-size:9px;opacity:.6}
+  .slot.fixo{border-color:#ffd890}.slot .cad{position:absolute;right:2px;top:0;font-size:8px}
+  .slot.vazio{border-style:dashed;border-color:rgba(255,255,255,.4);background:rgba(20,18,46,.35)}.slot.vazio .ic{opacity:.55}
+  .slot:nth-child(2){margin-right:8px}
+  #arv-btn{right:calc(16px + env(safe-area-inset-right,0px));top:calc(130px + env(safe-area-inset-top,0px));width:50px;height:50px;font-size:24px;background:#d8f5d0}
+  #arv-pts{position:absolute;right:-4px;top:-4px;min-width:20px;height:20px;border-radius:10px;background:#e8433a;color:#fff;font-size:11px;font-weight:900;display:flex;align-items:center;justify-content:center;padding:0 4px;border:2px solid #fff}
+  #flash{position:fixed;inset:0;pointer-events:none;opacity:0;z-index:12}
+  #arvore{position:fixed;inset:0;background:rgba(6,12,10,.86);display:flex;align-items:center;justify-content:center;z-index:26}
+  #arvore .box{width:min(820px,96vw);max-height:94vh;overflow:auto;padding:12px 14px;border-radius:16px;background:#f3eedf;border:3px solid #4a6a3a;color:#22302a;display:grid;grid-template-columns:auto minmax(0,1fr);grid-template-rows:auto 1fr;gap:10px 14px}
+  #arvore .hd{grid-column:1/-1;display:flex;align-items:center;gap:10px}
+  #arvore h3{margin:0;font-size:19px;flex:1}
+  #arv-ptsbox{padding:4px 12px;border-radius:999px;background:#2a4a2a;color:#fff;font-weight:900;font-size:13px}
+  #arv-fecha{padding:7px 16px;border-radius:999px;border:0;background:#4a6a3a;color:#fff;font-family:inherit;font-weight:800;font-size:13px}
+  #arv-ramos{display:flex;gap:10px}
+  .ramo{display:flex;flex-direction:column;align-items:center;width:86px}
+  .ramo .rt{font-size:12px;font-weight:900;color:var(--rc);margin-bottom:5px;white-space:nowrap}
+  .ramo .liga{width:4px;height:9px;background:#c8c0ae}.ramo .liga.ok{background:var(--rc)}
+  .no{width:78px;height:56px;border-radius:12px;border:3px solid #c8c0ae;background:#fffaf0;color:#22302a;font-family:inherit;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0;gap:0}
+  .no .ic{font-size:20px;line-height:1.1}.no .nm{font-size:11px;font-weight:900}.no .pr{font-size:9px;font-weight:700;opacity:.7}
+  .no.tem{border-color:var(--rc);background:color-mix(in srgb,var(--rc) 22%,#fffaf0)}
+  .no.pode{border-color:var(--rc);border-style:dashed;animation:brilha 1.4s ease-in-out infinite}
+  @keyframes brilha{50%{box-shadow:0 0 12px var(--rc)}}
+  .no.trava,.no.caro{opacity:.5}
+  .no.sel{outline:3px solid #22302a;outline-offset:2px}
+  #arv-det{min-width:0;font-size:13px;line-height:1.35}
+  #arv-det .vz{color:#6a7a6a;margin:6px 0}
+  #arv-det .dt{display:flex;gap:10px;align-items:center}#arv-det .dt .ic{font-size:34px}#arv-det .dt b{font-size:17px;display:block}#arv-det .dt small{color:#6a7a6a;font-weight:700}
+  #arv-det p{margin:8px 0}
+  #arv-det .qs{font-size:12px;font-weight:800;margin:4px 0}
+  .slotsel{display:flex;gap:6px;flex-wrap:wrap}
+  .ss{width:46px;height:46px;border-radius:10px;border:3px solid #a8a090;background:#2a2840;color:#fff;font-size:20px;position:relative;padding:0}
+  .ss small{position:absolute;left:3px;top:0;font-size:9px;opacity:.7}.ss.aqui{border-color:#ffd23c;box-shadow:0 0 10px #ffd23c}
+  .ab{margin-top:8px;padding:9px 16px;border-radius:999px;border:0;background:#2a8a4a;color:#fff;font-family:inherit;font-weight:900;font-size:14px}
+  .ab:disabled{background:#a8a898}.ab.tira{background:transparent;color:#8a3a3a;border:2px solid #c8a0a0;padding:6px 14px;font-size:12px;margin-left:6px}
   .slot.on{border-color:#ffd23c;background:rgba(90,70,10,.85);box-shadow:0 0 18px rgba(255,210,60,.8)}
   .slot.falta{opacity:.45}.slot.erro{border-color:#ff5a5a}
   #aviso{position:fixed;left:50%;bottom:calc(112px + env(safe-area-inset-bottom,0px));transform:translate(-50%,8px);max-width:min(520px,70vw);padding:8px 14px;border-radius:12px;border:2px solid #5ab8ff;background:rgba(10,14,40,.82);color:#fff;font-size:13px;font-weight:700;text-align:center;opacity:0;transition:opacity .3s,transform .3s;pointer-events:none}
@@ -87,6 +121,9 @@
 <button class="btn" id="ciclo">☾</button>
 <canvas id="mini" width="232" height="232"></canvas>
 <button class="btn" id="casa" title="Voltar pra casa">🏠</button>
+<button class="btn" id="arv-btn" title="Árvore de habilidades">🌳<span id="arv-pts" hidden>0</span></button>
+<div id="arvore" hidden><div class="box"><div class="hd"><h3>🌳 Árvore de Habilidades</h3><span id="arv-ptsbox"><span id="arv-pts-txt">0 pontos</span></span><button id="arv-fecha">Fechar</button></div><div id="arv-ramos"></div><div id="arv-det"></div></div></div>
+<div id="flash"></div>
 <div id="mapa" hidden><div class="box"><h3>🗺️ Mapa de Aetherion</h3><p>Toque num lugar pra viajar.</p><div id="mapa-lista"></div><button id="mapa-fecha">Fechar</button></div></div>
 <div id="saber"></div>
 <div id="aviso"></div>
@@ -341,7 +378,7 @@
     const box = $('fala-esc'); box.innerHTML = ''; box.hidden = !esc; $('fala-mais').textContent = esc ? 'escolha:' : ult ? 'toque pra fechar ✕' : 'toque pra continuar ▸';
     if (esc) esc.forEach(e => { const b = document.createElement('button'); b.className = 'esc'; b.innerHTML = e.t; tapBtn(b, () => { conversa = null; $('fala').hidden = true; calaVoz(); if (e.fn) setTimeout(e.fn, 50); }); box.appendChild(b); }); }
   function proximaFala() { if (!conversa) return; const q = conversa.quem; if (conversa.i >= q.falas.length - 1 && q.escolhas && q.escolhas()) return; conversa.i++; if (conversa.i >= q.falas.length) { conversa = null; $('fala').hidden = true; calaVoz(); if (q.fim) q.fim(); } else mostrarFala(); }
-  function falar(quem) { conversa = { quem, i: 0 }; mostrarFala(); }
+  function falar(quem) { if (quem && quem.nome && typeof ganha === 'function') setTimeout(() => ganha('npc:' + quem.nome, 1, 'conheceu ' + quem.nome), 50); conversa = { quem, i: 0 }; mostrarFala(); }
   // cena: tela escura com o narrador
   let cenaQ = null; function cena(lista, fim) { cenaQ = { lista, i: 0, fim }; $('cena').hidden = false; mostrarCena(); }
   function mostrarCena() { const c = cenaQ.lista[cenaQ.i]; $('cena-quem').textContent = c.n || ''; $('cena-quem').hidden = !c.n; $('cena-txt').textContent = c.t; tocaVoz(c.v); $('cena-txt').classList.remove('in'); void $('cena-txt').offsetWidth; $('cena-txt').classList.add('in'); }
@@ -357,23 +394,110 @@
   // ---------- PODERES (a bênção da Elysia no vídeo) ----------
   // Memória do Mundo Antigo: ele lembra de tudo (fórmulas, máquinas, receitas) + "um pouco de mana"
   let mana = 100; const MANA_MAX = 100;
+  // tipo 'liga' = liga/desliga (custo por segundo) · 'uso' = gasta uma vez
   const PODERES = [
-    { id: 'memoria', nome: 'Memória', icone: '🧠', tipo: 'liga', custo: 0, desc: 'Memória do Mundo Antigo: você enxerga o que a ciência sabe sobre tudo em volta.' },
-    { id: 'luz', nome: 'Luz', icone: '✨', tipo: 'liga', custo: 7, desc: 'Um pouco de mana vira uma bola de luz que te segue. Gasta mana enquanto está ligada.' },
-    { id: 'sabao', nome: 'Sabão', icone: '🫧', tipo: 'uso', custo: 20, desc: '"Num mundo sem sabão, quem sabe fazer sabão vale mais que um dragão."' },
-    { id: 'salto', nome: 'Salto', icone: '⬆️', tipo: 'uso', custo: 25, desc: 'A mana empurra seus pés: um pulo bem mais alto.' },
+    { id: 'memoria', nome: 'Memória', icone: '🧠', tipo: 'liga', custo: 0, fixo: true, desc: 'Memória do Mundo Antigo: você enxerga o que a ciência sabe sobre tudo em volta.' },
+    { id: 'luz', nome: 'Luz', icone: '✨', tipo: 'liga', custo: 7, fixo: true, desc: 'Um pouco de mana vira uma bola de luz que te segue. Gasta mana enquanto está ligada.' },
+    // ramo Ciência
+    { id: 'sabao', ramo: 'ciencia', nivel: 0, preco: 0, nome: 'Sabão', icone: '🫧', tipo: 'uso', custo: 20, desc: '"Num mundo sem sabão, quem sabe fazer sabão vale mais que um dragão."' },
+    { id: 'ferver', ramo: 'ciencia', nivel: 1, preco: 1, nome: 'Ferver', icone: '♨️', tipo: 'uso', custo: 15, desc: 'Esquenta a água com mana até 100 °C. Vapor sobe e os germes morrem.' },
+    { id: 'remedio', ramo: 'ciencia', nivel: 2, preco: 2, nome: 'Remédio', icone: '🌿', tipo: 'uso', custo: 25, desc: 'Soro caseiro: água fervida, sal e açúcar. Cura quem está doente perto de você.' },
+    { id: 'polvora', ramo: 'ciencia', nivel: 3, preco: 3, nome: 'Pólvora', icone: '💥', tipo: 'uso', custo: 35, desc: 'Salitre + carvão + enxofre. Uma explosão na sua frente. Cuidado!' },
+    // ramo Mana
+    { id: 'escudo', ramo: 'mana', nivel: 1, preco: 1, nome: 'Escudo', icone: '🛡️', tipo: 'liga', custo: 5, desc: 'Uma bolha de mana em volta do corpo. Gasta mana enquanto está ligada.' },
+    { id: 'dardo', ramo: 'mana', nivel: 2, preco: 2, nome: 'Dardo', icone: '🔆', tipo: 'uso', custo: 12, desc: 'Um dardo de luz disparado pra frente.' },
+    { id: 'clarao', ramo: 'mana', nivel: 3, preco: 3, nome: 'Clarão', icone: '⚡', tipo: 'uso', custo: 40, desc: 'Toda a mana sai de uma vez num clarão que cega quem está perto.' },
+    // ramo Corpo
+    { id: 'salto', ramo: 'corpo', nivel: 0, preco: 0, nome: 'Salto', icone: '⬆️', tipo: 'uso', custo: 25, desc: 'A mana empurra seus pés: um pulo bem mais alto.' },
+    { id: 'vento', ramo: 'corpo', nivel: 1, preco: 1, nome: 'Vento', icone: '💨', tipo: 'liga', custo: 4, desc: 'Vento nas costas: você corre bem mais rápido. Gasta mana enquanto está ligado.' },
+    { id: 'planar', ramo: 'corpo', nivel: 2, preco: 2, nome: 'Planar', icone: '🪶', tipo: 'liga', custo: 3, desc: 'Ligado, você cai devagar depois de pular. Combina com o Salto!' },
+    { id: 'impulso', ramo: 'corpo', nivel: 3, preco: 3, nome: 'Impulso', icone: '➡️', tipo: 'uso', custo: 18, desc: 'Um empurrão de mana que te joga uns metros pra frente.' },
   ];
+  const PW = {}; PODERES.forEach(pw => PW[pw.id] = pw);
+  const RAMOS = [{ id: 'ciencia', nome: 'Ciência', icone: '🧪', cor: '#4ab870' }, { id: 'mana', nome: 'Mana', icone: '✨', cor: '#3a8ae8' }, { id: 'corpo', nome: 'Corpo', icone: '🏃', cor: '#e88a2a' }];
+  const NSLOTS = 8;
+  // progresso da árvore (salvo no aparelho)
+  let AR = { pts: 3, tem: ['sabao', 'salto'], barra: ['memoria', 'luz', 'sabao', 'salto', null, null, null, null], ganhos: [] };
+  try { const g = JSON.parse(localStorage.getItem('aetherion-arvore') || 'null'); if (g && g.barra && g.barra.length === NSLOTS) AR = Object.assign(AR, g); } catch (e) {}
+  AR.barra[0] = 'memoria'; AR.barra[1] = 'luz';
+  function salvaAR() { try { localStorage.setItem('aetherion-arvore', JSON.stringify(AR)); } catch (e) {} }
+  function ganha(chave, n, msg) { if (AR.ganhos.includes(chave)) return; AR.ganhos.push(chave); AR.pts += n; salvaAR(); atualizaPts(); aviso('🌳 +' + n + ' ponto' + (n > 1 ? 's' : '') + ' de habilidade' + (msg ? ' · ' + msg : '') + '!', '#7ad87a'); }
+  function atualizaPts() { const b = $('arv-pts'); b.textContent = AR.pts; b.hidden = AR.pts <= 0; }
   const ativo = {}; let saltoPronto = false;
-  const barra = $('poderes');
-  PODERES.forEach((pw, i) => { const b = document.createElement('button'); b.className = 'slot'; b.innerHTML = `<span class="ic">${pw.icone}</span><span class="nm">${pw.nome}</span><span class="tc">${i + 1}</span>`; tapBtn(b, () => usarPoder(pw)); barra.appendChild(b); pw.el = b; });
-  window.addEventListener('keydown', e => { const n = parseInt(e.key); if (n >= 1 && n <= PODERES.length) usarPoder(PODERES[n - 1]); });
+  const barra = $('poderes'); const SLOTS = [];
+  for (let i = 0; i < NSLOTS; i++) { const b = document.createElement('button'); b.className = 'slot' + (i < 2 ? ' fixo' : ''); tapBtn(b, () => { const id = AR.barra[i]; if (id) usarPoder(PW[id]); else abrirArvore(); }); barra.appendChild(b); SLOTS.push(b); }
+  function montaBarra() { PODERES.forEach(pw => pw.el = null);
+    SLOTS.forEach((b, i) => { const pw = AR.barra[i] && PW[AR.barra[i]]; b.classList.toggle('vazio', !pw); b.classList.remove('on', 'falta');
+      if (pw) { pw.el = b; b.innerHTML = `<span class="ic">${pw.icone}</span><span class="nm">${pw.nome}</span><span class="tc">${i + 1}</span>${i < 2 ? '<span class="cad">🔒</span>' : ''}`; b.classList.toggle('on', pw.tipo === 'liga' && !!ativo[pw.id]); }
+      else b.innerHTML = `<span class="ic">＋</span><span class="tc">${i + 1}</span>`; }); }
+  function marca(pw, cls, on) { if (pw.el) pw.el.classList.toggle(cls, on); }
+  window.addEventListener('keydown', e => { const n = parseInt(e.key); if (n >= 1 && n <= NSLOTS) { const id = AR.barra[n - 1]; if (id) usarPoder(PW[id]); } if (e.code === 'KeyT') abrirArvore(); });
   let avisoT = null; function aviso(t, cor) { const el = $('aviso'); el.textContent = t; el.style.borderColor = cor || '#5ab8ff'; el.classList.add('on'); clearTimeout(avisoT); avisoT = setTimeout(() => el.classList.remove('on'), 3200); }
-  function usarPoder(pw) { if (conversa) return;
-    if (pw.tipo === 'liga') { ativo[pw.id] = !ativo[pw.id]; if (ativo[pw.id] && pw.custo && mana < 5) { ativo[pw.id] = false; aviso('Sem mana! Espera ela voltar.', '#ff6a6a'); return; } pw.el.classList.toggle('on', !!ativo[pw.id]); if (ativo[pw.id]) aviso(pw.desc, pw.id === 'memoria' ? '#ffd23c' : '#5ab8ff'); return; }
-    if (mana < pw.custo) { aviso('Sem mana! Precisa de ' + pw.custo + '.', '#ff6a6a'); pw.el.classList.add('erro'); setTimeout(() => pw.el.classList.remove('erro'), 400); return; }
-    mana -= pw.custo; pw.el.classList.add('on'); setTimeout(() => pw.el.classList.remove('on'), 500);
+  // efeitos dos poderes novos
+  let tremor = 0, dashT = 0;
+  function frente(d) { const p = heroi.position; return [p.x + Math.sin(facing) * d, p.y, p.z + Math.cos(facing) * d]; }
+  function usarPoder(pw) { if (conversa || cenaQ) return;
+    if (pw.tipo === 'liga') { ativo[pw.id] = !ativo[pw.id]; if (ativo[pw.id] && pw.custo && mana < 5) { ativo[pw.id] = false; aviso('Sem mana! Espera ela voltar.', '#ff6a6a'); return; } marca(pw, 'on', !!ativo[pw.id]); if (ativo[pw.id]) aviso(pw.desc, pw.id === 'memoria' ? '#ffd23c' : '#5ab8ff'); else if (pw.id !== 'memoria') aviso(pw.nome + ' desligado.', '#8a9aba'); return; }
+    if (mana < pw.custo) { aviso('Sem mana! Precisa de ' + pw.custo + '.', '#ff6a6a'); marca(pw, 'erro', true); setTimeout(() => marca(pw, 'erro', false), 400); return; }
+    mana -= pw.custo; marca(pw, 'on', true); setTimeout(() => marca(pw, 'on', false), 500);
+    const p = heroi.position;
     if (pw.id === 'sabao') { bolhasT = 0; aviso('Sabão: gordura + cinza (soda). Mãos limpas = menos doença na vila!', '#9ad8ff'); }
-    if (pw.id === 'salto') { saltoPronto = true; if (noChao) input.jump = true; aviso(pw.desc, '#5ab8ff'); } }
+    if (pw.id === 'salto') { saltoPronto = true; if (noChao) input.jump = true; aviso(pw.desc, '#5ab8ff'); }
+    if (pw.id === 'ferver') { fx('vapor', [p.x, p.y, p.z], 2.6); aviso('Água a 100 °C: o vapor sobe e as bactérias morrem. É assim que se vence a cólera.', '#ffb04a'); }
+    if (pw.id === 'remedio') { fx('cura', [p.x, p.y, p.z], 2); let n = 0;
+      if (zona === 'valdren' && typeof doentes !== 'undefined') doentes.forEach(c => { if (c.visible && !c.userData.curado && Math.hypot(c.userData.pos[0] - p.x, c.userData.pos[1] - p.z) < 4.5) { c.userData.curado = true; n++; fx('cura', [c.userData.pos[0], 0, c.userData.pos[1]], 2); } });
+      aviso(n ? (n === 1 ? 'Um doente se levantou! Soro: água fervida, sal e açúcar.' : n + ' doentes se levantaram!') : 'Soro pronto: água fervida + 1 colher de sal + 8 de açúcar. Chegue perto de um doente.', '#7ad87a'); }
+    if (pw.id === 'polvora') { const f = frente(3.2); fx('fogo', f, 1.6); fx('fumo', f, 2.4); tremor = 0.6; flash('rgba(255,170,60,.55)'); aviso('BUM! Salitre + carvão + enxofre. Isso muda as guerras deste mundo...', '#ff8a3a'); }
+    if (pw.id === 'dardo') { const d = glowSpr(world, p.x, p.y + 1.3, p.z, 0.9, '#bfe8ff', 1); dardos.push({ s: d, t: 0, dx: Math.sin(facing), dz: Math.cos(facing) }); }
+    if (pw.id === 'clarao') { flash('rgba(255,255,255,.95)'); fx('luz', [p.x, p.y, p.z], 1.2); tremor = 0.25; aviso('CLARÃO! Quem estava olhando ficou vendo estrelas.', '#fff3a0'); }
+    if (pw.id === 'impulso') { dashT = 0.28; fx('vento', [p.x, p.y, p.z], 0.8); } }
+  function flash(cor) { const f = $('flash'); f.style.transition = 'none'; f.style.background = cor; f.style.opacity = 1; requestAnimationFrame(() => requestAnimationFrame(() => { f.style.transition = 'opacity .9s'; f.style.opacity = 0; })); }
+  // partículas de efeito (vapor, cura, fogo, fumaça, luz, vento)
+  const FXC = { vapor: ['#ffffff', 0.14, 'sobe'], cura: ['#7aff9a', 0.07, 'espiral'], fogo: ['#ff8a2a', 0.16, 'explode'], fumo: ['#6a625a', 0.3, 'nuvem'], luz: ['#fff6c0', 0.12, 'explode'], vento: ['#dff2ff', 0.06, 'anel'] };
+  const FX = {}; Object.keys(FXC).forEach(k => { const im = particles(world, 60, FXC[k][0], FXC[k][1]); im.visible = false; FX[k] = { im, t: 99, dur: 1, pos: [0, 0, 0] }; });
+  function fx(k, pos, dur) { const f = FX[k]; f.t = 0; f.dur = dur; f.pos = pos.slice(); }
+  function fxFrame(dt) { Object.keys(FX).forEach(k => { const f = FX[k]; f.t += dt; f.im.visible = f.t < f.dur; if (!f.im.visible) return; const u = f.t / f.dur, tipo = FXC[k][2], sz = FXC[k][1];
+    f.im.userData.place((i, d) => { const R = rng(i * 7 + k.length * 31); const a = R() * 6.28, rr = R(); const [x, y, z] = f.pos; let s = sz;
+      if (tipo === 'sobe') { const kk = clamp(u * 1.4 - rr * 0.4); if (kk <= 0) return false; d.position.set(x + Math.cos(a) * (0.4 + rr * 1.2), y + 0.3 + kk * 3, z + Math.sin(a) * (0.4 + rr * 1.2)); s = sz * (0.6 + kk * 2) * (1 - kk); }
+      else if (tipo === 'espiral') { const aa = a + u * 8; d.position.set(x + Math.cos(aa) * (0.8 + rr * 0.4), y + u * 2.4 + rr * 0.6, z + Math.sin(aa) * (0.8 + rr * 0.4)); s = sz * (1 - u); }
+      else if (tipo === 'explode') { const e = eOut(u), el = (R() - 0.3) * 1.6; d.position.set(x + Math.cos(a) * e * (1.5 + rr * 2.5), y + 0.8 + el * e * 2, z + Math.sin(a) * e * (1.5 + rr * 2.5)); s = sz * (1.6 - u * 1.4); }
+      else if (tipo === 'nuvem') { d.position.set(x + Math.cos(a) * (0.5 + rr * 2) * eOut(u), y + 0.8 + u * 2.5 * rr, z + Math.sin(a) * (0.5 + rr * 2) * eOut(u)); s = sz * (0.5 + u * 1.5) * (1 - u * 0.8); }
+      else { d.position.set(x + Math.cos(a) * u * 2.2, y + 0.3 + rr * 1.4, z + Math.sin(a) * u * 2.2); s = sz * (1 - u); }
+      d.scale.setScalar(Math.max(s, 0.0001)); }); }); }
+  const dardos = [];
+  function dardosFrame(dt) { for (let i = dardos.length - 1; i >= 0; i--) { const d = dardos[i]; d.t += dt; d.s.position.x += d.dx * 24 * dt; d.s.position.z += d.dz * 24 * dt; d.s.material.opacity = 1 - d.t; if (d.t > 0.9) { fx('luz', [d.s.position.x, d.s.position.y - 0.8, d.s.position.z], 0.5); world.remove(d.s); dardos.splice(i, 1); } } }
+  // escudo e vento
+  const escudo = new T3.Mesh(new T3.SphereGeometry(1.15, 24, 16), new T3.MeshBasicMaterial({ color: '#7ac8ff', transparent: true, opacity: 0.22, depthWrite: false, toneMapped: false, blending: T3.AdditiveBlending })); escudo.visible = false; world.add(escudo);
+  const rastro = particles(world, 30, '#e8f6ff', 0.04); rastro.visible = false;
+
+  // ---------- ÁRVORE DE HABILIDADES ----------
+  let selArv = null;
+  function prereq(pw) { if (!pw.ramo || pw.nivel <= 1) return true; return PODERES.some(o => o.ramo === pw.ramo && o.nivel === pw.nivel - 1 && AR.tem.includes(o.id)); }
+  function abrirArvore() { if (conversa || cenaQ) return; selArv = selArv || null; desenhaArvore(); $('arvore').hidden = false; }
+  function desenhaArvore() { const col = $('arv-ramos'); col.innerHTML = ''; $('arv-pts-txt').textContent = AR.pts + (AR.pts === 1 ? ' ponto' : ' pontos');
+    RAMOS.forEach(r => { const c = document.createElement('div'); c.className = 'ramo'; c.style.setProperty('--rc', r.cor); c.innerHTML = `<div class="rt">${r.icone} ${r.nome}</div>`;
+      PODERES.filter(pw => pw.ramo === r.id).sort((a, b) => a.nivel - b.nivel).forEach((pw, j) => { if (j) { const l = document.createElement('div'); l.className = 'liga' + (AR.tem.includes(pw.id) ? ' ok' : ''); c.appendChild(l); }
+        const tem = AR.tem.includes(pw.id), pode = !tem && prereq(pw) && AR.pts >= pw.preco, trava = !tem && !prereq(pw); const naBarra = AR.barra.indexOf(pw.id);
+        const b = document.createElement('button'); b.className = 'no' + (tem ? ' tem' : pode ? ' pode' : trava ? ' trava' : ' caro') + (selArv === pw.id ? ' sel' : '');
+        b.innerHTML = `<span class="ic">${trava ? '🔒' : pw.icone}</span><span class="nm">${pw.nome}</span><span class="pr">${tem ? (naBarra >= 0 ? 'Slot ' + (naBarra + 1) : '✔') : pw.preco + ' pt'}</span>`;
+        tapBtn(b, () => { selArv = pw.id; desenhaArvore(); }); c.appendChild(b); });
+      col.appendChild(c); });
+    // painel do detalhe
+    const det = $('arv-det'); const pw = selArv && PW[selArv]; if (!pw) { det.innerHTML = '<p class="vz">Toque numa habilidade pra ver o que ela faz. Ganhe pontos falando com as pessoas, lendo as dicas da 🧠 Memória e avançando nas missões.</p>'; return; }
+    const tem = AR.tem.includes(pw.id); const custo = pw.tipo === 'liga' ? pw.custo + ' mana/s' : pw.custo + ' mana';
+    det.innerHTML = `<div class="dt"><span class="ic">${pw.icone}</span><div><b>${pw.nome}</b><small>${pw.tipo === 'liga' ? 'Liga/desliga' : 'Uso rápido'} · ${custo}</small></div></div><p>${pw.desc}</p><div id="arv-acoes"></div>`;
+    const ac = $('arv-acoes');
+    if (!tem) { const b = document.createElement('button'); b.className = 'ab'; const ok = prereq(pw) && AR.pts >= pw.preco; b.disabled = !ok; b.textContent = !prereq(pw) ? '🔒 Aprenda a anterior primeiro' : AR.pts < pw.preco ? `Faltam ${pw.preco - AR.pts} ponto(s)` : `Aprender (${pw.preco} pt)`;
+      if (ok) tapBtn(b, () => { AR.pts -= pw.preco; AR.tem.push(pw.id); const v = AR.barra.indexOf(null, 2); if (v >= 2) AR.barra[v] = pw.id; salvaAR(); atualizaPts(); montaBarra(); aviso('Nova habilidade: ' + pw.icone + ' ' + pw.nome + (v >= 2 ? ' (slot ' + (v + 1) + ')' : ''), '#7ad87a'); desenhaArvore(); });
+      ac.appendChild(b); return; }
+    const t = document.createElement('div'); t.className = 'qs'; t.textContent = 'Colocar no slot (troca o que estiver lá):'; ac.appendChild(t);
+    const row = document.createElement('div'); row.className = 'slotsel';
+    for (let i = 2; i < NSLOTS; i++) { const o = AR.barra[i] && PW[AR.barra[i]]; const b = document.createElement('button'); b.className = 'ss' + (AR.barra[i] === pw.id ? ' aqui' : ''); b.innerHTML = `<small>${i + 1}</small>${o ? o.icone : '＋'}`;
+      tapBtn(b, () => { if (AR.barra[i] === pw.id) return; const j = AR.barra.indexOf(pw.id); const velho = AR.barra[i]; if (velho && ativo[velho]) ativo[velho] = false; if (j >= 2) AR.barra[j] = null; AR.barra[i] = pw.id; salvaAR(); montaBarra(); aviso(pw.icone + ' ' + pw.nome + ' no slot ' + (i + 1) + (velho && velho !== pw.id ? ' (saiu ' + PW[velho].nome + ')' : ''), '#7ad87a'); desenhaArvore(); }); row.appendChild(b); }
+    ac.appendChild(row);
+    if (AR.barra.indexOf(pw.id) >= 2) { const b = document.createElement('button'); b.className = 'ab tira'; b.textContent = 'Tirar da barra'; tapBtn(b, () => { const j = AR.barra.indexOf(pw.id); AR.barra[j] = null; ativo[pw.id] = false; salvaAR(); montaBarra(); desenhaArvore(); }); ac.appendChild(b); } }
+  tapBtn($('arv-btn'), abrirArvore); tapBtn($('arv-fecha'), () => { $('arvore').hidden = true; });
+  montaBarra(); atualizaPts();
   // fórmulas girando em volta da cabeça
   const FORM = ['E=mc²', 'H₂O', 'F=m·a', 'NaOH', 'π', 'Fe', 'CO₂', 'V=R·I', '∫dx', 'PÃO'].map((t, i) => { const tx = canvasTex(256, 96, (x, w, h) => { x.font = '800 60px system-ui, sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillStyle = '#e8f8ff'; x.shadowColor = i % 2 ? '#ffc83a' : '#5ad0ff'; x.shadowBlur = 18; x.fillText(t, w / 2, h / 2); });
     const m = new T3.Sprite(new T3.SpriteMaterial({ map: tx, transparent: true, depthWrite: false, toneMapped: false, blending: T3.AdditiveBlending })); m.scale.set(0.5, 0.19, 1); m.visible = false; world.add(m); return m; });
@@ -400,9 +524,16 @@
   const bolhas = particles(world, 70, '#cfefff', 0.08); let bolhasT = 99; const burst = particles(world, 40, '#7ac8ff', 0.06); let burstT = 99, burstP = [0, 0, 0];
   const vtmp = new T3.Vector3();
   function poderesFrame(dt, p) {
-    mana = clamp(mana + dt * 6 - (ativo.luz ? dt * PODERES[1].custo : 0), 0, MANA_MAX); if (ativo.luz && mana <= 0) { ativo.luz = false; PODERES[1].el.classList.remove('on'); aviso('A mana acabou. A luz apagou.', '#ff6a6a'); }
+    let gasto = 0; PODERES.forEach(pw => { if (pw.tipo === 'liga' && ativo[pw.id]) { if (!pw.el) ativo[pw.id] = false; else gasto += pw.custo; } });
+    mana = clamp(mana + dt * 6 - dt * gasto, 0, MANA_MAX); if (mana <= 0 && gasto > 0) { PODERES.forEach(pw => { if (pw.tipo === 'liga' && pw.custo && ativo[pw.id]) { ativo[pw.id] = false; marca(pw, 'on', false); } }); aviso('A mana acabou. Os poderes desligaram.', '#ff6a6a'); }
     $('mana-fill').style.width = (mana / MANA_MAX * 100).toFixed(1) + '%'; $('mana-num').textContent = Math.round(mana);
-    PODERES.forEach(pw => pw.el.classList.toggle('falta', pw.tipo === 'uso' && mana < pw.custo));
+    PODERES.forEach(pw => marca(pw, 'falta', pw.tipo === 'uso' && mana < pw.custo));
+    fxFrame(dt); dardosFrame(dt);
+    escudo.visible = !!ativo.escudo; if (escudo.visible) { escudo.position.set(p.x, p.y + 0.95, p.z); escudo.scale.setScalar(1 + Math.sin(gT * 5) * 0.04); escudo.material.opacity = 0.18 + Math.sin(gT * 3) * 0.05; }
+    rastro.visible = !!ativo.vento && vel > 1; if (rastro.visible) rastro.userData.place((i, d) => { const R = rng(i + 777); const k = ((gT * 2.2 + R()) % 1); d.position.set(p.x - Math.sin(facing) * k * 2 + (R() - .5) * 0.8, p.y + 0.2 + R() * 1.4, p.z - Math.cos(facing) * k * 2 + (R() - .5) * 0.8); d.scale.set(0.03, 0.03, 0.35 * (1 - k)); d.rotation.y = facing; });
+    // pontos: dicas da Memória lidas, passos da missão, finais
+    SABER.forEach((sb, i) => { if (sb.el.style.display === 'block' && !sb.lido) { sb.lido = true; ganha('saber:' + sb.t.slice(0, 24), 1, 'aprendeu algo'); } });
+    if (Q.passo >= 1) ganha('passo:' + Math.floor(Q.passo), 2, 'missão avançou'); finais.forEach(f => ganha('final:' + f, 3, 'final ' + f));
     // memória
     const h = headOf(heroi); FORM.forEach((m, i) => { m.visible = !!ativo.memoria; if (!m.visible) return; const a = i / FORM.length * Math.PI * 2 + gT * 0.6; m.position.set(h[0] + Math.cos(a) * 0.75, h[1] + 0.15 + Math.sin(a * 2 + i) * 0.18, h[2] + Math.sin(a) * 0.75); });
     memAura.position.set(h[0], h[1], h[2]); memAura.material.opacity = ativo.memoria ? 0.35 + Math.sin(gT * 3) * 0.1 : 0;
@@ -530,7 +661,7 @@
       if (n.c === corvel) { const st = c.userData.P.elR.children.find(o => o.isGroup); if (st) st.rotation.x = -(c.userData.P.shR.rotation.x + c.userData.P.elR.rotation.x); }
       if (d < melhor) { melhor = d; al = n; } });
     // doentes deitados no porto (depois que a peste chega)
-    if (Q.passo >= 3 && !(Q.sub === 'A2' && Q.passo >= 6)) doentes.forEach((c, i) => { const [x, z, r] = c.userData.pos; c.visible = true; c.position.set(x, 0.15, z); c.rotation.set(-Math.PI / 2, 0, r, 'YXZ'); c.rotation.order = 'YXZ'; c.rotation.y = r; c.rotation.x = -Math.PI / 2; pose(c, gT * 0.3, { mood: 'sad', look: [0, 0] }); });
+    if (Q.passo >= 3 && !(Q.sub === 'A2' && Q.passo >= 6)) doentes.forEach((c, i) => { const [x, z, r] = c.userData.pos; c.visible = true; if (c.userData.curado) { c.position.set(x, 0, z); c.rotation.set(0, r, 0); pose(c, gT, { mood: 'smile' }); return; } c.position.set(x, 0.15, z); c.rotation.set(-Math.PI / 2, 0, r, 'YXZ'); c.rotation.order = 'YXZ'; c.rotation.y = r; c.rotation.x = -Math.PI / 2; pose(c, gT * 0.3, { mood: 'sad', look: [0, 0] }); });
     // multidão em volta da carroça
     if (Q.sub === 'A1' && Q.passo >= 5) multidao.forEach((c, i) => { if (i < 1) return; const a = i / 8 * Math.PI * 1.6 + 0.4; const x = VX - 16 + Math.cos(a) * 3.6, z = 12 + Math.sin(a) * 3.6 - 0.5; c.visible = true; c.position.set(x, 0, z); c.rotation.set(0, Math.atan2(VX - 16 - x, 12 - z), 0); pose(c, gT, { mood: Q.passo >= 6 ? 'shock' : 'neutral', look: [0, -0.3], arms: Q.passo >= 6 && i % 2 ? { shL: [-2.6, 0, -0.3], elL: [-0.3, 0, 0] } : undefined }); });
     // tigelas
@@ -582,7 +713,7 @@
       else { heroi.position.set(VX, 0, 40); facing = Math.PI; camYaw = 0; cam.position.set(VX, 3, 46); modo = Q.noite ? 'noite' : 'dia'; mostrarLugar('Valdren · a capital'); } }); }
   tapBtn(mini, abrirMapa); tapBtn($('mapa-fecha'), () => { $('mapa').hidden = true; }); tapBtn($('casa'), () => { if (zona === 'vila' && !dentro) { aviso('Você já está em Brumafria, sua cidade natal.', '#ffd23c'); return; } if (dentro) { aviso('Você está dentro de casa. A porta fica atrás de você.', '#ffd23c'); return; } viajar('vila'); });
 
-  window.__dbg = { irValdren, Q, heroi, ativo, acao: () => acao(), get alvo() { return alvo; } };
+  window.__dbg = { irValdren, Q, heroi, ativo, AR, usarPoder: id => usarPoder(PW[id]), acao: () => acao(), get alvo() { return alvo; } };
   // ---------- laço do jogo ----------
   let vy = 0, noChao = true, facing = 0, vel = 0, gT = 0, last = performance.now();
   const ANDAR = 3.0, CORRER = 6.5, GRAV = 22, PULO = 7.6; const tmp = new T3.Vector3();
@@ -594,12 +725,12 @@
     if (conversa || cenaQ || !$('fim').hidden || Q.naCarroca) { ix = 0; iy = 0; }
     const mag = Math.min(1, Math.hypot(ix, iy)); const correndo = input.run || keys.ShiftLeft || mag > 0.92;
     const fx = -Math.sin(camYaw), fz = -Math.cos(camYaw); let mx = fx * -iy + -fz * ix, mz = fz * -iy + fx * ix; const ml = Math.hypot(mx, mz);
-    vel = lerp(vel, mag > 0.08 ? (correndo ? CORRER : ANDAR) * mag : 0, clamp(dt * 8));
+    vel = lerp(vel, mag > 0.08 ? (correndo ? CORRER : ANDAR) * (ativo.vento ? 1.6 : 1) * mag : 0, clamp(dt * 8));
     if (ml > 0.001 && mag > 0.08) { mx /= ml; mz /= ml; const want = Math.atan2(mx, mz); let d = want - facing; while (d > Math.PI) d -= Math.PI * 2; while (d < -Math.PI) d += Math.PI * 2; facing += d * clamp(dt * 12); }
-    const p = heroi.position; p.x += Math.sin(facing) * vel * dt; p.z += Math.cos(facing) * vel * dt;
+    const p = heroi.position; const dash = dashT > 0 ? 22 : 0; dashT -= dt; p.x += Math.sin(facing) * (vel + dash) * dt; p.z += Math.cos(facing) * (vel + dash) * dt;
     if (zona === 'valdren') { colide(p, COLV); const rx = p.x - VX, r = Math.hypot(rx, p.z); if (r > 44) { p.x = VX + rx * 44 / r; p.z *= 44 / r; } } else if (dentro) { p.x = clamp(p.x, IX - 4.6, IX + 4.6); p.z = clamp(p.z, -4.6, 4.6); colide(p, COLC); } else { colide(p, COL); const r = Math.hypot(p.x, p.z + 6); if (r > 60) { p.x *= 60 / r; } }
     if (input.jump && noChao && !conversa) { vy = saltoPronto ? PULO * 1.75 : PULO; if (saltoPronto) { burstT = 0; burstP = [p.x, p.y, p.z]; } saltoPronto = false; noChao = false; } input.jump = false;
-    if (!noChao) { vy -= GRAV * dt; p.y += vy * dt; if (p.y <= 0) { p.y = 0; vy = 0; noChao = true; } }
+    if (!noChao) { vy -= GRAV * dt; if (ativo.planar && vy < -1.6) vy = -1.6; p.y += vy * dt; if (p.y <= 0) { p.y = 0; vy = 0; noChao = true; } }
     heroi.rotation.y = facing;
     if (!noChao) pose(heroi, gT, { mood: 'smile', arms: { shL: [-2.6, 0, -0.3], shR: [-2.6, 0, 0.3], elL: [-0.3, 0, 0], elR: [-0.3, 0, 0] }, legs: { thL: -0.9, knL: 1.4, thR: -0.3, knR: 0.6 } });
     else if (vel > 0.4) pose(heroi, gT, vel > 4.2 ? { run: true, mood: 'smile' } : { walk: true, mood: 'neutral' });
@@ -630,6 +761,7 @@
     let cx = p.x + Math.sin(camYaw) * Math.cos(cp) * cd, cz = p.z + Math.cos(camYaw) * Math.cos(cp) * cd; const cy = p.y + 1.0 + Math.sin(cp) * cd;
     if (dentro) { cx = clamp(cx, IX - 4.7, IX + 4.7); cz = clamp(cz, -4.7, 4.7); }
     if (cam.position.distanceTo(tmp.set(cx, cy, cz)) > 30) cam.position.copy(tmp); else cam.position.lerp(tmp, clamp(dt * 10));
+    if (tremor > 0) { tremor -= dt; cam.position.x += (Math.random() - .5) * tremor; cam.position.y += (Math.random() - .5) * tremor; }
     cam.lookAt(p.x, p.y + 0.95, p.z);
     sun.position.set(p.x + 12, 30, p.z + 10); sun.target.position.set(p.x, 0, p.z); sun.target.updateMatrixWorld();
     renderer.render(scene, cam); requestAnimationFrame(loop);

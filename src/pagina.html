@@ -28,8 +28,42 @@
   #mana-fill{position:absolute;left:0;top:0;bottom:0;width:100%;background:linear-gradient(90deg,#3a8aff,#7ad8ff);transition:width .1s}
   #mana-txt{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;color:#fff;letter-spacing:1px;text-shadow:0 1px 2px #000}
   #poderes{display:flex;gap:6px;pointer-events:auto}
-  .slot{position:relative;width:60px;height:60px;border-radius:12px;border:3px solid rgba(255,255,255,.75);background:rgba(20,18,46,.7);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;padding:0;font-family:inherit}
-  .slot .ic{font-size:24px;line-height:1}.slot .nm{font-size:10px;font-weight:800}.slot .tc{position:absolute;left:4px;top:2px;font-size:9px;opacity:.6}
+  #poderes{--s:clamp(38px,calc((100vw - 420px) / 8 - 5px),58px);gap:5px}
+  .slot{position:relative;width:var(--s);height:var(--s);border-radius:11px;border:3px solid rgba(255,255,255,.75);background:rgba(20,18,46,.7);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;padding:0;font-family:inherit}
+  .slot .ic{font-size:calc(var(--s) * .4);line-height:1}.slot .nm{font-size:9px;font-weight:800;white-space:nowrap}.slot .tc{position:absolute;left:4px;top:1px;font-size:9px;opacity:.6}
+  .slot.fixo{border-color:#ffd890}.slot .cad{position:absolute;right:2px;top:0;font-size:8px}
+  .slot.vazio{border-style:dashed;border-color:rgba(255,255,255,.4);background:rgba(20,18,46,.35)}.slot.vazio .ic{opacity:.55}
+  .slot:nth-child(2){margin-right:8px}
+  #arv-btn{right:calc(16px + env(safe-area-inset-right,0px));top:calc(130px + env(safe-area-inset-top,0px));width:50px;height:50px;font-size:24px;background:#d8f5d0}
+  #arv-pts{position:absolute;right:-4px;top:-4px;min-width:20px;height:20px;border-radius:10px;background:#e8433a;color:#fff;font-size:11px;font-weight:900;display:flex;align-items:center;justify-content:center;padding:0 4px;border:2px solid #fff}
+  #flash{position:fixed;inset:0;pointer-events:none;opacity:0;z-index:12}
+  #arvore{position:fixed;inset:0;background:rgba(6,12,10,.86);display:flex;align-items:center;justify-content:center;z-index:26}
+  #arvore .box{width:min(820px,96vw);max-height:94vh;overflow:auto;padding:12px 14px;border-radius:16px;background:#f3eedf;border:3px solid #4a6a3a;color:#22302a;display:grid;grid-template-columns:auto minmax(0,1fr);grid-template-rows:auto 1fr;gap:10px 14px}
+  #arvore .hd{grid-column:1/-1;display:flex;align-items:center;gap:10px}
+  #arvore h3{margin:0;font-size:19px;flex:1}
+  #arv-ptsbox{padding:4px 12px;border-radius:999px;background:#2a4a2a;color:#fff;font-weight:900;font-size:13px}
+  #arv-fecha{padding:7px 16px;border-radius:999px;border:0;background:#4a6a3a;color:#fff;font-family:inherit;font-weight:800;font-size:13px}
+  #arv-ramos{display:flex;gap:10px}
+  .ramo{display:flex;flex-direction:column;align-items:center;width:86px}
+  .ramo .rt{font-size:12px;font-weight:900;color:var(--rc);margin-bottom:5px;white-space:nowrap}
+  .ramo .liga{width:4px;height:9px;background:#c8c0ae}.ramo .liga.ok{background:var(--rc)}
+  .no{width:78px;height:56px;border-radius:12px;border:3px solid #c8c0ae;background:#fffaf0;color:#22302a;font-family:inherit;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0;gap:0}
+  .no .ic{font-size:20px;line-height:1.1}.no .nm{font-size:11px;font-weight:900}.no .pr{font-size:9px;font-weight:700;opacity:.7}
+  .no.tem{border-color:var(--rc);background:color-mix(in srgb,var(--rc) 22%,#fffaf0)}
+  .no.pode{border-color:var(--rc);border-style:dashed;animation:brilha 1.4s ease-in-out infinite}
+  @keyframes brilha{50%{box-shadow:0 0 12px var(--rc)}}
+  .no.trava,.no.caro{opacity:.5}
+  .no.sel{outline:3px solid #22302a;outline-offset:2px}
+  #arv-det{min-width:0;font-size:13px;line-height:1.35}
+  #arv-det .vz{color:#6a7a6a;margin:6px 0}
+  #arv-det .dt{display:flex;gap:10px;align-items:center}#arv-det .dt .ic{font-size:34px}#arv-det .dt b{font-size:17px;display:block}#arv-det .dt small{color:#6a7a6a;font-weight:700}
+  #arv-det p{margin:8px 0}
+  #arv-det .qs{font-size:12px;font-weight:800;margin:4px 0}
+  .slotsel{display:flex;gap:6px;flex-wrap:wrap}
+  .ss{width:46px;height:46px;border-radius:10px;border:3px solid #a8a090;background:#2a2840;color:#fff;font-size:20px;position:relative;padding:0}
+  .ss small{position:absolute;left:3px;top:0;font-size:9px;opacity:.7}.ss.aqui{border-color:#ffd23c;box-shadow:0 0 10px #ffd23c}
+  .ab{margin-top:8px;padding:9px 16px;border-radius:999px;border:0;background:#2a8a4a;color:#fff;font-family:inherit;font-weight:900;font-size:14px}
+  .ab:disabled{background:#a8a898}.ab.tira{background:transparent;color:#8a3a3a;border:2px solid #c8a0a0;padding:6px 14px;font-size:12px;margin-left:6px}
   .slot.on{border-color:#ffd23c;background:rgba(90,70,10,.85);box-shadow:0 0 18px rgba(255,210,60,.8)}
   .slot.falta{opacity:.45}.slot.erro{border-color:#ff5a5a}
   #aviso{position:fixed;left:50%;bottom:calc(112px + env(safe-area-inset-bottom,0px));transform:translate(-50%,8px);max-width:min(520px,70vw);padding:8px 14px;border-radius:12px;border:2px solid #5ab8ff;background:rgba(10,14,40,.82);color:#fff;font-size:13px;font-weight:700;text-align:center;opacity:0;transition:opacity .3s,transform .3s;pointer-events:none}
@@ -87,6 +121,9 @@
 <button class="btn" id="ciclo">☾</button>
 <canvas id="mini" width="232" height="232"></canvas>
 <button class="btn" id="casa" title="Voltar pra casa">🏠</button>
+<button class="btn" id="arv-btn" title="Árvore de habilidades">🌳<span id="arv-pts" hidden>0</span></button>
+<div id="arvore" hidden><div class="box"><div class="hd"><h3>🌳 Árvore de Habilidades</h3><span id="arv-ptsbox"><span id="arv-pts-txt">0 pontos</span></span><button id="arv-fecha">Fechar</button></div><div id="arv-ramos"></div><div id="arv-det"></div></div></div>
+<div id="flash"></div>
 <div id="mapa" hidden><div class="box"><h3>🗺️ Mapa de Aetherion</h3><p>Toque num lugar pra viajar.</p><div id="mapa-lista"></div><button id="mapa-fecha">Fechar</button></div></div>
 <div id="saber"></div>
 <div id="aviso"></div>
