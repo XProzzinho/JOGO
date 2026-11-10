@@ -38,10 +38,12 @@
   #conta-selo{font-size:10px;font-weight:800;opacity:.8;text-align:center}
   #pf-conta{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11px}#pf-conta button{padding:5px 12px;border-radius:999px;border:1px solid #8a9ad8;background:transparent;color:#cfd8ff;font-family:inherit;font-weight:800;font-size:11px}
   .barras{display:flex;align-items:center;gap:6px}.bcol{display:flex;flex-direction:column;gap:4px}
-  #desp{--p:0;--c:#ffd23c;pointer-events:auto;position:relative;width:40px;height:40px;border-radius:50%;border:2px solid rgba(255,255,255,.7);padding:0;background:conic-gradient(var(--c) calc(var(--p) * 1%),rgba(20,18,46,.75) 0);display:flex;align-items:center;justify-content:center}
-  #desp span{width:30px;height:30px;border-radius:50%;background:rgba(20,18,46,.9);display:flex;align-items:center;justify-content:center;font-size:16px}
-  #desp.pronto{animation:despP .8s ease-in-out infinite;border-color:#fff}@keyframes despP{50%{box-shadow:0 0 18px var(--c),0 0 4px #fff;transform:scale(1.12)}}
-  #desp.ativo{box-shadow:0 0 16px var(--c)}
+  #bms{display:flex;gap:4px}
+  .bm{--p:0;--c:#ffd23c;pointer-events:auto;position:relative;width:34px;height:34px;border-radius:50%;border:2px solid rgba(255,255,255,.7);padding:0;background:conic-gradient(var(--c) calc(var(--p) * 1%),rgba(20,18,46,.75) 0);display:flex;align-items:center;justify-content:center}
+  .bm span{width:25px;height:25px;border-radius:50%;background:rgba(20,18,46,.9);color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;font-family:Georgia,serif}
+  .bm.trava{opacity:.45}.bm.trava span::after{content:'🔒';position:absolute;font-size:9px;right:-2px;top:-3px}
+  .bm.pronto{animation:despP .8s ease-in-out infinite;border-color:#fff}@keyframes despP{50%{box-shadow:0 0 18px var(--c),0 0 4px #fff;transform:scale(1.12)}}
+  .bm.ativo{box-shadow:0 0 16px var(--c);border-color:#fff}.bm.ativo span{color:var(--c)}
   #criar{position:fixed;inset:0;z-index:35;display:flex;align-items:center;justify-content:center;background:radial-gradient(ellipse at 30% 40%,#26386e,#0a0e20 75%);padding:10px max(14px,env(safe-area-inset-right,0px)) 10px max(14px,env(safe-area-inset-left,0px))}
   #criar .cx{width:min(900px,100%);height:min(420px,100%);display:flex;gap:12px;color:#e8eeff}
   .cesq{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;gap:4px}
@@ -236,7 +238,7 @@
 <div id="aviso"></div>
 <div id="cena" hidden><div id="cena-quem"></div><div id="cena-txt"></div><div id="cena-mais">toque pra continuar ▸</div></div>
 <div id="fim" hidden><div class="box"><div id="fim-num"></div><div id="fim-nome"></div><p id="fim-nota"></p><div id="fim-selos"></div><div id="fim-cont"></div><div class="row"><button id="fim-volta">Voltar pra Brumafria</button><button class="ghost" id="fim-fica">Explorar Valdren</button></div></div></div>
-<div id="hud"><div class="barras"><button id="desp" title="Despertar"><span>⚡</span></button><div class="bcol"><div id="vida"><div id="vida-fill"></div><div class="vtxt">VIDA&nbsp;<span id="vida-num">100</span></div></div><div id="mana"><div id="mana-fill"></div><div id="mana-txt">MANA&nbsp;<span id="mana-num">100</span></div></div></div></div><div id="poderes"></div></div>
+<div id="hud"><div class="barras"><div id="bms"><button id="bm1" class="bm"><span>I</span></button><button id="bm2" class="bm"><span>II</span></button><button id="bm3" class="bm"><span>III</span></button></div><div class="bcol"><div id="vida"><div id="vida-fill"></div><div class="vtxt">VIDA&nbsp;<span id="vida-num">100</span></div></div><div id="mana"><div id="mana-fill"></div><div id="mana-txt">MANA&nbsp;<span id="mana-num">100</span></div></div></div></div><div id="poderes"></div></div>
 __THREE__
 <script>
 __JOGO__

@@ -34,17 +34,21 @@
     catch (e) { C.online = false; pendente = true; atualizaSelo(); } }
   C.salvar = function () { if (!C.usuario) return; pendente = true; clearTimeout(tSalvar); tSalvar = setTimeout(enviar, 3000); };
   document.addEventListener('visibilitychange', () => { if (document.hidden && pendente) { clearTimeout(tSalvar); enviar(); } });
-  C.sair = async function () { if (pendente) await enviar(); await auth.signOut(); CHAVES.forEach(k => { try { localStorage.removeItem(k); } catch (e) {} }); try { sessionStorage.removeItem('aetherion-convidado'); } catch (e) {} location.reload(); };
+  C.sair = async function () { if (pendente) await enviar(); await auth.signOut(); CHAVES.forEach(k => { try { localStorage.removeItem(k); } catch (e) {} }); try { localStorage.removeItem('aetherion-dono'); sessionStorage.removeItem('aetherion-convidado'); sessionStorage.removeItem('aetherion-puxado'); } catch (e) {} location.reload(); };
   function atualizaSelo() { const s = $('conta-selo'); if (!s) return; s.textContent = C.usuario ? (C.online ? '☁️ Salvo na nuvem' : '⚠️ Sem internet: salva quando voltar') : '📱 Sem conta: salvo só neste celular'; }
   C.selo = atualizaSelo;
 
   // quando entra: puxa o progresso da nuvem; conta nova: sobe o progresso do celular
-  async function aoEntrar(u) { C.usuario = u; mostra('Carregando seu progresso...'); ocupado(true);
+  // puxa o progresso da nuvem só UMA vez por sessão (senão o jogo ficava recarregando sem parar)
+  async function aoEntrar(u) { C.usuario = u; mostra('Carregando seu progresso...'); ocupado(true); let puxado = null; try { puxado = sessionStorage.getItem('aetherion-puxado'); } catch (e) {}
     try { const d = await docDe(u.uid).get();
-      if (d.exists && d.data().arvore) { const dt = d.data(); const L = lerLocal();
-        if (L['aetherion-arvore'] !== dt.arvore || L['aetherion-finais'] !== dt.finais) { try { localStorage.setItem('aetherion-arvore', dt.arvore); if (dt.finais) localStorage.setItem('aetherion-finais', dt.finais); } catch (e) {} location.reload(); return; } }
-      else await enviar();
-      C.online = true; } catch (e) { C.online = false; }
+      if (d.exists && d.data().arvore && puxado !== u.uid) { const dt = d.data(); try { sessionStorage.setItem('aetherion-puxado', u.uid); } catch (e) {}
+        let nvLocal = 0, nvNuvem = 0; try { nvLocal = (JSON.parse(localStorage.getItem('aetherion-arvore') || '{}').nv || 0); nvNuvem = (JSON.parse(dt.arvore).nv || 0); } catch (e) {}
+        let dono = null; try { dono = localStorage.getItem('aetherion-dono'); } catch (e) {}
+        // usa o da nuvem se o celular está vazio, se o progresso daqui é de outra conta, ou se a nuvem está mais adiantada
+        if (dono !== u.uid || nvNuvem >= nvLocal) { try { localStorage.setItem('aetherion-arvore', dt.arvore); if (dt.finais) localStorage.setItem('aetherion-finais', dt.finais); localStorage.setItem('aetherion-dono', u.uid); } catch (e) {} location.reload(); return; } }
+      try { localStorage.setItem('aetherion-dono', u.uid); } catch (e) {}
+      await enviar(); C.online = true; } catch (e) { C.online = false; }
     ocupado(false); mostra(''); fecha(); atualizaSelo(); }
   let primeira = true;
   auth.onAuthStateChanged(u => { const era = primeira; primeira = false; if (u) aoEntrar(u); else { C.usuario = null; if (convidado) fecha(); else { tela.hidden = false; if (era) mostra(''); } atualizaSelo(); } });
