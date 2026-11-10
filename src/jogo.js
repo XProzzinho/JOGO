@@ -513,7 +513,7 @@
     g = ARMAG.espada = grp(maoG); tb(g, 0, 0, 0.55, 0.07, 0.018, 0.78, '#dfe4ee'); part(g, CONE, '#dfe4ee', 0, 0, 0.98, 0.035, 0.1, 0.01).rotation.x = Math.PI / 2; tb(g, 0, 0, 0.14, 0.26, 0.04, 0.05, '#e2c27a'); part(g, CYL, '#4a2a14', 0, 0, 0.03, 0.025, 0.18, 0.025).rotation.x = Math.PI / 2;
     g = ARMAG.glacial = grp(maoG); tb(g, 0, 0, 0.6, 0.08, 0.02, 0.9, '#9ae6ff', true); part(g, CONE, '#9ae6ff', 0, 0, 1.08, 0.04, 0.12, 0.01, 0, true).rotation.x = Math.PI / 2; tb(g, 0, 0, 0.14, 0.3, 0.05, 0.05, '#5ab8ff'); part(g, CYL, '#2a3a5a', 0, 0, 0.03, 0.025, 0.18, 0.025).rotation.x = Math.PI / 2; glowSpr(g, 0, 0, 0.6, 1.1, '#7ad8ff', 0.5);
     g = ARMAG.besta = grp(maoG); tb(g, 0, 0.02, 0.2, 0.07, 0.07, 0.6, '#7a4a2a'); tb(g, 0, 0.04, 0.42, 0.62, 0.04, 0.05, '#5a3a24'); tb(g, 0, 0.05, 0.36, 0.6, 0.008, 0.008, '#e8e0d0'); }
-  function mostraArma() { Object.keys(ARMAG).forEach(k => ARMAG[k].visible = k === AR.arma); const A = ARMAS[AR.arma]; $('atacar').innerHTML = `<span>${A.icone}</span><small>ATACAR</small>`; $('arma').hidden = AR.armas.length < 2; }
+  function mostraArma() { Object.keys(ARMAG).forEach(k => ARMAG[k].visible = k === AR.arma); const A = ARMAS[AR.arma] || ARMAS.bastao; $('atacar').innerHTML = `<span>${A.icone}</span><small>ATACAR</small>`; $('arma').hidden = AR.armas.length < 2; }
   function trocaArma() { if (AR.armas.length < 2) return; const i = AR.armas.indexOf(AR.arma); AR.arma = AR.armas[(i + 1) % AR.armas.length]; salvaAR(); mostraArma(); aviso(ARMAS[AR.arma].icone + ' ' + ARMAS[AR.arma].nome, '#ffd23c'); }
   function atualizaInv() { $('inv-m').textContent = AR.inv.moedas; $('inv-p').textContent = AR.inv.pele; $('inv-c').textContent = AR.inv.carne; $('inv-cw').hidden = !AR.inv.carne; $('inv-pw').hidden = !AR.inv.pele; $('inv-g').hidden = !AR.inv.coracao; }
   function comer() { if (!AR.inv.carne) return; if (vida >= VIDA_MAX) { aviso('Você já está com a vida cheia.', '#8a9aba'); return; } AR.inv.carne--; vida = Math.min(VIDA_MAX, vida + 35); salvaAR(); atualizaInv(); numero(heroi.position, '+35 ❤️', '#7ad87a'); fx('cura', [heroi.position.x, 0, heroi.position.z], 1.2); }
@@ -979,7 +979,7 @@
   $('cr-nome').addEventListener('input', () => { AR.visual.nome = $('cr-nome').value.slice(0, 16); aplicaVisual(crSel); });
   ['keydown', 'keyup'].forEach(t => $('criar').addEventListener(t, e => e.stopPropagation()));
   tapBtn($('cr-prox'), () => desenhaCriar(2)); tapBtn($('cr-volta'), () => desenhaCriar(1));
-  tapBtn($('cr-fim'), () => { AR.visual.nome = ($('cr-nome').value.trim() || 'Leonardo').slice(0, 16); const nova = AR.classe !== crSel; if (nova) aplicaClasse(crSel); else { mostraArma(); aplicaVisual(); salvaAR(); setTimeout(fazRetrato, 100); } $('criar').hidden = true;
+  tapBtn($('cr-fim'), () => { if (!crSel || !CLASSES[crSel]) return; AR.visual.nome = ($('cr-nome').value.trim() || 'Leonardo').slice(0, 16); const nova = AR.classe !== crSel; if (nova) aplicaClasse(crSel); else { mostraArma(); aplicaVisual(); salvaAR(); setTimeout(fazRetrato, 100); } $('criar').hidden = true;
     if (nova) { const c = CLASSES[crSel]; aviso(c.icone + ' Você agora é ' + c.nome + '! Habilidade no slot 3 e os Modos de Batalha I, II e III ao lado da vida.', c.cor); } });
   let criarT = 0; function criarFrame(dt) { if ($('criar').hidden) return; criarT += dt; if (criarT > 0.06) { fazPrevia(criarT, $('cr-previa')); criarT = 0; } }
   // ===================== HABILIDADES PRÓPRIAS DE CADA CLASSE (ramo da classe na árvore) =====================
