@@ -729,7 +729,7 @@
   SABER.forEach(sb => { if (!sb.el) { const d = document.createElement('div'); d.className = 'tag'; d.textContent = sb.t; $('saber').appendChild(d); sb.el = d; } });
 
   // ===================== NÍVEL, PERFIL, INVENTÁRIO E FANTASIAS =====================
-  AR.nv = AR.nv || 1; AR.xp = AR.xp || 0; AR.fantasias = AR.fantasias || ['comum', 'celeste']; AR.fantasia = AR.fantasia || 'comum';
+  AR.nv = AR.nv || 1; AR.xp = AR.xp || 0; AR.fantasias = AR.fantasias || ['comum', 'celeste']; AR.fantasia = AR.fantasia || 'comum'; AR.pecas = AR.pecas || {};
   const NV_MAX = 100; const xpPara = n => 60 + n * 30;
   function aplicaNivel() { const c = CLASSES && CLASSES[AR.classe]; VIDA_MAX = (c ? c.vida : 100) + (AR.nv - 1) * 5; MANA_MAX = (c ? c.mana : 100) + (AR.nv - 1) * 3; }
   function ganhaXp(n, motivo) { if (AR.nv >= NV_MAX) return; AR.xp += n; let subiu = false; while (AR.nv < NV_MAX && AR.xp >= xpPara(AR.nv)) { AR.xp -= xpPara(AR.nv); AR.nv++; subiu = true; AR.pts++; }
@@ -798,9 +798,61 @@
       A(kn, CYL2, AZ, 0, -0.21, 0, 0.069, 0.3, 0.069); A(kn, BOX, BR, 0, -0.2, 0.068, 0.018, 0.28, 0.012); A(kn, TORF, BR, 0, -0.06, 0, 0.069, 0.069, 0.069, Math.PI / 2, 0, 0); A(kn, TORF, BR, 0, -0.36, 0, 0.074, 0.074, 0.074, Math.PI / 2, 0, 0);
       const ft = P['ft' + s]; A(ft, SPH2, MALHA, 0, 0.005, 0.05, 0.075, 0.062, 0.142); for (let k = 0; k < 3; k++) A(ft, SPH2, k % 2 ? AZ2 : PR, 0, 0.02 - k * 0.004, 0.1 + k * 0.04, 0.072 - k * 0.006, 0.05, 0.05); A(ft, BOX, COU, 0, -0.048, 0.05, 0.125, 0.02, 0.27); });
     armadura.forEach(m => m.visible = false); }
-  function vesteFantasia(k) { AR.fantasia = k; salvaAR(); const on = k === 'celeste'; armadura.forEach(m => m.visible = on); roupaBase.forEach(([o, mt]) => o.material = on ? MALHA : mt); setTimeout(fazRetrato, 60); }
-  function defesa() { const c = CLASSES && CLASSES[AR.classe]; return Math.min(85, (FANT[AR.fantasia].def || 0) + (c ? c.def : 0) + (BM && BM.def ? BM.def : 0) + (typeof BUFF !== 'undefined' ? (BUFF.provocar > 0 ? 20 : 0) + (BUFF.fortaleza > 0 ? 30 : 0) + (BUFF.pele > 0 ? 40 : 0) : 0)); }
+  function vesteFantasia(k) { AR.fantasia = k; if (k === 'celeste') AR.pecas = {}; salvaAR(); const on = k === 'celeste'; armadura.forEach(m => m.visible = on); atualizaPecas(); setTimeout(fazRetrato, 60); }
+  function defesa() { const c = CLASSES && CLASSES[AR.classe]; return Math.min(85, (FANT[AR.fantasia].def || 0) + pecaDef() + (c ? c.def : 0) + (BM && BM.def ? BM.def : 0) + (typeof BUFF !== 'undefined' ? (BUFF.provocar > 0 ? 20 : 0) + (BUFF.fortaleza > 0 ? 30 : 0) + (BUFF.pele > 0 ? 40 : 0) : 0)); }
   function armaduraFrame() { if (!tabardo || AR.fantasia !== 'celeste') return; const P = heroi.userData.P; const f = Math.min(P.thL.rotation.x, P.thR.rotation.x), b = Math.max(P.thL.rotation.x, P.thR.rotation.x); tabardo.rotation.x = Math.min(0, f) * 0.95; tabardo.userData.costas.rotation.x = Math.max(0, b) * 0.95; }
+
+  // ---- Armadura Glacial (conjunto em peças separadas: elmo, peitoral, manoplas, calça, gregas, botas) ----
+  const GA = met('#3f7ae8', 0.35, 0.45), GA2 = met('#2c58b8', 0.38, 0.45), GB = met('#e8eff6', 0.3, 0.4), GD = met('#2e3350', 0.6, 0.15);
+  const GELO = new T3.MeshStandardMaterial({ color: '#a6e6fa', roughness: 0.25, metalness: 0.1, emissive: '#2a7fa8', emissiveIntensity: 0.5, envMap: ENV, envMapIntensity: 1.1 });
+  const FUMO = new T3.MeshBasicMaterial({ color: '#cfeefc', transparent: true, opacity: 0.85, toneMapped: false });
+  const OCT = new T3.OctahedronGeometry(1);
+  const PECAS = [['cabeca', '⛑️', 'Elmo Glacial'], ['peito', '🦺', 'Peitoral Glacial'], ['maos', '🧤', 'Manoplas de Gelo'], ['calca', '🩳', 'Calça Glacial'], ['greva', '🦵', 'Gregas Glaciais'], ['pe', '🥾', 'Botas Glaciais']];
+  const PEC = {}; PECAS.forEach(([k]) => PEC[k] = []); let HV = null;
+  function pecaDef() { const n = PECAS.filter(([k]) => AR.pecas[k] === 'glacial').length; return n * 5 + (n === PECAS.length ? 10 : 0); }
+  { const P = heroi.userData.P; const Q = (slot, par, ...a) => { const m = pc(par, ...a); m.visible = false; PEC[slot].push(m); return m; };
+    // cabeça: elmo branco com coroa de cristais, viseira escura e chama de gelo
+    { const h = P.head, S = 'cabeca';
+      Q(S, h, SPH2, GB, 0, 0.14, -0.005, 0.152, 0.158, 0.158); Q(S, h, BOX, GD, 0, 0.125, 0.158, 0.16, 0.05, 0.02); Q(S, h, BOX, GD, 0, 0.045, 0.14, 0.085, 0.07, 0.06);
+      Q(S, h, OCT, GB, 0, 0.335, 0.03, 0.035, 0.15, 0.03); Q(S, h, OCT, GEMA, 0, 0.235, 0.158, 0.02, 0.04, 0.01);
+      [-1, 1].forEach(sx => { Q(S, h, OCT, GB, sx * 0.1, 0.3, 0.02, 0.03, 0.11, 0.026, 0, 0, -sx * 0.55); Q(S, h, OCT, GB, sx * 0.062, 0.3, -0.1, 0.026, 0.09, 0.024, -0.5, 0, -sx * 0.2); Q(S, h, OCT, GELO, sx * 0.172, 0.12, 0, 0.02, 0.07, 0.03, 0, 0, -sx * 0.9); });
+      for (let k = 0; k < 5; k++) Q(S, h, SPH2, FUMO, 0, 0.22 + k * 0.035, -0.15 - k * 0.085, 0.06 - k * 0.009, 0.06 - k * 0.009, 0.06 - k * 0.009); }
+    // peitoral: placa azul, estrela branca, costelas, cristais e ombreiras
+    { const sp = P.spine, S = 'peito';
+      Q(S, sp, SPH2, GA, 0, 0.385, 0, 0.215, 0.24, 0.155); Q(S, sp, CYL2, GD, 0, 0.15, 0, 0.17, 0.12, 0.12);
+      for (let i = 0; i < 3; i++) Q(S, sp, CYL2, i % 2 ? GA2 : GA, 0, 0.22 - i * 0.045, 0, 0.192 - i * 0.004, 0.036, 0.137);
+      Q(S, sp, OCT, GB, 0, 0.45, 0.15, 0.075, 0.11, 0.02); Q(S, sp, OCT, GEMA, 0, 0.51, 0.165, 0.022, 0.035, 0.01);
+      Q(S, sp, CYL2, GA2, 0, 0.6, -0.01, 0.1, 0.07, 0.085);
+      [-1, 1].forEach(sx => { Q(S, sp, OCT, GELO, sx * 0.13, 0.5, 0.08, 0.03, 0.11, 0.03, 0, 0, -sx * 0.6); Q(S, sp, OCT, GELO, sx * 0.17, 0.4, 0.0, 0.026, 0.09, 0.026, 0, 0, -sx * 0.9);
+        const sh = P['sh' + (sx < 0 ? 'L' : 'R')];
+        Q(S, sh, SPH2, GA, sx * 0.04, 0.02, 0, 0.17, 0.14, 0.16, 0, 0, -sx * 0.2); Q(S, sh, TORF, GB, sx * 0.04, -0.02, 0, 0.165, 0.16, 0.17, Math.PI / 2, 0, -sx * 0.2);
+        [[0.05, 0.17, 0, 0.17, 0.3], [0.12, 0.12, 0.05, 0.12, 0.7], [0.1, 0.14, -0.06, 0.13, 0.5]].forEach(([dx, y, z, h, r]) => Q(S, sh, OCT, GELO, sx * dx, y + 0.04, z, 0.05, h * 1.6, 0.05, z * 2, 0, -sx * r));
+        Q(S, sh, CYL2, GA, 0, -0.19, 0, 0.068, 0.15, 0.068); Q(S, sh, TORF, GB, 0, -0.265, 0, 0.068, 0.068, 0.068, Math.PI / 2, 0, 0); }); }
+    // manoplas: braçadeira azul, cristais no cotovelo e garras de gelo
+    { const S = 'maos'; ['L', 'R'].forEach((s, i) => { const sx = i ? 1 : -1, el = P['el' + s];
+      Q(S, el, SPH2, GA2, 0, 0, 0.005, 0.066, 0.064, 0.066); Q(S, el, OCT, GELO, sx * 0.07, -0.02, -0.04, 0.03, 0.12, 0.03, 0, 0, -sx * 0.5);
+      Q(S, el, CYL2, GA, 0, -0.14, 0, 0.065, 0.16, 0.063); Q(S, el, CYL2, GA2, 0, -0.225, 0, 0.076, 0.05, 0.072); Q(S, el, SPH2, GD, 0, -0.29, 0.01, 0.058, 0.066, 0.052);
+      [-0.022, 0, 0.022].forEach(dx => Q(S, el, OCT, GELO, dx, -0.35, 0.04, 0.009, 0.06, 0.009, -0.5, 0, 0)); }); }
+    // calça: short escuro, saiote azul com gema e placas nas coxas
+    { const S = 'calca';
+      Q(S, P.hips, CYL2, GD, 0, -0.07, 0, 0.172, 0.14, 0.128); Q(S, P.hips, CYL2, GELO, 0, 0.0, 0, 0.18, 0.03, 0.132); Q(S, P.hips, BOX, GA, 0, -0.1, 0.126, 0.12, 0.16, 0.02); Q(S, P.hips, OCT, GA, 0, -0.205, 0.128, 0.06, 0.075, 0.012); Q(S, P.hips, OCT, GEMA, 0, -0.07, 0.14, 0.02, 0.03, 0.01);
+      ['L', 'R'].forEach((s, i) => { const sx = i ? 1 : -1, th = P['th' + s];
+        Q(S, th, SPH2, GA, sx * 0.05, -0.06, 0, 0.1, 0.14, 0.115, 0, 0, sx * 0.12); Q(S, th, CYL2, GA, 0, -0.25, 0, 0.082, 0.26, 0.082); Q(S, th, BOX, GELO, 0, -0.24, 0.08, 0.016, 0.24, 0.012);
+        Q(S, th, OCT, GELO, sx * 0.105, -0.04, 0, 0.045, 0.2, 0.045, 0, 0, -sx * 0.3); Q(S, th, OCT, GELO, sx * 0.1, -0.13, 0.04, 0.024, 0.09, 0.024, 0, 0, -sx * 0.45); }); }
+    // gregas: joelheira, canela azul e cristais
+    { const S = 'greva'; ['L', 'R'].forEach((s, i) => { const sx = i ? 1 : -1, kn = P['kn' + s];
+      Q(S, kn, SPH2, GA2, 0, 0, 0.03, 0.076, 0.076, 0.068); Q(S, kn, OCT, GELO, 0, 0, 0.1, 0.022, 0.07, 0.022, Math.PI / 2, 0, 0);
+      Q(S, kn, CYL2, GA, 0, -0.21, 0, 0.074, 0.3, 0.074); Q(S, kn, BOX, GELO, 0, -0.2, 0.074, 0.02, 0.26, 0.012); Q(S, kn, TORF, GB, 0, -0.06, 0, 0.074, 0.074, 0.074, Math.PI / 2, 0, 0);
+      Q(S, kn, OCT, GELO, sx * 0.075, -0.04, 0, 0.045, 0.16, 0.045, 0, 0, -sx * 0.4); Q(S, kn, OCT, GELO, sx * 0.07, -0.2, -0.02, 0.024, 0.09, 0.024, 0, 0, -sx * 0.3); }); }
+    // botas
+    { const S = 'pe'; ['L', 'R'].forEach((s, i) => { const sx = i ? 1 : -1, ft = P['ft' + s];
+      Q(S, ft, SPH2, GA, 0, 0.005, 0.05, 0.08, 0.065, 0.148); Q(S, ft, OCT, GELO, 0, 0.0, 0.2, 0.03, 0.06, 0.026, Math.PI / 2, 0, 0); Q(S, ft, BOX, GD, 0, -0.048, 0.05, 0.125, 0.02, 0.27);
+      Q(S, ft, CYL2, GA2, 0, 0.065, 0, 0.076, 0.04, 0.076); Q(S, ft, OCT, GELO, sx * 0.07, 0.08, 0, 0.022, 0.08, 0.022, 0, 0, -sx * 0.5); }); } }
+  function atualizaPecas() { const P = heroi.userData.P; Object.keys(PEC).forEach(s => { const on = AR.pecas[s] === 'glacial'; PEC[s].forEach(m => m.visible = on); });
+    const elmo = AR.pecas.cabeca === 'glacial';
+    if (elmo && !HV) { HV = []; P.head.children.forEach(c => { if (!PEC.cabeca.includes(c) && c.visible) { HV.push(c); c.visible = false; } }); } else if (!elmo && HV) { HV.forEach(c => c.visible = true); HV = null; }
+    const alg = PECAS.some(([k]) => AR.pecas[k] === 'glacial'); roupaBase.forEach(([o, mt]) => o.material = AR.fantasia === 'celeste' ? MALHA : alg ? GD : mt); }
+  function vestePeca(k, on) { AR.pecas[k] = on ? 'glacial' : null; if (on && AR.fantasia === 'celeste') { AR.fantasia = 'comum'; armadura.forEach(m => m.visible = false); } salvaAR(); atualizaPecas(); setTimeout(fazRetrato, 60); }
 
   // ---- retrato e prévia (render do próprio Leonardo) ----
   const rtR = new T3.WebGLRenderTarget(128, 128); rtR.texture.colorSpace = T3.SRGBColorSpace; const rtV = new T3.WebGLRenderTarget(240, 320); rtV.texture.colorSpace = T3.SRGBColorSpace;
@@ -829,6 +881,9 @@
     const cel = (g, ic, nome, sub, on, fn, tag) => { const b = document.createElement('button'); b.className = 'cel' + (on ? ' on' : '') + (fn ? '' : ' fixa'); b.innerHTML = `<span class="ic">${ic}</span><b>${nome}</b><small>${sub}</small>${tag ? `<em>${tag}</em>` : ''}`; if (fn) tapBtn(b, fn); g.appendChild(b); };
     let g = sec('👕 Fantasias');
     Object.keys(FANT).forEach(k => { const F = FANT[k], tem = AR.fantasias.includes(k); cel(g, F.icone, F.nome, tem ? (F.def ? 'Defesa +' + F.def + '%' : 'Sem defesa') : '🔒', AR.fantasia === k, tem && AR.fantasia !== k ? () => { vesteFantasia(k); aviso('Vestiu: ' + F.icone + ' ' + F.nome, '#7ac8ff'); desenhaPerfil(); } : null, AR.fantasia === k ? 'VESTIDO' : ''); });
+    g = sec('🧊 Armadura Glacial · peças (+5% cada, conjunto completo +10%)');
+    PECAS.forEach(([k, ic, nm]) => { const on = AR.pecas[k] === 'glacial'; cel(g, ic, nm, 'Defesa +5%', on, () => { vestePeca(k, !on); desenhaPerfil(); }, on ? 'VESTIDA' : ''); });
+    { const todas = PECAS.every(([k]) => AR.pecas[k] === 'glacial'); cel(g, '❄️', 'Conjunto completo', todas ? 'Tirar tudo' : 'Vestir tudo', todas, () => { PECAS.forEach(([k]) => { AR.pecas[k] = todas ? null : 'glacial'; }); if (!todas && AR.fantasia === 'celeste') { AR.fantasia = 'comum'; armadura.forEach(m => m.visible = false); } salvaAR(); atualizaPecas(); setTimeout(fazRetrato, 60); desenhaPerfil(); }, todas ? 'VESTIDO' : ''); }
     g = sec('⚔️ Armas');
     Object.keys(ARMAS).forEach(k => { const W = ARMAS[k], tem = AR.armas.includes(k); if (W.classe && !tem) return; cel(g, tem ? W.icone : '🔒', W.nome, tem ? 'Dano ' + W.dano : 'Na Forja', AR.arma === k, tem && AR.arma !== k ? () => { AR.arma = k; salvaAR(); mostraArma(); desenhaPerfil(); } : null, AR.arma === k ? 'NA MÃO' : ''); });
     g = sec('🎒 Itens');
@@ -1171,7 +1226,7 @@
     // 5) sombreamento mais chapado
     hemi.intensity *= 1.15; }
   modoBlocos();
-  window.__dbg = { BLOCOS, modoBatalha, bmLiga, bmDesliga, BMS, ORB, get BM() { return BM; }, get hora() { return hora; }, set hora(v) { hora = v; }, usarHab2: id => classePoder2(id), BUFF, abrirCriar, aplicaClasse, CLASSES, get desp() { return desp; }, set desp(v) { desp = v; }, usarHab: id => classePoder(id), renderer, scene, world, ganhaXp, vesteFantasia, abrirPerfil, fazRetrato, irValdren, Q, heroi, ativo, AR, FERAS, golem, atacar, get vida() { return vida; }, set vida(v) { vida = v; }, abrirLoja, usarPoder: id => usarPoder(PW[id]), acao: () => acao(), get alvo() { return alvo; } };
+  window.__dbg = { vestePeca, atualizaPecas, PECAS, BLOCOS, modoBatalha, bmLiga, bmDesliga, BMS, ORB, get BM() { return BM; }, get hora() { return hora; }, set hora(v) { hora = v; }, usarHab2: id => classePoder2(id), BUFF, abrirCriar, aplicaClasse, CLASSES, get desp() { return desp; }, set desp(v) { desp = v; }, usarHab: id => classePoder(id), renderer, scene, world, ganhaXp, vesteFantasia, abrirPerfil, fazRetrato, irValdren, Q, heroi, ativo, AR, FERAS, golem, atacar, get vida() { return vida; }, set vida(v) { vida = v; }, abrirLoja, usarPoder: id => usarPoder(PW[id]), acao: () => acao(), get alvo() { return alvo; } };
   // ---------- laço do jogo ----------
   let vy = 0, noChao = true, facing = 0, vel = 0, gT = 0, last = performance.now();
   const ANDAR = 3.0, CORRER = 6.5, GRAV = 22, PULO = 7.6; const tmp = new T3.Vector3();
