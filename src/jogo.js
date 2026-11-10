@@ -1122,7 +1122,56 @@
   if (AR.classe && !CLASSES[AR.classe]) AR.classe = null;
   aplicaNivel(); aplicaVisual(); if (AR.classe) { const v = AR.barra[2]; if (v !== CLASSES[AR.classe].hab) aplicaClasse(AR.classe); else { montaBarra(); mostraArma(); } } else setTimeout(() => abrirCriar(1), 300);
   setTimeout(fazRetrato, 900);
-  window.__dbg = { modoBatalha, bmLiga, bmDesliga, BMS, ORB, get BM() { return BM; }, get hora() { return hora; }, set hora(v) { hora = v; }, usarHab2: id => classePoder2(id), BUFF, abrirCriar, aplicaClasse, CLASSES, get desp() { return desp; }, set desp(v) { desp = v; }, usarHab: id => classePoder(id), renderer, scene, world, ganhaXp, vesteFantasia, abrirPerfil, fazRetrato, irValdren, Q, heroi, ativo, AR, FERAS, golem, atacar, get vida() { return vida; }, set vida(v) { vida = v; }, abrirLoja, usarPoder: id => usarPoder(PW[id]), acao: () => acao(), get alvo() { return alvo; } };
+  // ===================== MODO BLOCOS (visual estilo Pixel Piece: cubos + texturas pixel art) =====================
+  let BLOCOS = true; try { const q = new URLSearchParams(location.search).get('blocos'); BLOCOS = q !== null ? q !== '0' : localStorage.getItem('aetherion-blocos') !== '0'; } catch (e) {}
+  function pixTex(pal, rows, rep) { const h = rows.length, w = rows[0].length; const t = canvasTex(w, h, (x) => { for (let r = 0; r < h; r++) for (let c = 0; c < w; c++) { const k = rows[r][c]; if (pal[k]) { x.fillStyle = pal[k]; x.fillRect(c, r, 1, 1); } } }); t.magFilter = t.minFilter = T3.NearestFilter; t.generateMipmaps = false; t.wrapS = t.wrapT = T3.RepeatWrapping; if (rep) t.repeat.set(rep, rep); return t; }
+  function ruido(w, h, cores, seed) { const R = rng(seed); const rows = []; for (let r = 0; r < h; r++) { let s = ''; for (let c = 0; c < w; c++) { const u = R(); s += u < 0.7 ? '0' : u < 0.9 ? '1' : '2'; } rows.push(s); } return pixTex({ 0: cores[0], 1: cores[1], 2: cores[2] }, rows); }
+  const PT = {
+    neve: ruido(16, 16, ['#eef2fa', '#dfe6f2', '#f8fbff'], 21),
+    grama: ruido(16, 16, ['#4a9a3a', '#3f8a32', '#5aaa46'], 22),
+    pedra: pixTex({ 0: '#b8b2a8', 1: '#8f887c', 2: '#d2ccc2', 3: '#6e675c' }, ['0000300000030000', '0220300022203000', '0220300022203000', '0000300000030000', '3333333333333333', '0003000020003002', '0003022020003022', '0003000020003000', '3333333333333333', '0220300000030220', '0220300022030220', '0000300022030000', '3333333333333333', '0003000020003000', '0003022020003022', '0003000000003000']),
+    tabua: pixTex({ 0: '#9a6a3e', 1: '#7e5430', 2: '#b07a48', 3: '#5a3a20' }, ['0000000000000000', '0200020000200200', '0000000000000000', '3333333333333333', '0000000000000000', '0002000020000020', '0000000000000000', '3333333333333333', '0000000000000000', '0200000200002000', '0000000000000000', '3333333333333333', '0000000000000000', '0000200000200000', '0000000000000000', '3333333333333333']),
+    telha: pixTex({ 0: '#4e3e52', 1: '#3a2c3e', 2: '#62506a' }, ['0000200000002000', '0000100000001000', '1111111111111111', '0000000000000000', '2000000020000000', '1000000010000000', '1111111111111111', '0000000000000000', '0000200000002000', '0000100000001000', '1111111111111111', '0000000000000000', '2000000020000000', '1000000010000000', '1111111111111111', '0000000000000000']),
+    folha: ruido(8, 8, ['#2e6a40', '#255a34', '#3a7e4c'], 23),
+    casca: pixTex({ 0: '#5a3a24', 1: '#46291a', 2: '#6e4a30' }, ['0100001000010000', '0100001000010000', '0100201000010020', '0100001000010000', '0100001002010000', '0100001000010000', '2100001000010000', '0100001000010000']),
+    janela: pixTex({ 0: '#cfeaf6', 1: '#2a2230', 2: '#ffe9a8', 3: '#9fd3ea' }, ['1111111111111111', '1000000000000001', '1033000000003301', '1030000000000301', '1000000000000001', '1000000000000001', '1111111111111111', '1000000000000001', '1000000000000001', '1003000000003001', '1000000000000001', '1000000000000001', '1000000000000001', '1000000000000001', '1000000000000001', '1111111111111111']),
+  };
+  // rosto pixel art (10x10) na frente da cabeça cúbica
+  function rostoTex(pele, olho, cab) { const P = { s: pele, o: olho, b: '#1c1420', w: '#ffffff', m: '#7a2a2a', c: cab, r: '#e89aa0' }; const rows = ['ssssssssss', 'sbbssssbbs', 'ssssssssss', 'swosssswos', 'sbbssssbbs', 'ssssssssss', 'srsssssssr', 'sssmmmmsss', 'ssssmmssss', 'ssssssssss'];
+    const t = canvasTex(10, 10, (x) => { for (let r = 0; r < 10; r++) for (let c = 0; c < 10; c++) { x.fillStyle = P[rows[r][c]]; x.fillRect(c, r, 1, 1); } }); t.magFilter = t.minFilter = T3.NearestFilter; t.generateMipmaps = false; return t; }
+  const BLOCAVEL = /Sphere|Capsule|Cylinder|Cone|Icosahedron|Dodecahedron|Extrude/;
+  const _bb = new T3.Box3(), _sz = new T3.Vector3();
+  function cubifica(o) { if (!o.isMesh || o.isInstancedMesh || o.isSprite || !o.geometry || o.userData.naoBloco) return; const t = o.geometry.type; if (!BLOCAVEL.test(t)) return; if (o.geometry === ROOF) return;
+    o.geometry.computeBoundingBox(); _bb.copy(o.geometry.boundingBox); _bb.getSize(_sz); o.geometry = BOX; o.scale.multiply(_sz); o.children.forEach(c => { if (c.isMesh && c.material === OUTM) c.visible = false; }); }
+  function texturiza(m, tex, rx, ry) { if (!m.isMesh || !m.material || !m.material.isMeshToonMaterial) return; const mat = m.material.clone(); const t = tex.clone(); t.needsUpdate = true; t.repeat.set(Math.max(1, Math.round(rx || 1)), Math.max(1, Math.round(ry || 1))); mat.map = t; mat.color.set('#ffffff'); m.material = mat; }
+  const CORES_PAREDE = ['#c8b8a0', '#b8a890', '#c8b090', '#a89880', '#c0b8a8', '#b0a088', '#ffd8b0', '#e8d8c0', '#d8d0c0', '#c8c0b0', '#b8a898', '#d0c8b8'];
+  function modoBlocos() { if (!BLOCOS) return;
+    // 1) tudo que é redondo vira cubo
+    world.traverse(cubifica);
+    // 2) texturas pixel art pelo mundo (pela cor original da peça)
+    world.traverse(m => { if (!m.isMesh || !m.material || !m.material.isMeshToonMaterial || !m.material.color) return; const c = '#' + m.material.color.getHexString(); const s = m.scale;
+      if (m === ground) { const mat = m.material.clone(); mat.map = PT.neve.clone(); mat.map.needsUpdate = true; mat.map.repeat.set(200, 200); m.material = mat; return; }
+      if (CORES_PAREDE.includes(c) && s.y > 1.5) texturiza(m, PT.pedra, s.x / 1.2, s.y / 1.2);
+      else if (c === '#4a3a4a' && m.geometry === ROOF) texturiza(m, PT.telha, s.x / 1.2, s.y / 1.2);
+      else if (c === '#5a3a24' || c === '#6a4a2a' || c === '#7a4a2a' || c === '#8a5a3a') { if (s.y > s.x * 1.5) texturiza(m, PT.casca, 1, Math.max(1, s.y / 0.8)); else texturiza(m, PT.tabua, Math.max(1, s.x / 0.8), Math.max(1, s.y / 0.8)); }
+      else if (c === '#2a5a3a') texturiza(m, PT.folha, 2, 2);
+      else if (c === '#ffc468' && s.x < 1 && s.y < 1) { texturiza(m, PT.janela, 1, 1); m.material.map.repeat.set(1, 1); } });
+    // 3) personagens: cabeça cúbica com rosto pixel art no lugar dos olhos anime
+    CHARS.forEach(ch => { const P = ch.userData.P, o = P.o; const hr = o.kid ? 0.15 : 0.14; P.eyes.forEach(E => { E.e.visible = false; }); if (P.mouth) P.mouth.visible = false; if (P.mouthLine) P.mouthLine.visible = false;
+      P.head.children.forEach(m => { if (m.isMesh && m.material && m.material.transparent && m.material.opacity < 0.5) m.visible = false; });
+      // proporção baixinha e atarracada (cabeça grande, tronco largo, pernas curtas)
+      const K = { cab: 1.6, tronco: [1.35, 0.8, 1.3], braco: 1.5, perna: 0.6 }; o.hipK = K.perna;
+      P.spine.children.forEach(m => { if (m.isMesh) { m.scale.x *= K.tronco[0]; m.scale.y *= K.tronco[1]; m.scale.z *= K.tronco[2]; m.position.y *= K.tronco[1]; } });
+      ['shL', 'shR'].forEach(k => { const sh = P[k]; sh.position.x *= 1.4; sh.position.y *= K.tronco[1]; sh.children.forEach(m => { if (m.isMesh) { m.scale.x *= K.braco; m.scale.z *= K.braco; } }); P[k.replace('sh', 'el')].children.forEach(m => { if (m.isMesh) { m.scale.x *= K.braco; m.scale.z *= K.braco; } }); });
+      P.head.parent.position.y *= K.tronco[1]; P.head.scale.setScalar(K.cab);
+      ['thL', 'thR'].forEach(k => { const th = P[k]; th.scale.y = K.perna; th.position.x *= 1.3; th.children.forEach(m => { if (m.isMesh) { m.scale.x *= 1.5; m.scale.z *= 1.5; } }); P[k.replace('th', 'kn')].children.forEach(m => { if (m.isMesh) { m.scale.x *= 1.5; m.scale.z *= 1.5; } }); });
+      const f = new T3.Mesh(BOX, new T3.MeshBasicMaterial({ map: rostoTex(o.skin, o.iris || '#5a3a1e', o.hairC || '#1c1a28'), toneMapped: false })); f.position.set(0, 0.125, hr * 1.0 + 0.004); f.scale.set(hr * 1.9, hr * 2.0, 0.006); f.userData.naoBloco = true; P.head.add(f); P.rosto = f; });
+    // 4) todas as texturas em pixel (sem borrar)
+    scene.traverse(m => { if (m.isMesh && m.material && m.material.map && !m.isSprite) { m.material.map.magFilter = T3.NearestFilter; m.material.map.needsUpdate = true; } });
+    // 5) sombreamento mais chapado
+    hemi.intensity *= 1.15; }
+  modoBlocos();
+  window.__dbg = { BLOCOS, modoBatalha, bmLiga, bmDesliga, BMS, ORB, get BM() { return BM; }, get hora() { return hora; }, set hora(v) { hora = v; }, usarHab2: id => classePoder2(id), BUFF, abrirCriar, aplicaClasse, CLASSES, get desp() { return desp; }, set desp(v) { desp = v; }, usarHab: id => classePoder(id), renderer, scene, world, ganhaXp, vesteFantasia, abrirPerfil, fazRetrato, irValdren, Q, heroi, ativo, AR, FERAS, golem, atacar, get vida() { return vida; }, set vida(v) { vida = v; }, abrirLoja, usarPoder: id => usarPoder(PW[id]), acao: () => acao(), get alvo() { return alvo; } };
   // ---------- laço do jogo ----------
   let vy = 0, noChao = true, facing = 0, vel = 0, gT = 0, last = performance.now();
   const ANDAR = 3.0, CORRER = 6.5, GRAV = 22, PULO = 7.6; const tmp = new T3.Vector3();

@@ -19,6 +19,7 @@
 
   // ---------- personagem 3D estilo anime ----------
   const LEOC = { skin: '#f2b48e', hair: '#1c1a28', top: '#2c3e5e', top2: '#24324c', pants: '#3a4a6c', shoe: '#eeeef4', sole: '#9aa0b0', iris: '#6a3e1e' };
+  const CHARS = [];
   function makeChar(o) {
     const g = grp(world); const P = { o };
     const hips = grp(g, 0, 0.9, 0); P.hips = hips; const k = o.kid ? 0.62 : 1;
@@ -52,7 +53,7 @@
     ['L', 'R'].forEach((s, i) => { const sx = i ? 1 : -1; const sh = grp(spine, 0.215 * sx * (o.kid ? 0.9 : 1), 0.52, 0); part(sh, CAP, o.top, 0, -0.15, 0, 0.11, 0.16, 0.11, 0.06); const el = grp(sh, 0, -0.3, 0); part(el, CAP, o.top, 0, -0.13, 0, 0.095, 0.14, 0.095, 0.06); part(el, SPH, o.skin, 0, -0.29, 0.01, 0.05, 0.06, 0.045, 0.06); P['sh' + s] = sh; P['el' + s] = el; });
     if (o.phone) P.phone = part(P.elR, BOX, '#121220', 0, -0.33, 0.04, 0.05, 0.1, 0.01);
     if (o.book) P.book = part(P.elR, BOX, '#c8402a', 0, -0.33, 0.07, 0.16, 0.2, 0.03);
-    g.scale.setScalar(o.kid ? 0.68 : (o.s || 1)); g.userData.P = P; return g;
+    g.scale.setScalar(o.kid ? 0.68 : (o.s || 1)); g.userData.P = P; CHARS.push(g); return g;
   }
   function setFace(c, m, talk, t, look) {
     const P = c.userData.P; const blink = ((t + (P.o.ph || 0)) % 3.3) < 0.11 ? 0.12 : 1; look = look || [0, 0];
@@ -71,7 +72,7 @@
       hy = 0.9 + (run ? 0.06 : 0.025) * Math.cos(2 * ph) - (run ? 0.05 : 0.01); P.spine.rotation.y = Math.sin(ph) * (run ? 0.18 : 0.09); P.spine.rotation.x = run ? 0.28 : 0.03; P.spine.rotation.z = Math.cos(ph) * 0.025; P.head.rotation.y = -Math.sin(ph) * 0.06; P.head.rotation.x = run ? -0.2 : 0;
     } else if (o.sit) { ['L', 'R'].forEach(s => { P['th' + s].rotation.x = -1.5; P['kn' + s].rotation.x = 1.5; }); hy = 0.5; P.shL.rotation.x = -0.6; P.shR.rotation.x = -0.6; P.elL.rotation.x = -0.9; P.elR.rotation.x = -0.9; }
     else { const br = Math.sin(t * 2) * 0.012; hy = 0.9 + br * 0.3; P.spine.rotation.x = br; P.shL.rotation.x = br * 2; P.shR.rotation.x = -br * 2; P.elL.rotation.x = -0.12; P.elR.rotation.x = -0.12; P.head.rotation.y = Math.sin(t * 0.6) * 0.08; }
-    P.hips.position.y = hy;
+    P.hips.position.y = hy * (P.o.hipK || 1);
     if (o.arms) { const a = o.arms; if (a.shL) P.shL.rotation.set(...a.shL); if (a.shR) P.shR.rotation.set(...a.shR); if (a.elL) P.elL.rotation.set(...a.elL); if (a.elR) P.elR.rotation.set(...a.elR); }
     if (o.legs) { const l = o.legs; ['thL', 'thR', 'knL', 'knR'].forEach(k => { if (l[k] != null) P[k].rotation.x = l[k]; }); }
     if (o.lean) P.spine.rotation.x = o.lean; if (o.headX != null) P.head.rotation.x = o.headX; if (o.headY != null) P.head.rotation.y = o.headY; if (o.headZ != null) P.head.rotation.z = o.headZ; if (o.hipY != null) P.hips.position.y = o.hipY;
