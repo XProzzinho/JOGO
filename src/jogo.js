@@ -636,7 +636,7 @@
   let atkT = 9, atkN = 1, atkHit = true, atkCd = 0, comboT = 0;
   function feraAtiva(e) { return !e.morto && e.T.zona === zona && !dentro; }
   function maisPerto(r) { let m = null, md = r; FERAS.forEach(e => { if (!feraAtiva(e)) return; const d = Math.hypot(e.g.position.x - heroi.position.x, e.g.position.z - heroi.position.z) - e.T.raio; if (d < md) { md = d; m = e; } }); return m; }
-  function atacar() { if (conversa || cenaQ || desmaiado || !$('fim').hidden) return; if (dentro) { aviso('Dentro de casa não! A mãe briga.', '#ffb04a'); return; } if (atkCd > 0) return; const A = ARMAS[AR.arma];
+  function atacar() { if (!guildPanel.hidden || conversa || cenaQ || desmaiado || !$('fim').hidden) return; if (dentro) { aviso('Dentro de casa não! A mãe briga.', '#ffb04a'); return; } if (atkCd > 0) return; const A = ARMAS[AR.arma];
     const e = maisPerto(A.longe ? 18 : 4.5); if (e) facing = Math.atan2(e.g.position.x - heroi.position.x, e.g.position.z - heroi.position.z);
     atkN = A.longe ? 1 : comboT > 0 ? (atkN % 3) + 1 : 1; comboT = 0.8; atkT = 0; atkHit = false; atkCd = A.cd * (atkN === 3 ? 1.5 : 1) * (BM && BM.atkVel ? BM.atkVel : 1) * (BUFF.furia > 0 ? 0.8 : 1); }
   const virotes = []; const viroteGeo = new T3.BoxGeometry(0.04, 0.04, 0.6);
@@ -1356,7 +1356,81 @@
     { const t = TX.piso.clone(); t.needsUpdate = true; t.repeat.set(9, 9); const pz = new T3.Mesh(new T3.CircleGeometry(14, 64), new T3.MeshToonMaterial({ color: '#ffffff', map: t, gradientMap: GRAD })); pz.rotation.x = -Math.PI / 2; pz.position.set(0, 0.006, -3); pz.receiveShadow = true; vil.add(pz); }
     neve.material = new T3.MeshBasicMaterial({ color: '#d9822b' }); }
   modoVideo();
-  window.__dbg = { vestePeca, atualizaPecas, PECAS, BLOCOS, modoBatalha, bmLiga, bmDesliga, BMS, ORB, get BM() { return BM; }, get hora() { return hora; }, set hora(v) { hora = v; }, usarHab2: id => classePoder2(id), BUFF, abrirCriar, aplicaClasse, CLASSES, get desp() { return desp; }, set desp(v) { desp = v; }, usarHab: id => classePoder(id), renderer, scene, world, ganhaXp, vesteFantasia, abrirPerfil, fazRetrato, irValdren, Q, heroi, ativo, AR, FERAS, golem, atacar, get vida() { return vida; }, set vida(v) { vida = v; }, abrirLoja, usarPoder: id => usarPoder(PW[id]), acao: () => acao(), get alvo() { return alvo; } };
+    // Guildas online: o servidor valida todas as mudanças e permissões.
+  const EMBLEMAS = [['shield','🛡️','Escudo'],['wolf','🐺','Lobo'],['dragon','🐉','Dragão'],['sword','⚔️','Espadas'],['crown','👑','Coroa'],['ice','❄️','Gelo']];
+  const guildClient = window.GUILD_SDK.createClient('https://dhqdikdhhxohoyfuaqpm.supabase.co','sb_publishable_NJ3_ude0cMuanBfrkkSvsQ_ZJC8CHTQ',{auth:{storageKey:'aetherion-guild-online'}});
+  const guildPanel = document.createElement('section'); guildPanel.id='guilda'; guildPanel.hidden=true; guildPanel.setAttribute('role','dialog'); guildPanel.setAttribute('aria-label','Arthur · Gerente de guilda');
+  guildPanel.innerHTML='<div class="guild-box"><header><div><small>BRUMAFRIA</small><h2>Arthur · Gerente de guilda</h2></div><button class="cb" id="guild-close" aria-label="Fechar guilda">✕</button></header><div id="guild-content"></div><p id="guild-message" role="status"></p></div>';
+  document.body.appendChild(guildPanel);
+  const guildLabel = document.createElement('div'); guildLabel.id='guild-label'; guildLabel.innerHTML='<small></small><b></b>'; document.body.appendChild(guildLabel);
+  const guildHud = document.createElement('div'); guildHud.id='guild-hud'; $('pn-nome').closest('.pi').prepend(guildHud);
+  const guildArthurLabel = document.createElement('div'); guildArthurLabel.className='guild-npc-label'; guildArthurLabel.textContent='🛡️ Arthur · Gerente de guilda'; document.body.appendChild(guildArthurLabel);
+  let guildUser=null, guildState=null, guildBusy=false, guildRecovery=false, guildChannel=null, guildRefreshTimer=null;
+  const emblemIcon = id => (EMBLEMAS.find(e=>e[0]===id)||EMBLEMAS[0])[1];
+  const guildMessage = (text,error=false)=>{ $('guild-message').textContent=text; $('guild-message').classList.toggle('error',error); };
+  function guildNode(tag,text,parent,cls){ const el=document.createElement(tag); if(text!==null) el.textContent=text; if(cls) el.className=cls; if(parent) parent.appendChild(el); return el; }
+  function guildButton(parent,text,fn){ const el=guildNode('button',text,parent,'cb'); el.type='button'; el.addEventListener('click',e=>{e.preventDefault();fn();}); return el; }
+  function guildInput(parent,label,type,max){const wrap=guildNode('label',label,parent);const el=guildNode('input',null,wrap);el.type=type||'text';if(max)el.maxLength=max;el.required=true;return el;}
+  function guildPicker(parent,selected,fn){const row=guildNode('div',null,parent,'guild-emblems');EMBLEMAS.forEach(([id,ic,nm])=>{const b=guildButton(row,ic,()=>fn(id));b.title=nm;b.setAttribute('aria-label',nm);b.setAttribute('aria-pressed',String(id===selected));});return row;}
+  async function guildChecked(result){if(result.error)throw result.error;return result.data;}
+  async function guildRun(fn,success){if(guildBusy)return;guildBusy=true;guildPanel.querySelectorAll('button,input').forEach(e=>e.disabled=true);guildMessage('Aguarde…');try{await fn();await guildLoad();if(success)guildMessage(success);}catch(e){guildMessage(e.message||'Não foi possível conectar. Tente novamente.',true);}finally{guildBusy=false;guildPanel.querySelectorAll('button,input').forEach(e=>e.disabled=false);}}
+  async function guildMutation(action,args,success){await guildRun(async()=>guildChecked(await guildClient.rpc('guild_action',{action,args:args||{}})),success);}
+  async function guildLoad(){
+    if(!guildUser){guildState=null;guildRender();return;}
+    const me=await guildChecked(await guildClient.from('profiles').select('id,name,code').eq('id',guildUser.id).single());
+    const membership=await guildChecked(await guildClient.from('guild_members').select('*').eq('user_id',guildUser.id).maybeSingle());
+    const invites=await guildChecked(await guildClient.from('guild_invites').select('*,guilds(name,emblem),profiles!guild_invites_target_id_fkey(name)').order('created_at',{ascending:false}));
+    let guild=null,members=[];
+    if(membership){guild=await guildChecked(await guildClient.from('guilds').select('*').eq('id',membership.guild_id).single());members=await guildChecked(await guildClient.from('guild_members').select('*,profiles(name,code)').eq('guild_id',membership.guild_id).order('joined_at'));}
+    guildState={me,membership,guild,members,invites};guildRender();
+  }
+  function guildRender(){
+    const C=$('guild-content');C.replaceChildren();guildHud.textContent=guildState?.guild?emblemIcon(guildState.guild.emblem)+' '+guildState.guild.name:'';
+    const name=AR.visual?.nome||'Leonardo';guildLabel.querySelector('b').textContent=name;guildLabel.querySelector('small').textContent=guildHud.textContent;
+    if(guildRecovery){guildNode('h3','Nova senha',C);const form=guildNode('form',null,C,'guild-form');const password=guildInput(form,'Nova senha','password');password.minLength=6;guildButton(form,'Salvar senha',()=>guildRun(async()=>{await guildChecked(await guildClient.auth.updateUser({password:password.value}));guildRecovery=false;},'Senha atualizada.'));form.addEventListener('submit',e=>e.preventDefault());return;}
+    if(!guildUser){
+      guildNode('h3','Conta da guilda',C);guildNode('p','Entre para encontrar seus amigos e receber convites.',C);
+      const form=guildNode('form',null,C,'guild-form');const nm=guildInput(form,'Nome do personagem','text',24);nm.value=name;nm.minLength=2;
+      const email=guildInput(form,'E-mail','email');email.autocomplete='email';const pass=guildInput(form,'Senha','password');pass.minLength=6;pass.autocomplete='current-password';
+      const row=guildNode('div',null,form,'guild-row');
+      guildButton(row,'Entrar',()=>{if(!email.validity.valid||!pass.value){guildMessage('Digite e-mail e senha.',true);return;}guildRun(async()=>{const d=await guildChecked(await guildClient.auth.signInWithPassword({email:email.value.trim(),password:pass.value}));guildUser=d.user;},'Bem-vindo!');});
+      guildButton(row,'Criar conta',()=>{if(!form.reportValidity())return;guildRun(async()=>{const d=await guildChecked(await guildClient.auth.signUp({email:email.value.trim(),password:pass.value,options:{data:{name:nm.value.trim()},emailRedirectTo:'https://id-preview--03faee9d-b18a-41ee-84af-375cfa1f18fd.lovable.app/jogo/index.html'}}));if(d.session)guildUser=d.user;},'Confira seu e-mail para confirmar a conta; depois entre aqui.');});
+      guildButton(form,'Esqueci a senha',()=>{if(!email.value||!email.validity.valid){guildMessage('Digite seu e-mail.',true);return;}guildRun(async()=>guildChecked(await guildClient.auth.resetPasswordForEmail(email.value.trim(),{redirectTo:'https://id-preview--03faee9d-b18a-41ee-84af-375cfa1f18fd.lovable.app/reset-password'})),'Confira seu e-mail para definir uma nova senha.');});form.addEventListener('submit',e=>e.preventDefault());return;
+    }
+    if(!guildState){guildNode('p','Carregando sua guilda…',C);return;}
+    const S=guildState;guildNode('p',S.me.name+' · Código: '+S.me.code,C,'guild-code');
+    const profile=guildNode('div',null,C,'guild-row');guildButton(profile,'Copiar código',async()=>{try{await navigator.clipboard.writeText(S.me.code);guildMessage('Código copiado.');}catch{guildMessage('Seu código: '+S.me.code);}});
+    guildButton(profile,'Usar nome do personagem',()=>guildRun(async()=>guildChecked(await guildClient.from('profiles').update({name:(AR.visual?.nome||'Leonardo').slice(0,24)}).eq('id',guildUser.id)),'Nome atualizado.'));
+    if(!S.guild){
+      guildNode('h3','Criar guilda',C);const form=guildNode('form',null,C,'guild-form');const nm=guildInput(form,'Nome da guilda','text',24);nm.minLength=3;let emblem='shield';let picker;picker=guildPicker(form,emblem,id=>{emblem=id;picker.querySelectorAll('button').forEach((b,i)=>b.setAttribute('aria-pressed',String(EMBLEMAS[i][0]===id)));});
+      guildButton(form,'Fundar guilda',()=>{if(form.reportValidity())guildMutation('create',{name:nm.value.trim(),emblem},'Guilda criada!');});form.addEventListener('submit',e=>e.preventDefault());
+    }else{
+      guildNode('h3',emblemIcon(S.guild.emblem)+' '+S.guild.name,C);guildNode('p',S.members.length+' membro'+(S.members.length===1?'':'s')+' · '+(S.membership.role==='leader'?'Você é o líder':'Você é membro'),C);
+      if(S.membership.role==='leader'){
+        guildPicker(C,S.guild.emblem,emblem=>guildMutation('emblem',{emblem},'Emblema atualizado.'));
+        const form=guildNode('form',null,C,'guild-form');const code=guildInput(form,'Código do jogador','text',10);guildButton(form,'Convidar / adicionar membro',()=>{if(form.reportValidity())guildMutation('invite',{code:code.value.trim()},'Convite enviado. O jogador precisa aceitar.');});form.addEventListener('submit',e=>e.preventDefault());
+      }
+      guildNode('h3','Membros',C);S.members.forEach(m=>{const row=guildNode('div',null,C,'guild-member');guildNode('span',emblemIcon(S.guild.emblem)+' '+m.profiles.name+' · '+(m.role==='leader'?'Líder':'Membro'),row);if(S.membership.role==='leader'&&m.user_id!==guildUser.id)guildButton(row,'Remover',()=>{if(confirm('Remover '+m.profiles.name+' da guilda?'))guildMutation('remove',{user_id:m.user_id},'Membro removido.');});});
+      guildButton(C,'Sair da guilda',()=>{if(confirm(S.membership.role==='leader'?'Sair? A liderança passa para o membro mais antigo; uma guilda vazia é encerrada.':'Sair desta guilda?'))guildMutation('leave',{},'Você saiu da guilda.');});
+    }
+    guildNode('h3','Convites',C);if(!S.invites.length)guildNode('p','Nenhum convite pendente.',C);
+    S.invites.forEach(inv=>{const received=inv.target_id===guildUser.id;const row=guildNode('div',null,C,'guild-member');guildNode('span',received?emblemIcon(inv.guilds.emblem)+' '+inv.guilds.name:'Para '+inv.profiles.name,row);if(received){const accept=guildButton(row,'Aceitar',()=>guildMutation('accept',{id:inv.id},'Você entrou na guilda!'));accept.disabled=!!S.guild;guildButton(row,'Recusar',()=>guildMutation('decline',{id:inv.id},'Convite recusado.'));}else guildButton(row,'Cancelar',()=>guildMutation('cancel',{id:inv.id},'Convite cancelado.'));});
+    const footer=guildNode('div',null,C,'guild-row');guildButton(footer,'Atualizar',()=>guildRun(async()=>{},'Guilda atualizada.'));guildButton(footer,'Sair da conta da guilda',()=>guildRun(async()=>{await guildClient.auth.signOut();guildUser=null;guildState=null;},'Conta desconectada.'));
+  }
+  async function abrirGuilda(){guildPanel.hidden=false;input.x=input.y=0;Object.keys(keys).forEach(k=>delete keys[k]);guildMessage('');await guildRun(async()=>{},'');}
+  $('guild-close').addEventListener('click',()=>guildPanel.hidden=true);
+  ['keydown','keyup','touchstart','touchmove'].forEach(ev=>guildPanel.addEventListener(ev,e=>e.stopPropagation()));
+  guildPanel.addEventListener('keydown',e=>{if(e.key==='Escape')guildPanel.hidden=true;});
+  const arthur=makeChar({skin:'#c88a5e',hairStyle:'short',hairC:'#3a2214',top:'#3a7a64',top2:'#e2c27a',pants:'#3a3030',shoe:'#2a1a10',iris:'#2a8a4a',book:true,ph:2.7});
+  const arthurNPC={c:arthur,nome:'Arthur · Gerente de guilda',x:-3.5,z:5.7,ry:0,ry0:0,acao:abrirGuilda};arthur.position.set(arthurNPC.x,0,arthurNPC.z);NPCS.push(arthurNPC);COL.push({t:'c',x:arthurNPC.x,z:arthurNPC.z,r:.45,npc:arthurNPC});
+  function guildPosition(el,obj,height){const pos=obj.position.clone();pos.y+=height;pos.project(cam);const visible=pos.z<1&&pos.z>-1&&Math.abs(pos.x)<1&&Math.abs(pos.y)<1&&obj.visible;el.hidden=!visible;if(visible){el.style.left=((pos.x+1)*innerWidth/2)+'px';el.style.top=((1-pos.y)*innerHeight/2)+'px';}}
+  function guildFrame(){guildPosition(guildLabel,heroi,2.05);guildLabel.querySelector('b').textContent=AR.visual?.nome||'Leonardo';guildPosition(guildArthurLabel,arthur,2.25);}
+  guildClient.auth.onAuthStateChange((event,session)=>{guildUser=session?.user||null;if(event==='PASSWORD_RECOVERY'){guildRecovery=true;guildPanel.hidden=false;}if(event==='SIGNED_OUT')guildState=null;setTimeout(async()=>{try{await guildLoad();}catch(e){guildMessage(e.message,true);}if(guildChannel){guildClient.removeChannel(guildChannel);guildChannel=null;}if(guildUser){guildChannel=guildClient.channel('guild-'+guildUser.id+'-'+Math.random().toString(36).slice(2)).on('postgres_changes',{event:'*',schema:'public',table:'guild_members'},()=>scheduleGuildRefresh()).on('postgres_changes',{event:'*',schema:'public',table:'guild_invites'},()=>scheduleGuildRefresh()).on('postgres_changes',{event:'*',schema:'public',table:'guilds'},()=>scheduleGuildRefresh()).subscribe();}},0);});
+  function scheduleGuildRefresh(){clearTimeout(guildRefreshTimer);guildRefreshTimer=setTimeout(()=>guildLoad().catch(e=>guildMessage(e.message,true)),150);}
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden&&guildUser)scheduleGuildRefresh();});
+  window.__guild={client:guildClient,open:abrirGuilda,get state(){return guildState;},arthur:arthurNPC};
+
+  window.__dbg = { abrirGuilda, arthurNPC, vestePeca, atualizaPecas, PECAS, BLOCOS, modoBatalha, bmLiga, bmDesliga, BMS, ORB, get BM() { return BM; }, get hora() { return hora; }, set hora(v) { hora = v; }, usarHab2: id => classePoder2(id), BUFF, abrirCriar, aplicaClasse, CLASSES, get desp() { return desp; }, set desp(v) { desp = v; }, usarHab: id => classePoder(id), renderer, scene, world, ganhaXp, vesteFantasia, abrirPerfil, fazRetrato, irValdren, Q, heroi, ativo, AR, FERAS, golem, atacar, get vida() { return vida; }, set vida(v) { vida = v; }, abrirLoja, usarPoder: id => usarPoder(PW[id]), acao: () => acao(), get alvo() { return alvo; } };
   // ---------- laço do jogo ----------
   let vy = 0, noChao = true, facing = 0, vel = 0, gT = 0, last = performance.now();
   const ANDAR = 3.0, CORRER = 6.5, GRAV = 22, PULO = 7.6; const tmp = new T3.Vector3();
@@ -1365,7 +1439,7 @@
     const dt = Math.min(0.05, (now - last) / 1000); last = now; gT += dt;
     ceu(dt); const noite = modo === 'noite';
     let ix = input.x, iy = input.y; if (keys.KeyA || keys.ArrowLeft) ix -= 1; if (keys.KeyD || keys.ArrowRight) ix += 1; if (keys.KeyW || keys.ArrowUp) iy -= 1; if (keys.KeyS || keys.ArrowDown) iy += 1;
-    if (conversa || cenaQ || !$('fim').hidden || Q.naCarroca || desmaiado) { ix = 0; iy = 0; }
+    if (!guildPanel.hidden || conversa || cenaQ || !$('fim').hidden || Q.naCarroca || desmaiado) { ix = 0; iy = 0; }
     const mag = Math.min(1, Math.hypot(ix, iy)); const correndo = input.run || keys.ShiftLeft || mag > 0.92;
     const fx = -Math.sin(camYaw), fz = -Math.cos(camYaw); let mx = fx * -iy + -fz * ix, mz = fz * -iy + fx * ix; const ml = Math.hypot(mx, mz);
     vel = lerp(vel, mag > 0.08 ? (correndo ? CORRER : ANDAR) * (ativo.vento ? 1.5 + nivelHab('vento') * 0.1 : 1) * ((CLASSES && CLASSES[AR.classe]) ? CLASSES[AR.classe].vel : 1) * (BM && BM.vel ? BM.vel : 1) * mag : 0, clamp(dt * 8));
@@ -1409,7 +1483,7 @@
     if (tremor > 0) { tremor -= dt; cam.position.x += (Math.random() - .5) * tremor; cam.position.y += (Math.random() - .5) * tremor; }
     cam.lookAt(p.x, p.y + 0.95, p.z);
     sun.position.set(p.x + 12, 30, p.z + 10); sun.target.position.set(p.x, 0, p.z); sun.target.updateMatrixWorld();
-    renderer.render(scene, cam); requestAnimationFrame(loop);
+    guildFrame(); renderer.render(scene, cam); requestAnimationFrame(loop);
   }
   cam.position.set(0, 2.6, 9.6); requestAnimationFrame(loop);
   mostrarLugar('Vila de Brumafria');
