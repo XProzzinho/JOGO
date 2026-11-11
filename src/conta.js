@@ -23,7 +23,7 @@
   if (!cfg || !window.firebase) { $('lg-form').hidden = true; mostra(!cfg ? 'O login ainda não foi ligado ao Firebase. Dá pra jogar sem conta (o progresso fica salvo no celular).' : 'Sem conexão com o servidor agora. Jogue sem conta e tente de novo depois.', !!cfg); if (convidado) fecha(); return; }
 
   let app, auth, db;
-  try { app = firebase.initializeApp(cfg); auth = firebase.auth(); db = firebase.firestore(); } catch (e) { $('lg-form').hidden = true; mostra('Não deu pra ligar o Firebase: ' + e.message, true); return; }
+  try { app = firebase.initializeApp(cfg); auth = firebase.auth(); db = firebase.firestore(); C.db = db; } catch (e) { $('lg-form').hidden = true; mostra('Não deu pra ligar o Firebase: ' + e.message, true); return; }
   try { auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL); } catch (e) {}
   const docDe = uid => db.collection('jogadores').doc(uid);
 

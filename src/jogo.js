@@ -1444,6 +1444,70 @@
   document.querySelectorAll('.ip-tabs button').forEach(b => tapBtn(b, () => { ipTab = b.dataset.t; $('ip-esc').hidden = true; desenhaBolsa(); }));
   document.querySelectorAll('.ip-bt button[data-b]').forEach(b => tapBtn(b, () => { ipPag = +b.dataset.b; ipSel = null; $('ip-info').hidden = true; desenhaBolsa(); }));
   tapBtn($('ip-ord'), () => { ipPag = 0; ipSel = null; $('ip-info').hidden = true; desenhaBolsa(); aviso('🎒 Bolsa organizada', '#c8b890'); });
+  // ---------- TROCA ENTRE JOGADORES (pelo Firestore) ----------
+  const TR = { id: null, doc: null, un: null, unConv: null, convites: [], escolhendo: false };
+  const trDb = () => window.CONTA && CONTA.db && CONTA.usuario ? CONTA.db : null;
+  const trMeu = () => CONTA.usuario.uid;
+  const trCodigo = uid => uid.slice(0, 6).toUpperCase();
+  const trNome = () => ((AR.visual && AR.visual.nome) || (CONTA.usuario && CONTA.usuario.displayName) || 'Jogador').slice(0, 20);
+  function trPerfil() { const db = trDb(); if (!db) return; db.collection('perfis').doc(trMeu()).set({ nome: trNome(), codigo: trCodigo(trMeu()), nv: AR.nv || 1 }, { merge: true }).catch(() => {}); }
+  // o que dá pra trocar
+  function trInfo(it) { if (it.t === 'moedas') return { ic: '💰', nome: it.n + ' moedas' }; if (it.t === 'item') return { ic: ITENS[it.k] || '❔', nome: it.n + 'x ' + ({ carne: 'Carne', pele: 'Pele de lobo', coracao: 'Coração de gelo' }[it.k] || it.k) };
+    if (it.t === 'arma') { const A = ARMAS[it.k]; return { ic: A ? A.icone : '❔', nome: A ? A.nome : it.k }; } if (it.t === 'fant') { const F = FANT[it.k]; return { ic: F ? F.icone : '❔', nome: F ? F.nome : it.k }; }
+    if (it.t === 'cosm') { const F = COSM[it.k]; return { ic: F ? F.icone : '❔', nome: F ? F.nome : it.k }; } if (it.t === 'sob') { const [s, k] = it.k.split(':'); const I = sobInfo(s, k); return I ? { ic: I.icone, nome: I.nome, cor: I.cor } : { ic: '❔', nome: it.k }; } return { ic: '❔', nome: '?' }; }
+  function trTenho(it) { if (it.t === 'moedas') return (AR.inv.moedas || 0) >= it.n; if (it.t === 'item') return (AR.inv[it.k] || 0) >= it.n; if (it.t === 'arma') return AR.armas.includes(it.k); if (it.t === 'fant') return AR.fantasias.includes(it.k); if (it.t === 'cosm') return AR.cosms.includes(it.k); if (it.t === 'sob') return AR.sobs.includes(it.k); return false; }
+  function trTrocaveis() { const L = []; if (AR.inv.moedas > 0) L.push({ t: 'moedas', n: 0 }); ['carne', 'pele', 'coracao'].forEach(k => { if (AR.inv[k] > 0) L.push({ t: 'item', k, n: 0 }); });
+    AR.armas.filter(w => ARMAS[w] && !ARMAS[w].oculta && !ARMAS[w].classe && w !== 'bastao').forEach(k => L.push({ t: 'arma', k })); AR.fantasias.filter(f => FANT[f] && f !== 'comum' && f !== 'celeste').forEach(k => L.push({ t: 'fant', k }));
+    AR.cosms.filter(c => COSM[c]).forEach(k => L.push({ t: 'cosm', k })); AR.sobs.forEach(k => L.push({ t: 'sob', k })); return L; }
+  function trTira(it) { if (it.t === 'moedas') AR.inv.moedas = Math.max(0, AR.inv.moedas - it.n); else if (it.t === 'item') AR.inv[it.k] = Math.max(0, (AR.inv[it.k] || 0) - it.n);
+    else if (it.t === 'arma') { AR.armas = AR.armas.filter(x => x !== it.k); if (AR.arma === it.k) { AR.arma = 'punho'; mostraArma(); } } else if (it.t === 'fant') { AR.fantasias = AR.fantasias.filter(x => x !== it.k); if (AR.fantasia === it.k) vesteFantasia('comum'); }
+    else if (it.t === 'cosm') { AR.cosms = AR.cosms.filter(x => x !== it.k); if (AR.cosm === it.k) vesteCosm(null); } else if (it.t === 'sob') { AR.sobs = AR.sobs.filter(x => x !== it.k); const [s, k] = it.k.split(':'); if (AR.pecas[k] === s) { AR.pecas[k] = null; atualizaPecas(); } } }
+  function trPoe(it) { if (it.t === 'moedas') AR.inv.moedas = (AR.inv.moedas || 0) + it.n; else if (it.t === 'item') AR.inv[it.k] = (AR.inv[it.k] || 0) + it.n;
+    else if (it.t === 'arma' && ARMAS[it.k]) { if (!AR.armas.includes(it.k)) AR.armas.push(it.k); } else if (it.t === 'fant' && FANT[it.k]) { if (!AR.fantasias.includes(it.k)) AR.fantasias.push(it.k); }
+    else if (it.t === 'cosm' && COSM[it.k]) { if (!AR.cosms.includes(it.k)) AR.cosms.push(it.k); } else if (it.t === 'sob') { if (!AR.sobs.includes(it.k)) AR.sobs.push(it.k); } }
+  const trSou = d => d.de === trMeu() ? 'De' : 'Para';
+  const trOutro = s => s === 'De' ? 'Para' : 'De';
+  // tela
+  function trAbre() { $('trocap').hidden = false; trDesenha(); trOuveConvites(); }
+  function trFecha() { $('trocap').hidden = true; }
+  function trDesenha() { const B = $('tr-corpo'); if (!B) return; const db = trDb();
+    if (!db) { B.innerHTML = '<p class="tr-dica">Pra trocar itens com outros jogadores você precisa <b>entrar com uma conta</b>. Toque no seu retrato e entre com e-mail e senha.</p>'; return; }
+    if (!TR.id || !TR.doc) { B.innerHTML = `<div class="tr-cod">Seu código de troca<b>${trCodigo(trMeu())}</b><small>Passe esse código pro seu amigo</small></div>
+      <div class="tr-linha"><input id="tr-in" maxlength="6" placeholder="Código do amigo" autocapitalize="characters"><button id="tr-chama">Chamar</button></div><div id="tr-conv"></div><p class="tr-dica" id="tr-msg"></p>`;
+      tapBtn($('tr-chama'), trChama); trDesenhaConvites(); return; }
+    const d = TR.doc, eu = trSou(d), ele = trOutro(eu), meus = d['itens' + eu] || [], dele = d['itens' + ele] || [], okEu = d['ok' + eu] === d.v, okEle = d['ok' + ele] === d.v;
+    const lista = (L, meu) => L.length ? L.map((it, i) => { const I = trInfo(it); return `<div class="tr-it">${I.ic} <span>${I.nome}</span>${meu && d.estado === 'aberta' ? `<button data-i="${i}" class="tr-x">✕</button>` : ''}</div>`; }).join('') : '<div class="tr-vazio">nada ainda</div>';
+    if (d.estado === 'fechada') { B.innerHTML = `<div class="tr-fim">✅ Troca feita com <b>${d['nome' + ele]}</b>!</div><button id="tr-ok" class="tr-bt">OK</button>`; tapBtn($('tr-ok'), trSai); return; }
+    if (d.estado === 'cancelada') { B.innerHTML = `<div class="tr-fim">❌ A troca foi cancelada.</div><button id="tr-ok" class="tr-bt">OK</button>`; tapBtn($('tr-ok'), trSai); return; }
+    B.innerHTML = `<div class="tr-lados"><div class="tr-lado"><h4>Você oferece ${okEu ? '✔️' : ''}</h4>${lista(meus, true)}<button id="tr-add" class="tr-add">＋ Adicionar</button></div>
+      <div class="tr-lado"><h4>${d['nome' + ele]} oferece ${okEle ? '✔️' : ''}</h4>${lista(dele, false)}</div></div>
+      <div class="tr-acoes"><button id="tr-cancela" class="tr-bt tr-c">Cancelar</button><button id="tr-aceita" class="tr-bt" ${okEu ? 'disabled' : ''}>${okEu ? 'Esperando...' : 'Aceitar troca'}</button></div><p class="tr-dica">Se alguém mudar a oferta, os dois precisam aceitar de novo.</p><div id="tr-esc" hidden></div>`;
+    B.querySelectorAll('.tr-x').forEach(b => tapBtn(b, () => trMuda(meus.filter((_, j) => j !== +b.dataset.i))));
+    tapBtn($('tr-add'), trEscolhe); tapBtn($('tr-cancela'), () => trUpd({ estado: 'cancelada' })); tapBtn($('tr-aceita'), trAceita); }
+  function trEscolhe() { const E = $('tr-esc'); const d = TR.doc, eu = trSou(d), meus = d['itens' + eu] || []; const L = trTrocaveis().filter(it => (it.t === 'moedas' || it.t === 'item') ? !meus.some(m => m.t === it.t && m.k === it.k) : !meus.some(m => m.t === it.t && m.k === it.k));
+    E.innerHTML = '<div class="tr-esch"><span>Escolha o que oferecer</span><button id="tr-escx">Voltar</button></div>' + (L.length ? '' : '<p class="tr-dica">Você não tem nada pra trocar.</p>');
+    L.forEach(it => { const qtd = it.t === 'moedas' || it.t === 'item'; const max = it.t === 'moedas' ? AR.inv.moedas : qtd ? AR.inv[it.k] : 1; const I = trInfo({ ...it, n: max });
+      const b = document.createElement('div'); b.className = 'tr-op'; b.innerHTML = `<span>${I.ic}</span><b>${qtd ? (it.t === 'moedas' ? 'Moedas' : I.nome.replace(/^\d+x /, '')) : I.nome}</b>${qtd ? `<input type="number" min="1" max="${max}" value="${Math.min(max, it.t === 'moedas' ? 100 : 1)}"><small>de ${max}</small>` : ''}<button>Pôr</button>`;
+      tapBtn(b.querySelector('button'), () => { E.hidden = true; const n = qtd ? Math.max(1, Math.min(max, Math.floor(+b.querySelector('input').value || 1))) : 1; trMuda(meus.concat([qtd ? { t: it.t, k: it.k || null, n } : { t: it.t, k: it.k }])); }); E.appendChild(b); });
+    tapBtn($('tr-escx'), () => { E.hidden = true; }); E.hidden = false; }
+  function trUpd(o) { if (!TR.id) return Promise.resolve(); return trDb().collection('trocas').doc(TR.id).update(o).catch(e => aviso('⚠️ Não deu pra atualizar a troca: ' + (e.code || e.message), '#ff6a6a')); }
+  function trMuda(novos) { const d = TR.doc, eu = trSou(d); trUpd({ ['itens' + eu]: novos, v: (d.v || 0) + 1 }); }
+  function trAceita() { const d = TR.doc, eu = trSou(d), ele = trOutro(eu); const falta = (d['itens' + eu] || []).find(it => !trTenho(it)); if (falta) { aviso('Você não tem mais: ' + trInfo(falta).nome, '#ff6a6a'); return; }
+    const o = { ['ok' + eu]: d.v }; if (d['ok' + ele] === d.v) o.estado = 'fechada'; trUpd(o); }
+  function trAplica(d) { const eu = trSou(d), ele = trOutro(eu); if (d['aplicado' + eu]) return; let feitas = []; try { feitas = JSON.parse(localStorage.getItem('aetherion-trocas') || '[]'); } catch (e) {} if (feitas.includes(TR.id)) return;
+    (d['itens' + eu] || []).forEach(trTira); (d['itens' + ele] || []).forEach(trPoe); feitas.push(TR.id); try { localStorage.setItem('aetherion-trocas', JSON.stringify(feitas.slice(-50))); } catch (e) {}
+    salvaAR(); atualizaInv(); setTimeout(fazRetrato, 80); som('missao_ok', 1, 1); aviso('🤝 Troca concluída com ' + d['nome' + ele] + '!', '#7ad87a'); trUpd({ ['aplicado' + eu]: true }); }
+  function trEntra(id) { if (TR.un) TR.un(); TR.id = id; TR.doc = null; TR.un = trDb().collection('trocas').doc(id).onSnapshot(s => { if (!s.exists) return; TR.doc = s.data(); if (TR.doc.estado === 'fechada') trAplica(TR.doc); if (!$('tr-esc') || $('tr-esc').hidden) trDesenha(); }, () => {}); trDesenha(); }
+  function trSai() { if (TR.un) TR.un(); TR.un = null; TR.id = null; TR.doc = null; trDesenha(); }
+  async function trChama() { const db = trDb(); const cod = ($('tr-in').value || '').trim().toUpperCase(); const msg = $('tr-msg'); if (cod.length !== 6) { msg.textContent = 'O código tem 6 letras/números.'; return; } if (cod === trCodigo(trMeu())) { msg.textContent = 'Esse é o seu próprio código.'; return; }
+    msg.textContent = 'Procurando...'; try { const q = await db.collection('perfis').where('codigo', '==', cod).limit(1).get(); if (q.empty) { msg.textContent = 'Nenhum jogador com esse código. Ele precisa ter entrado no jogo com conta.'; return; }
+      const outro = q.docs[0]; const r = await db.collection('trocas').add({ de: trMeu(), para: outro.id, nomeDe: trNome(), nomePara: outro.data().nome || 'Jogador', itensDe: [], itensPara: [], v: 0, okDe: -1, okPara: -1, aplicadoDe: false, aplicadoPara: false, estado: 'aberta', criado: Date.now() });
+      aviso('🤝 Convite de troca enviado pra ' + (outro.data().nome || 'Jogador'), '#ffd23c'); trEntra(r.id); } catch (e) { msg.textContent = 'Não deu: ' + (e.code || e.message) + '. Confira as regras do Firestore.'; } }
+  function trOuveConvites() { const db = trDb(); if (!db || TR.unConv) return; TR.unConv = db.collection('trocas').where('para', '==', trMeu()).where('estado', '==', 'aberta').onSnapshot(q => { const novos = q.docs.map(x => ({ id: x.id, ...x.data() })).filter(x => Date.now() - (x.criado || 0) < 3600e3);
+      if (novos.some(n => !TR.convites.some(c => c.id === n.id))) { som('fala', 0.7, 1); const n = novos.find(n => !TR.convites.some(c => c.id === n.id)); aviso('🤝 ' + n.nomeDe + ' quer trocar com você! Abra 🎒 › Trocar.', '#ffd23c'); } TR.convites = novos; trDesenhaConvites(); }, () => {}); }
+  function trDesenhaConvites() { const C = $('tr-conv'); if (!C) return; C.innerHTML = TR.convites.length ? '<h4>Convites recebidos</h4>' : ''; TR.convites.forEach(c => { const b = document.createElement('div'); b.className = 'tr-op'; b.innerHTML = `<span>🤝</span><b>${(c.nomeDe || 'Jogador').replace(/</g, '')}</b><button>Abrir</button>`; tapBtn(b.querySelector('button'), () => trEntra(c.id)); C.appendChild(b); }); }
+  tapBtn($('tr-fecha'), trFecha); tapBtn($('ip-troca'), () => { $('invp').hidden = true; trAbre(); });
+  setInterval(() => { if (trDb()) { trOuveConvites(); if (!TR.perfilOk) { TR.perfilOk = true; trPerfil(); } } }, 5000);
   let asaT = 0;
   function equipFrame(dt) { const k = armaVisivel(); const temArma = !!k;
     const quer = !temArma || atkT < SEGURA_MAO || !!BM; // sem arma, lutando ou em modo de batalha: mão

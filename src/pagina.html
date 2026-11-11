@@ -108,6 +108,23 @@
   #ip-esc .hd{display:flex;justify-content:space-between;align-items:center;color:#f0d890;margin-bottom:5px}#ip-esc .hd button{font:700 10px system-ui;color:#c8b890;background:#26221e;border:1px solid #4a4640;border-radius:3px;padding:2px 8px}
   #ip-esc .op{display:flex;align-items:center;gap:7px;width:100%;margin-bottom:4px;padding:5px;text-align:left;background:#17181c;border:1px solid #2c2b28;border-radius:3px;color:#d8d0c0;font:700 11px system-ui}#ip-esc .op span{font-size:20px}#ip-esc .op small{display:block;color:#8a8270;font-size:9px}#ip-esc .op.on{border-color:#7a6430;background:#221e14}
   .ip-pet{grid-column:1/-1;grid-row:1/-1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:#7a7262;border:1px dashed #34322e;border-radius:4px}.ip-pet span{font-size:30px;opacity:.4}
+  #ip-troca{position:absolute;left:0;top:-2px;height:20px;border:1px solid #7a6430;border-radius:4px;background:linear-gradient(#3a3020,#1e1a10);color:#f0d890;font:800 10px system-ui;padding:0 6px}
+  #trocap{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;z-index:28;background:rgba(0,0,0,.45)}
+  #trocap .tr-box{position:relative;width:min(520px,94vw);min-height:min(320px,90vh);max-height:94vh;overflow:auto;box-sizing:border-box;padding:6px 10px 10px;background:linear-gradient(#17181c,#0b0c0e);border:2px solid #3c3a36;border-radius:6px;box-shadow:0 10px 30px rgba(0,0,0,.6);color:#d8d0c0;font:700 12px system-ui,sans-serif}
+  #tr-fecha{position:absolute;right:0;top:-2px;width:22px;height:20px;border:1px solid #4a4640;border-radius:4px;background:#26221e;color:#c8b890;font-size:11px;padding:0}
+  .tr-cod{text-align:center;margin:8px 0;color:#a89e88}.tr-cod b{display:block;font-size:26px;letter-spacing:6px;color:#f0d890;margin:2px 0}.tr-cod small{color:#7a7262}
+  .tr-linha{display:flex;gap:6px}.tr-linha input{flex:1;min-width:0;padding:7px 8px;border-radius:4px;border:1px solid #4a4640;background:#0e0f12;color:#f0e6cc;font:800 15px system-ui;letter-spacing:3px;text-transform:uppercase}
+  .tr-linha button,.tr-bt,.tr-op button,.tr-esch button{font:800 12px system-ui;color:#1a1408;background:linear-gradient(#f0d070,#b8902a);border:1px solid #000;border-radius:4px;padding:6px 12px}
+  .tr-bt:disabled{opacity:.5}.tr-c{background:linear-gradient(#5a3a34,#3a221e)!important;color:#f0c8b8!important}
+  .tr-dica{color:#8a8270;font-size:10px;margin:6px 0 0}.tr-dica b{color:#f0d890}
+  #tr-conv h4,.tr-lado h4{margin:8px 0 4px;color:#f0d890;font-size:11px}
+  .tr-lados{display:flex;gap:6px}.tr-lado{flex:1;min-width:0;padding:5px;border:1px solid #2c2b28;border-radius:4px;background:#0e0f12}.tr-lado h4{margin-top:0}
+  .tr-it{display:flex;align-items:center;gap:5px;padding:3px 4px;margin-bottom:3px;background:#17181c;border:1px solid #26252a;border-radius:3px;font-size:11px}.tr-it span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .tr-x{border:none;background:none;color:#c87a6a;font-size:12px;padding:0 3px}.tr-vazio{color:#5a564e;font-size:10px;padding:4px}
+  .tr-add{width:100%;margin-top:3px;padding:5px;border:1px dashed #5a4a28;border-radius:3px;background:none;color:#c8a860;font:800 11px system-ui}
+  .tr-acoes{display:flex;gap:6px;justify-content:flex-end;margin-top:8px}.tr-fim{text-align:center;font-size:15px;margin:16px 0}.tr-fim b{color:#f0d890}
+  #tr-esc{position:absolute;inset:26px 6px 6px;z-index:2;padding:6px;background:#0f1013;border:1px solid #5a4a28;border-radius:4px;overflow:auto}.tr-esch{display:flex;justify-content:space-between;align-items:center;color:#f0d890;margin-bottom:5px}
+  .tr-op{display:flex;align-items:center;gap:6px;padding:5px;margin-bottom:4px;background:#17181c;border:1px solid #2c2b28;border-radius:3px}.tr-op span{font-size:18px}.tr-op b{flex:1;min-width:0;font-size:11px}.tr-op input{width:64px;padding:3px;border:1px solid #4a4640;border-radius:3px;background:#0e0f12;color:#f0e6cc;font:800 12px system-ui}.tr-op small{color:#7a7262;font-size:9px}
   #perfil{position:fixed;inset:0;background:rgba(43,35,64,.55);display:flex;align-items:center;justify-content:center;z-index:27}
   #perfil .box{width:min(860px,96vw);height:min(400px,94vh);box-sizing:border-box;display:flex;gap:12px;padding:12px;border-radius:22px;background:var(--papel);border:4px solid var(--tinta);box-shadow:var(--sombra-g);color:var(--tinta)}
   #pf-esq{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;gap:6px}
@@ -276,7 +293,7 @@
 <div class="lg-bts"><button id="lg-entrar" class="pri">Entrar</button><button id="lg-criar">Criar conta</button></div><button id="lg-esqueci" class="lnk">Esqueci a senha</button></form>
 <div id="lg-msg"></div><button id="lg-convidado" class="lnk">Jogar sem conta ›</button></div></div>
 <div id="invp" hidden><div class="ip-box">
-<div class="ip-hd"><span>INVENTÁRIO</span><button id="ip-x">✕</button></div>
+<div class="ip-hd"><button id="ip-troca">🤝 Trocar</button><span>INVENTÁRIO</span><button id="ip-x">✕</button></div>
 <div class="ip-tabs"><button class="on" data-t="eq">Equipar</button><button data-t="pet">Pet</button></div>
 <div id="ip-eq"></div>
 <div class="ip-bt"><button class="on" data-b="0">I</button><button data-b="1">II</button><button data-b="2">III</button><button data-b="3">IV</button><button id="ip-ord" title="Organizar">⇅</button></div>
@@ -285,6 +302,7 @@
 <div class="ip-ouro"><span>🪙</span><b id="ip-moedas">0</b></div>
 <div id="ip-esc" hidden></div>
 </div></div>
+<div id="trocap" hidden><div class="tr-box"><div class="ip-hd"><span>🤝 TROCA</span><button id="tr-fecha">✕</button></div><div id="tr-corpo"></div></div></div>
 <div id="perfil" hidden><div class="box"><div id="pf-esq"><div id="pf-slots"></div><div id="pf-nome">Leonardo</div><div class="pfx"><div id="pf-xp"></div></div><div id="pf-xpt"></div><div id="conta-selo"></div><div id="pf-conta"></div></div><div id="pf-dir"><div class="hd"><button class="aba on" data-a="status">📊 Status</button><button class="aba" data-a="inv">🎒 Inventário</button><button id="pf-fecha">Fechar</button></div><div id="pf-cont"></div></div><div id="pf-escolha" hidden></div></div></div>
 <div id="dica">Arraste do lado <b>esquerdo</b> pra andar · do <b>direito</b> pra girar a câmera · chegue perto das pessoas pra conversar</div>
 <div id="lugar"></div>

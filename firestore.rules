@@ -1,0 +1,61 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Progresso salvo: cada jogador só lê e grava o próprio
+    match /jogadores/{uid} {
+      allow read, create, update: if request.auth != null && request.auth.uid == uid;
+      allow delete: if false;
+    }
+
+    // Perfil público (nome, código de troca e nível): qualquer jogador logado pode ver,
+    // mas só o dono pode mudar o dele
+    match /perfis/{uid} {
+      allow read: if request.auth != null;
+      allow create, update: if request.auth != null && request.auth.uid == uid;
+      allow delete: if false;
+    }
+
+    // Trocas entre jogadores: só os dois participantes veem e mexem.
+    // Cada um só pode mudar a própria oferta, o próprio "aceitei" e o próprio "recebi".
+    match /trocas/{id} {
+      function participante() {
+        return request.auth != null && (request.auth.uid == resource.data.de || request.auth.uid == resource.data.para);
+      }
+      function souDe() { return request.auth.uid == resource.data.de; }
+      function igual(campo) { return request.resource.data[campo] == resource.data[campo]; }
+
+      allow read: if participante();
+
+      allow create: if request.auth != null
+        && request.resource.data.de == request.auth.uid
+        && request.resource.data.para is string
+        && request.resource.data.para != request.auth.uid
+        && request.resource.data.estado == 'aberta'
+        && request.resource.data.v == 0
+        && request.resource.data.aplicadoDe == false
+        && request.resource.data.aplicadoPara == false;
+
+      allow update: if participante()
+        && igual('de') && igual('para') && igual('nomeDe') && igual('nomePara') && igual('criado')
+        // não mexe na parte do outro
+        && (souDe()
+              ? (igual('itensPara') && igual('okPara') && igual('aplicadoPara'))
+              : (igual('itensDe') && igual('okDe') && igual('aplicadoDe')))
+        // troca fechada ou cancelada não muda mais (só marca "recebi")
+        && (resource.data.estado == 'aberta'
+              || (igual('estado') && igual('itensDe') && igual('itensPara') && igual('v')))
+        // só fecha se os dois aceitaram a versão atual
+        && (request.resource.data.estado != 'fechada'
+              || (request.resource.data.okDe == request.resource.data.v && request.resource.data.okPara == request.resource.data.v))
+        && request.resource.data.estado in ['aberta', 'fechada', 'cancelada'];
+
+      allow delete: if false;
+    }
+
+    // Qualquer outra coisa fica bloqueada
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
