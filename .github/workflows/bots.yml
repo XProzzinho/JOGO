@@ -7,7 +7,7 @@ on:
         default: "30"
       qtd:
         description: "Quantos jogadores de teste (até 40)"
-        default: "20"
+        default: "1"
 jobs:
   bots:
     runs-on: ubuntu-latest
