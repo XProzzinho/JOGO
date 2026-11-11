@@ -34,6 +34,8 @@
   snowTex.wrapS = snowTex.wrapT = T3.RepeatWrapping; snowTex.repeat.set(50, 50);
   const ground = new T3.Mesh(new T3.PlaneGeometry(400, 400), new T3.MeshToonMaterial({ color: '#ffffff', map: snowTex, gradientMap: GRAD })); ground.rotation.x = -Math.PI / 2; ground.receiveShadow = true; vil.add(ground);
   { const path = new T3.Mesh(new T3.RingGeometry(3.2, 5.2, 48), new T3.MeshToonMaterial({ color: '#f2d48a', gradientMap: GRAD })); path.rotation.x = -Math.PI / 2; path.position.y = 0.01; path.receiveShadow = true; vil.add(path); }
+  const MW = { x: 0, z: -5, r: 64 }; // muralha da cidade (antes era 26)
+  const FO = (x, z) => { const dz = z - MW.z, r = Math.hypot(x, dz) || 1, k = (r + 40) / r; return [x * k, dz * k + MW.z]; }; // o que ficava fora da muralha velha vai pra fora da nova
   const COL = []; // colisões: {t:'c', x, z, r} ou {t:'b', x, z, ry, hw, hd}
   const WIN = [], CHIM = [];
   function house(x, z, ry, w, d, col, door) { const g = grp(vil, x, 0, z); g.rotation.y = ry; tb(g, 0, 1.3, 0, w, 2.6, d, col); tb(g, 0, 0.15, 0, w + 0.1, 0.3, d + 0.1, '#7a7480'); [-1, 1].forEach(s => tb(g, s * w / 2, 1.3, d / 2 + 0.01, 0.18, 2.6, 0.06, '#4a3424')); tb(g, 0, 2.55, d / 2 + 0.01, w, 0.16, 0.06, '#4a3424');
@@ -45,25 +47,69 @@
   const HOUSES = [[0, -8, 0, 4.5, 4, '#c8b8a0', true], [-7, -5, 0.4, 4, 3.6, '#b8a890'], [7, -5, -0.4, 4, 3.6, '#c8b090'], [-12, 2, 0.9, 3.6, 3.4, '#a89880'], [12, 2, -0.9, 3.6, 3.4, '#c0b8a8'], [-5, -16, 0.2, 4, 3.6, '#b0a088'], [6, -17, -0.2, 4.2, 3.6, '#c8b8a0'], [-16, -10, 0.7, 3.6, 3.4, '#b8a890'], [17, -11, -0.7, 3.6, 3.4, '#a89880']];
   const casas = HOUSES.map(h => house(...h)); const casaFamilia = casas[0];
   // pinheiros nevados
-  { const R = rng(801); for (let i = 0; i < 90; i++) { const a = R() * Math.PI * 2, r = 31 + R() * 52; const x = Math.cos(a) * r, z = Math.sin(a) * r - 6; if (Math.hypot(x, z + 62) < 14 || Math.hypot(x + 14, z - 11) < 4 || Math.hypot(x - 48, z + 50) < 23) continue; const g = grp(vil, x, 0, z); const s = 0.8 + R() * 0.8; g.scale.setScalar(s);
+  { const R = rng(801); for (let i = 0; i < 150; i++) { const a = R() * Math.PI * 2, r = MW.r + 6 + R() * 58; const x = Math.cos(a) * r, z = Math.sin(a) * r - 6; if (Math.hypot(x - FO(0, -62)[0], z - FO(0, -62)[1]) < 15 || Math.hypot(x - FO(48, -50)[0], z - FO(48, -50)[1]) < 24 || Math.hypot(x - FO(-60, -6)[0], z - FO(-60, -6)[1]) < 8 || Math.abs(Math.atan2(Math.sin(a - Math.PI), Math.cos(a - Math.PI))) < 0.05) continue; const g = grp(vil, x, 0, z); const s = 0.8 + R() * 0.8; g.scale.setScalar(s);
       if (!VISUAL_BLOCOS) arvoreFolhas(g, R); else { tb(g, 0, 0.5, 0, 0.35, 1, 0.35, '#5a3a24'); for (let j = 0; j < 3; j++) { part(g, CONE, '#2a5a3a', 0, 1.6 + j * 1.0, 0, 1.4 - j * 0.35, 1.6, 1.4 - j * 0.35); part(g, CONE, '#ffffff', 0, 2.1 + j * 1.0, 0, 0.6 - j * 0.15, 0.6, 0.6 - j * 0.15); } } COL.push({ t: 'c', x, z, r: 0.45 * s }); } }
   // poço no meio da vila
   { const w = grp(vil, 0, 0, 0); part(w, CYL, '#8a8a94', 0, 0.45, 0, 0.9, 0.9, 0.9); part(w, CYL, '#1a2a4a', 0, 0.91, 0, 0.7, 0.02, 0.7); [-1, 1].forEach(s => tb(w, s * 0.8, 1.6, 0, 0.12, 1.6, 0.12, '#5a3a24')); part(w, ROOF, '#4a3a4a', 0, 2.7, 0, 1.2, 0.8, 1.2).rotation.y = Math.PI / 4; tb(w, 0, 2.2, 0, 1.7, 0.08, 0.08, '#5a3a24'); part(w, CYL, '#7a5a3a', 0.2, 1.7, 0, 0.12, 0.25, 0.12); COL.push({ t: 'c', x: 0, z: 0, r: 1.0 }); }
   // cerca, lenha e barris pra dar vida
-  { for (let i = -6; i <= 6; i++) { tb(vil, i * 1.1, 0.45, 9, 0.12, 0.9, 0.12, '#6a4a2a'); } tb(vil, 0, 0.7, 9, 14.4, 0.08, 0.06, '#6a4a2a'); tb(vil, 0, 0.35, 9, 14.4, 0.08, 0.06, '#6a4a2a'); COL.push({ t: 'b', x: 0, z: 9, ry: 0, hw: 7.3, hd: 0.15 });
+  { // (a cerca da praça foi tirada pra cidade ficar aberta)
     [[3.2, -5.4], [-3.4, -5.6]].forEach(([x, z]) => { const g = grp(vil, x, 0, z); for (let k = 0; k < 5; k++) { const l = part(g, CYL, '#8a5a3a', 0, 0.12 + Math.floor(k / 3) * 0.22, (k % 3 - 1) * 0.22 + (k > 2 ? 0.11 : 0), 0.11, 0.9, 0.11); l.rotation.z = Math.PI / 2; } part(g, CYL, '#ffffff', 0, 0.48, 0, 0.5, 0.06, 0.4); COL.push({ t: 'c', x, z, r: 0.55 }); });
     [[8.5, -1.5], [-8.6, -1.2]].forEach(([x, z]) => { part(vil, CYL, '#7a4a2a', x, 0.45, z, 0.35, 0.9, 0.35); part(vil, TOR, '#4a4a54', x, 0.7, z, 0.36, 0.36, 0.3).rotation.x = Math.PI / 2; COL.push({ t: 'c', x, z, r: 0.45 }); }); }
   // ---------- cidade maior: anel de casas novas, feira e caminhos de terra ----------
   const HOUSES2 = [[-14, -18, 0.5, 4, 3.6, '#c0a888'], [14, -19, -0.5, 4.2, 3.8, '#b8a890'], [-20, -4, 1.1, 3.8, 3.4, '#c8b8a0'], [20, 2, -1.2, 4, 3.6, '#a89880'], [-9, 14, 2.6, 3.6, 3.4, '#c8b090'], [10, 15, 3.4, 4, 3.6, '#b0a088'], [-19, -14, 0.8, 3.8, 3.4, '#b8a890'], [19, -13, -0.8, 3.8, 3.4, '#c0b8a8']];
   HOUSES2.forEach(h => house(...h));
-  [0, Math.PI / 2, Math.PI, Math.PI * 1.5].forEach(a => { const caminho = new T3.Mesh(new T3.PlaneGeometry(3, 40), new T3.MeshToonMaterial({ color: '#e8c88a', gradientMap: GRAD })); caminho.rotation.x = -Math.PI / 2; caminho.rotation.z = -a; caminho.position.set(Math.sin(a) * 24, 0.012, -5 + Math.cos(a) * 24); caminho.receiveShadow = true; vil.add(caminho); });
+  [0, Math.PI / 2, Math.PI, Math.PI * 1.5].forEach(a => { const caminho = new T3.Mesh(new T3.PlaneGeometry(4.4, MW.r - 4), new T3.MeshToonMaterial({ color: '#e8c88a', gradientMap: GRAD })); caminho.rotation.x = -Math.PI / 2; caminho.rotation.z = -a; caminho.position.set(Math.sin(a) * (MW.r / 2 + 2), 0.012, -5 + Math.cos(a) * (MW.r / 2 + 2)); caminho.receiveShadow = true; vil.add(caminho); });
   // barracas de feira perto do portão leste
   [[17, -1, 0.4], [19, -8, -0.3], [14, -6, 1.2]].forEach(([x, z, ry]) => { const g = grp(vil, x, 0, z); g.rotation.y = ry; tb(g, 0, 0.45, 0, 1.6, 0.9, 1, '#8a5a34'); tb(g, 0, 1.9, 0, 2, 0.12, 1.4, '#c84a4a'); [-0.8, 0.8].forEach(s => tb(g, s, 1.2, -0.5, 0.1, 1.6, 0.1, '#6a4024')); part(g, SPH, '#e8a030', -0.4, 1.0, 0, 0.16, 0.14, 0.16); part(g, SPH, '#7ab84a', 0.1, 1.0, 0.1, 0.15, 0.13, 0.15); part(g, SPH, '#c84a3a', 0.5, 1.0, -0.1, 0.15, 0.13, 0.15); COL.push({ t: 'c', x, z, r: 1.0 }); });
   // ---------- muralha de pedra com neve, 4 portões e torres ----------
-  const MW = { x: 0, z: -5, r: 26 };
-  { const N = 44, seg = 2 * Math.PI * MW.r / N + 0.15; const gates = [0, Math.PI / 2, Math.PI, Math.PI * 1.5];
-    for (let i = 0; i < N; i++) { const a = i / N * Math.PI * 2; if (gates.some(g0 => Math.abs(Math.atan2(Math.sin(a - g0), Math.cos(a - g0))) < 0.14)) continue; const x = MW.x + Math.sin(a) * MW.r, z = MW.z + Math.cos(a) * MW.r; const g = grp(vil, x, 0, z); g.rotation.y = a; tb(g, 0, 1.5, 0, seg, 3, 1.2, '#8a8a94'); tb(g, 0, 3.1, 0, seg, 0.35, 1.4, '#ffffff'); for (let k = -1; k <= 1; k++) tb(g, k * seg * 0.33, 3.45, 0, seg * 0.2, 0.5, 1.1, '#8a8a94'); COL.push({ t: 'b', x, z, ry: a, hw: seg / 2, hd: 0.7 }); }
-    gates.forEach(g0 => { [-1, 1].forEach(s => { const a = g0 + s * 0.17; const x = MW.x + Math.sin(a) * MW.r, z = MW.z + Math.cos(a) * MW.r; const g = grp(vil, x, 0, z); part(g, CYL, '#7a7a88', 0, 2.2, 0, 1.1, 4.4, 1.1); part(g, CYL, '#ffffff', 0, 4.5, 0, 1.25, 0.3, 1.25); part(g, CONE, '#4a3a4a', 0, 5.3, 0, 1.3, 1.4, 1.3); part(g, CYL, '#3a2a1a', 0, 3.2, 0, 0.12, 0.5, 0.12); glowSpr(g, 0, 3.6, 0, 2.6, '#ffa040', 0.8); tb(g, 0, 6.3, 0, 0.08, 1.2, 0.08, '#5a3a24'); tb(g, 0.45, 6.6, 0, 0.9, 0.5, 0.04, '#c84a4a'); COL.push({ t: 'c', x, z, r: 1.2 }); }); }); }
+  const MURO = grp(vil);
+  { const vil = MURO; const N = 104, seg = 2 * Math.PI * MW.r / N + 0.15; const gates = [0, Math.PI / 2, Math.PI, Math.PI * 1.5];
+    for (let i = 0; i < N; i++) { const a = i / N * Math.PI * 2; if (gates.some(g0 => Math.abs(Math.atan2(Math.sin(a - g0), Math.cos(a - g0))) < 0.075)) continue; const x = MW.x + Math.sin(a) * MW.r, z = MW.z + Math.cos(a) * MW.r; const g = grp(vil, x, 0, z); g.rotation.y = a; tb(g, 0, 1.5, 0, seg, 3, 1.2, '#8a8a94'); tb(g, 0, 3.1, 0, seg, 0.35, 1.4, '#ffffff'); for (let k = -1; k <= 1; k++) tb(g, k * seg * 0.33, 3.45, 0, seg * 0.2, 0.5, 1.1, '#8a8a94'); COL.push({ t: 'b', x, z, ry: a, hw: seg / 2, hd: 0.7 }); }
+    gates.forEach(g0 => { [-1, 1].forEach(s => { const a = g0 + s * 0.072; const x = MW.x + Math.sin(a) * MW.r, z = MW.z + Math.cos(a) * MW.r; const g = grp(vil, x, 0, z); part(g, CYL, '#7a7a88', 0, 2.2, 0, 1.1, 4.4, 1.1); part(g, CYL, '#ffffff', 0, 4.5, 0, 1.25, 0.3, 1.25); part(g, CONE, '#4a3a4a', 0, 5.3, 0, 1.3, 1.4, 1.3); part(g, CYL, '#3a2a1a', 0, 3.2, 0, 0.12, 0.5, 0.12); glowSpr(g, 0, 3.6, 0, 2.6, '#ffa040', 0.8); tb(g, 0, 6.3, 0, 0.08, 1.2, 0.08, '#5a3a24'); tb(g, 0.45, 6.6, 0, 0.9, 0.5, 0.04, '#c84a4a'); COL.push({ t: 'c', x, z, r: 1.2 }); }); }); }
+  // ---------- CIDADE GRANDE: bairros, praças, feira e avenidas (cabe 150+ jogadores) ----------
+  // junta várias peças com o mesmo material numa malha só (o celular desenha muito mais rápido)
+  function funde(raiz) { raiz.updateMatrixWorld(true); const inv = new T3.Matrix4().copy(raiz.matrixWorld).invert(); const por = new Map(), velhos = [];
+    raiz.traverse(o => { if (!o.isMesh || o.isInstancedMesh || Array.isArray(o.material)) return; const g0 = o.geometry; if (!g0.attributes.position || !g0.attributes.normal) return;
+      const g = g0.index ? g0.toNonIndexed() : g0.clone(); const m = new T3.Matrix4().multiplyMatrices(inv, o.matrixWorld); g.applyMatrix4(m);
+      if (m.determinant() < 0) { const P = g.attributes.position.array, N = g.attributes.normal.array; for (let i = 0; i < P.length; i += 9) for (let k = 0; k < 3; k++) { let t = P[i + 3 + k]; P[i + 3 + k] = P[i + 6 + k]; P[i + 6 + k] = t; t = N[i + 3 + k]; N[i + 3 + k] = N[i + 6 + k]; N[i + 6 + k] = t; } }
+      if (!por.has(o.material)) por.set(o.material, []); por.get(o.material).push(g); velhos.push(o); });
+    velhos.forEach(o => { if (o.parent) o.parent.remove(o); });
+    por.forEach((gs, mat) => { let n = 0; gs.forEach(g => n += g.attributes.position.count); const P = new Float32Array(n * 3), N = new Float32Array(n * 3); let k = 0;
+      gs.forEach(g => { P.set(g.attributes.position.array, k * 3); N.set(g.attributes.normal.array, k * 3); k += g.attributes.position.count; g.dispose(); });
+      const G = new T3.BufferGeometry(); G.setAttribute('position', new T3.BufferAttribute(P, 3)); G.setAttribute('normal', new T3.BufferAttribute(N, 3)); G.computeBoundingSphere();
+      const M = new T3.Mesh(G, mat); M.castShadow = mat !== OUTM; M.receiveShadow = true; raiz.add(M); }); }
+  const BAIRRO = grp(vil);
+  { const R = rng(2026), CX = MW.x, CZ = MW.z; const av = a => [0, Math.PI / 2, Math.PI, Math.PI * 1.5].some(g0 => Math.abs(Math.atan2(Math.sin(a - g0), Math.cos(a - g0))) < 0.0001 + 4.2 / 40 * 0);
+    const longe = (a, r, w) => [0, Math.PI / 2, Math.PI, Math.PI * 1.5].every(g0 => Math.abs(Math.atan2(Math.sin(a - g0), Math.cos(a - g0))) * r > w / 2 + 3.4);
+    const PRACAS = [Math.PI / 4, Math.PI * 3 / 4, Math.PI * 5 / 4, Math.PI * 7 / 4]; const naPraca = (a, r) => r > 34 && r < 48 && PRACAS.some(q => Math.abs(Math.atan2(Math.sin(a - q), Math.cos(a - q))) * r < 9);
+    const CORES = ['#c8b8a0', '#b8a890', '#d8c8a8', '#c0a888', '#e0d0b8', '#b0a088', '#d8b890', '#c8c0b0'], TELHAS = ['#c8503a', '#b8442e', '#4a3a4a', '#3a5a7a', '#8a4a2a', '#d0603a'];
+    // anéis de rua de terra
+    [[30.5, 34], [48.5, 52]].forEach(([a, b]) => { const r = new T3.Mesh(new T3.RingGeometry(a, b, 96), new T3.MeshToonMaterial({ color: '#e8c88a', gradientMap: GRAD })); r.rotation.x = -Math.PI / 2; r.position.set(CX, 0.011, CZ); r.receiveShadow = true; vil.add(r); });
+    // casas
+    function casaM(x, z, ry, w, d, cor, telha, andares) { const g = grp(BAIRRO, x, 0, z); g.rotation.y = ry; const H = 2.6 * andares;
+      tb(g, 0, H / 2, 0, w, H, d, cor); tb(g, 0, 0.15, 0, w + 0.1, 0.3, d + 0.1, '#7a7480'); [-1, 1].forEach(sx => tb(g, sx * w / 2, H / 2, d / 2 + 0.01, 0.18, H, 0.06, '#4a3424'));
+      for (let k = 1; k <= andares; k++) tb(g, 0, 2.6 * k - 0.05, d / 2 + 0.01, w, 0.16, 0.06, '#4a3424');
+      const rf = part(g, ROOF, telha, 0, H + 1.0, 0, w * 0.82, 2.1, d * 0.82); rf.rotation.y = Math.PI / 4; tb(g, w * 0.25, H + 1.3, -d * 0.1, 0.5, 1.6, 0.5, '#6a5a5a');
+      tb(g, -w * 0.2, 0.75, d / 2 + 0.03, 0.8, 1.5, 0.06, '#7a4a2a'); for (let k = 0; k < andares; k++) [w * 0.22, k ? -w * 0.22 : null].forEach(wx => { if (wx === null) return; tb(g, wx, 1.5 + k * 2.6, d / 2 + 0.035, 0.7, 0.6, 0.04, '#ffd48a'); tb(g, wx, 1.5 + k * 2.6, d / 2 + 0.04, 0.05, 0.6, 0.03, '#4a3424'); });
+      COL.push({ t: 'b', x, z, ry, hw: w / 2 + 0.05, hd: d / 2 + 0.05 }); }
+    [[37.6, 1, 7.6], [44.4, -1, 8.2], [56.6, 1, 8.4]].forEach(([r, vira, passo]) => { const n = Math.floor(2 * Math.PI * r / passo);
+      for (let i = 0; i < n; i++) { const a = (i + 0.5) / n * Math.PI * 2, w = 4 + R() * 1.4, d = 3.6 + R() * 0.8; if (!longe(a, r, w) || naPraca(a, r)) continue;
+        const x = CX + Math.sin(a) * r, z = CZ + Math.cos(a) * r; casaM(x, z, a + (vira > 0 ? Math.PI : 0), w, d, CORES[Math.floor(R() * CORES.length)], TELHAS[Math.floor(R() * TELHAS.length)], R() < 0.3 ? 2 : 1); } });
+    // 4 praças com chafariz, árvores e bancos
+    PRACAS.forEach((q, i) => { const r = 41, x = CX + Math.sin(q) * r, z = CZ + Math.cos(q) * r; const pc = new T3.Mesh(new T3.CircleGeometry(8.5, 40), new T3.MeshToonMaterial({ color: '#d8d0c0', gradientMap: GRAD })); pc.rotation.x = -Math.PI / 2; pc.position.set(x, 0.013, z); pc.receiveShadow = true; vil.add(pc);
+      const g = grp(BAIRRO, x, 0, z); part(g, CYL, '#9a9aa4', 0, 0.35, 0, 2.4, 0.7, 2.4); part(g, CYL, '#4ab0ff', 0, 0.72, 0, 2.1, 0.04, 2.1); part(g, CYL, '#9a9aa4', 0, 1.2, 0, 0.35, 1.6, 0.35); part(g, CYL, '#9a9aa4', 0, 2.0, 0, 1.0, 0.2, 1.0); part(g, SPH, '#8ad8ff', 0, 2.3, 0, 0.35, 0.5, 0.35);
+      COL.push({ t: 'c', x, z, r: 2.5 });
+      for (let k = 0; k < 6; k++) { const a = k / 6 * Math.PI * 2 + 0.3; const tx = Math.sin(a) * 6.6, tz = Math.cos(a) * 6.6; const t = grp(g, tx, 0, tz); part(t, CYL, '#7a5232', 0, 1.0, 0, 0.18, 2.0, 0.18); part(t, SPH, ['#4fae4f', '#5bbf5b', '#3f9a3f'][k % 3], 0, 2.6, 0, 1.3, 1.2, 1.3); COL.push({ t: 'c', x: x + tx, z: z + tz, r: 0.35 });
+        const b = grp(g, Math.sin(a + 0.52) * 4.2, 0, Math.cos(a + 0.52) * 4.2); b.rotation.y = a + 0.52; tb(b, 0, 0.42, 0, 1.6, 0.1, 0.45, '#8a5a34'); tb(b, 0, 0.7, -0.2, 1.6, 0.45, 0.08, '#8a5a34'); [-0.65, 0.65].forEach(o => tb(b, o, 0.2, 0, 0.1, 0.4, 0.4, '#5a3a24')); } });
+    // feira grande no bairro sul (entre a avenida sul e a praça)
+    { const fc = [CX + Math.sin(Math.PI * 0.86) * 26, CZ + Math.cos(Math.PI * 0.86) * 26]; const TOLDO = ['#c84a4a', '#3a8ac8', '#e8a030', '#4aa85a', '#a85ad8', '#e85a8a'];
+      for (let i = 0; i < 12; i++) { const x = fc[0] + (i % 4 - 1.5) * 3.6, z = fc[1] + (Math.floor(i / 4) - 1) * 4.2; const g = grp(BAIRRO, x, 0, z); tb(g, 0, 0.45, 0, 1.8, 0.9, 1.1, '#8a5a34'); tb(g, 0, 2.0, 0, 2.3, 0.12, 1.6, TOLDO[i % TOLDO.length]); [-0.95, 0.95].forEach(o => tb(g, o, 1.25, -0.6, 0.1, 1.7, 0.1, '#6a4024'));
+        part(g, SPH, ['#e8a030', '#d83a3a', '#7ac83a'][i % 3], -0.4, 1.0, 0, 0.18, 0.15, 0.18); part(g, SPH, ['#ffd84a', '#8a3ad8', '#ff8a3a'][i % 3], 0.3, 1.0, 0.1, 0.16, 0.14, 0.16); COL.push({ t: 'b', x, z, ry: 0, hw: 1.0, hd: 0.65 }); } }
+    // postes de luz nas avenidas
+    [0, Math.PI / 2, Math.PI, Math.PI * 1.5].forEach(a => { for (let r = 16; r < MW.r - 3; r += 8) [-1, 1].forEach(sd => { const x = CX + Math.sin(a) * r + Math.cos(a) * 3.1 * sd, z = CZ + Math.cos(a) * r - Math.sin(a) * 3.1 * sd; const g = grp(BAIRRO, x, 0, z);
+      part(g, CYL, '#3a3a44', 0, 1.6, 0, 0.09, 3.2, 0.09); part(g, CYL, '#3a3a44', 0, 0.1, 0, 0.22, 0.2, 0.22); tb(g, 0, 3.3, 0, 0.36, 0.42, 0.36, '#ffe6a0', true); part(g, ROOF, '#3a3a44', 0, 3.65, 0, 0.32, 0.3, 0.32).rotation.y = Math.PI / 4; WIN.push(glowSpr(vil, x, 3.3, z, 2.4, '#ffc870', 0.7)); COL.push({ t: 'c', x, z, r: 0.2 }); }); });
+  }
+  funde(BAIRRO); funde(MURO);
   const moon = grp(world, -30, 40, -90); part(moon, SPH, '#fff6dc', 0, 0, 0, 6, 6, 6, 0, true); glowSpr(moon, 0, 0, -1, 40, '#c8d8ff', 0.6);
   const sunBall = grp(world, 40, 50, -100); part(sunBall, SPH, '#fff2c0', 0, 0, 0, 5, 5, 5, 0, true); glowSpr(sunBall, 0, 0, -1, 30, '#ffe0a0', 0.7);
   const nuvens = []; { const R = rng(5); for (let i = 0; i < 12; i++) { const c = grp(world, (R() - 0.5) * 240, 30 + R() * 12, -40 - R() * 120); for (let k = 0; k < 4; k++) part(c, SPH, '#ffffff', k * 2.6 - 4, R(), 0, 2.6, 1.3, 1.8, 0, true); nuvens.push(c); } }
@@ -688,10 +734,10 @@
   function solta(tipo, x, z) { const e = fera(tipo); e.home = [x, z]; e.g.position.set(x, 0, z); e.ry = Math.random() * 6.28; reseta(e); FERAS.push(e); return e; }
   function reseta(e) { e.vida = e.max = e.T.vida; e.estado = 'anda'; e.t = 0; e.cd = 0; e.morto = false; e.mortoT = 0; e.stun = 0; e.congela = 0; e.vuln = 0; e.hitT = 9; e.alvoW = e.home.slice(); e.g.visible = true; e.g.position.set(e.home[0], 0, e.home[1]); e.b.rotation.set(0, 0, 0); e.b.position.set(0, 0, 0); }
   // Brumafria: lobos e javalis na floresta, o Golem na caverna do norte — todos FORA da muralha
-  [[-44, -36], [-47, -30], [-40, -42], [46, 22], [50, 17], [-50, 16], [-46, 22]].forEach(([x, z]) => solta('lobo', x, z));
-  [[30, -72], [-30, -55], [52, -8]].forEach(([x, z]) => solta('javali', x, z));
-  const GX = 0, GZ = -62; const golem = solta('golem', GX, GZ);
-  const morcegao = solta('morcego', 0, 34); // voa em volta da cidade, por fora da muralha
+  [[-44, -36], [-47, -30], [-40, -42], [46, 22], [50, 17], [-50, 16], [-46, 22]].forEach(([x, z]) => solta('lobo', ...FO(x, z)));
+  [[30, -72], [-30, -55], [52, -8]].forEach(([x, z]) => solta('javali', ...FO(x, z)));
+  const [GX, GZ] = FO(0, -62); const golem = solta('golem', GX, GZ);
+  const morcegao = solta('morcego', ...FO(0, 34)); // voa em volta da cidade, por fora da muralha
   // Valdren: ratos gigantes no esgoto
   POCAS.slice(0, 7).forEach(([x, z]) => solta('rato', x, z));
 
@@ -704,7 +750,7 @@
     const chao = new T3.Mesh(new T3.CircleGeometry(11, 40), new T3.MeshToonMaterial({ color: '#cfe8f6', gradientMap: GRAD })); chao.rotation.x = -Math.PI / 2; chao.position.y = 0.02; cv2.add(chao);
     for (let i = 0; i < 22; i++) { const a = Math.PI * 0.15 + i / 21 * Math.PI * 0.7 + Math.PI; COL.push({ t: 'c', x: GX + Math.cos(a) * 12, z: GZ - Math.abs(Math.sin(a) * 12), r: 1.6 }); } }
   // ---------- FLORESTA DOS GOBLINS (a leste do portão norte) ----------
-  const GBX = 48, GBZ = -50, GTX = 3.2, GTZ = -34.5; const ENTRA = Math.atan2(GTZ - GBZ, GTX - GBX);
+  const [GBX, GBZ] = FO(48, -50), GTX = 3.2, GTZ = -34.5; const ENTRA = Math.atan2(GTZ - GBZ, GTX - GBX);
   { const fl = grp(world, GBX, 0, GBZ); const R = rng(4242);
     const chao = new T3.Mesh(new T3.CircleGeometry(20, 48), new T3.MeshToonMaterial({ color: '#3d7a32', gradientMap: GRAD })); chao.rotation.x = -Math.PI / 2; chao.position.y = 0.015; chao.receiveShadow = true; fl.add(chao);
     const fora = (a) => Math.abs(Math.atan2(Math.sin(a - ENTRA), Math.cos(a - ENTRA))) < 0.3;
@@ -738,7 +784,7 @@
   { const R = rng(55); for (let i = 0; i < 16; i++) { const a = R() * 6.28, r = 3 + R() * 9; solta('goblin', GBX + Math.cos(a) * r, GBZ + Math.sin(a) * r); } }
   SABER.push({ x: GBX + Math.cos(ENTRA) * 12, y: 1.8, z: GBZ + Math.sin(ENTRA) * 12, t: 'Goblins andam em bando: golpes em área (Pólvora, Raio) acertam vários.' });
   // ---------- MASMORRA DAS PROFUNDEZAS (caverna com 7 fases) ----------
-  const MX = -2000, MM_R = 11, MM_DZ = 32, MM_N = 7, MM_ENT = { x: -60, z: -6 };
+  const MX = -2000, MM_R = 11, MM_DZ = 32, MM_N = 7, MM_ENT = { x: FO(-60, -6)[0], z: FO(-60, -6)[1] };
   const MM_FASES = [['aranha', 6], ['esqueleto', 5], ['cogumelo', 5], ['gosma', 6], ['troll', 2], ['espectro', 4], ['dragao', 1]];
   const MM_NOMES = ['Ninho das Aranhas', 'Cripta dos Esqueletos', 'Jardim de Fungos', 'Lago de Cristal', 'Toca dos Trolls', 'Salão dos Espectros', 'Covil do Dragão'];
   const MM_COR = ['#a05aff', '#5af0ff', '#9aff5a', '#5ad8ff', '#ffb020', '#7a9aff', '#ff5a2a'];
@@ -755,7 +801,7 @@
     const pg = grp(g, 4.6, 0, 2.2); pg.rotation.y = -0.4; const pl = new T3.Mesh(new T3.PlaneGeometry(2.2, 0.74), new T3.MeshBasicMaterial({ map: tx, toneMapped: false, side: T3.DoubleSide })); pl.position.y = 1.8; pg.add(pl); [-0.8, 0.8].forEach(o => tb(pg, o, 0.9, -0.03, 0.1, 1.8, 0.1, '#4a3020'));
     for (let i = 0; i < 12; i++) { const a = Math.PI * i / 11; COL.push({ t: 'c', x: MM_ENT.x - 1.2 - Math.sin(a) * 0.4, z: MM_ENT.z - Math.cos(a) * 3.8, r: 1.0 }); } }
   // trilha do portão oeste até a caverna
-  { const ax = -27, az = -5, dx = MM_ENT.x + 3 - ax, dz = MM_ENT.z - az, L = Math.hypot(dx, dz); const g = grp(world, (ax + MM_ENT.x + 3) / 2, 0, (az + MM_ENT.z) / 2); g.rotation.y = Math.atan2(dx, dz); const t = new T3.Mesh(new T3.PlaneGeometry(2.2, L), new T3.MeshToonMaterial({ color: '#c8b080', gradientMap: GRAD })); t.rotation.x = -Math.PI / 2; t.position.y = 0.011; t.receiveShadow = true; g.add(t); }
+  { const ax = -(MW.r + 1), az = -5, dx = MM_ENT.x + 3 - ax, dz = MM_ENT.z - az, L = Math.hypot(dx, dz); const g = grp(world, (ax + MM_ENT.x + 3) / 2, 0, (az + MM_ENT.z) / 2); g.rotation.y = Math.atan2(dx, dz); const t = new T3.Mesh(new T3.PlaneGeometry(2.2, L), new T3.MeshToonMaterial({ color: '#c8b080', gradientMap: GRAD })); t.rotation.x = -Math.PI / 2; t.position.y = 0.011; t.receiveShadow = true; g.add(t); }
   // salões e corredores
   { const M = grp(world, 0, 0, 0); const R = rng(303);
     const pedra = canvasTex(256, 256, (x, w, h) => { x.fillStyle = '#2a2630'; x.fillRect(0, 0, w, h); for (let i = 0; i < 900; i++) { const v = 30 + R() * 40 | 0; x.fillStyle = `rgb(${v},${v - 4},${v + 6})`; x.beginPath(); x.arc(R() * w, R() * h, 1 + R() * 6, 0, 7); x.fill(); } }); pedra.wrapS = pedra.wrapT = T3.RepeatWrapping;
@@ -931,7 +977,7 @@
         else if (e.estado === 'volta') { v = anda(e, e.home[0], e.home[1], T.vel, dt) ? T.vel : 0; e.vida = Math.min(e.max, e.vida + dt * e.max * 0.15); if (Math.hypot(g.x - e.home[0], g.z - e.home[1]) < 1.5) { e.estado = 'anda'; e.vida = e.max; } if (d < T.aggro * 0.6 && livre) e.estado = 'caca'; }
         if (d < T.raio + 0.3) { const nx = g.x - p.x, nz = g.z - p.z, nd = Math.hypot(nx, nz) || 1; g.x = p.x + nx / nd * (T.raio + 0.3); g.z = p.z + nz / nd * (T.raio + 0.3); }
         if (zona === 'masmorra') mmLimita(g);
-        if (zona === 'vila') { const r = Math.hypot(g.x, g.z + 6); if (r > 88) { g.x *= 88 / r; g.z = (g.z + 6) * 88 / r - 6; } const rw = Math.hypot(g.x - MW.x, g.z - MW.z); if (rw < MW.r + 0.9 && rw > 1e-3) { g.x = MW.x + (g.x - MW.x) * (MW.r + 0.9) / rw; g.z = MW.z + (g.z - MW.z) * (MW.r + 0.9) / rw; } } }
+        if (zona === 'vila') { const r = Math.hypot(g.x, g.z + 6); if (r > 140) { g.x *= 140 / r; g.z = (g.z + 6) * 140 / r - 6; } const rw = Math.hypot(g.x - MW.x, g.z - MW.z); if (rw < MW.r + 0.9 && rw > 1e-3) { g.x = MW.x + (g.x - MW.x) * (MW.r + 0.9) / rw; g.z = MW.z + (g.z - MW.z) * (MW.r + 0.9) / rw; } } }
       e.g.rotation.y = e.ry; const sc = e.hitT < 0.15 ? 1 + (0.15 - e.hitT) : 1; e.b.scale.setScalar(sc);
       e.L.forEach((l, i) => { const ph = T.chefe ? i * Math.PI : (i === 0 || i === 3 ? 0 : Math.PI); l.rotation.x = v > 0.2 ? Math.sin(gT * (v * 2.2 + 4) + ph) * 0.6 : 0; });
       if (e.asas) { const f = e.estado === 'ataque' ? 14 : 7; e.asas.forEach((a, i) => a.rotation.z = (i ? 1 : -1) * Math.sin(gT * f) * 0.6); if (e.estado !== 'ataque') e.b.position.y = Math.sin(gT * f) * 0.12; }
