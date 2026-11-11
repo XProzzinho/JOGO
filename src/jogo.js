@@ -975,53 +975,86 @@
     divino: { nome: 'Deus Celestial', icone: '👼', def: 45, mana: 50, desc: 'Ouro celestial e uma auréola de luz sobre a cabeça.', cor: '#e8c35b', escuro: '#806020', brilho: '#fff0a0', cristal: '#ffffff' } };
   Object.keys(MAGOS).forEach(k => FANT['mago_' + k] = MAGOS[k]);
   const OCT1 = new T3.OctahedronGeometry(1, 0);
+  // Mago: versão detalhada (capuz com rosto à mostra, placas com filete dourado, runas que brilham, capa rasgada)
+  const MAGO_TX = {}; let magoSeed = 9; const mr = () => { magoSeed = (magoSeed * 16807) % 2147483647; return magoSeed / 2147483647; };
+  function magoCv(n, draw) { const c = document.createElement('canvas'); c.width = c.height = n; draw(c.getContext('2d'), n); return c; }
+  function magoTx(c, rx, ry, srgb) { const t = new T3.CanvasTexture(c); t.wrapS = t.wrapT = T3.RepeatWrapping; t.repeat.set(rx, ry || rx); if (srgb !== false) t.colorSpace = T3.SRGBColorSpace; t.anisotropy = 4; return t; }
+  function tecidoTx(cor) { return MAGO_TX['t' + cor] || (MAGO_TX['t' + cor] = magoCv(256, (x, n) => { x.fillStyle = cor; x.fillRect(0, 0, n, n); for (let y = 0; y < n; y += 2) { x.fillStyle = `rgba(0,0,0,${0.05 + mr() * 0.06})`; x.fillRect(0, y, n, 1); } for (let i = 0; i < n; i += 2) { x.fillStyle = `rgba(255,255,255,${mr() * 0.03})`; x.fillRect(i, 0, 1, n); }
+    for (let i = 0; i < 30; i++) { x.fillStyle = `rgba(0,0,0,${mr() * 0.14})`; x.beginPath(); x.ellipse(mr() * n, mr() * n, 10 + mr() * 30, 2 + mr() * 6, mr() * 3, 0, 7); x.fill(); } })); }
+  const RUNA_CV = magoCv(256, (x, n) => { x.fillStyle = '#000'; x.fillRect(0, 0, n, n); x.strokeStyle = '#fff'; x.lineCap = 'round'; x.lineWidth = 3;
+    x.beginPath(); x.moveTo(n / 2, 30); x.lineTo(n / 2 + 30, 85); x.lineTo(n / 2, 140); x.lineTo(n / 2 - 30, 85); x.closePath(); x.stroke(); x.beginPath(); x.arc(n / 2, 85, 14, 0, 7); x.stroke();
+    x.lineWidth = 2; for (let i = 0; i < 5; i++) { const cx = 48 + i * 40, cy = 200; x.beginPath(); x.moveTo(cx - 8, cy + 9); x.lineTo(cx, cy - 9); x.lineTo(cx + 8, cy + 9); if (i % 2) { x.moveTo(cx - 6, cy); x.lineTo(cx + 6, cy); } else x.arc(cx, cy + 1, 4, 0, 4.4); x.stroke(); } });
+  const OURO_CV = magoCv(128, (x, n) => { x.fillStyle = '#c8a050'; x.fillRect(0, 0, n, n); for (let i = 0; i < 200; i++) { x.strokeStyle = `rgba(${mr() < 0.5 ? '255,240,200' : '80,50,10'},${mr() * 0.3})`; x.lineWidth = 0.5 + mr(); x.beginPath(); const px = mr() * n, py = mr() * n; x.moveTo(px, py); x.lineTo(px + (mr() - 0.5) * 20, py + (mr() - 0.5) * 20); x.stroke(); } });
   Object.keys(MAGOS).forEach(k => { const D = MAGOS[k], P = heroi.userData.P, L = [];
-    const mt = (c, m, e) => new T3.MeshStandardMaterial({ color: c, metalness: m, roughness: 0.35, emissive: c, emissiveIntensity: e || 0, envMap: ENV, envMapIntensity: 0.8 });
-    const metal = mt(D.cor, 0.65, 0.12), sombra = mt(D.escuro, 0.45), luz = mt(D.brilho, 0.3, 0.9), tecido = mt('#17182b', 0.05);
-    const gemaM = new T3.MeshStandardMaterial({ color: D.cristal, emissive: D.cristal, emissiveIntensity: 1.6, metalness: 0.25, roughness: 0.2, toneMapped: false });
-    const pano = (c) => new T3.MeshStandardMaterial({ color: c, roughness: 0.8, metalness: 0.05, side: T3.DoubleSide });
+    const escura = '#' + new T3.Color(D.escuro).multiplyScalar(0.55).getHexString(), media = '#' + new T3.Color(D.cor).lerp(new T3.Color(D.escuro), 0.45).getHexString();
+    const OURO = new T3.MeshPhysicalMaterial({ color: k === 'gelo' ? '#dfe8f4' : '#e6c070', map: magoTx(OURO_CV, 1), metalness: 1, roughness: 0.3, clearcoat: 0.3, envMap: ENV, envMapIntensity: 1.3 });
+    const PLACA = new T3.MeshPhysicalMaterial({ color: D.cor, metalness: 0.7, roughness: 0.35, clearcoat: 0.6, clearcoatRoughness: 0.2, envMap: ENV, envMapIntensity: 1.1 });
+    const PRETO = new T3.MeshPhysicalMaterial({ color: '#18141e', metalness: 0.6, roughness: 0.45, clearcoat: 0.4, envMap: ENV, envMapIntensity: 0.8 });
+    const COURO = new T3.MeshStandardMaterial({ color: '#1c1620', roughness: 0.7, metalness: 0.1 });
+    const GEMA = new T3.MeshPhysicalMaterial({ color: D.cristal, emissive: D.brilho, emissiveIntensity: 2.6, roughness: 0.05, clearcoat: 1, toneMapped: false });
+    const pano = (c, rx, ry) => new T3.MeshStandardMaterial({ map: magoTx(tecidoC(c), rx || 2, ry), roughness: 0.85, side: T3.DoubleSide, envMap: ENV, envMapIntensity: 0.4 });
+    function tecidoC(c) { return tecidoTx(c); }
+    const TAB = new T3.MeshStandardMaterial({ map: magoTx(tecidoTx(media), 1), emissiveMap: magoTx(RUNA_CV, 1), emissive: D.brilho, emissiveIntensity: 1.3, roughness: 0.85, side: T3.DoubleSide });
     const A = (pa, ...a) => { const m = pc(pa, ...a); L.push(m); return m; }; const G = (pa, x, y, z) => { const g = grp(pa, x, y, z); L.push(g); return g; };
-    const cris = (pa, x, y, z, e) => A(pa, OCT1, gemaM, x, y, z, e, e * 1.4, e);
-    // capuz com aro em volta do rosto
-    A(P.head, new T3.SphereGeometry(1, 24, 14, Math.PI - 0.6, Math.PI + 1.2, 0, Math.PI * 0.78), pano(D.escuro), 0, 0.07, -0.01, 0.235, 0.25, 0.225);
-    A(P.head, TOR2, metal, 0, 0.06, 0.07, 0.205, 0.22, 0.9);
-    // tronco: túnica, gola de metal, peitoral com cristal
-    A(P.spine, SPH2, tecido, 0, 0.37, 0, 0.205, 0.24, 0.15);
-    for (let i = 0; i < 3; i++) A(P.spine, CYL2, tecido, 0, 0.2 - i * 0.05, 0, 0.195 - i * 0.004, 0.05, 0.142);
-    A(P.spine, CYL2, metal, 0, 0.53, 0, 0.17, 0.09, 0.13); A(P.spine, TORF, luz, 0, 0.49, 0, 0.172, 0.132, 0.172, Math.PI / 2);
-    A(P.spine, SPH2, metal, 0, 0.36, 0.08, 0.11, 0.15, 0.08); cris(P.spine, 0, 0.37, 0.16, 0.035);
-    [-1, 1].forEach(s => { E(s); }); function E(s) { const t = new T3.Mesh(BOX, luz); t.scale.set(0.012, 0.2, 0.01); t.position.set(s * 0.075, 0.33, 0.145); t.rotation.z = s * 0.35; P.spine.add(t); L.push(t); }
-    // cinto com cristal
-    A(P.spine, CYL2, metal, 0, 0.05, 0, 0.2, 0.05, 0.146); cris(P.spine, 0, 0.05, 0.15, 0.025);
-    // manto longo em 3 abas (balança com as pernas)
-    const abas = {}; const H = 0.68, R0 = 0.2, R1 = 0.36, ZS = 0.8;
-    [['R', 0, Math.PI * 0.5], ['L', -Math.PI * 0.5, Math.PI * 0.5], ['B', Math.PI * 0.5, Math.PI]].forEach(([n, t0, tl]) => { const g = G(P.hips, 0, 0, 0); abas[n] = g; g.scale.z = ZS;
-      A(g, new T3.CylinderGeometry(R0, R1, H, 18, 1, true, t0, tl), pano(n === 'B' ? D.escuro : '#17182b'), 0, -H / 2, 0, 1, 1, 1);
-      const hem = G(g, 0, -H, 0); hem.rotation.y = -(Math.PI / 2 - t0 - tl); A(hem, new T3.TorusGeometry(R1, 0.014, 6, 22, tl), metal, 0, 0, 0, 1, 1, 1, Math.PI / 2);
-      const hem2 = G(g, 0, -H + 0.05, 0); hem2.rotation.y = hem.rotation.y; A(hem2, new T3.TorusGeometry(R1 - 0.008, 0.006, 6, 22, tl), luz, 0, 0, 0, 1, 1, 1, Math.PI / 2); });
-    // ombreiras com brilho
+    const MG = (pa, geo, mat, x, y, z) => { const m = new T3.Mesh(geo, mat); m.position.set(x || 0, y || 0, z || 0); m.castShadow = true; pa.add(m); L.push(m); return m; };
+    const tubo = (pa, pts, r, fechado) => MG(pa, new T3.TubeGeometry(new T3.CatmullRomCurve3(pts.map(v => new T3.Vector3(v[0], v[1], v[2])), !!fechado), Math.max(12, pts.length * 6), r, 6, !!fechado), OURO);
+    const gema = (pa, x, y, z, e, rx) => { const g = A(pa, OCT1, GEMA, x, y, z, e * 0.8, e * 1.25, e * 0.5, rx || 0); tubo(pa, [[x, y + e * 1.5, z - 0.003], [x + e * 1.05, y, z - 0.003], [x, y - e * 1.5, z - 0.003], [x - e * 1.05, y, z - 0.003]], 0.0045, true); return g; };
+    // capuz (rosto à mostra) com ponta e filete dourado
+    A(P.head, new T3.SphereGeometry(1, 32, 20, Math.PI / 2 + 0.75, Math.PI * 2 - 1.5, 0, Math.PI * 0.8), pano(D.escuro, 2), 0, 0.07, -0.01, 0.235, 0.255, 0.235);
+    { const pt = A(P.head, CONE2, pano(D.escuro, 1), 0, 0.2, -0.22, 0.13, 0.24, 0.13); pt.rotation.x = -1.0; }
+    tubo(P.head, [[-0.17, -0.12, 0.1], [-0.2, 0.07, 0.13], [-0.12, 0.25, 0.13], [0, 0.29, 0.12], [0.12, 0.25, 0.13], [0.2, 0.07, 0.13], [0.17, -0.12, 0.1]], 0.008);
+    // tronco
+    A(P.spine, SPH2, pano(escura, 2), 0, 0.37, 0, 0.205, 0.24, 0.15);
+    for (let i = 0; i < 3; i++) A(P.spine, CYL2, pano(escura, 2), 0, 0.2 - i * 0.05, 0, 0.195 - i * 0.004, 0.05, 0.142);
+    { const pl = A(P.spine, new T3.SphereGeometry(1, 32, 18, 0.3, Math.PI - 0.6, 0, Math.PI * 0.6), PLACA, 0, 0.36, 0.0, 0.215, 0.24, 0.165); pl.rotation.x = -0.15; }
+    tubo(P.spine, [[-0.16, 0.54, 0.09], [-0.07, 0.42, 0.155], [0, 0.31, 0.168], [0.07, 0.42, 0.155], [0.16, 0.54, 0.09]], 0.009);
+    tubo(P.spine, [[-0.2, 0.43, 0.05], [-0.1, 0.27, 0.14], [0, 0.21, 0.16], [0.1, 0.27, 0.14], [0.2, 0.43, 0.05]], 0.008);
+    gema(P.spine, 0, 0.4, 0.175, 0.035);
+    // gola alta
+    [-1, 1].forEach(s => { const g = G(P.spine, s * 0.08, 0.57, -0.05); g.rotation.set(-0.25, s * 0.4, s * 0.35); A(g, BOX, PLACA, 0, 0.1, 0, 0.15, 0.2, 0.014); tubo(g, [[-0.075, 0, 0.009], [-0.075, 0.19, 0.009], [0.075, 0.22, 0.009], [0.075, 0, 0.009]], 0.0045); });
+    // cinto com losango dourado
+    A(P.spine, CYL2, PRETO, 0, 0.05, 0, 0.2, 0.07, 0.148); A(P.spine, TORF, OURO, 0, 0.085, 0, 0.2, 0.148, 0.2, Math.PI / 2); A(P.spine, TORF, OURO, 0, 0.015, 0, 0.2, 0.148, 0.2, Math.PI / 2);
+    A(P.spine, OCT1, OURO, 0, 0.05, 0.15, 0.06, 0.07, 0.02); A(P.spine, OCT1, GEMA, 0, 0.05, 0.162, 0.035, 0.045, 0.015);
+    // tabardo da frente com runas (balança com as pernas)
+    const tab = G(P.hips, 0, 0.0, 0.17); { const s = new T3.Shape(); s.moveTo(-0.11, 0); s.lineTo(0.11, 0); s.lineTo(0.14, -0.55); s.lineTo(0, -0.67); s.lineTo(-0.14, -0.55); s.closePath();
+      const geo = new T3.ShapeGeometry(s, 10); const uv = geo.attributes.uv, p = geo.attributes.position; for (let i = 0; i < p.count; i++) uv.setXY(i, (p.getX(i) + 0.15) / 0.3, (p.getY(i) + 0.68) / 0.68);
+      MG(tab, geo, TAB, 0, 0, 0); tubo(tab, [[-0.11, 0, 0.004], [-0.14, -0.55, 0.004], [0, -0.67, 0.004], [0.14, -0.55, 0.004], [0.11, 0, 0.004]], 0.007); gema(tab, 0, -0.52, 0.01, 0.022); }
+    // casaco: abas com barra rasgada
+    const abas = {}; const H = 0.7, R0 = 0.2, R1 = 0.37, ZS = 0.8;
+    [['R', 0.55, 1.6], ['L', -2.15, 1.6], ['B', 2.15, Math.PI * 2 - 4.3]].forEach(([n, t0, tl]) => { const g = G(P.hips, 0, 0, 0); abas[n] = g; g.scale.z = ZS;
+      const geo = new T3.CylinderGeometry(R0, R1, H, 28, 8, true, t0, tl); const p = geo.attributes.position;
+      for (let i = 0; i < p.count; i++) { const y = p.getY(i), ang = Math.atan2(p.getX(i), p.getZ(i)); if (y < -H / 2 + 1e-4) p.setY(i, y + 0.06 * (0.5 + 0.5 * Math.sin(ang * 23 + Math.cos(ang * 7) * 2)) + 0.03 * mr()); const f = (H / 2 - p.getY(i)) / H; p.setX(i, p.getX(i) * (1 + Math.sin(ang * 9) * 0.04 * f)); }
+      geo.computeVertexNormals(); MG(g, geo, pano(n === 'B' ? D.escuro : media, 2), 0, -H / 2, 0);
+      if (n !== 'B') { const t = n === 'R' ? t0 : t0 + tl; tubo(g, [[R0 * Math.sin(t), 0, R0 * Math.cos(t)], [0.29 * Math.sin(t), -H * 0.55, 0.29 * Math.cos(t)], [R1 * Math.sin(t), -H + 0.02, R1 * Math.cos(t)]], 0.008); } });
+    // capa rasgada
+    let capa; { capa = G(P.spine, 0, 0.56, -0.15); const geo = new T3.PlaneGeometry(0.52, 1.0, 14, 14); const p = geo.attributes.position;
+      for (let i = 0; i < p.count; i++) { const x = p.getX(i), y = p.getY(i); const f = (0.5 - y) / 1.0; p.setZ(i, -Math.pow(x / 0.26, 2) * 0.06 - f * 0.12 + Math.sin(x * 14 + y * 3) * 0.015 * f); p.setX(i, x * (1 + f * 0.5)); if (y < -0.45) p.setY(i, y + (0.03 + 0.05 * Math.abs(Math.sin(x * 41))) * (mr() < 0.6 ? 1 : 0.3)); }
+      geo.computeVertexNormals(); MG(capa, geo, pano(D.escuro, 1.5), 0, -0.5, 0); A(capa, CYL2, OURO, 0, 0, 0, 0.17, 0.02, 0.02, 0, 0, Math.PI / 2); }
+    // ombreiras, braçadeiras, luvas e botas
     ['L', 'R'].forEach((sd, i) => { const sx = i ? 1 : -1, sh = P['sh' + sd];
-      A(sh, SPH2, metal, sx * 0.05, 0.01, 0, 0.15, 0.1, 0.16, 0, 0, -sx * 0.35); A(sh, SPH2, sombra, sx * 0.07, -0.05, 0, 0.12, 0.07, 0.13, 0, 0, -sx * 0.6); A(sh, SPH2, luz, sx * 0.1, 0.03, 0.1, 0.045, 0.03, 0.03);
-      A(sh, CYL2, tecido, 0, -0.19, 0, 0.068, 0.17, 0.068);
-      // braçadeiras e luvas
-      const el = P['el' + sd]; A(el, SPH2, tecido, 0, 0, 0, 0.062, 0.06, 0.062); A(el, CYL2, sombra, 0, -0.14, 0, 0.065, 0.2, 0.065); A(el, CYL2, metal, 0, -0.235, 0, 0.074, 0.05, 0.074); A(el, TORF, luz, 0, -0.08, 0, 0.068, 0.066, 0.068, Math.PI / 2);
-      A(el, SPH2, sombra, 0, -0.29, 0.01, 0.058, 0.066, 0.052);
-      // joelheira e botas
-      const kn = P['kn' + sd]; A(kn, SPH2, metal, 0, 0, 0.035, 0.07, 0.068, 0.06); A(kn, CYL2, sombra, 0, -0.21, 0, 0.072, 0.3, 0.072); A(kn, CYL2, metal, 0, -0.08, 0, 0.078, 0.05, 0.078);
-      const ft = P['ft' + sd]; A(ft, SPH2, sombra, 0, 0.005, 0.05, 0.078, 0.064, 0.145); A(ft, BOX, metal, 0, -0.05, 0.05, 0.13, 0.02, 0.28); });
-    // capa nas costas com 3 cristais
-    const capa = G(P.spine, 0, 0.56, -0.15); { const f = new T3.Shape(); f.moveTo(-0.17, 0); f.lineTo(0.17, 0); f.lineTo(0.3, -0.85); f.lineTo(0, -0.97); f.lineTo(-0.3, -0.85); f.closePath(); A(capa, new T3.ShapeGeometry(f), pano(D.escuro), 0, 0, 0, 1, 1, 1, 0, Math.PI, 0);
-      for (let i = 0; i < 3; i++) cris(capa, 0, -0.2 - i * 0.22, -0.015, 0.018); A(capa, CYL2, metal, 0, 0, 0, 0.18, 0.025, 0.03, 0, 0, Math.PI / 2); }
+      const o = G(sh, sx * 0.03, 0.03, 0); o.rotation.z = -sx * 0.3;
+      [[0.0, 0.13, 0.08], [-0.045, 0.12, 0.07], [-0.09, 0.105, 0.06]].forEach(([y, r, h], k2) => { A(o, HSPH, PLACA, sx * k2 * 0.012, y, 0, r * 1.1, h * 1.5, r * 1.05); A(o, TORF, OURO, sx * k2 * 0.012, y + 0.004, 0, r * 1.1, r * 1.05, r * 1.1, Math.PI / 2); });
+      for (let k2 = 0; k2 < 3; k2++) { const sp = A(o, CONE2, OURO, sx * (0.03 + k2 * 0.04), 0.07, -0.02 + k2 * 0.025, 0.018, 0.13 - k2 * 0.025, 0.012); sp.rotation.z = -sx * (0.35 + k2 * 0.25); sp.rotation.x = -0.2; }
+      A(o, OCT1, GEMA, sx * 0.02, 0.04, 0.11, 0.022, 0.032, 0.012);
+      A(sh, CYL2, pano(media, 1), 0, -0.19, 0, 0.068, 0.17, 0.068);
+      const el = P['el' + sd]; A(el, SPH2, pano(media, 1), 0, 0, 0, 0.062, 0.06, 0.062); A(el, CYL2, PLACA, 0, -0.15, 0, 0.07, 0.19, 0.068);
+      A(el, TORF, OURO, 0, -0.06, 0, 0.071, 0.069, 0.071, Math.PI / 2); A(el, TORF, OURO, 0, -0.24, 0, 0.066, 0.064, 0.066, Math.PI / 2); A(el, OCT1, GEMA, sx * 0.068, -0.15, 0.01, 0.016, 0.024, 0.01, 0, sx * Math.PI / 2);
+      for (let k2 = 0; k2 < 2; k2++) { const sp = A(el, CONE2, OURO, sx * 0.062, -0.1 - k2 * 0.07, -0.03, 0.013, 0.06, 0.013); sp.rotation.z = -sx * 1.3; }
+      A(el, SPH2, PRETO, 0, -0.29, 0.01, 0.058, 0.066, 0.052); for (let f = 0; f < 4; f++) { const d = A(el, CONE2, PRETO, (f - 1.5) * 0.022, -0.36, 0.03, 0.011, 0.07, 0.011); d.rotation.x = Math.PI - 0.2; }
+      const kn = P['kn' + sd]; A(kn, SPH2, PLACA, 0, 0, 0.04, 0.07, 0.08, 0.05); A(kn, CONE2, OURO, 0, 0.08, 0.05, 0.02, 0.09, 0.012, 0.25);
+      A(kn, CYL2, PRETO, 0, -0.21, 0, 0.074, 0.3, 0.074); for (let k2 = 0; k2 < 3; k2++) A(kn, TORF, OURO, 0, -0.08 - k2 * 0.11, 0, 0.076, 0.076, 0.076, Math.PI / 2);
+      const ft = P['ft' + sd]; A(ft, SPH2, PRETO, 0, 0.005, 0.05, 0.078, 0.064, 0.145); A(ft, BOX, OURO, 0, -0.05, 0.05, 0.13, 0.016, 0.28); });
     // detalhes de cada elemento
-    if (k === 'gelo') for (let i = 0; i < 4; i++) { const a = -0.55 + i * 0.37; cris(P.spine, Math.sin(a) * 0.17, 0.63, -0.05 + Math.cos(a) * 0.0 - Math.abs(a) * 0.02, 0.028).scale.y = 0.09; }
-    if (k === 'fogo') for (let i = 0; i < 3; i++) { const c = A(P.spine, CONE2, luz, -0.08 + i * 0.08, 0.7 + (i === 1 ? 0.03 : 0), -0.09, 0.035, i === 1 ? 0.2 : 0.15, 0.03); c.rotation.z = (1 - i) * 0.25; } if (k === 'fogo') L.push(glowSpr(P.spine, 0, 0.74, -0.1, 0.4, D.brilho, 0.4));
-    if (k === 'arcano') { const r = G(P.head, 0, 0.08, -0.2); A(r, TOR2, luz, 0, 0, 0, 0.26, 0.26, 0.4); for (let i = 0; i < 4; i++) cris(r, Math.cos(i * Math.PI / 2) * 0.26, Math.sin(i * Math.PI / 2) * 0.26, 0, 0.022); }
-    if (k === 'natureza') ['L', 'R'].forEach((sd, i) => { const sx = i ? 1 : -1; for (let j = 0; j < 3; j++) { const f = A(P['sh' + sd], CONE2, luz, sx * (0.06 + j * 0.03), 0.08 + j * 0.02, -0.04 - j * 0.02, 0.035, 0.17, 0.012); f.rotation.z = -sx * (0.3 + j * 0.4); f.rotation.x = -0.3; } });
-    if (k === 'divino') { A(P.head, TOR2, luz, 0, 0.4, -0.04, 0.14, 0.14, 0.3, Math.PI / 2 - 0.45); cris(P.head, 0, 0.2, 0.15, 0.022); [-1, 1].forEach(s => { const w = A(P.spine, CONE2, luz, s * 0.12, 0.5, -0.18, 0.05, 0.3, 0.015); w.rotation.z = -s * 1.0; w.rotation.x = 0.3; }); }
-    L.forEach(m => m.visible = false); CAS['mago_' + k] = { m: L, abas, calca: sombra, capa }; });
+    if (k === 'gelo') for (let i = 0; i < 5; i++) { const a = -0.7 + i * 0.35; A(P.spine, OCT1, GEMA, Math.sin(a) * 0.18, 0.64 + (i === 2 ? 0.03 : 0), -0.06 - Math.abs(a) * 0.03, 0.022, 0.08, 0.022); }
+    if (k === 'fogo') { ['L', 'R'].forEach((sd, i) => { const sx = i ? 1 : -1; for (let j = 0; j < 3; j++) { const c = A(P['sh' + sd], CONE2, GEMA, sx * (0.04 + j * 0.04), 0.12 + (j === 1 ? 0.03 : 0), -0.02, 0.03, 0.15 - j * 0.02, 0.025); c.rotation.z = -sx * (0.2 + j * 0.3); } L.push(glowSpr(P['sh' + sd], sx * 0.08, 0.14, 0, 0.35, D.brilho, 0.45)); }); }
+    if (k === 'arcano') { const r = G(P.head, 0, 0.1, -0.22); A(r, TOR2, GEMA, 0, 0, 0, 0.27, 0.27, 0.35); for (let i = 0; i < 4; i++) A(r, OCT1, GEMA, Math.cos(i * Math.PI / 2) * 0.27, Math.sin(i * Math.PI / 2) * 0.27, 0, 0.02, 0.03, 0.012); }
+    if (k === 'natureza') ['L', 'R'].forEach((sd, i) => { const sx = i ? 1 : -1; for (let j = 0; j < 4; j++) { const f = A(P['sh' + sd], CONE2, GEMA, sx * (0.05 + j * 0.03), 0.09 + j * 0.015, -0.03 - j * 0.02, 0.032, 0.16, 0.01); f.rotation.z = -sx * (0.25 + j * 0.35); f.rotation.x = -0.3; } });
+    if (k === 'divino') { A(P.head, TOR2, GEMA, 0, 0.42, -0.04, 0.14, 0.14, 0.3, Math.PI / 2 - 0.45); [-1, 1].forEach(s => { const w = A(P.spine, CONE2, GEMA, s * 0.13, 0.5, -0.19, 0.045, 0.3, 0.012); w.rotation.z = -s * 1.0; w.rotation.x = 0.3; }); }
+    L.push(glowSpr(P.spine, 0, 0.4, 0.2, 0.18, D.brilho, 0.35));
+    L.forEach(m => m.visible = false); CAS['mago_' + k] = { m: L, abas, calca: COURO, capa, tab }; });
   function escondeTrajes() { armadura.forEach(m => m.visible = false); Object.values(CAS).forEach(c => c.m.forEach(m => m.visible = false)); }
   function casacoFrame() { const c = CAS[AR.fantasia] || (CASACOS[AR.pecas.calca] && CAS[AR.pecas.calca]); if (!c) return; const P = heroi.userData.P, a = c.abas;
-    a.R.rotation.x = Math.min(0, P.thR.rotation.x) * 0.9; a.L.rotation.x = Math.min(0, P.thL.rotation.x) * 0.9; a.B.rotation.x = Math.max(0, Math.max(P.thL.rotation.x, P.thR.rotation.x)) * 0.7; if (c.capa) { const v = typeof vel !== 'undefined' ? vel : 0; c.capa.rotation.x += (Math.min(0.6, v * 0.06) + Math.sin(gT * 2.2) * 0.03 - c.capa.rotation.x) * 0.15; } }
+    a.R.rotation.x = Math.min(0, P.thR.rotation.x) * 0.9; a.L.rotation.x = Math.min(0, P.thL.rotation.x) * 0.9; a.B.rotation.x = Math.max(0, Math.max(P.thL.rotation.x, P.thR.rotation.x)) * 0.7; if (c.tab) c.tab.rotation.x = Math.min(0, P.thL.rotation.x, P.thR.rotation.x) * 0.85; if (c.capa) { const v = typeof vel !== 'undefined' ? vel : 0; c.capa.rotation.x += (Math.min(0.6, v * 0.06) + Math.sin(gT * 2.2) * 0.03 - c.capa.rotation.x) * 0.15; } }
 
   // ---- Armadura Glacial (conjunto em peças separadas: elmo, peitoral, manoplas, calça, gregas, botas) ----
   const GA = met('#3f7ae8', 0.35, 0.45), GA2 = met('#2c58b8', 0.38, 0.45), GB = met('#e8eff6', 0.3, 0.4), GD = met('#2e3350', 0.6, 0.15);
