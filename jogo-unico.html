@@ -1947,6 +1947,76 @@ ${_}`}class A extends Error{constructor({message:e,code:t,cause:r,name:s}){var n
       { nome: 'Forma Sombria', cor: '#6a2ab8', atk: 1.5, roubo: 0.3, escala: 1.15, def: 15, armaEsc: 1.2, armaGlow: '#d8a8ff', extras: ['chifres'], ataque: 'marca', orbes: { tipo: 'sombra', n: 4, dano: 10, raio: 2.2 } },
       { nome: 'Senhor das Trevas', cor: '#3a1060', atk: 2.0, roubo: 0.5, escala: 1.3, flutua: 0.5, def: 25, armaEsc: 1.5, extras: ['asas', 'chifres', 'coroa'], armaGlow: '#e0c0ff', ataque: 'fura', orbes: { tipo: 'sombra', n: 6, dano: 16, raio: 2.8 } }],
   };
+  // ---- Armadura do Modo de Batalha (preta com vermelho; I, II e III vão ficando mais pesadas) ----
+  const BMA = { 1: [], 2: [], 3: [] }; let bmaTab = null, bmaTras = null, bmaCapa = null, bmaHV = null; const BMA_CAB = [];
+  const BMA_GLOW = new T3.MeshStandardMaterial({ color: '#ff2a2a', emissive: '#ff2a2a', emissiveIntensity: 2.4, toneMapped: false });
+  { const P = heroi.userData.P;
+    const NEG = new T3.MeshPhysicalMaterial({ color: '#16131c', metalness: 0.85, roughness: 0.28, clearcoat: 0.7, clearcoatRoughness: 0.15, envMap: ENV, envMapIntensity: 1.2 });
+    const NEG2 = new T3.MeshPhysicalMaterial({ color: '#2a2430', metalness: 0.8, roughness: 0.35, clearcoat: 0.5, envMap: ENV, envMapIntensity: 1.0 });
+    const VERM = new T3.MeshPhysicalMaterial({ color: '#8a1018', metalness: 0.8, roughness: 0.3, clearcoat: 0.6, envMap: ENV, envMapIntensity: 1.1 });
+    const PANO = new T3.MeshStandardMaterial({ map: magoTx(tecidoTx('#7a0a14'), 2), roughness: 0.8, side: T3.DoubleSide, envMap: ENV, envMapIntensity: 0.4 });
+    const PANO2 = new T3.MeshStandardMaterial({ map: magoTx(tecidoTx('#1a1418'), 2), roughness: 0.85, side: T3.DoubleSide });
+    let tier = 1; const A = (pa, ...a) => { const m = pc(pa, ...a); BMA[tier].push(m); return m; }; const G = (pa, x, y, z) => { const g = grp(pa, x, y, z); BMA[tier].push(g); return g; };
+    const MG = (pa, geo, mat, x, y, z) => { const m = new T3.Mesh(geo, mat); m.position.set(x || 0, y || 0, z || 0); m.castShadow = true; pa.add(m); BMA[tier].push(m); return m; };
+    const linha = (pa, pts, r, mat) => MG(pa, new T3.TubeGeometry(new T3.CatmullRomCurve3(pts.map(v => new T3.Vector3(v[0], v[1], v[2]))), Math.max(10, pts.length * 6), r, 6, false), mat || BMA_GLOW);
+    const espinho = (pa, x, y, z, w, h, rz, rx) => { const e = A(pa, CONE2, NEG, x, y, z, w, h, w * 0.6); e.rotation.set(rx || 0, 0, rz || 0); return e; };
+    // ===== Modo I =====
+    tier = 1;
+    { const pl = A(P.spine, new T3.SphereGeometry(1, 32, 18, 0.25, Math.PI - 0.5, 0, Math.PI * 0.62), NEG, 0, 0.36, 0, 0.222, 0.25, 0.17); pl.rotation.x = -0.12; }
+    A(P.spine, new T3.SphereGeometry(1, 28, 16, Math.PI + 0.3, Math.PI - 0.6, 0, Math.PI * 0.6), NEG2, 0, 0.36, 0, 0.215, 0.245, 0.16);
+    linha(P.spine, [[-0.17, 0.52, 0.1], [-0.07, 0.4, 0.162], [0, 0.3, 0.175], [0.07, 0.4, 0.162], [0.17, 0.52, 0.1]], 0.007);
+    A(P.spine, OCT1, BMA_GLOW, 0, 0.42, 0.18, 0.03, 0.05, 0.015);
+    for (let i = 0; i < 3; i++) { A(P.spine, CYL2, i % 2 ? NEG2 : NEG, 0, 0.2 - i * 0.05, 0, 0.2 - i * 0.004, 0.048, 0.148); A(P.spine, TORF, VERM, 0, 0.176 - i * 0.05, 0, 0.2 - i * 0.004, 0.148, 0.2, Math.PI / 2); }
+    A(P.spine, CYL2, NEG, 0, 0.05, 0, 0.205, 0.06, 0.15); A(P.spine, BOX, VERM, 0, 0.05, 0.15, 0.08, 0.07, 0.02); A(P.spine, OCT1, BMA_GLOW, 0, 0.05, 0.163, 0.022, 0.03, 0.01);
+    A(P.spine, CYL2, NEG, 0, 0.6, 0, 0.11, 0.08, 0.1);
+    // faixas de pano vermelho (frente e trás)
+    bmaTab = G(P.hips, 0, 0, 0.16); { const s = new T3.Shape(); s.moveTo(-0.1, 0); s.lineTo(0.1, 0); s.lineTo(0.12, -0.5); s.lineTo(0.04, -0.58); s.lineTo(0, -0.52); s.lineTo(-0.04, -0.6); s.lineTo(-0.12, -0.5); s.closePath(); MG(bmaTab, new T3.ShapeGeometry(s), PANO, 0, 0, 0); linha(bmaTab, [[-0.1, 0, 0.004], [-0.12, -0.5, 0.004]], 0.005, VERM); linha(bmaTab, [[0.1, 0, 0.004], [0.12, -0.5, 0.004]], 0.005, VERM); }
+    bmaTras = G(P.hips, 0, 0, -0.15); { const s = new T3.Shape(); s.moveTo(-0.14, 0); s.lineTo(0.14, 0); s.lineTo(0.17, -0.58); s.lineTo(0.05, -0.66); s.lineTo(0, -0.6); s.lineTo(-0.06, -0.68); s.lineTo(-0.17, -0.58); s.closePath(); MG(bmaTras, new T3.ShapeGeometry(s), PANO, 0, 0, 0); }
+    // saiote de placas nas laterais
+    [-1, 1].forEach(s => { const g = G(P.hips, s * 0.15, -0.02, 0); g.rotation.z = s * 0.25; for (let k = 0; k < 3; k++) A(g, BOX, k % 2 ? NEG2 : NEG, 0, -0.05 - k * 0.07, 0, 0.07, 0.09, 0.2, 0.15); });
+    ['L', 'R'].forEach((sd, i) => { const sx = i ? 1 : -1, sh = P['sh' + sd];
+      const o = G(sh, sx * 0.03, 0.03, 0); o.rotation.z = -sx * 0.3;
+      [[0.0, 0.135, 0.085], [-0.05, 0.125, 0.075]].forEach(([y, r, h], k) => { A(o, HSPH, k ? NEG2 : NEG, sx * k * 0.014, y, 0, r * 1.1, h * 1.5, r * 1.05); A(o, TORF, VERM, sx * k * 0.014, y + 0.004, 0, r * 1.1, r * 1.05, r * 1.1, Math.PI / 2); });
+      espinho(o, sx * 0.06, 0.12, -0.02, 0.03, 0.2, -sx * 0.45, -0.25); espinho(o, sx * 0.11, 0.08, 0.03, 0.025, 0.15, -sx * 0.8, -0.1);
+      A(sh, CYL2, NEG2, 0, -0.19, 0, 0.068, 0.17, 0.068);
+      const el = P['el' + sd]; A(el, SPH2, NEG, 0, 0, 0, 0.066, 0.064, 0.066); espinho(el, 0, 0, -0.07, 0.02, 0.1, 0, -Math.PI / 2 - 0.3);
+      A(el, CYL2, NEG, 0, -0.15, 0, 0.074, 0.2, 0.072); A(el, TORF, VERM, 0, -0.06, 0, 0.075, 0.073, 0.075, Math.PI / 2); linha(el, [[sx * 0.074, -0.08, 0.0], [sx * 0.076, -0.22, 0.0]], 0.006);
+      for (let k = 0; k < 3; k++) espinho(el, sx * 0.07, -0.09 - k * 0.055, -0.035, 0.014, 0.08 - k * 0.012, -sx * 1.35, 0);
+      A(el, SPH2, NEG, 0, -0.29, 0.01, 0.06, 0.068, 0.054); for (let f = 0; f < 4; f++) { const d = A(el, CONE2, NEG2, (f - 1.5) * 0.022, -0.36, 0.035, 0.012, 0.08, 0.012); d.rotation.x = Math.PI - 0.25; }
+      const th = P['th' + sd]; A(th, SPH2, NEG, sx * 0.04, -0.08, 0.02, 0.1, 0.16, 0.11, 0, 0, sx * 0.1); A(th, CYL2, NEG2, 0, -0.25, 0, 0.08, 0.26, 0.08);
+      const kn = P['kn' + sd]; A(kn, SPH2, NEG, 0, 0, 0.04, 0.075, 0.085, 0.06); espinho(kn, 0, 0.09, 0.06, 0.024, 0.12, 0, 0.3); A(kn, OCT1, BMA_GLOW, 0, 0, 0.1, 0.014, 0.02, 0.008);
+      A(kn, CYL2, NEG, 0, -0.21, 0, 0.076, 0.3, 0.076); A(kn, BOX, VERM, 0, -0.2, 0.074, 0.018, 0.28, 0.01); for (let k = 0; k < 2; k++) A(kn, TORF, VERM, 0, -0.08 - k * 0.2, 0, 0.078, 0.078, 0.078, Math.PI / 2);
+      espinho(kn, sx * 0.07, -0.15, -0.02, 0.016, 0.09, -sx * 1.4, 0);
+      const ft = P['ft' + sd]; A(ft, SPH2, NEG, 0, 0.005, 0.06, 0.08, 0.066, 0.16); const bico = A(ft, CONE2, NEG, 0, 0.0, 0.22, 0.045, 0.1, 0.03); bico.rotation.x = Math.PI / 2; A(ft, BOX, VERM, 0, -0.052, 0.06, 0.13, 0.016, 0.3); });
+    // ===== Modo II: elmo aberto com crista e capa vermelha =====
+    tier = 2;
+    { const h = P.head; const e = A(h, new T3.SphereGeometry(1, 32, 20, Math.PI / 2 + 0.8, Math.PI * 2 - 1.6, 0, Math.PI * 0.62), NEG, 0, 0.07, -0.01, 0.245, 0.26, 0.245); BMA_CAB.push(e);
+      A(h, new T3.SphereGeometry(1, 24, 12, 0, Math.PI * 2, 0, Math.PI * 0.35), NEG2, 0, 0.12, 0.0, 0.25, 0.22, 0.25);
+      [-1, 1].forEach(s => { const b = A(h, BOX, NEG, s * 0.2, -0.02, 0.07, 0.05, 0.2, 0.14); b.rotation.y = -s * 0.5; A(h, BOX, VERM, s * 0.215, 0.06, 0.1, 0.012, 0.05, 0.08).rotation.y = -s * 0.5; });
+      linha(h, [[-0.19, 0.08, 0.14], [-0.1, 0.25, 0.16], [0, 0.28, 0.17], [0.1, 0.25, 0.16], [0.19, 0.08, 0.14]], 0.008, VERM);
+      const cr = A(h, CONE2, BMA_GLOW, 0, 0.36, -0.04, 0.015, 0.24, 0.08); cr.rotation.x = -0.5; const cr2 = A(h, CONE2, NEG, 0, 0.33, -0.08, 0.03, 0.26, 0.12); cr2.rotation.x = -0.7; }
+    bmaCapa = G(P.spine, 0, 0.58, -0.17); { const geo = new T3.PlaneGeometry(0.55, 1.05, 14, 14); const p = geo.attributes.position;
+      for (let i = 0; i < p.count; i++) { const x = p.getX(i), y = p.getY(i); const f = (0.52 - y) / 1.05; p.setZ(i, -Math.pow(x / 0.27, 2) * 0.07 - f * 0.12 + Math.sin(x * 14 + y * 3) * 0.015 * f); p.setX(i, x * (1 + f * 0.6)); if (y < -0.45) p.setY(i, y + (0.03 + 0.07 * Math.abs(Math.sin(x * 37))) * (Math.sin(x * 91) > 0 ? 1 : 0.3)); }
+      geo.computeVertexNormals(); MG(bmaCapa, geo, PANO, 0, -0.52, 0); A(bmaCapa, CYL2, VERM, 0, 0, 0, 0.18, 0.025, 0.025, 0, 0, Math.PI / 2); [-1, 1].forEach(s => A(bmaCapa, SPH2, BMA_GLOW, s * 0.15, 0, 0.01, 0.025, 0.025, 0.015)); }
+    ['L', 'R'].forEach((sd, i) => { const sx = i ? 1 : -1; const o = G(P['sh' + sd], sx * 0.05, 0.03, 0); o.rotation.z = -sx * 0.3; espinho(o, sx * 0.02, 0.15, -0.06, 0.035, 0.26, -sx * 0.2, -0.45); espinho(o, sx * 0.13, 0.04, -0.05, 0.03, 0.2, -sx * 1.05, -0.2); });
+    // ===== Modo III: chifres grandes, ombreiras gigantes, lâminas nas costas e capa dupla rasgada =====
+    tier = 3;
+    { const h = P.head; [-1, 1].forEach(s => { let px = s * 0.17, py = 0.2, pz = -0.02; for (let k = 0; k < 5; k++) { const w = 0.06 - k * 0.01, len = 0.14; const c = A(h, k === 4 ? CONE2 : CYL2, k === 4 ? BMA_GLOW : NEG, px, py, pz, w, len, w); const ang = s * (0.9 - k * 0.32); c.rotation.set(-0.35 - k * 0.15, 0, -ang); px += Math.sin(ang) * len * 0.9; py += Math.cos(ang) * len * 0.9; pz -= 0.02 + k * 0.01; } }); }
+    ['L', 'R'].forEach((sd, i) => { const sx = i ? 1 : -1; const o = G(P['sh' + sd], sx * 0.06, 0.07, 0); o.rotation.z = -sx * 0.25; A(o, HSPH, NEG, 0, 0.03, 0, 0.17, 0.1, 0.16); A(o, TORF, BMA_GLOW, 0, 0.034, 0, 0.17, 0.16, 0.17, Math.PI / 2);
+      for (let k = 0; k < 4; k++) espinho(o, sx * (0.02 + k * 0.045), 0.1 - k * 0.012, -0.08 + k * 0.05, 0.03, 0.3 - k * 0.05, -sx * (0.3 + k * 0.25), -0.35); });
+    { const g = G(P.spine, 0, 0.45, -0.17); [-1, 0, 1].forEach(s => { const b = A(g, CONE2, NEG, s * 0.09, 0.12 - Math.abs(s) * 0.04, -0.03, 0.03, 0.45 - Math.abs(s) * 0.1, 0.012); b.rotation.set(-0.5, 0, -s * 0.5); A(g, CONE2, BMA_GLOW, s * 0.09, 0.12 - Math.abs(s) * 0.04, -0.02, 0.008, 0.38 - Math.abs(s) * 0.1, 0.004).rotation.set(-0.5, 0, -s * 0.5); }); }
+    { const g = G(bmaCapa, 0, 0, -0.01); const geo = new T3.PlaneGeometry(0.62, 1.2, 14, 14); const p = geo.attributes.position;
+      for (let i = 0; i < p.count; i++) { const x = p.getX(i), y = p.getY(i); const f = (0.6 - y) / 1.2; p.setZ(i, -Math.pow(x / 0.31, 2) * 0.08 - f * 0.16 - 0.015); p.setX(i, x * (1 + f * 0.7)); if (y < -0.5) p.setY(i, y + (0.05 + 0.1 * Math.abs(Math.sin(x * 29))) * (Math.sin(x * 77) > 0 ? 1 : 0.2)); }
+      geo.computeVertexNormals(); MG(g, geo, PANO2, 0, -0.6, 0); }
+    [1, 2, 3].forEach(t => BMA[t].forEach(m => m.visible = false)); }
+  function bmaVeste(n) { const P = heroi.userData.P;
+    [1, 2, 3].forEach(t => BMA[t].forEach(m => m.visible = !!n && t <= n));
+    if (n) { escondeTrajes(); Object.values(PEC).forEach(l => l.forEach(m => m.visible = false)); Object.values(CAS).forEach(c => c.m.forEach(m => m.visible = false)); roupaBase.forEach(([o]) => o.material = MALHA);
+      if (n >= 2 && !bmaHV) { bmaHV = []; P.head.traverse(c => { if (c.isMesh && c.visible && typeof MH !== 'undefined' && (c.material === MH.cab || (MH.cab && c.material && c.material.color && c.material.color.equals && MH.cab.color && c.material === MH.cab))) { bmaHV.push(c); c.visible = false; } }); } }
+    else { if (bmaHV) { bmaHV.forEach(c => c.visible = true); bmaHV = null; } escondeTrajes(); if (AR.fantasia === 'celeste') armadura.forEach(m => m.visible = true); if (CAS[AR.fantasia]) CAS[AR.fantasia].m.forEach(m => m.visible = true); atualizaPecas(); }
+    setTimeout(fazRetrato, 80); }
+  function bmaFrame() { if (!BM || !bmaTab) return; const P = heroi.userData.P; bmaTab.rotation.x = Math.min(0, P.thL.rotation.x, P.thR.rotation.x) * 0.85; bmaTras.rotation.x = Math.max(0, P.thL.rotation.x, P.thR.rotation.x) * 0.7;
+    const v = typeof vel !== 'undefined' ? vel : 0; bmaCapa.rotation.x += (Math.min(0.7, v * 0.07) + Math.sin(gT * 2.4) * 0.04 - bmaCapa.rotation.x) * 0.15; }
   let BM = null, bmN = 0, bmMat = null; const ESCALA0 = heroi.scale.x;
   function bmMatCor(cor) { return new T3.MeshBasicMaterial({ color: cor, toneMapped: false, transparent: true, opacity: 0.9 }); }
   // peças extras presas no corpo
@@ -1964,12 +2034,13 @@ ${_}`}class A extends Error{constructor({message:e,code:t,cause:r,name:s}){var n
       else if (o.tipo === 'torre') { const m = new T3.Mesh(BOX, M); m.scale.set(0.18, 0.18, 0.18); g.add(m); glowSpr(g, 0, 0, 0, 0.6, cor, 0.7); }
       else if (o.tipo === 'folha') { const m = new T3.Mesh(CONE2, M); m.scale.set(0.12, 0.3, 0.03); m.rotation.z = 1; g.add(m); }
       else { const m = new T3.Mesh(SPH2, M); m.scale.setScalar(0.1); g.add(m); glowSpr(g, 0, 0, 0, 0.8, cor, 0.8); } } }
-  function bmDesliga() { if (!BM) return; BM = null; bmN = 0; heroi.scale.setScalar(ESCALA0); maoG.scale.setScalar(1); maoE.scale.setScalar(1); armaGlowS.material.opacity = 0; Object.keys(EXTRA).forEach(k => EXTRA[k].visible = false); if (duploG) { maoE.remove(duploG); duploG = null; } ORB.visible = false; despAura.material.opacity = 0; mostraArma(); }
+  function bmDesliga() { if (!BM) return; BM = null; bmN = 0; heroi.scale.setScalar(ESCALA0); maoG.scale.setScalar(1); maoE.scale.setScalar(1); armaGlowS.material.opacity = 0; Object.keys(EXTRA).forEach(k => EXTRA[k].visible = false); if (duploG) { maoE.remove(duploG); duploG = null; } ORB.visible = false; despAura.material.opacity = 0; mostraArma(); bmaVeste(0); }
   function bmLiga(n) { const c = CLA(); if (!c) return; const M = BMS[AR.classe][n - 1]; BM = M; bmN = n; despT = BM_DUR[n - 1]; desp = 0;
     bmMat = bmMatCor(M.cor); Object.keys(EXTRA).forEach(k => { EXTRA[k].traverse(o => { if (o.isMesh) o.material = bmMat; }); EXTRA[k].visible = false; });
     (M.extras || []).forEach(k => { if (k === 'espinhos') { EXTRA.espshL.visible = EXTRA.espshR.visible = true; } else if (k === 'duplo' && ARMAG[AR.arma]) { duploG = ARMAG[AR.arma].clone(); duploG.visible = true; duploG.scale.x = -1; maoE.add(duploG); Object.values(ARMAE).forEach(x => x.visible = false); } else if (EXTRA[k]) EXTRA[k].visible = true; });
     heroi.scale.setScalar(ESCALA0 * (M.escala || 1)); maoG.scale.setScalar(M.armaEsc || 1); maoE.scale.setScalar(M.armaEsc || 1); armaGlowS.material.color.set(M.armaGlow || M.cor); armaGlowS.material.opacity = M.armaGlow ? 0.7 : 0;
     montaOrbes(M.orbes, M.cor); ORB.visible = !!M.orbes; despAura.material.color.set(M.cor);
+    ['chifres', 'coroa'].forEach(x => { if (n >= 2) EXTRA[x].visible = false; }); EXTRA.espshL.visible = EXTRA.espshR.visible = false; BMA_GLOW.color.set(M.cor === '#ffd23c' || M.cor === '#ffe680' ? '#ff2a2a' : '#ff2a2a'); bmaVeste(n);
     som('modo', 1, 1); flash('rgba(255,255,255,.6)'); tremor = 0.35; fx('luz', [heroi.position.x, 0, heroi.position.z], 1.2); fx('cura', [heroi.position.x, 0, heroi.position.z], 1.4);
     const el = $('lvup'); el.innerHTML = `<small>MODO DE BATALHA ${['I', 'II', 'III'][n - 1]}</small>${M.nome}<em>${bmTexto(M)} · ${BM_DUR[n - 1]} s</em>`; el.style.color = M.cor; el.classList.remove('on'); void el.offsetWidth; el.classList.add('on'); }
   function bmTexto(M) { const t = []; if (M.atk) t.push('+' + Math.round((M.atk - 1) * 100) + '% ataque'); if (M.def) t.push('+' + M.def + '% defesa'); if (M.atkVel) t.push('ataque ' + Math.round((1 / M.atkVel - 1) * 100) + '% mais rápido'); if (M.vel) t.push('+' + Math.round((M.vel - 1) * 100) + '% velocidade'); if (M.crit) t.push('+' + Math.round(M.crit * 100) + '% crítico'); if (M.esq) t.push('+' + Math.round(M.esq * 100) + '% esquiva'); if (M.roubo) t.push('rouba ' + Math.round(M.roubo * 100) + '% de vida'); if (M.espelho) t.push('devolve ' + Math.round(M.espelho * 100) + '% do dano'); if (M.regen) t.push('vida volta sozinha');
@@ -1977,7 +2048,7 @@ ${_}`}class A extends Error{constructor({message:e,code:t,cause:r,name:s}){var n
   function modoBatalha(n) { if (conversa || cenaQ || desmaiado) return; const c = CLA(); if (!c) return; if (AR.nv < BM_NV[n - 1]) { aviso('Modo de Batalha ' + ['I', 'II', 'III'][n - 1] + ' libera no nível ' + BM_NV[n - 1] + '.', '#ff6a6a'); return; }
     if (BM) { aviso('Já está no modo ' + BM.nome + ' (' + Math.ceil(despT) + ' s).', '#8a9aba'); return; } if (desp < BM_CUSTO[n - 1]) { aviso('Lute pra encher a barra: ' + Math.floor(desp) + '% de ' + BM_CUSTO[n - 1] + '%.', '#ffd23c'); return; } bmLiga(n); }
   [1, 2, 3].forEach(n => tapBtn($('bm' + n), () => modoBatalha(n))); window.addEventListener('keydown', e => { if (e.code === 'KeyR') modoBatalha(1); if (e.code === 'KeyT' && !e.repeat && false) {} if (e.code === 'KeyG') modoBatalha(2); if (e.code === 'KeyH') modoBatalha(3); });
-  function bmFrame(dt, p) {
+  function bmFrame(dt, p) { bmaFrame();
     if (BM) { despT -= dt; if (despT <= 0) { bmDesliga(); aviso('O modo de batalha acabou.', '#8a9aba'); } }
     if (BM) { const M = BM; despAura.position.set(p.x, p.y + 1.0 * (M.escala || 1), p.z); despAura.scale.setScalar(3.4 * (M.escala || 1)); despAura.material.opacity = 0.35 + Math.sin(gT * 8) * 0.1; if (Math.random() < dt * 3) fx('luz', [p.x, 0, p.z], 0.6);
       if (M.flutua) heroi.userData.P.hips.position.y += M.flutua / ESCALA0 + Math.sin(gT * 3) * 0.04;
