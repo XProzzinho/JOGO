@@ -927,10 +927,10 @@ ${_}`}class A extends Error{constructor({message:e,code:t,cause:r,name:s}){var n
   }
 
   // ===================== ROTA DO SÁBIO — VALDREN (x=1000) =====================
-  const VX = 1000; const val = grp(world, VX, 0, 0); const COLV = []; let zona = 'vila';
+  const VX = 360; /* Valdren agora fica no mesmo mundo, bem a leste da vila */ const val = grp(world, VX, 0, 0); const COLV = []; let zona = 'vila';
   const pedraTex = canvasTex(256, 256, (x, w, h) => { x.fillStyle = '#8a7e70'; x.fillRect(0, 0, w, h); const R = rng(11); for (let r = 0; r < 8; r++) for (let c = 0; c < 8; c++) { x.fillStyle = ['#968a7a', '#7e7264', '#a09484', '#887c6e'][(r * 3 + c * 5) % 4]; x.beginPath(); x.roundRect(c * 32 + 2 + (r % 2) * 16 - 8, r * 32 + 2, 28, 28, 6); x.fill(); } });
-  pedraTex.wrapS = pedraTex.wrapT = T3.RepeatWrapping; pedraTex.repeat.set(30, 30);
-  { const g = new T3.Mesh(new T3.PlaneGeometry(160, 160), new T3.MeshToonMaterial({ color: '#ffffff', map: pedraTex, gradientMap: GRAD })); g.rotation.x = -Math.PI / 2; g.receiveShadow = true; val.add(g); }
+  pedraTex.wrapS = pedraTex.wrapT = T3.RepeatWrapping; pedraTex.repeat.set(21, 21);
+  { const g = new T3.Mesh(new T3.CircleGeometry(56, 64), new T3.MeshToonMaterial({ color: '#ffffff', map: pedraTex, gradientMap: GRAD })); g.rotation.x = -Math.PI / 2; g.position.y = 0.004; g.receiveShadow = true; val.add(g); }
   const vb = (x, z, ry, hw, hd) => COLV.push({ t: 'b', x: VX + x, z, ry, hw, hd }), vc = (x, z, r) => COLV.push({ t: 'c', x: VX + x, z, r });
   // muralha
   for (let i = 0; i < 40; i++) { const a = i / 40 * Math.PI * 2; const x = Math.sin(a) * 46, z = Math.cos(a) * 46; if (Math.abs(x) < 4 && z > 0) continue; const m = tb(val, x, 3, z, 7.6, 6, 1.6, '#9a9088'); m.rotation.y = a; for (let k = -1; k <= 1; k++) { const mm = tb(val, x + Math.cos(a) * k * 2.4, 6.4, z - Math.sin(a) * k * 2.4, 1.2, 0.8, 1.7, '#8a8078'); mm.rotation.y = a; } vb(x, z, a, 3.8, 0.9); if (i % 5 === 0) { part(val, CYL, '#8a8078', x, 4.5, z, 2.2, 9, 2.2); part(val, CONE, '#3a4a7a', x, 10.2, z, 2.8, 2.6, 2.8); } }
@@ -956,6 +956,41 @@ ${_}`}class A extends Error{constructor({message:e,code:t,cause:r,name:s}){var n
   casa2(-30, 30, 0, 6, 5, CORES[2], TETOS[0]); casa2(-20, 32, 0, 6, 5, CORES[1], TETOS[1]);
   const quarto = casa2(14, -14, -Math.PI / 2, 5, 5, '#d8d0e0', '#2a3a6a'); // o quarto do Leonardo, do lado da Academia
   // esgoto a céu aberto (sem esgoto!)
+  // ---------- ESTRADA DE PARALELEPÍPEDO: Brumafria (portão leste) → Valdren (portão sul) ----------
+  const ESTRADA = [];
+  { const cobTex = canvasTex(256, 256, (x, w, h) => { x.fillStyle = '#5a5248'; x.fillRect(0, 0, w, h); const Rr = rng(909); const L = 8;
+      for (let r = 0; r < L; r++) for (let c = -1; c < L; c++) { const ox = (r % 2) * (w / L / 2), cx = c * w / L + ox, cy = r * h / L; x.fillStyle = ['#a29a8c', '#968e80', '#b0a898', '#8c8476', '#a8a090'][Math.floor(Rr() * 5)];
+        x.beginPath(); x.roundRect ? x.roundRect(cx + 2, cy + 2, w / L - 4, h / L - 4, 6) : x.rect(cx + 2, cy + 2, w / L - 4, h / L - 4); x.fill(); x.fillStyle = 'rgba(255,255,255,.12)'; x.fillRect(cx + 5, cy + 4, w / L - 12, 3); } });
+    cobTex.wrapS = cobTex.wrapT = T3.RepeatWrapping;
+    // grama entre as duas cidades
+    const gt = snowTex.clone(); gt.needsUpdate = true; gt.wrapS = gt.wrapT = T3.RepeatWrapping; gt.repeat.set(45, 42);
+    const campo = new T3.Mesh(new T3.PlaneGeometry(VX + 110 - 150, 330), new T3.MeshToonMaterial({ color: '#ffffff', map: gt, gradientMap: GRAD })); campo.rotation.x = -Math.PI / 2; campo.position.set((150 + VX + 110) / 2, -0.02, 25); campo.receiveShadow = true; world.add(campo);
+    const P = [[MW.r + 1, MW.z], [MW.r + 30, MW.z - 2], [MW.r + 75, MW.z + 12], [MW.r + 130, MW.z + 40], [VX - 90, 74], [VX - 40, 82], [VX - 6, 70], [VX, 58], [VX, 46]].map(([x, z]) => new T3.Vector3(x, 0, z));
+    const curva = new T3.CatmullRomCurve3(P, false, 'catmullrom', 0.5); const N = 360, LARG = 6.4, pts = curva.getSpacedPoints(N); let dist = 0;
+    const pos = [], nor = [], uv = [], bpos = [], bnor = [];
+    for (let i = 0; i <= N; i++) { const a = pts[i], b = pts[Math.min(N, i + 1)], c0 = pts[Math.max(0, i - 1)]; const tx = b.x - c0.x, tz = b.z - c0.z, tl = Math.hypot(tx, tz) || 1; const lx = -tz / tl, lz = tx / tl; if (i) dist += a.distanceTo(pts[i - 1]);
+      ESTRADA.push([a.x, a.z]);
+      pos.push(a.x + lx * LARG / 2, 0.03, a.z + lz * LARG / 2, a.x - lx * LARG / 2, 0.03, a.z - lz * LARG / 2); nor.push(0, 1, 0, 0, 1, 0); uv.push(0, dist / LARG, LARG / 3.2, dist / LARG);
+      [1, -1].forEach(sd => { const ex = a.x + lx * sd * (LARG / 2 + 0.25), ez = a.z + lz * sd * (LARG / 2 + 0.25); bpos.push(ex + lx * 0.25, 0.12, ez + lz * 0.25, ex - lx * 0.25, 0.12, ez - lz * 0.25); bnor.push(0, 1, 0, 0, 1, 0); }); }
+    const idx = [], bidx = []; for (let i = 0; i < N; i++) { const k = i * 2; idx.push(k, k + 1, k + 2, k + 1, k + 3, k + 2); const q = i * 4; [0, 2].forEach(o => bidx.push(q + o, q + o + 1, q + o + 4, q + o + 1, q + o + 5, q + o + 4)); }
+    const G = new T3.BufferGeometry(); G.setAttribute('position', new T3.Float32BufferAttribute(pos, 3)); G.setAttribute('normal', new T3.Float32BufferAttribute(nor, 3)); G.setAttribute('uv', new T3.Float32BufferAttribute(uv, 2)); G.setIndex(idx);
+    const rua = new T3.Mesh(G, new T3.MeshToonMaterial({ color: '#ffffff', map: cobTex, gradientMap: GRAD, side: T3.DoubleSide })); rua.receiveShadow = true; world.add(rua);
+    const GB = new T3.BufferGeometry(); GB.setAttribute('position', new T3.Float32BufferAttribute(bpos, 3)); GB.setAttribute('normal', new T3.Float32BufferAttribute(bnor, 3)); GB.setIndex(bidx);
+    const meio = new T3.Mesh(GB, new T3.MeshToonMaterial({ color: '#6a6458', gradientMap: GRAD, side: T3.DoubleSide })); world.add(meio);
+    // postes, marcos e árvores na beira da estrada (tudo junto numa malha só)
+    const BEIRA = grp(world); const Rr = rng(3131);
+    for (let i = 8; i < N - 8; i += 9) { const a = pts[i], b = pts[i + 1]; const tl = Math.hypot(b.x - a.x, b.z - a.z) || 1, lx = -(b.z - a.z) / tl, lz = (b.x - a.x) / tl; const sd = (i / 9) % 2 ? 1 : -1; const x = a.x + lx * sd * 4.4, z = a.z + lz * sd * 4.4;
+      const g = grp(BEIRA, x, 0, z); part(g, CYL, '#3a3a44', 0, 1.6, 0, 0.09, 3.2, 0.09); tb(g, 0, 3.3, 0, 0.36, 0.42, 0.36, '#ffe6a0', true); part(g, ROOF, '#3a3a44', 0, 3.65, 0, 0.32, 0.3, 0.32).rotation.y = Math.PI / 4; WIN.push(glowSpr(world, x, 3.3, z, 2.4, '#ffc870', 0.7)); }
+    for (let i = 0; i < 170; i++) { const k = Math.floor(Rr() * N), a = pts[k]; const ang = Rr() * 6.28, d = 8 + Rr() * 40; const x = a.x + Math.cos(ang) * d, z = a.z + Math.sin(ang) * d;
+      if (Math.hypot(x - MW.x, z - MW.z) < MW.r + 6 || Math.hypot(x - VX, z) < 62 || ESTRADA.some(([ex, ez]) => Math.hypot(ex - x, ez - z) < 6)) continue;
+      const g = grp(BEIRA, x, 0, z); const sc = 0.8 + Rr() * 0.9; g.scale.setScalar(sc); part(g, CYL, '#7a5232', 0, 1.0, 0, 0.2, 2.0, 0.2); part(g, SPH, ['#4fae4f', '#5bbf5b', '#3f9a3f', '#66c25a'][i % 4], 0, 2.7, 0, 1.4, 1.3, 1.4); part(g, SPH, ['#5bbf5b', '#4fae4f'][i % 2], 0.6, 2.2, 0.3, 0.9, 0.8, 0.9); COL.push({ t: 'c', x, z, r: 0.35 * sc }); }
+    // placas
+    [[0, 'VALDREN →', 1], [N, '← BRUMAFRIA', -1]].forEach(([i, txt, sd]) => { const a = pts[Math.max(2, Math.min(N - 4, i))]; const g = grp(world, a.x + (i ? -4.5 : 0), 0, a.z + (i ? 0 : 4.5)); tb(g, 0, 1.1, 0, 0.15, 2.2, 0.15, '#5a3a24');
+      const tx = canvasTex(320, 96, (c, w, h) => { c.fillStyle = '#6a4424'; c.fillRect(0, 0, w, h); c.strokeStyle = '#3a2410'; c.lineWidth = 8; c.strokeRect(4, 4, w - 8, h - 8); c.fillStyle = '#ffe8b0'; c.font = 'bold 46px sans-serif'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText(txt, w / 2, h / 2 + 2); });
+      const pl = new T3.Mesh(new T3.PlaneGeometry(2.6, 0.78), new T3.MeshBasicMaterial({ map: tx, toneMapped: false, side: T3.DoubleSide })); pl.position.set(0, 2.0, 0); pl.rotation.y = i ? 0 : -Math.PI / 2; g.add(pl); });
+    for (let i = 0; i < 60; i++) { const an = i / 60 * Math.PI * 2, x = Math.sin(an) * 46, z = Math.cos(an) * 46; if (Math.abs(x) < 5 && z > 0) continue; COL.push({ t: 'c', x: VX + x, z, r: 2.6 }); } // muralha de Valdren vista de fora
+    funde(BEIRA); }
+  function naEstrada(x, z, m) { for (let i = 0; i < ESTRADA.length; i += 3) if (Math.hypot(ESTRADA[i][0] - x, ESTRADA[i][1] - z) < m) return true; return false; }
   const POCAS = []; { const R = rng(41); for (let i = 0; i < 26; i++) { const x = -34 + R() * 64, z = -10 + R() * 40; const m = new T3.Mesh(new T3.CircleGeometry(0.6 + R() * 1.1, 18), new T3.MeshToonMaterial({ color: ['#5a5a2a', '#4a4a24', '#6a5a2a'][i % 3], gradientMap: GRAD })); m.rotation.x = -Math.PI / 2; m.position.set(x, 0.015, z); m.scale.y = 0.6 + R() * 0.6; val.add(m); POCAS.push([VX + x, z]); }
     for (let i = 0; i < 14; i++) tb(val, -32 + i * 4.6, 0.02, 9.6, 3.6, 0.04, 0.5, '#4a4a24'); }
   const moscas = particles(world, 160, '#14141a', 0.03), fedor = particles(world, 60, '#9aaa5a', 0.25);
@@ -1028,7 +1063,7 @@ ${_}`}class A extends Error{constructor({message:e,code:t,cause:r,name:s}){var n
   tapBtn($('fim-volta'), () => { $('fim').hidden = true; zona = 'vila'; dentro = false; hora = 8; Q.passo = 0; Q.tigela = 0; Q.serOn = false; heroi.position.set(-5.2, 0, 4.4); facing = Math.PI; camYaw = 0; cam.position.set(-5, 3, 10); mostrarLugar('Vila de Brumafria'); });
   tapBtn($('fim-fica'), () => { $('fim').hidden = true; objetivo('Explore Valdren à vontade. Fale com o Professor em Brumafria pra jogar de novo.'); });
   function valdrenFrame(dt, p) {
-    const on = zona === 'valdren'; val.visible = on; vil.visible = !on;
+    const on = zona === 'valdren'; val.visible = on || heroi.position.x > 150; vil.visible = !on && heroi.position.x < 290;
     const lista = [...NPCV, ...(Q.serOn ? [{ c: seraphine, nome: 'Princesa Seraphine', x: VX + 11.4, z: -14.6, ry: -Math.PI / 2, falas: [SER_F('Você vai me ajudar ou não?', 'ser01')], ser: true }] : [])];
     [corvel, seraphine, capitao, ...alunos, ...doentes, ...multidao].forEach(c => c.visible = false);
     if (!on) { seta.visible = false; moscas.visible = fedor.visible = vapor.visible = false; return null; }
@@ -2875,7 +2910,7 @@ ${_}`}class A extends Error{constructor({message:e,code:t,cause:r,name:s}){var n
     vel = lerp(vel, mag > 0.08 ? (correndo ? CORRER : ANDAR) * (ativo.vento ? 1.5 + nivelHab('vento') * 0.1 : 1) * ((CLASSES && CLASSES[AR.classe]) ? CLASSES[AR.classe].vel : 1) * (BM && BM.vel ? BM.vel : 1) * (voando ? 1.9 * asaB('voo') : 1) * asaB('vel') * (1 + gmPct('velocidade')) * mag : 0, clamp(dt * 8));
     if (ml > 0.001 && mag > 0.08) { mx /= ml; mz /= ml; const want = Math.atan2(mx, mz); let d = want - facing; while (d > Math.PI) d -= Math.PI * 2; while (d < -Math.PI) d += Math.PI * 2; facing += d * clamp(dt * 12); }
     const p = heroi.position; const dash = dashT > 0 ? dashVel : 0; dashT -= dt; p.x += Math.sin(facing) * vel * dt + Math.sin(dashAng) * dash * dt; p.z += Math.cos(facing) * vel * dt + Math.cos(dashAng) * dash * dt;
-    if (zona === 'valdren') { colide(p, COLV); const rx = p.x - VX, r = Math.hypot(rx, p.z); if (r > 44) { p.x = VX + rx * 44 / r; p.z *= 44 / r; } } else if (zona === 'masmorra') { mmLimita(p); } else if (dentro) { p.x = clamp(p.x, IX - 4.6, IX + 4.6); p.z = clamp(p.z, -4.6, 4.6); colide(p, COLC); } else { if (p.y < 3.6) colide(p, COL); const r = Math.hypot(p.x, p.z + 6); if (r > 95) { p.x *= 95 / r; p.z = (p.z + 6) * 95 / r - 6; } }
+    if (zona === 'valdren') { colide(p, COLV); const rx = p.x - VX, r = Math.hypot(rx, p.z); if (r > 44 && !(Math.abs(rx) < 3.4 && p.z > 0)) { p.x = VX + rx * 44 / r; p.z *= 44 / r; } if (r > 47) { zona = 'vila'; mostrarLugar('Estrada de Valdren'); } } else if (zona === 'masmorra') { mmLimita(p); } else if (dentro) { p.x = clamp(p.x, IX - 4.6, IX + 4.6); p.z = clamp(p.z, -4.6, 4.6); colide(p, COLC); } else { if (p.y < 3.6) colide(p, COL); const r = Math.hypot(p.x, p.z + 6); if (r > 95 && !naEstrada(p.x, p.z, 50) && Math.hypot(p.x - VX, p.z) > 60) { p.x *= 95 / r; p.z = (p.z + 6) * 95 / r - 6; } if (Math.hypot(p.x - VX, p.z) < 44) { zona = 'valdren'; mostrarLugar('Valdren · a capital'); } }
     if (input.jump && noChao && !conversa) { vy = saltoPronto ? PULO * 1.75 : PULO; som('pulo', 0.55); if (saltoPronto) { burstT = 0; burstP = [p.x, p.y, p.z]; } saltoPronto = false; noChao = false; } input.jump = false;
     if (voando && !podeVoar()) voa(false);
     if (voando) { noChao = false; vy = 0; voSobe -= dt; const up = voSobe > 0 ? 1.4 : (input.sobe || keys.Space ? 1 : 0) - (input.desce || keys.KeyQ ? 1 : 0); p.y = clamp(p.y + up * 6.5 * dt, 0, zona === 'masmorra' ? 5 : 45); if (p.y <= 0 && up < 0) { voa(false); noChao = true; } }
