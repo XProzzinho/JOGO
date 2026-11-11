@@ -149,7 +149,7 @@
   let voando = false, voSobe = 0, voPitch = 0;
   function podeVoar() { return typeof ASAS !== 'undefined' && ASAS.visible && !dentro && !conversa && !cenaQ && !desmaiado; }
   function voa(on) { if (on && !podeVoar()) { aviso('🦇 Equipe as Asas de Morcego (🎒 › Costas) pra voar.', '#c8a8ff'); return; } voando = on; input.sobe = input.desce = false;
-    if (on) { voSobe = 0.7; noChao = false; vy = 0; som('vento', 0.8, 1); aviso('🦇 Voando! ⬆ SUBIR e ⬇ DESCER pra altura, o controle pra ir pra frente.', '#c8a8ff'); } else { som('aterrissa', 0.5); }
+    if (on) { feito('asas'); voSobe = 0.7; noChao = false; vy = 0; som('vento', 0.8, 1); aviso('🦇 Voando! ⬆ SUBIR e ⬇ DESCER pra altura, o controle pra ir pra frente.', '#c8a8ff'); } else { som('aterrissa', 0.5); }
     $('voar').textContent = voando ? '🛬 POUSAR' : '🦇 VOAR'; $('pular').textContent = voando ? '⬆ SUBIR' : 'PULAR'; $('correr').textContent = voando ? '⬇ DESCER' : 'CORRER'; $('correr').classList.toggle('on', !voando && input.run); }
   const segura = (el, k) => { const on = e => { if (voando) { input[k] = true; e.preventDefault(); } }, off = () => { input[k] = false; }; el.addEventListener('touchstart', on, { passive: false }); el.addEventListener('mousedown', on); ['touchend', 'touchcancel', 'mouseup', 'mouseleave'].forEach(ev => el.addEventListener(ev, off)); };
   segura($('pular'), 'sobe'); segura($('correr'), 'desce');
@@ -788,7 +788,7 @@
   function mmReinicia() { MM.feras.forEach(e => { reseta(e); if (e.tipo === 'dragao') e.vida = e.max = Math.round(VIDA_MAX * 2); }); MM.aberto = MM.portoes.map(() => false); MM.portoes.forEach(P => { P.g.position.y = 0; P.glow.visible = true; }); MM.saidaFim.g.visible = false; }
   function mmMorte(e) { if (e.fase == null) return; const k = e.fase; if (MM.feras.some(x => x.fase === k && !x.morto)) { atualizaMM(); return; }
     if (k < MM_N - 1) { MM.aberto[k] = true; MM.portoes[k].glow.visible = false; som('portao', 1, 1); som('fase', 0.9, 1); aviso('✅ Fase ' + (k + 1) + ' concluída! O portão abriu: ' + MM_NOMES[k + 1] + '.', '#7ad87a'); }
-    else { som('fase', 1, 1); MM.saidaFim.g.visible = true; if (!AR.armas.includes('dragao')) solta_loot(e.g.position.x, e.g.position.z + 1.5, 'espdragao', 1); aviso('🐉 O Dragão das Profundezas caiu! Pegue o portal dourado pra sair.', '#ffd23c'); if (AR.mm && AR.mm.estado === 1) { AR.mm.estado = 2; salvaAR(); } }
+    else { som('fase', 1, 1); setTimeout(() => feito('profundezas'), 2500); MM.saidaFim.g.visible = true; if (!AR.armas.includes('dragao')) solta_loot(e.g.position.x, e.g.position.z + 1.5, 'espdragao', 1); aviso('🐉 O Dragão das Profundezas caiu! Pegue o portal dourado pra sair.', '#ffd23c'); if (AR.mm && AR.mm.estado === 1) { AR.mm.estado = 2; salvaAR(); } }
     atualizaMM(); }
   function entraMasmorra() { cena([{ t: 'Você desce para as profundezas...', v: null }], () => { mmReinicia(); zona = 'masmorra'; dentro = false; MM.grupo.visible = true; heroi.position.set(MX, 0, MM_R - 5.2); facing = Math.PI; camYaw = 0; cam.position.set(MX, 4, MM_R + 4); som('portal', 1, 1); mostrarLugar('Masmorra das Profundezas'); aviso('Fase 1: ' + MM_NOMES[0], '#c8a8ff'); atualizaMM(); }); }
   function saiMasmorra() { cena([{ t: 'De volta à superfície...', v: null }], () => { zona = 'vila'; dentro = false; MM.grupo.visible = false; heroi.position.set(MM_ENT.x + 4, 0, MM_ENT.z); facing = Math.PI / 2; camYaw = -Math.PI / 2; cam.position.set(MM_ENT.x - 2, 4, MM_ENT.z); tocha.intensity = 0; som('portal', 1, 1); mostrarLugar('Vila de Brumafria'); atualizaMM(); }); }
@@ -875,7 +875,7 @@
   // ---- dano no Leonardo ----
   function danoHeroi(n, de) { if (desmaiado) return; const cl = CLA(); if (cl && Math.random() < (cl.esq || 0) + (BM && BM.esq ? BM.esq : 0)) { numero(heroi.position, 'Desviou!', '#9ae6ff', 2.1); return; } n *= 1 - defesa() / 100; if (muralhaT > 0) n *= 0.2; if (BUFF.espelho > 0) { n *= 0.5; if (de && !de.morto) dano(de, n, 'luz'); } if (BM && BM.espelho && de && !de.morto) dano(de, n * BM.espelho, 'luz'); enche(4); if (ativo.escudo) { n *= Math.max(0.1, 0.3 - (nivelHab('escudo') - 1) * 0.05); fx('luz', [heroi.position.x, heroi.position.y, heroi.position.z], 0.3); } n = Math.round(n); vida -= n; som('dano', 0.7, null, 0.3); semDanoT = 0; flash('rgba(255,40,40,.35)'); tremor = Math.max(tremor, 0.18);
     numero(heroi.position, '-' + n, '#ff5a5a', 2.1); if (vida <= 0) { vida = 0; desmaiar(); } }
-  function desmaiar() { som('desmaio', 1, 1); desmaiado = true; if (typeof bmDesliga === 'function') bmDesliga(); FERAS.forEach(e => { if (!e.morto) { e.estado = 'volta'; } }); ativo.vento = ativo.escudo = ativo.planar = false; montaBarra();
+  function desmaiar() { feito('nocaute'); som('desmaio', 1, 1); desmaiado = true; if (typeof bmDesliga === 'function') bmDesliga(); FERAS.forEach(e => { if (!e.morto) { e.estado = 'volta'; } }); ativo.vento = ativo.escudo = ativo.planar = false; montaBarra();
     setTimeout(() => cena([{ t: 'Tudo ficou escuro...', v: 'nar03' }, { t: 'Leonardo acordou em casa, na cama. A mãe cuidou dele a noite toda.', v: 'nar04' }, { t: '"Meu filho, cuidado lá fora! Come alguma coisa antes de sair de novo."', n: 'Mãe', v: 'mae03' }], () => {
       zona = 'vila'; MM.grupo.visible = false; dentro = true; heroi.position.set(IX + 2, 0, -1.8); facing = Math.PI; camYaw = 0; vida = VIDA_MAX; mana = MANA_MAX; desmaiado = false; mostrarLugar('Casa da família'); }), 400); }
 
@@ -1262,10 +1262,15 @@
     C.innerHTML = '';
     const sec = (t) => { const h = document.createElement('div'); h.className = 'sec'; h.textContent = t; C.appendChild(h); const g = document.createElement('div'); g.className = 'grade'; C.appendChild(g); return g; };
     const cel = (g, ic, nome, sub, on, fn, tag) => { const b = document.createElement('button'); b.className = 'cel' + (on ? ' on' : '') + (fn ? '' : ' fixa'); b.innerHTML = `<span class="ic">${ic}</span><b>${nome}</b><small>${sub}</small>${tag ? `<em>${tag}</em>` : ''}`; if (fn) tapBtn(b, fn); g.appendChild(b); };
+    if (abaPerfil === 'fant') { let g = sec('🎭 Fantasias · só visual (não mudam a defesa)');
+      Object.keys(COSM).forEach(k => { const F = COSM[k], tem = AR.cosms.includes(k), on = AR.cosm === k; cel(g, tem ? F.icone : '🔒', F.nome, tem ? (on ? 'Toque pra tirar' : F.desc) : 'Derrote o Morcego Gigante', on, tem ? () => { vesteCosm(on ? null : k); desenhaPerfil(); } : null, on ? 'VESTIDA' : ''); });
+      if (AR.cosms.includes('morcego')) C.insertAdjacentHTML('beforeend', '<p class="dica">🦇 Com as Asas de Morcego vestidas aparece o botão VOAR.</p>'); return; }
+    if (abaPerfil === 'tit') { const T0 = tituloAtual(); C.insertAdjacentHTML('beforeend', `<div class="tit-atual">Título equipado<b style="color:${TIT_COR[T0.r]}">${T0.nome}</b><small>${AR.titulos.length} de ${Object.keys(TITULOS).filter(k => k !== 'admin' || souAdmin()).length} títulos</small></div>`);
+      const g = sec('🏷️ Toque num título pra equipar'); Object.keys(TITULOS).forEach(k => { if (k === 'admin' && !souAdmin()) return; const T = TITULOS[k], tem = AR.titulos.includes(k), on = AR.titulo === k;
+        const b = document.createElement('button'); b.className = 'cel tit' + (on ? ' on' : '') + (tem ? '' : ' fixa'); b.style.setProperty('--tc', { comum: '#5a5470', raro: '#2a6ac8', epico: '#8a3ad8', lendario: '#b87800', admin: '#d82a2a' }[T.r]); b.innerHTML = `<span class="ic">${tem ? '🏷️' : '🔒'}</span><b>${tem ? T.nome : '???'}</b><small>${T.como}</small><em>${on ? 'EQUIPADO' : TIT_NOME[T.r]}</em>`;
+        if (tem) tapBtn(b, () => { AR.titulo = k; salvaAR(); aviso('🏷️ Título equipado: ' + T.nome, TIT_COR[T.r]); desenhaPerfil(); }); g.appendChild(b); }); return; }
     let g = sec('⚔️ Armas · toque pra equipar ou desequipar');
     Object.keys(ARMAS).forEach(k => { const W = ARMAS[k], tem = AR.armas.includes(k); if (W.oculta || (W.classe && !tem)) return; const on = AR.arma === k; cel(g, tem ? W.icone : '🔒', W.nome, tem ? (on ? 'Toque pra desequipar' : 'Dano ' + W.dano) : 'Na Forja', on, tem ? () => { equipaArma(on ? null : k); desenhaPerfil(); } : null, on ? 'EQUIPADA' : ''); });
-    g = sec('🎭 Fantasias · só visual');
-    Object.keys(COSM).forEach(k => { const F = COSM[k], tem = AR.cosms.includes(k), on = AR.cosm === k; cel(g, tem ? F.icone : '🔒', F.nome, tem ? (on ? 'Toque pra tirar' : F.desc) : '🔒', on, tem ? () => { vesteCosm(on ? null : k); desenhaPerfil(); } : null, on ? 'VESTIDA' : ''); });
     g = sec('👕 Armaduras');
     Object.keys(FANT).forEach(k => { const F = FANT[k], tem = AR.fantasias.includes(k); cel(g, F.icone, F.nome, tem ? (F.def ? 'Defesa +' + F.def + '%' : 'Sem defesa') : '🔒', AR.fantasia === k, tem && AR.fantasia !== k ? () => { vesteFantasia(k); aviso('Vestiu: ' + F.icone + ' ' + F.nome, '#7ac8ff'); desenhaPerfil(); } : null, AR.fantasia === k ? 'VESTIDO' : ''); });
     g = sec('🧊 Armadura Glacial · peças (+5% cada, conjunto completo +10%)');
@@ -1274,6 +1279,50 @@
     g = sec('🎒 Itens');
     cel(g, '💰', 'Moedas', AR.inv.moedas + 'x', false, null); cel(g, '🐺', 'Pele de lobo', AR.inv.pele + 'x · vende na Forja', false, null);
     cel(g, '🍖', 'Carne', AR.inv.carne + 'x · toque pra comer', false, AR.inv.carne ? () => { comer(); desenhaPerfil(); } : null); if (AR.inv.coracao) cel(g, '💎', 'Coração de Gelo', AR.inv.coracao + 'x · Espada Glacial', false, null); }
+  // ---------- TÍTULOS ----------
+  const TITULOS = {
+    iniciante: { nome: 'Iniciante', r: 'comum', como: 'Começar a aventura' },
+    admin: { nome: 'Administrador', r: 'admin', como: 'Exclusivo do criador do jogo' },
+    aventureiro: { nome: 'Aventureiro', r: 'comum', como: 'Chegar ao nível 10' },
+    veterano: { nome: 'Veterano', r: 'raro', como: 'Chegar ao nível 30' },
+    lenda: { nome: 'Lenda Viva', r: 'lendario', como: 'Chegar ao nível 60' },
+    lobos: { nome: 'Caçador de Lobos', r: 'comum', como: 'Derrotar 20 lobos' },
+    javalis: { nome: 'Matador de Javalis', r: 'comum', como: 'Derrotar 10 javalis' },
+    goblins: { nome: 'Exterminador de Goblins', r: 'raro', como: 'Derrotar 50 goblins' },
+    heroi: { nome: 'Herói de Brumafria', r: 'raro', como: 'Completar a missão do Guarda Rodrik' },
+    gelo: { nome: 'Quebra-Gelo', r: 'epico', como: 'Derrotar o Golem de Gelo' },
+    noite: { nome: 'Pesadelo da Noite', r: 'epico', como: 'Derrotar o Morcego Gigante' },
+    aranhas: { nome: 'Domador de Aranhas', r: 'comum', como: 'Derrotar 20 aranhas na masmorra' },
+    ossos: { nome: 'Quebra-Ossos', r: 'raro', como: 'Derrotar 20 esqueletos' },
+    fantasmas: { nome: 'Caça-Fantasmas', r: 'raro', como: 'Derrotar 10 espectros' },
+    profundezas: { nome: 'Senhor das Profundezas', r: 'lendario', como: 'Vencer a última fase da Masmorra das Profundezas' },
+    fugitivo: { nome: 'Fugitivo', r: 'comum', como: 'Fugir de um chefe que estava te caçando' },
+    nocaute: { nome: 'Levanta e Anda', r: 'comum', como: 'Desmaiar pela primeira vez' },
+    asas: { nome: 'Asas da Noite', r: 'raro', como: 'Voar com as asas pela primeira vez' },
+    rico: { nome: 'Milionário', r: 'epico', como: 'Juntar 10.000 moedas' },
+    comerciante: { nome: 'Comerciante', r: 'comum', como: 'Fazer uma troca com outro jogador' },
+    furia: { nome: 'Fúria Desperta', r: 'epico', como: 'Usar o Modo de Batalha III' },
+    colecionador: { nome: 'Colecionador', r: 'epico', como: 'Ter 8 armaduras' },
+    dragao: { nome: 'Portador da Chama', r: 'lendario', como: 'Pegar a Espada do Dragão de Fogo' } };
+  const TIT_COR = { comum: '#e8e8f0', raro: '#6ab8ff', epico: '#c88aff', lendario: '#ffc83a', admin: '#ff4a4a' };
+  const TIT_NOME = { comum: 'Comum', raro: 'Raro', epico: 'Épico', lendario: 'Lendário', admin: 'ADMIN' };
+  AR.titulos = AR.titulos || ['iniciante']; if (!AR.titulos.includes('iniciante')) AR.titulos.unshift('iniciante'); AR.titulo = AR.titulo || 'iniciante'; AR.feitos = AR.feitos || {};
+  function souAdmin() { const n = ((AR.visual && AR.visual.nome) || '').toLowerCase(), em = ((window.CONTA && CONTA.usuario && CONTA.usuario.email) || '').toLowerCase(); return n === 'lorddark-adm' || em === 'geansdp2@gmail.com'; }
+  function ganhaTitulo(k, quieto) { if (!TITULOS[k] || AR.titulos.includes(k)) return; AR.titulos.push(k); salvaAR(); if (quieto) return; const T = TITULOS[k];
+    som('ponto', 1, 1); const el = $('lvup'); el.innerHTML = `<small>🏷️ NOVO TÍTULO</small><span style="color:${TIT_COR[T.r]}">${T.nome}</span><em>Equipe no seu retrato › 🏷️ Títulos</em>`; el.style.color = ''; el.classList.remove('on'); void el.offsetWidth; el.classList.add('on');
+    aviso('🏷️ Você ganhou o título "' + T.nome + '"! Equipe no menu do retrato › Títulos.', TIT_COR[T.r]); }
+  function feito(k) { if (AR.feitos[k]) return; AR.feitos[k] = true; salvaAR(); checaTitulos(); }
+  let titPrim = true;
+  function checaTitulos() { const ab = AR.abates || {}, f = AR.feitos; const n0 = AR.titulos.length;
+    const R = { admin: souAdmin(), aventureiro: AR.nv >= 10, veterano: AR.nv >= 30, lenda: AR.nv >= 60, lobos: (ab.lobo || 0) >= 20, javalis: (ab.javali || 0) >= 10, goblins: (ab.goblin || 0) >= 50, heroi: AR.mg && AR.mg.vezes > 0,
+      gelo: (ab.golem || 0) >= 1, noite: (ab.morcego || 0) >= 1, aranhas: (ab.aranha || 0) >= 20, ossos: (ab.esqueleto || 0) >= 20, fantasmas: (ab.espectro || 0) >= 10, profundezas: (ab.dragao || 0) >= 1 || (AR.mm && AR.mm.vezes > 0) || f.profundezas,
+      fugitivo: f.fugitivo, nocaute: f.nocaute, asas: f.asas, rico: (AR.inv.moedas || 0) >= 10000, comerciante: f.troca, furia: f.furia, colecionador: AR.fantasias.filter(x => x !== 'comum').length + new Set((AR.sobs || []).map(x => x.split(':')[0])).size >= 8, dragao: AR.armas.includes('dragao') };
+    Object.keys(R).forEach(k => { if (R[k]) ganhaTitulo(k, k === 'admin' || titPrim); }); if (titPrim && AR.titulos.length > n0 + 1) aviso('🏷️ Você já tem ' + AR.titulos.length + ' títulos! Veja no retrato › Títulos.', '#ffd23c'); titPrim = false; if (souAdmin() && AR.titulo === 'iniciante' && !AR.feitos.adminEq) { AR.feitos.adminEq = true; AR.titulo = 'admin'; salvaAR(); } }
+  const tituloAtual = () => TITULOS[AR.titulo] && AR.titulos.includes(AR.titulo) ? TITULOS[AR.titulo] : TITULOS.iniciante;
+  setInterval(checaTitulos, 2000);
+  let fugaT = 0;
+  function tituloFrame(dt) { fugaT -= dt; const p = heroi.position; FERAS.forEach(e => { if (!e.T.chefe || e.morto) { e._caca = false; return; } const caca = e.estado === 'caca' || e.estado === 'ataque';
+      if (e._caca && !caca && vida > 0 && Math.hypot(p.x - e.g.position.x, p.z - e.g.position.z) > 16) feito('fugitivo'); e._caca = caca; }); }
   document.querySelectorAll('#perfil .aba').forEach(b => tapBtn(b, () => { abaPerfil = b.dataset.a; desenhaPerfil(); }));
   tapBtn($('perfil-btn'), abrirPerfil); tapBtn($('pf-fecha'), () => { $('perfil').hidden = true; });
   let previaT = 0; function perfilFrame(dt) { if ($('perfil').hidden || !$('previa')) return; previaT += dt; if (previaT > 0.06) { fazPrevia(previaT); previaT = 0; } }
@@ -1505,7 +1554,7 @@
     const o = { ['ok' + eu]: d.v }; if (d['ok' + ele] === d.v) o.estado = 'fechada'; trUpd(o); }
   function trAplica(d) { const eu = trSou(d), ele = trOutro(eu); if (d['aplicado' + eu]) return; let feitas = []; try { feitas = JSON.parse(localStorage.getItem('aetherion-trocas') || '[]'); } catch (e) {} if (feitas.includes(TR.id)) return;
     (d['itens' + eu] || []).forEach(trTira); (d['itens' + ele] || []).forEach(trPoe); feitas.push(TR.id); try { localStorage.setItem('aetherion-trocas', JSON.stringify(feitas.slice(-50))); } catch (e) {}
-    salvaAR(); atualizaInv(); setTimeout(fazRetrato, 80); som('missao_ok', 1, 1); aviso('🤝 Troca concluída com ' + d['nome' + ele] + '!', '#7ad87a'); trUpd({ ['aplicado' + eu]: true }); }
+    salvaAR(); atualizaInv(); setTimeout(fazRetrato, 80); som('missao_ok', 1, 1); aviso('🤝 Troca concluída com ' + d['nome' + ele] + '!', '#7ad87a'); feito('troca'); trUpd({ ['aplicado' + eu]: true }); }
   function trEntra(id) { if (TR.un) TR.un(); TR.id = id; TR.doc = null; TR.un = trDb().collection('trocas').doc(id).onSnapshot(s => { if (!s.exists) return; TR.doc = s.data(); if (TR.doc.estado === 'fechada') trAplica(TR.doc); if (!$('tr-esc') || $('tr-esc').hidden) trDesenha(); }, () => {}); trDesenha(); }
   function trSai() { if (TR.un) TR.un(); TR.un = null; TR.id = null; TR.doc = null; trDesenha(); }
   async function trChama() { const db = trDb(); const cod = ($('tr-in').value || '').trim().toUpperCase(); const msg = $('tr-msg'); if (cod.length !== 6) { msg.textContent = 'O código tem 6 letras/números.'; return; } if (cod === trCodigo(trMeu())) { msg.textContent = 'Esse é o seu próprio código.'; return; }
@@ -1806,7 +1855,7 @@
       else if (o.tipo === 'folha') { const m = new T3.Mesh(CONE2, M); m.scale.set(0.12, 0.3, 0.03); m.rotation.z = 1; g.add(m); }
       else { const m = new T3.Mesh(SPH2, M); m.scale.setScalar(0.1); g.add(m); glowSpr(g, 0, 0, 0, 0.8, cor, 0.8); } } }
   function bmDesliga() { if (!BM) return; BM = null; bmN = 0; heroi.scale.setScalar(ESCALA0); maoG.scale.setScalar(1); maoE.scale.setScalar(1); armaGlowS.material.opacity = 0; Object.keys(EXTRA).forEach(k => EXTRA[k].visible = false); if (duploG) { maoE.remove(duploG); duploG = null; } ORB.visible = false; despAura.material.opacity = 0; mostraArma(); bmaVeste(0); }
-  function bmLiga(n) { const c = CLA(); if (!c) return; const M = BMS[AR.classe][n - 1]; BM = M; bmN = n; despT = BM_DUR[n - 1]; desp = 0;
+  function bmLiga(n) { const c = CLA(); if (!c) return; if (n === 3) setTimeout(() => feito('furia'), 2500); const M = BMS[AR.classe][n - 1]; BM = M; bmN = n; despT = BM_DUR[n - 1]; desp = 0;
     bmMat = bmMatCor(M.cor); Object.keys(EXTRA).forEach(k => { EXTRA[k].traverse(o => { if (o.isMesh) o.material = bmMat; }); EXTRA[k].visible = false; });
     (M.extras || []).forEach(k => { if (k === 'espinhos') { EXTRA.espshL.visible = EXTRA.espshR.visible = true; } else if (k === 'duplo' && ARMAG[AR.arma]) { duploG = ARMAG[AR.arma].clone(); duploG.visible = true; duploG.scale.x = -1; maoE.add(duploG); Object.values(ARMAE).forEach(x => x.visible = false); } else if (EXTRA[k]) EXTRA[k].visible = true; });
     heroi.scale.setScalar(ESCALA0 * (M.escala || 1)); maoG.scale.setScalar(M.armaEsc || 1); maoE.scale.setScalar(M.armaEsc || 1); armaGlowS.material.color.set(M.armaGlow || M.cor); armaGlowS.material.opacity = M.armaGlow ? 0.7 : 0;
@@ -1979,7 +2028,7 @@
   const arthur=makeChar({skin:'#c88a5e',hairStyle:'short',hairC:'#3a2214',top:'#3a7a64',top2:'#e2c27a',pants:'#3a3030',shoe:'#2a1a10',iris:'#2a8a4a',book:true,ph:2.7});
   const arthurNPC={c:arthur,nome:'Arthur · Gerente de guilda',x:-3.5,z:5.7,ry:0,ry0:0,acao:()=>{tocaVoz('art01');abrirGuilda();}};arthur.position.set(arthurNPC.x,0,arthurNPC.z);NPCS.push(arthurNPC);COL.push({t:'c',x:arthurNPC.x,z:arthurNPC.z,r:.45,npc:arthurNPC});
   function guildPosition(el,obj,height){const pos=obj.position.clone();pos.y+=height;pos.project(cam);const visible=pos.z<1&&pos.z>-1&&Math.abs(pos.x)<1&&Math.abs(pos.y)<1&&obj.visible;el.hidden=!visible;if(visible){el.style.left=((pos.x+1)*innerWidth/2)+'px';el.style.top=((1-pos.y)*innerHeight/2)+'px';}}
-  function guildFrame(){guildPosition(guildLabel,heroi,2.05);guildLabel.querySelector('b').textContent=AR.visual?.nome||'Leonardo';guildPosition(guildArthurLabel,arthur,2.25);}
+  function guildFrame(){guildPosition(guildLabel,heroi,2.05);{const T=tituloAtual();let e=guildLabel.querySelector('em');if(!e){e=document.createElement('em');guildLabel.prepend(e);}if(e.textContent!==T.nome){e.textContent=T.nome;e.style.color=TIT_COR[T.r];e.className='tit-'+T.r;}}guildLabel.querySelector('b').textContent=AR.visual?.nome||'Leonardo';guildPosition(guildArthurLabel,arthur,2.25);}
   // ---------- ONLINE: ver outros jogadores na mesma zona (Supabase Realtime) ----------
   const MP = { id: (() => { try { let i = sessionStorage.getItem('aetherion-mp-id'); if (!i) { i = Math.random().toString(36).slice(2, 10); sessionStorage.setItem('aetherion-mp-id', i); } return i; } catch (e) { return Math.random().toString(36).slice(2, 10); } })(), ch: null, ok: false, outros: {}, envT: 0, ult: '' };
   const mpTags = document.createElement('div'); mpTags.id = 'mp-tags'; document.body.appendChild(mpTags);
@@ -1993,12 +2042,12 @@
     return { c, tag, ph: (h % 100) / 10, x: d.x, z: d.zz, y: d.y || 0, r: d.r || 0, tx: d.x, tz: d.zz, ty: d.y || 0, tr: d.r || 0, a: d.a, t: performance.now(), d }; }
   function mpRecebe(d) { if (!d || d.id === MP.id) return; let o = MP.outros[d.id]; if (!o) o = MP.outros[d.id] = mpCria(d.id, d);
     o.tx = d.x; o.tz = d.zz; o.ty = d.y || 0; o.tr = d.r || 0; o.a = d.a; o.d = d; o.t = performance.now();
-    o.tag.innerHTML = `<b>${String(d.n || 'Jogador').replace(/</g, '').slice(0, 20)}${d.lv ? ` <i>Nv ${d.lv | 0}</i>` : ''}</b>${d.g ? `<small>${String(d.ge || '🛡️').slice(0, 4)} ${String(d.g).replace(/</g, '').slice(0, 24)}</small>` : ''}`; }
+    o.tag.innerHTML = (d.t ? `<em style="color:${TIT_COR[d.tr] || '#fff'}">${String(d.t).replace(/</g, '').slice(0, 26)}</em>` : '') + `<b>${String(d.n || 'Jogador').replace(/</g, '').slice(0, 20)}${d.lv ? ` <i>Nv ${d.lv | 0}</i>` : ''}</b>${d.g ? `<small>${String(d.ge || '🛡️').slice(0, 4)} ${String(d.g).replace(/</g, '').slice(0, 24)}</small>` : ''}`; }
   function mpLiga() { if (MP.ch || typeof guildClient === 'undefined') return; try { MP.ch = guildClient.channel('aetherion-mundo', { config: { broadcast: { self: false, ack: false } } });
       MP.ch.on('broadcast', { event: 'p' }, m => mpRecebe(m.payload)).on('broadcast', { event: 'sai' }, m => { const o = m.payload && MP.outros[m.payload.id]; if (o) o.t = 0; })
         .subscribe(st => { MP.ok = st === 'SUBSCRIBED'; }); } catch (e) { MP.ch = null; } }
   window.addEventListener('pagehide', () => { try { MP.ch && MP.ch.send({ type: 'broadcast', event: 'sai', payload: { id: MP.id } }); } catch (e) {} });
-  function mpEstado(p) { const G = typeof guildState !== 'undefined' && guildState && guildState.guild; return { id: MP.id, n: (AR.visual && AR.visual.nome) || 'Leonardo', lv: AR.nv, g: G ? G.name : '', ge: G && typeof emblemIcon === 'function' ? emblemIcon(G.emblem) : '', z: zona, dn: dentro ? 1 : 0, x: +p.x.toFixed(2), y: +p.y.toFixed(2), zz: +p.z.toFixed(2), r: +facing.toFixed(2), a: voando ? (voPitch > 0.6 ? 'voa' : 'paira') : !noChao ? 'pulo' : atkT < 0.3 ? 'atk' : vel > 4.2 ? 'corre' : vel > 0.4 ? 'anda' : 'para', w: AR.arma }; }
+  function mpEstado(p) { const G = typeof guildState !== 'undefined' && guildState && guildState.guild; const TT = tituloAtual(); return { id: MP.id, n: (AR.visual && AR.visual.nome) || 'Leonardo', t: TT.nome, tr: TT.r, lv: AR.nv, g: G ? G.name : '', ge: G && typeof emblemIcon === 'function' ? emblemIcon(G.emblem) : '', z: zona, dn: dentro ? 1 : 0, x: +p.x.toFixed(2), y: +p.y.toFixed(2), zz: +p.z.toFixed(2), r: +facing.toFixed(2), a: voando ? (voPitch > 0.6 ? 'voa' : 'paira') : !noChao ? 'pulo' : atkT < 0.3 ? 'atk' : vel > 4.2 ? 'corre' : vel > 0.4 ? 'anda' : 'para', w: AR.arma }; }
   function mpFrame(dt, p) { mpLiga(); MP.envT -= dt;
     if (MP.ok && MP.envT <= 0) { const e = mpEstado(p); const s = JSON.stringify(e); if (s !== MP.ult || MP.envT < -2) { MP.ult = s; MP.envT = 0.15; try { MP.ch.send({ type: 'broadcast', event: 'p', payload: e }); } catch (er) {} } else MP.envT = 0.15; }
     const agora = performance.now(); let n = 0;
@@ -2133,7 +2182,7 @@
     if (tremor > 0) { tremor -= dt; cam.position.x += (Math.random() - .5) * tremor; cam.position.y += (Math.random() - .5) * tremor; }
     cam.lookAt(p.x, p.y + 0.95, p.z);
     sun.position.set(p.x + 12, 30, p.z + 10); sun.target.position.set(p.x, 0, p.z); sun.target.updateMatrixWorld();
-    guildFrame(); guardaFrame(); mpFrame(dt, p); ambienteFrame(dt, p); renderer.render(scene, cam); requestAnimationFrame(loop);
+    guildFrame(); guardaFrame(); mpFrame(dt, p); tituloFrame(dt); ambienteFrame(dt, p); renderer.render(scene, cam); requestAnimationFrame(loop);
   }
   cam.position.set(0, 2.6, 9.6); requestAnimationFrame(loop);
   mostrarLugar('Vila de Brumafria');
