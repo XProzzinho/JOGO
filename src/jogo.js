@@ -150,7 +150,7 @@
   // ---- VOO com as asas ----
   let voando = false, voSobe = 0, voPitch = 0;
   function podeVoar() { return typeof ASAS !== 'undefined' && ASAS.visible && !dentro && !conversa && !cenaQ && !desmaiado; }
-  function voa(on) { if (on && !podeVoar()) { aviso('🦇 Equipe as Asas de Morcego (🎒 › Costas) pra voar.', '#c8a8ff'); return; } voando = on; input.sobe = input.desce = false;
+  function voa(on) { if (on && !podeVoar()) { aviso('Equipe umas asas (🎒 › Costas) pra voar. Tem asas na loja da Elysia!', '#c8a8ff'); return; } if (on && !voando && AR.cosm === 'asa_titan') { const q = heroi.position; fx('luz', [q.x, 0, q.z], 0.8); fx('fumo', [q.x, 0, q.z], 1); tremor = Math.max(tremor, 0.4); flash('rgba(255,180,60,.35)'); area(q.x, q.z, 4, e => dano(e, 30 * atkMult(), 'fogo')); } voando = on; input.sobe = input.desce = false;
     if (on) { feito('asas'); voSobe = 0.7; noChao = false; vy = 0; som('vento', 0.8, 1); aviso('🦇 Voando! ⬆ SUBIR e ⬇ DESCER pra altura, o controle pra ir pra frente.', '#c8a8ff'); } else { som('aterrissa', 0.5); }
     $('voar').innerHTML = voando ? IC('ui_voar') + ' POUSAR' : IC('ui_voar') + ' VOAR'; $('pular').textContent = voando ? '⬆ SUBIR' : 'PULAR'; $('correr').textContent = voando ? '⬇ DESCER' : 'CORRER'; $('correr').classList.toggle('on', !voando && input.run); }
   const segura = (el, k) => { const on = e => { if (voando) { input[k] = true; e.preventDefault(); } }, off = () => { input[k] = false; }; el.addEventListener('touchstart', on, { passive: false }); el.addEventListener('mousedown', on); ['touchend', 'touchcancel', 'mouseup', 'mouseleave'].forEach(ev => el.addEventListener(ev, off)); };
@@ -356,7 +356,7 @@
   const vtmp = new T3.Vector3();
   function poderesFrame(dt, p) {
     let gasto = 0; PODERES.forEach(pw => { if (pw.tipo === 'liga' && ativo[pw.id]) { if (!pw.el) ativo[pw.id] = false; else gasto += custoDe(pw); } });
-    mana = clamp(mana + dt * 6 - dt * gasto, 0, MANA_MAX); if (mana <= 0 && gasto > 0) { PODERES.forEach(pw => { if (pw.tipo === 'liga' && pw.custo && ativo[pw.id]) { ativo[pw.id] = false; marca(pw, 'on', false); } }); aviso('A mana acabou. Os poderes desligaram.', '#ff6a6a'); }
+    mana = clamp(mana + dt * 6 * asaB('mana') - dt * gasto - (voando ? dt * 2.5 : 0), 0, MANA_MAX); if (voando && mana <= 0) { voa(false); aviso('Sem mana pra voar! As asas gastam energia.', '#ff6a6a'); } if (mana <= 0 && gasto > 0) { PODERES.forEach(pw => { if (pw.tipo === 'liga' && pw.custo && ativo[pw.id]) { ativo[pw.id] = false; marca(pw, 'on', false); } }); aviso('A mana acabou. Os poderes desligaram.', '#ff6a6a'); }
     $('mana-fill').style.width = (mana / MANA_MAX * 100).toFixed(1) + '%'; $('mana-num').textContent = Math.round(mana);
     PODERES.forEach(pw => marca(pw, 'falta', pw.tipo === 'uso' && mana < custoDe(pw)));
     fxFrame(dt); dardosFrame(dt);
@@ -1030,7 +1030,7 @@
       const ft = P['ft' + s]; A(ft, SPH2, MALHA, 0, 0.005, 0.05, 0.075, 0.062, 0.142); for (let k = 0; k < 3; k++) A(ft, SPH2, k % 2 ? AZ2 : PR, 0, 0.02 - k * 0.004, 0.1 + k * 0.04, 0.072 - k * 0.006, 0.05, 0.05); A(ft, BOX, COU, 0, -0.048, 0.05, 0.125, 0.02, 0.27); });
     armadura.forEach(m => m.visible = false); }
   function vesteFantasia(k) { if (!FANT[k]) k = 'comum'; AR.fantasia = k; if (k !== 'comum') AR.pecas = {}; salvaAR(); escondeTrajes(); if (k === 'celeste') armadura.forEach(m => m.visible = true); if (CAS[k]) CAS[k].m.forEach(m => m.visible = true); aplicaNivel(); mana = Math.min(mana, MANA_MAX); atualizaPecas(); setTimeout(fazRetrato, 60); }
-  function defesa() { const c = CLASSES && CLASSES[AR.classe]; return Math.min(85, (FANT[AR.fantasia].def || 0) + pecaDef() + (c ? c.def : 0) + (BM && BM.def ? BM.def : 0) + (typeof BUFF !== 'undefined' ? (BUFF.provocar > 0 ? 20 : 0) + (BUFF.fortaleza > 0 ? 30 : 0) + (BUFF.pele > 0 ? 40 : 0) + (BUFF.cb_def > 0 ? 20 : 0) + (BUFF.cb_tudo > 0 ? 10 : 0) : 0) + cbPas('def')); }
+  function defesa() { const c = CLASSES && CLASSES[AR.classe]; return Math.min(85, asaB('def') * ((FANT[AR.fantasia].def || 0) + pecaDef() + (c ? c.def : 0) + (BM && BM.def ? BM.def : 0) + (typeof BUFF !== 'undefined' ? (BUFF.provocar > 0 ? 20 : 0) + (BUFF.fortaleza > 0 ? 30 : 0) + (BUFF.pele > 0 ? 40 : 0) + (BUFF.cb_def > 0 ? 20 : 0) + (BUFF.cb_tudo > 0 ? 10 : 0) : 0) + cbPas('def'))); }
   function armaduraFrame() { casacoFrame(); if (!tabardo || AR.fantasia !== 'celeste') return; const P = heroi.userData.P; const f = Math.min(P.thL.rotation.x, P.thR.rotation.x), b = Math.max(P.thL.rotation.x, P.thR.rotation.x); tabardo.rotation.x = Math.min(0, f) * 0.95; tabardo.userData.costas.rotation.x = Math.max(0, b) * 0.95; }
 
 
@@ -1265,8 +1265,8 @@
     const sec = (t) => { const h = document.createElement('div'); h.className = 'sec'; h.innerHTML = limpaIco(t); C.appendChild(h); const g = document.createElement('div'); g.className = 'grade'; C.appendChild(g); return g; };
     const cel = (g, ic, nome, sub, on, fn, tag) => { const b = document.createElement('button'); b.className = 'cel' + (on ? ' on' : '') + (fn ? '' : ' fixa'); b.innerHTML = `<span class="ic">${ic}</span><b>${nome}</b><small>${sub}</small>${tag ? `<em>${tag}</em>` : ''}`; if (fn) tapBtn(b, fn); g.appendChild(b); };
     if (abaPerfil === 'fant') { let g = sec('🎭 Fantasias · só visual (não mudam a defesa)');
-      Object.keys(COSM).forEach(k => { const F = COSM[k], tem = AR.cosms.includes(k), on = AR.cosm === k; cel(g, tem ? F.icone : '🔒', F.nome, tem ? (on ? 'Toque pra tirar' : F.desc) : 'Derrote o Morcego Gigante', on, tem ? () => { vesteCosm(on ? null : k); desenhaPerfil(); } : null, on ? 'VESTIDA' : ''); });
-      if (AR.cosms.includes('morcego')) C.insertAdjacentHTML('beforeend', '<p class="dica">🦇 Com as Asas de Morcego vestidas aparece o botão VOAR.</p>'); return; }
+      Object.keys(COSM).forEach(k => { const F = COSM[k], tem = AR.cosms.includes(k), on = AR.cosm === k; cel(g, tem ? F.icone : '🔒', F.nome, tem ? (on ? 'Toque pra tirar' : F.desc) : F.loja ? 'Compre na loja da Elysia' : 'Derrote o Morcego Gigante', on, tem ? () => { vesteCosm(on ? null : k); desenhaPerfil(); } : null, on ? 'VESTIDA' : ''); });
+      if (AR.cosms.some(c => COSM[c])) C.insertAdjacentHTML('beforeend', '<p class="dica">🪽 Com asas vestidas aparece o botão VOAR. Mais asas na loja da Elysia.</p>'); return; }
     if (abaPerfil === 'tit') { const T0 = tituloAtual(); C.insertAdjacentHTML('beforeend', `<div class="tit-atual">Título equipado<b style="color:${TIT_COR[T0.r]}">${T0.nome}</b><small>${AR.titulos.length} de ${Object.keys(TITULOS).filter(k => k !== 'admin' || souAdmin()).length} títulos</small></div>`);
       const g = sec('🏷️ Toque num título pra equipar'); Object.keys(TITULOS).forEach(k => { if (k === 'admin' && !souAdmin()) return; const T = TITULOS[k], tem = AR.titulos.includes(k), on = AR.titulo === k;
         const b = document.createElement('button'); b.className = 'cel tit' + (on ? ' on' : '') + (tem ? '' : ' fixa'); b.style.setProperty('--tc', { comum: '#5a5470', raro: '#2a6ac8', epico: '#8a3ad8', lendario: '#b87800', admin: '#d82a2a' }[T.r]); b.innerHTML = `<span class="ic">${tem ? '🏷️' : '🔒'}</span><b>${tem ? T.nome : '???'}</b><small>${T.como}</small><em>${on ? 'EQUIPADO' : TIT_NOME[T.r]}</em>`;
@@ -1428,18 +1428,56 @@
     const A = ARMAS[AR.arma]; aviso(AR.arma === 'punho' ? '👊 Arma guardada na mochila' : 'Equipou: ' + A.icone + ' ' + A.nome, '#ffd23c'); }
 
   // ---- fantasias de enfeite (só visual) ----
-  const COSM = { morcego: { nome: 'Asas de Morcego', icone: '🦇', desc: 'Só de enfeite. Batem quando você corre e pula.' } };
+  const COSM = { morcego: { nome: 'Asas de Morcego', icone: '🦇', desc: 'Batem quando você corre e pula. Dá pra voar.' },
+    asa_neon: { nome: 'Asa Cyberpunk Neon', icone: '🪽', loja: 1, preco: 800, desc: '+25% de velocidade. Rastro de energia rosa.', b: { vel: 1.25 }, cor: '#e04aff', cor2: '#ff4ab0', placa: '#d8b8f4', metal: '#2a2a36', estilo: 'penas' },
+    asa_shadow: { nome: 'Asa Cyberpunk Shadow', icone: '🪽', loja: 1, preco: 1000, desc: '+20% de dano. Partículas vermelhas.', b: { dano: 1.2 }, cor: '#ff2a2a', cor2: '#ff6a3a', placa: '#c81a22', metal: '#141418', estilo: 'laminas' },
+    asa_celeste: { nome: 'Asa Sci-Fi Celestial', icone: '🪽', loja: 1, preco: 1200, desc: '+30% de regeneração de mana. Partículas azuis.', b: { mana: 1.3 }, cor: '#4ad8ff', cor2: '#bff4ff', placa: '#f0f4fa', metal: '#9aa4b8', estilo: 'penas' },
+    asa_titan: { nome: 'Asa Sci-Fi Titan', icone: '🪽', loja: 1, preco: 1500, desc: '+35% de defesa. Explosão de energia ao decolar.', b: { def: 1.35 }, cor: '#ffa83a', cor2: '#ffe08a', placa: '#e0b040', metal: '#5a3a1a', estilo: 'placas', jato: 1 },
+    asa_quantum: { nome: 'Asa Sci-Fi Quantum', icone: '🪽', loja: 1, preco: 1800, desc: '+40% de velocidade de voo. Asas holográficas.', b: { voo: 1.4 }, cor: '#7affe8', cor2: '#c8c8ff', placa: '#7affe8', metal: '#1a1a22', estilo: 'holo' },
+    asa_thunder: { nome: 'Asa Cyberpunk Thunder', icone: '🪽', loja: 1, preco: 2200, desc: '+50% de velocidade de voo. Habilidade: Impulso Elétrico.', b: { voo: 1.5 }, cor: '#2ad8ff', cor2: '#8af0ff', placa: '#16181e', metal: '#0c0c10', estilo: 'morcego', jato: 1 },
+    asa_galaxy: { nome: 'Asa Sci-Fi Galaxy', icone: '🪽', loja: 1, preco: 2500, desc: '+50% de regeneração de mana. Habilidade: Teleporte Galáctico.', b: { mana: 1.5 }, cor: '#a05aff', cor2: '#4a9aff', placa: '#8a5aff', metal: '#2a1a4a', estilo: 'borboleta' } };
   AR.cosms = AR.cosms || []; if (!AR.cosmV2) { AR.cosms = AR.cosms.filter(c => c !== 'morcego'); AR.cosmV2 = 1; } if (!AR.cosms.includes(AR.cosm)) AR.cosm = null; // asas agora caem do Morcego Gigante
-  const ASAS = grp(P0.spine, 0, 0.44, -0.13); const ASA = {};
+  const ASAS = grp(P0.spine, 0, 0.44, -0.13); const ASAM = grp(ASAS); let ASA = {}; const ASAT = { morcego: { g: ASAM, A: ASA } };
   { const MEMB = new T3.MeshToonMaterial({ color: '#3a1f4a', gradientMap: GRAD, side: T3.DoubleSide }); const OSSO = tm('#1a0e24'); const GARRA = tm('#e8e0d0');
     const s = new T3.Shape(); s.moveTo(0, 0.04); s.lineTo(0.34, 0.3); s.lineTo(0.8, 0.36); s.quadraticCurveTo(0.62, 0.2, 0.88, 0.02); s.quadraticCurveTo(0.62, -0.04, 0.74, -0.3); s.quadraticCurveTo(0.5, -0.18, 0.44, -0.44); s.quadraticCurveTo(0.26, -0.22, 0.03, -0.26); s.lineTo(0, 0.04);
     const memGeo = new T3.ShapeGeometry(s, 10); const up = new T3.Vector3(0, 1, 0);
     const osso = (p, a, b, r) => { const A = new T3.Vector3(...a), B = new T3.Vector3(...b), d = B.clone().sub(A); const m = new T3.Mesh(CYL, OSSO); m.position.copy(A).add(B).multiplyScalar(0.5); m.scale.set(r, d.length(), r); m.quaternion.setFromUnitVectors(up, d.normalize()); m.castShadow = true; p.add(m); };
-    [['R', 1], ['L', -1]].forEach(([n, sx]) => { const w = grp(ASAS, 0.05 * sx, 0, 0); const g = grp(w); g.scale.x = sx; const mem = new T3.Mesh(memGeo, MEMB); mem.castShadow = true; g.add(mem);
+    [['R', 1], ['L', -1]].forEach(([n, sx]) => { const w = grp(ASAM, 0.05 * sx, 0, 0); const g = grp(w); g.scale.x = sx; const mem = new T3.Mesh(memGeo, MEMB); mem.castShadow = true; g.add(mem);
       osso(g, [0, 0.04, 0.004], [0.34, 0.3, 0.004], 0.018); [[0.8, 0.36], [0.88, 0.02], [0.74, -0.3], [0.44, -0.44]].forEach(([x, y]) => osso(g, [0.34, 0.3, 0.004], [x, y, 0.004], 0.009));
       const c = new T3.Mesh(CONE, GARRA); c.position.set(0.36, 0.35, 0.004); c.scale.set(0.018, 0.07, 0.018); c.rotation.z = -0.5; g.add(c); ASA[n] = w; }); }
-  function vesteCosm(k) { AR.cosm = k && AR.cosms.includes(k) ? k : null; salvaAR(); ASAS.visible = AR.cosm === 'morcego'; setTimeout(fazRetrato, 60); if (k && COSM[k]) aviso('Vestiu: ' + COSM[k].icone + ' ' + COSM[k].nome, '#c8a8ff'); }
-  ASAS.visible = AR.cosm === 'morcego';
+  // ---- asas tecnológicas (modelos feitos no código) ----
+  { const NEON = {}; const neon = c => NEON[c] || (NEON[c] = new T3.MeshBasicMaterial({ color: c, toneMapped: false }));
+    const lam = (L, W, ponta) => { const sh = new T3.Shape(); sh.moveTo(-W * 0.5, 0); sh.lineTo(W * 0.5, 0); sh.lineTo(W * 0.32, -L * 0.82); sh.lineTo(ponta ? W * 0.05 : 0, -L); sh.lineTo(-W * 0.22, -L * 0.78); sh.lineTo(-W * 0.5, 0); return new T3.ShapeGeometry(sh, 2); };
+    const up = new T3.Vector3(0, 1, 0);
+    const barra = (p, a, b, r, mat) => { const A = new T3.Vector3(...a), B = new T3.Vector3(...b), d = B.clone().sub(A); const m = new T3.Mesh(CYL, mat); m.position.copy(A).add(B).multiplyScalar(0.5); m.scale.set(r, d.length(), r); m.quaternion.setFromUnitVectors(up, d.normalize()); m.castShadow = true; p.add(m); return m; };
+    Object.keys(COSM).forEach(k => { const F = COSM[k]; if (!F.estilo) return; const G = grp(ASAS); G.scale.setScalar(0.78); G.visible = false; const A = {}; const holo = F.estilo === 'holo' || F.estilo === 'borboleta';
+      const MP = holo ? new T3.MeshBasicMaterial({ color: F.placa, transparent: true, opacity: 0.5, side: T3.DoubleSide, toneMapped: false, depthWrite: false, blending: T3.AdditiveBlending }) : new T3.MeshStandardMaterial({ color: F.placa, roughness: 0.3, metalness: k === 'asa_celeste' ? 0.35 : 0.75, envMap: ENV, envMapIntensity: 1.1, side: T3.DoubleSide });
+      const MM = new T3.MeshStandardMaterial({ color: F.metal, roughness: 0.35, metalness: 0.9, envMap: ENV, envMapIntensity: 1 });
+      [['R', 1], ['L', -1]].forEach(([n, sx]) => { const w = grp(G, 0.06 * sx, 0, 0); const g = grp(w); g.scale.x = sx;
+        // braço mecânico articulado
+        const J = F.estilo === 'borboleta' ? [[0, 0.02], [0.3, 0.2], [0.62, 0.36], [0.95, 0.5]] : F.estilo === 'morcego' ? [[0, 0.04], [0.3, 0.42], [0.6, 0.68], [0.98, 0.62]] : [[0, 0.04], [0.24, 0.36], [0.5, 0.72], [0.82, 1.0]];
+        for (let i = 0; i < J.length - 1; i++) { barra(g, [J[i][0], J[i][1], 0.01], [J[i + 1][0], J[i + 1][1], 0.01], 0.026 - i * 0.004, MM); barra(g, [J[i][0], J[i][1] + 0.012, 0.028], [J[i + 1][0], J[i + 1][1] + 0.012, 0.028], 0.006, neon(F.cor)); }
+        J.forEach(([x, y], i) => { if (!i) return; const j = new T3.Mesh(SPH, neon(i % 2 ? F.cor : F.cor2)); j.position.set(x, y, 0.012); j.scale.setScalar(0.024); g.add(j); });
+        // lâminas / penas
+        const N = F.estilo === 'placas' ? 6 : F.estilo === 'borboleta' ? 5 : 8;
+        for (let i = 0; i < N; i++) { const u = i / (N - 1); const seg = Math.min(J.length - 2, Math.floor(u * (J.length - 1) * 0.999)), f = u * (J.length - 1) - seg; const x = J[seg][0] + (J[seg + 1][0] - J[seg][0]) * f, y = J[seg][1] + (J[seg + 1][1] - J[seg][1]) * f;
+          let L = 0.5 + u * 0.55, W = F.estilo === 'placas' ? 0.22 : F.estilo === 'laminas' ? 0.12 : 0.16, rz = 0.06 + u * 0.62;
+          if (F.estilo === 'morcego') { L = 0.4 + Math.sin(u * Math.PI) * 0.45; W = 0.07; rz = 0.1 + u * 0.95; }
+          if (F.estilo === 'borboleta') { L = 0.8 - Math.abs(u - 0.4) * 0.5; W = 0.32; rz = -0.2 + u * 1.9; }
+          const b = new T3.Mesh(lam(L, W, F.estilo !== 'placas'), MP); b.position.set(x, y, 0.004 - i * 0.002); b.rotation.z = rz; b.castShadow = !holo; g.add(b);
+          const e = new T3.Mesh(BOX, neon(i % 2 ? F.cor2 : F.cor)); e.position.set(x + Math.sin(rz) * L * 0.42, y - Math.cos(rz) * L * 0.42, 0.012); e.rotation.z = rz; e.scale.set(0.013, L * 0.72, 0.008); g.add(e); }
+        if (F.estilo !== 'borboleta') [[J.length - 2, 2.45, 0.32], [J.length - 1, 2.15, 0.42]].forEach(([ji, rz, L]) => { const b = new T3.Mesh(lam(L, 0.09, true), MP); b.position.set(J[ji][0], J[ji][1], 0.006); b.rotation.z = rz; g.add(b); const e = new T3.Mesh(BOX, neon(F.cor)); e.position.set(J[ji][0] + Math.sin(rz) * L * 0.42, J[ji][1] - Math.cos(rz) * L * 0.42, 0.012); e.rotation.z = rz; e.scale.set(0.012, L * 0.7, 0.008); g.add(e); });
+        if (F.estilo === 'borboleta') { for (let i = 0; i < 4; i++) { const b = new T3.Mesh(lam(0.5, 0.26, true), MP); b.position.set(0.14, -0.02, 0.006); b.rotation.z = 0.5 + i * 0.35; g.add(b); } }
+        // pontas: brilho e propulsores
+        const T = J[J.length - 1]; glowSpr(g, T[0], T[1], 0.03, 0.22, F.cor, 0.9);
+        if (F.jato) { [[T[0], T[1]], [J[1][0], J[1][1]]].forEach(([x, y]) => { const c = new T3.Mesh(CYL, MM); c.position.set(x, y - 0.05, -0.02); c.scale.set(0.035, 0.09, 0.035); g.add(c); glowSpr(g, x, y - 0.12, -0.02, 0.16, F.cor, 0.95); }); }
+        A[n] = w; });
+      const core = new T3.Mesh(SPH, neon(F.cor)); core.position.set(0, 0.02, 0.02); core.scale.setScalar(0.045); G.add(core); glowSpr(G, 0, 0.02, 0.04, 0.3, F.cor, 0.8);
+      ASAT[k] = { g: G, A }; }); }
+  var ASA_BUFF = null; function asaB(k) { return (ASA_BUFF && ASA_BUFF[k]) || 1; }
+  function vesteCosm(k) { AR.cosm = k && AR.cosms.includes(k) ? k : null; salvaAR(); mostraAsas(); setTimeout(fazRetrato, 60); if (k && COSM[k]) aviso('Vestiu: ' + COSM[k].icone + ' ' + COSM[k].nome, '#c8a8ff'); }
+  function mostraAsas() { const k = AR.cosm; ASAS.visible = !!(k && ASAT[k]); Object.keys(ASAT).forEach(t => { ASAT[t].g.visible = t === k; }); if (k && ASAT[k]) ASA = ASAT[k].A; ASA_BUFF = (k && COSM[k] && COSM[k].b) || null; }
+  mostraAsas();
 
   // ---- espaços de equipamento na janela do perfil (no lugar da prévia do personagem) ----
   const SLOTS_EQ = [['cabeca', '⛑️', 'Elmo'], ['peito', '🦺', 'Peitoral'], ['maos', '🧤', 'Luvas'], ['calca', '🩳', 'Calça'], ['costas', '🦇', 'Costas'], ['arma', '⚔️', 'Arma'], ['greva', '🦵', 'Grevas'], ['pe', '🥾', 'Botas'], ['ombro', '🛡️', 'Ombreiras']];
@@ -1452,7 +1490,7 @@
     return AR.pecas[k] === 'glacial' ? pecaInfo(k) : null; }
   function opcoesSlot(k) {
     if (k === 'arma') return AR.armas.filter(w => ARMAS[w] && !ARMAS[w].oculta).map(w => ({ icone: ARMAS[w].icone, nome: ARMAS[w].nome, sub: 'Dano ' + ARMAS[w].dano, on: AR.arma === w, fn: () => equipaArma(w) }));
-    if (k === 'costas') return AR.cosms.filter(c => COSM[c]).map(c => ({ icone: COSM[c].icone, nome: COSM[c].nome, sub: 'Só visual', on: AR.cosm === c, fn: () => vesteCosm(c) }));
+    if (k === 'costas') return AR.cosms.filter(c => COSM[c]).map(c => ({ icone: COSM[c].icone, nome: COSM[c].nome, sub: COSM[c].b ? COSM[c].desc.split('.')[0] : 'Dá pra voar', on: AR.cosm === c, fn: () => vesteCosm(c) }));
     const P = pecaInfo(k); const ops = P ? [{ ...P, on: AR.pecas[k] === 'glacial', fn: () => vestePeca(k, true) }] : [];
     AR.sobs.filter(x => x.endsWith(':' + k)).forEach(x => { const I = sobInfo(x.split(':')[0], k); if (I) ops.push({ ...I, on: AR.pecas[k] === I.set, fn: () => vestePeca(k, true, I.set) }); });
     if (k === 'peito') AR.fantasias.filter(f => f !== 'comum' && FANT[f]).forEach(f => ops.push({ icone: FANT[f].icone, nome: FANT[f].nome, sub: 'Conjunto · defesa +' + FANT[f].def + '%' + (FANT[f].mana ? ' · mana +' + FANT[f].mana : ''), on: AR.fantasia === f, fn: () => vesteFantasia(f) }));
@@ -1480,7 +1518,7 @@
     AR.armas.filter(w => ARMAS[w] && !ARMAS[w].oculta && AR.arma !== w).forEach(w => L.push({ ic: ARMAS[w].icone, nome: ARMAS[w].nome, sub: 'Arma · dano ' + ARMAS[w].dano, acao: 'Equipar', fn: () => equipaArma(w) }));
     AR.fantasias.filter(f => f !== 'comum' && FANT[f] && AR.fantasia !== f).forEach(f => L.push({ ic: FANT[f].icone, nome: FANT[f].nome, sub: 'Armadura · defesa +' + FANT[f].def + '%' + (FANT[f].mana ? ' · mana +' + FANT[f].mana : ''), acao: 'Vestir', fn: () => vesteFantasia(f) }));
     AR.sobs.forEach(x => { const [set, k] = x.split(':'); if (AR.pecas[k] === set) return; const I = sobInfo(set, k); if (I) L.push({ ic: I.icone, cor: I.cor, nome: I.nome, sub: 'Peça de armadura · defesa +' + SOB_DEF + '%', acao: 'Vestir', fn: () => vestePeca(k, true, set) }); });
-    AR.cosms.filter(c => COSM[c] && AR.cosm !== c).forEach(c => L.push({ ic: COSM[c].icone, nome: COSM[c].nome, sub: 'Costas · só visual', acao: 'Vestir', fn: () => vesteCosm(c) }));
+    AR.cosms.filter(c => COSM[c] && AR.cosm !== c).forEach(c => L.push({ ic: COSM[c].icone, nome: COSM[c].nome, sub: 'Costas · ' + (COSM[c].b ? COSM[c].desc.split('.')[0] : 'dá pra voar'), acao: 'Vestir', fn: () => vesteCosm(c) }));
     Object.keys(ITEM_INFO).forEach(k => { if (AR.inv[k] > 0) { const I = ITEM_INFO[k]; L.push({ ic: I[0], nome: I[1], sub: I[2], n: AR.inv[k], acao: I[3], fn: k === 'carne' ? comer : null }); } });
     return L; }
   function desenhaBolsa() { if ($('invp').hidden) return; document.querySelectorAll('.ip-tabs button').forEach(b => b.classList.toggle('on', b.dataset.t === ipTab)); document.querySelectorAll('.ip-bt button[data-b]').forEach(b => b.classList.toggle('on', +b.dataset.b === ipPag));
@@ -1600,7 +1638,7 @@
 
   // ---- aplicar classe ----
   function CLA() { return CLASSES[AR.classe] || null; }
-  function atkMult() { const c = CLA(); return (1 + (AR.nv - 1) * 0.02) * (c ? c.atk : 1) * potAtual * (BM && BM.atk ? BM.atk : 1) * (BUFF.furia > 0 ? 1.4 : 1) * (BUFF.pacto > 0 ? 1.5 : 1) * (1 + cbPas('atk')) * (BUFF.cb_atk > 0 ? 1.25 : 1) * (BUFF.cb_tudo > 0 ? 1.15 : 1); }
+  function atkMult() { const c = CLA(); return (1 + (AR.nv - 1) * 0.02) * (c ? c.atk : 1) * potAtual * (BM && BM.atk ? BM.atk : 1) * (BUFF.furia > 0 ? 1.4 : 1) * (BUFF.pacto > 0 ? 1.5 : 1) * (1 + cbPas('atk')) * (BUFF.cb_atk > 0 ? 1.25 : 1) * (BUFF.cb_tudo > 0 ? 1.15 : 1) * asaB('dano'); }
   function critico() { const c = CLA(); return Math.random() < (c ? c.crit : 0.05) + (BM && BM.crit ? BM.crit : 0) + cbPas('crit') + (BUFF.cb_crit > 0 ? 0.15 : 0) + (BUFF.cb_tudo > 0 ? 0.05 : 0); }
   function aplicaClasse(id) { if (typeof bmDesliga === 'function') bmDesliga(); const c = CLASSES[id]; AR.classe = id; if (!AR.armas.includes(c.arma)) AR.armas.push(c.arma); AR.arma = c.arma;
     const v = AR.barra[2]; if (v && !(PW[v] && PW[v].classe)) { const k = AR.barra.indexOf(null, 3); if (k >= 3 && !AR.barra.slice(3).includes(v)) AR.barra[k] = v; }
@@ -1683,7 +1721,7 @@
   PODERES.forEach(h => { h.icone = IC('p_' + h.id); }); RAMOS.forEach(r => { r.icone = IC('p_' + r.id); });
   Object.keys(ARMAS).forEach(k => { ARMAS[k].icone = k === 'punho' ? IC('arma_punho') : ARMAG[k] ? IC('arma_' + k, 'png') : ARMAS[k].icone; });
   Object.keys(FANT).forEach(k => { FANT[k].icone = IC('f_' + k); }); Object.keys(CASACOS).forEach(k => { CASACOS[k].icone = IC('cas_' + k); });
-  Object.keys(CLASSES).forEach(k => { CLASSES[k].icone = IC('c_' + k); }); COSM.morcego.icone = IC('ui_voar');
+  Object.keys(CLASSES).forEach(k => { CLASSES[k].icone = IC('c_' + k); }); Object.keys(COSM).forEach(k => { COSM[k].icone = k === 'morcego' ? IC('ui_voar') : IC(k, 'png'); });
   SLOTS_EQ.forEach(sl => { sl[1] = IC('slot_' + sl[0]); }); SOB_PECAS.forEach(sp => { sp[1] = IC('slot_' + sp[0]); });
   ITEM_INFO.carne[0] = IC('item_carne'); ITEM_INFO.pele[0] = IC('item_pele'); ITEM_INFO.coracao[0] = IC('item_coracao');
   montaBarra(); mostraArma();
@@ -2134,7 +2172,7 @@
     const ang = Math.atan2(dx, dz); SETA.visible = true; SETA.position.set(p.x + Math.sin(ang) * 1.5, p.y, p.z + Math.cos(ang) * 1.5); SETA.rotation.y = ang + Math.PI; SETA.children[0].position.y = 0.06 + Math.abs(Math.sin(gT * 4)) * 0.08; return d; }
   atualizaMM();
   //@@HABILIDADES@@
-  window.__dbg = { CB_LISTA, abrirLivros, trocaPag, get mana() { return mana; }, set mana(v) { mana = v; }, ARMAG, T3, vesteCosm, voa, get voando() { return voando; }, input, mpRecebe, entraMasmorra, saiMasmorra, MM, mmFaseAtual, mmMorte, setaFrame, equipaArma, abrirGuilda, arthurNPC, vestePeca, atualizaPecas, PECAS, BLOCOS, modoBatalha, bmLiga, bmDesliga, BMS, ORB, get BM() { return BM; }, get hora() { return hora; }, set hora(v) { hora = v; }, usarHab2: id => classePoder2(id), BUFF, abrirCriar, aplicaClasse, CLASSES, get desp() { return desp; }, set desp(v) { desp = v; }, usarHab: id => classePoder(id), renderer, scene, world, ganhaXp, vesteFantasia, abrirPerfil, fazRetrato, irValdren, Q, heroi, ativo, AR, FERAS, golem, atacar, get vida() { return vida; }, set vida(v) { vida = v; }, abrirLoja, usarPoder: id => usarPoder(PW[id]), acao: () => acao(), get alvo() { return alvo; } };
+  window.__dbg = { ASAT, COSM, vesteCosm, CB_LISTA, abrirLivros, trocaPag, get mana() { return mana; }, set mana(v) { mana = v; }, ARMAG, T3, vesteCosm, voa, get voando() { return voando; }, input, mpRecebe, entraMasmorra, saiMasmorra, MM, mmFaseAtual, mmMorte, setaFrame, equipaArma, abrirGuilda, arthurNPC, vestePeca, atualizaPecas, PECAS, BLOCOS, modoBatalha, bmLiga, bmDesliga, BMS, ORB, get BM() { return BM; }, get hora() { return hora; }, set hora(v) { hora = v; }, usarHab2: id => classePoder2(id), BUFF, abrirCriar, aplicaClasse, CLASSES, get desp() { return desp; }, set desp(v) { desp = v; }, usarHab: id => classePoder(id), renderer, scene, world, ganhaXp, vesteFantasia, abrirPerfil, fazRetrato, irValdren, Q, heroi, ativo, AR, FERAS, golem, atacar, get vida() { return vida; }, set vida(v) { vida = v; }, abrirLoja, usarPoder: id => usarPoder(PW[id]), acao: () => acao(), get alvo() { return alvo; } };
   // ---------- laço do jogo ----------
   let vy = 0, noChao = true, facing = 0, vel = 0, gT = 0, last = performance.now();
   const ANDAR = 3.0, CORRER = 6.5, GRAV = 22, PULO = 7.6; const tmp = new T3.Vector3();
@@ -2146,7 +2184,7 @@
     if (!guildPanel.hidden || conversa || cenaQ || !$('fim').hidden || Q.naCarroca || desmaiado) { ix = 0; iy = 0; }
     const mag = Math.min(1, Math.hypot(ix, iy)); const correndo = input.run || keys.ShiftLeft || mag > 0.92;
     const fx = -Math.sin(camYaw), fz = -Math.cos(camYaw); let mx = fx * -iy + -fz * ix, mz = fz * -iy + fx * ix; const ml = Math.hypot(mx, mz);
-    vel = lerp(vel, mag > 0.08 ? (correndo ? CORRER : ANDAR) * (ativo.vento ? 1.5 + nivelHab('vento') * 0.1 : 1) * ((CLASSES && CLASSES[AR.classe]) ? CLASSES[AR.classe].vel : 1) * (BM && BM.vel ? BM.vel : 1) * (voando ? 1.9 : 1) * mag : 0, clamp(dt * 8));
+    vel = lerp(vel, mag > 0.08 ? (correndo ? CORRER : ANDAR) * (ativo.vento ? 1.5 + nivelHab('vento') * 0.1 : 1) * ((CLASSES && CLASSES[AR.classe]) ? CLASSES[AR.classe].vel : 1) * (BM && BM.vel ? BM.vel : 1) * (voando ? 1.9 * asaB('voo') : 1) * asaB('vel') * mag : 0, clamp(dt * 8));
     if (ml > 0.001 && mag > 0.08) { mx /= ml; mz /= ml; const want = Math.atan2(mx, mz); let d = want - facing; while (d > Math.PI) d -= Math.PI * 2; while (d < -Math.PI) d += Math.PI * 2; facing += d * clamp(dt * 12); }
     const p = heroi.position; const dash = dashT > 0 ? dashVel : 0; dashT -= dt; p.x += Math.sin(facing) * vel * dt + Math.sin(dashAng) * dash * dt; p.z += Math.cos(facing) * vel * dt + Math.cos(dashAng) * dash * dt;
     if (zona === 'valdren') { colide(p, COLV); const rx = p.x - VX, r = Math.hypot(rx, p.z); if (r > 44) { p.x = VX + rx * 44 / r; p.z *= 44 / r; } } else if (zona === 'masmorra') { mmLimita(p); } else if (dentro) { p.x = clamp(p.x, IX - 4.6, IX + 4.6); p.z = clamp(p.z, -4.6, 4.6); colide(p, COLC); } else { if (p.y < 3.6) colide(p, COL); const r = Math.hypot(p.x, p.z + 6); if (r > 95) { p.x *= 95 / r; p.z = (p.z + 6) * 95 / r - 6; } }
