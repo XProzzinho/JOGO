@@ -1,14 +1,19 @@
   // ===================== JOGO — Vila de Brumafria (do vídeo O Último Conhecimento) =====================
   cam.near = 0.1; cam.far = 800; cam.updateProjectionMatrix();
   const ROOF = new T3.ConeGeometry(1, 1, 4);
+  const VISUAL_BLOCOS = (() => { try { const q = new URLSearchParams(location.search).get('blocos'); return q !== null ? q !== '0' : localStorage.getItem('aetherion-blocos') === '1'; } catch (e) { return false; } })();
+  // árvore de folhas redondinha (estilo dos vídeos)
+  function arvoreFolhas(g, R) { part(g, CYL, '#7a5232', 0, 1.1, 0, 0.17, 2.2, 0.17); const ga = part(g, CYL, '#7a5232', 0.28, 2.0, 0, 0.07, 0.9, 0.07); ga.rotation.z = -0.7;
+    const V = ['#5aa83a', '#6cbc44', '#4a9632', '#82d052']; for (let k = 0; k < 7; k++) { const a = k / 7 * Math.PI * 2 + R(); const r = k ? 0.8 + R() * 0.35 : 0; const sc = 0.85 + R() * 0.45; part(g, ICO, V[k % 4], Math.cos(a) * r, k ? 2.8 + (R() - 0.3) * 0.9 : 3.4, Math.sin(a) * r, sc, sc * 0.9, sc); } }
+  function vivo(hex) { const c = new T3.Color(hex); const h = {}; c.getHSL(h, T3.SRGBColorSpace); const l = h.l < 0.85 ? Math.min(0.85, h.l * 1.12 + 0.05) : h.l; c.setHSL(h.h, Math.min(1, h.s * 1.35 + 0.06), l, T3.SRGBColorSpace); return '#' + c.getHexString(); }
   const v3 = new T3.Vector3();
   function headOf(c) { c.updateMatrixWorld(true); c.userData.P.head.getWorldPosition(v3); return [v3.x, v3.y + 0.13 * c.scale.y, v3.z]; }
 
   // ---------- céu: dia e noite ----------
   const skyC = document.createElement('canvas'); skyC.width = 4; skyC.height = 256; const skyX = skyC.getContext('2d'); const skyT = new T3.CanvasTexture(skyC); skyT.colorSpace = T3.SRGBColorSpace;
   const MODES = {
-    dia: { sky: ['#6a9ae0', '#eef3fa'], hemi: 1.25, sun: 2.0, sunC: '#fff4e4', fog: '#dde6f2', fogN: 30, fogF: 120, ground: '#c8d0e0', rim: '#ffd0a0' },
-    noite: { sky: ['#04081c', '#1c2a52'], hemi: 0.6, sun: 0.9, sunC: '#8aa8ff', fog: '#121a36', fogN: 18, fogF: 90, ground: '#3a4a6a', rim: '#5a7aff' },
+    dia: { sky: ['#4f9fe0', '#dcefff'], hemi: 1.15, sun: 2.6, sunC: '#ffefd2', fog: '#e2eef6', fogN: 50, fogF: 190, ground: '#b8a078', rim: '#ffd8a8' },
+    noite: { sky: ['#14205a', '#3a5aa8'], hemi: 0.8, sun: 1.0, sunC: '#9ab8ff', fog: '#26386e', fogN: 24, fogF: 110, ground: '#3a6a5a', rim: '#7a9aff' },
     casa: { sky: ['#140c08', '#140c08'], hemi: 0.75, sun: 0.25, sunC: '#ffb070', fog: '#140c08', fogN: 20, fogF: 60, ground: '#3a2418', rim: '#ff8a3a' } };
   scene.background = skyT; scene.fog = new T3.Fog('#ffffff', 30, 120);
   let modo = 'dia', hora = 8, noiteF = 0;
@@ -22,10 +27,10 @@
 
   // ---------- VILA DE BRUMAFRIA ----------
   const vil = grp(world, 0, 0, 0);
-  const snowTex = canvasTex(256, 256, (x, w, h) => { x.fillStyle = '#e8eef8'; x.fillRect(0, 0, w, h); const R = rng(3); for (let i = 0; i < 500; i++) { x.fillStyle = ['#dfe6f2', '#f4f8ff', '#d6deec'][i % 3]; x.beginPath(); x.arc(R() * w, R() * h, 2 + R() * 6, 0, 7); x.fill(); } });
+  const snowTex = canvasTex(256, 256, (x, w, h) => { x.fillStyle = '#5bbf5b'; x.fillRect(0, 0, w, h); const R = rng(3); for (let i = 0; i < 500; i++) { x.fillStyle = ['#4fae4f', '#6fd06a', '#52b452'][i % 3]; x.beginPath(); x.arc(R() * w, R() * h, 2 + R() * 6, 0, 7); x.fill(); } });
   snowTex.wrapS = snowTex.wrapT = T3.RepeatWrapping; snowTex.repeat.set(50, 50);
   const ground = new T3.Mesh(new T3.PlaneGeometry(400, 400), new T3.MeshToonMaterial({ color: '#ffffff', map: snowTex, gradientMap: GRAD })); ground.rotation.x = -Math.PI / 2; ground.receiveShadow = true; vil.add(ground);
-  { const path = new T3.Mesh(new T3.RingGeometry(3.2, 5.2, 48), new T3.MeshToonMaterial({ color: '#cbbfae', gradientMap: GRAD })); path.rotation.x = -Math.PI / 2; path.position.y = 0.01; path.receiveShadow = true; vil.add(path); }
+  { const path = new T3.Mesh(new T3.RingGeometry(3.2, 5.2, 48), new T3.MeshToonMaterial({ color: '#f2d48a', gradientMap: GRAD })); path.rotation.x = -Math.PI / 2; path.position.y = 0.01; path.receiveShadow = true; vil.add(path); }
   const COL = []; // colisões: {t:'c', x, z, r} ou {t:'b', x, z, ry, hw, hd}
   const WIN = [], CHIM = [];
   function house(x, z, ry, w, d, col, door) { const g = grp(vil, x, 0, z); g.rotation.y = ry; tb(g, 0, 1.3, 0, w, 2.6, d, col); tb(g, 0, 0.15, 0, w + 0.1, 0.3, d + 0.1, '#7a7480'); [-1, 1].forEach(s => tb(g, s * w / 2, 1.3, d / 2 + 0.01, 0.18, 2.6, 0.06, '#4a3424')); tb(g, 0, 2.55, d / 2 + 0.01, w, 0.16, 0.06, '#4a3424');
@@ -38,7 +43,7 @@
   const casas = HOUSES.map(h => house(...h)); const casaFamilia = casas[0];
   // pinheiros nevados
   { const R = rng(801); for (let i = 0; i < 70; i++) { const a = R() * Math.PI * 2, r = 22 + R() * 34; const x = Math.cos(a) * r, z = Math.sin(a) * r - 6; if (Math.hypot(x, z + 50) < 14 || Math.hypot(x + 14, z - 11) < 4) continue; const g = grp(vil, x, 0, z); const s = 0.8 + R() * 0.8; g.scale.setScalar(s);
-      tb(g, 0, 0.5, 0, 0.35, 1, 0.35, '#5a3a24'); for (let j = 0; j < 3; j++) { part(g, CONE, '#2a5a3a', 0, 1.6 + j * 1.0, 0, 1.4 - j * 0.35, 1.6, 1.4 - j * 0.35); part(g, CONE, '#ffffff', 0, 2.1 + j * 1.0, 0, 0.6 - j * 0.15, 0.6, 0.6 - j * 0.15); } COL.push({ t: 'c', x, z, r: 0.45 * s }); } }
+      if (!VISUAL_BLOCOS) arvoreFolhas(g, R); else { tb(g, 0, 0.5, 0, 0.35, 1, 0.35, '#5a3a24'); for (let j = 0; j < 3; j++) { part(g, CONE, '#2a5a3a', 0, 1.6 + j * 1.0, 0, 1.4 - j * 0.35, 1.6, 1.4 - j * 0.35); part(g, CONE, '#ffffff', 0, 2.1 + j * 1.0, 0, 0.6 - j * 0.15, 0.6, 0.6 - j * 0.15); } } COL.push({ t: 'c', x, z, r: 0.45 * s }); } }
   // poço no meio da vila
   { const w = grp(vil, 0, 0, 0); part(w, CYL, '#8a8a94', 0, 0.45, 0, 0.9, 0.9, 0.9); part(w, CYL, '#1a2a4a', 0, 0.91, 0, 0.7, 0.02, 0.7); [-1, 1].forEach(s => tb(w, s * 0.8, 1.6, 0, 0.12, 1.6, 0.12, '#5a3a24')); part(w, ROOF, '#4a3a4a', 0, 2.7, 0, 1.2, 0.8, 1.2).rotation.y = Math.PI / 4; tb(w, 0, 2.2, 0, 1.7, 0.08, 0.08, '#5a3a24'); part(w, CYL, '#7a5a3a', 0.2, 1.7, 0, 0.12, 0.25, 0.12); COL.push({ t: 'c', x: 0, z: 0, r: 1.0 }); }
   // cerca, lenha e barris pra dar vida
@@ -473,20 +478,20 @@
   const mini = $('mini'), mx = mini.getContext('2d'); let miniT = 0;
   function desenhaMini(p) { const W = mini.width, H = mini.height, k = zona === 'valdren' ? 3.6 : dentro ? 9 : 4.8; mx.setTransform(1, 0, 0, 1, 0, 0); mx.clearRect(0, 0, W, H);
     mx.save(); mx.beginPath(); mx.arc(W / 2, H / 2, W / 2 - 2, 0, 7); mx.clip();
-    mx.fillStyle = zona === 'valdren' ? '#b8ab98' : dentro ? '#7a5a3a' : '#eef3fa'; mx.fillRect(0, 0, W, H);
+    mx.fillStyle = zona === 'valdren' ? '#e8d8b8' : dentro ? '#c8925a' : '#9ed88a'; mx.fillRect(0, 0, W, H);
     mx.translate(W / 2, H / 2); mx.scale(k, k); mx.translate(-p.x, -p.z);
     if (zona === 'valdren') { mx.fillStyle = '#4a7a9a'; mx.fillRect(VX + 28, -45, 40, 90); mx.strokeStyle = '#7a7068'; mx.lineWidth = 1.6; mx.beginPath(); mx.arc(VX, 0, 46, 0, 7); mx.stroke(); }
-    else if (!dentro) { mx.fillStyle = '#cbbfae'; mx.beginPath(); mx.arc(0, 0, 5.2, 0, 7); mx.arc(0, 0, 3.2, 0, 7, true); mx.fill(); }
+    else if (!dentro) { mx.fillStyle = '#f2d48a'; mx.beginPath(); mx.arc(0, 0, 5.2, 0, 7); mx.arc(0, 0, 3.2, 0, 7, true); mx.fill(); }
     const lista = zona === 'valdren' ? COLV : dentro ? COLC : COL;
-    lista.forEach(o => { if (o.t === 'c') { if (o.npc) return; mx.fillStyle = zona === 'vila' && !dentro ? '#3a7a4a' : '#7a7068'; mx.beginPath(); mx.arc(o.x, o.z, Math.max(o.r, 0.5), 0, 7); mx.fill(); }
-      else { mx.save(); mx.translate(o.x, o.z); mx.rotate(-o.ry); mx.fillStyle = zona === 'valdren' ? '#8a6a5a' : '#8a7a8a'; mx.fillRect(-o.hw, -o.hd, o.hw * 2, o.hd * 2); mx.restore(); } });
+    lista.forEach(o => { if (o.t === 'c') { if (o.npc) return; mx.fillStyle = zona === 'vila' && !dentro ? '#3f9a3f' : '#8a84a0'; mx.beginPath(); mx.arc(o.x, o.z, Math.max(o.r, 0.5), 0, 7); mx.fill(); }
+      else { mx.save(); mx.translate(o.x, o.z); mx.rotate(-o.ry); mx.fillStyle = zona === 'valdren' ? '#ff9a7a' : '#ff7a59'; mx.fillRect(-o.hw, -o.hd, o.hw * 2, o.hd * 2); mx.restore(); } });
     if (zona === 'vila' && !dentro) { const d = casaFamilia.position; mx.fillStyle = '#e8b030'; mx.fillRect(d.x - 2.4, d.z - 2.2, 4.8, 4.4); mx.fillStyle = '#4a2a10'; mx.font = 'bold 3.4px sans-serif'; mx.textAlign = 'center'; mx.fillText('🏠', d.x, d.z + 1.2); }
     const npcs = zona === 'valdren' ? NPCV : dentro ? [] : NPCS; mx.fillStyle = '#ffd23c'; mx.strokeStyle = '#3a2a10'; mx.lineWidth = 0.4; npcs.forEach(n => { mx.beginPath(); mx.arc(n.x, n.z, 0.9, 0, 7); mx.fill(); mx.stroke(); });
     if (!dentro) { FERAS.forEach(e => { if (e.morto || e.T.zona !== zona) return; mx.fillStyle = e.T.chefe ? '#3ab8ff' : '#e83a2a'; mx.beginPath(); mx.arc(e.g.position.x, e.g.position.z, e.T.chefe ? 2.2 : 0.8, 0, 7); mx.fill(); }); if (zona === 'vila') { mx.fillStyle = '#ff8a3a'; mx.fillRect(FX0 - 1.2, FZ0 - 1.2, 2.4, 2.4); } }
     if (Q.alvoQ && zona === 'valdren') { const [ax, az] = Q.alvoQ; const t = 1 + Math.sin(gT * 5) * 0.25; mx.fillStyle = '#ff4a3a'; mx.beginPath(); mx.arc(ax, az, 1.4 * t, 0, 7); mx.fill(); }
     mx.restore();
     mx.save(); mx.translate(W / 2, H / 2); mx.rotate(-facing + Math.PI); mx.fillStyle = '#2a7aff'; mx.strokeStyle = '#fff'; mx.lineWidth = 2; mx.beginPath(); mx.moveTo(0, -9); mx.lineTo(6, 6); mx.lineTo(0, 3); mx.lineTo(-6, 6); mx.closePath(); mx.fill(); mx.stroke(); mx.restore();
-    mx.strokeStyle = 'rgba(255,255,255,.9)'; mx.lineWidth = 3; mx.beginPath(); mx.arc(W / 2, H / 2, W / 2 - 2, 0, 7); mx.stroke(); mx.fillStyle = '#fff'; mx.font = 'bold 12px sans-serif'; mx.textAlign = 'center'; mx.fillText('N', W / 2, 13); }
+    mx.strokeStyle = 'rgba(255,255,255,.9)'; mx.lineWidth = 2; mx.beginPath(); mx.arc(W / 2, H / 2, W / 2 - 2, 0, 7); mx.stroke(); mx.fillStyle = '#fff'; mx.font = 'bold 12px sans-serif'; mx.textAlign = 'center'; mx.fillText('N', W / 2, 13); }
   function abrirMapa() { if (conversa || cenaQ) return; const lib = Q.passo >= 1 || finais.some(f => f[0] === 'A'); const L = [
       { id: 'vila', nome: 'Vila de Brumafria', sub: 'Sua cidade natal 🏠', on: true },
       { id: 'valdren', nome: 'Valdren', sub: lib ? 'A capital · Academia Real' : '🔒 Fale com o Professor pra ir', on: lib } ];
@@ -952,7 +957,7 @@
   const PELES = ['#f2b48e', '#f8d0b8', '#e8a878', '#c88a5e', '#9a6440', '#6a4430'];
   const COR_CAB = ['#1c1a28', '#5a3a1e', '#a8742e', '#e8d27a', '#f0f0fa', '#c83a2a', '#3a6ae8', '#9a4ad8'];
   const OLHOS = ['#6a3e1e', '#2a8a4a', '#2a6ac8', '#8a8a9a', '#c83a3a', '#e8a018'];
-  const ROUPAS = ['classe', '#2a3a8a', '#7a2a22', '#2a5a3a', '#4a2a6a', '#2a2a2a', '#e8e0d0', '#8a6a40'];
+  const ROUPAS = ['classe', '#3a7ae8', '#e8503a', '#3faa4a', '#9a5ae0', '#ffb03c', '#f4f0e6', '#c8925a'];
   const ESTILOS = [['espetado', 'Espetado'], ['curto', 'Curto'], ['longo', 'Longo'], ['rabo', 'Rabo de cavalo'], ['moicano', 'Moicano'], ['careca', 'Careca']];
   AR.visual = Object.assign({ nome: 'Leonardo', pele: PELES[0], cabelo: 'espetado', corCab: COR_CAB[0], olhos: OLHOS[0], roupa: 'classe' }, AR.visual || {});
   const HM = k => HMAT[k]; const MH = { pele: HM('#f2b48e'), cab: HM('#1c1a28'), olho: HM('#6a3e1e'), top: HM('#8a6a40'), top2: HM('#6a4a2a'), calca: HM('#4a3a2a') };
@@ -966,7 +971,7 @@
   function tom(c, k) { const x = new T3.Color(c); x.multiplyScalar(k); return '#' + x.getHexString(); }
   function aplicaVisual(cls) { const V = AR.visual; const CLx = CLASSES[cls || AR.classe];
     MH.pele.color.set(V.pele); MH.cab.color.set(V.corCab); MH.olho.color.set(V.olhos);
-    const r = V.roupa === 'classe' ? (CLx ? CLx.roupa : '#8a6a40') : V.roupa; MH.top.color.set(r); MH.top2.color.set(tom(r, 0.72)); MH.calca.color.set(tom(r, 0.55));
+    const r = V.roupa === 'classe' ? (CLx ? CLx.roupa : '#8a6a40') : V.roupa; const rv = vivo(r); MH.top.color.set(rv); MH.top2.color.set(tom(rv, 0.78)); MH.calca.color.set(tom(rv, 0.62));
     cabOrig.forEach(o => o.visible = V.cabelo === 'espetado'); Object.keys(CABG).forEach(k => CABG[k].visible = V.cabelo === k);
     const n = (V.nome || 'Leonardo').slice(0, 16); $('pn-nome').textContent = n; }
 
@@ -1178,36 +1183,42 @@
   aplicaNivel(); aplicaVisual(); if (AR.classe) { const v = AR.barra[2]; if (v !== CLASSES[AR.classe].hab) aplicaClasse(AR.classe); else { montaBarra(); mostraArma(); } } else setTimeout(() => abrirCriar(1), 300);
   setTimeout(fazRetrato, 900);
   // ===================== MODO BLOCOS (visual estilo Pixel Piece: cubos + texturas pixel art) =====================
-  let BLOCOS = true; try { const q = new URLSearchParams(location.search).get('blocos'); BLOCOS = q !== null ? q !== '0' : localStorage.getItem('aetherion-blocos') !== '0'; } catch (e) {}
+  let BLOCOS = VISUAL_BLOCOS;
   function pixTex(pal, rows, rep) { const h = rows.length, w = rows[0].length; const t = canvasTex(w, h, (x) => { for (let r = 0; r < h; r++) for (let c = 0; c < w; c++) { const k = rows[r][c]; if (pal[k]) { x.fillStyle = pal[k]; x.fillRect(c, r, 1, 1); } } }); t.magFilter = t.minFilter = T3.NearestFilter; t.generateMipmaps = false; t.wrapS = t.wrapT = T3.RepeatWrapping; if (rep) t.repeat.set(rep, rep); return t; }
   function ruido(w, h, cores, seed) { const R = rng(seed); const rows = []; for (let r = 0; r < h; r++) { let s = ''; for (let c = 0; c < w; c++) { const u = R(); s += u < 0.7 ? '0' : u < 0.9 ? '1' : '2'; } rows.push(s); } return pixTex({ 0: cores[0], 1: cores[1], 2: cores[2] }, rows); }
   const PT = {
     neve: ruido(16, 16, ['#eef2fa', '#dfe6f2', '#f8fbff'], 21),
-    grama: ruido(16, 16, ['#4a9a3a', '#3f8a32', '#5aaa46'], 22),
-    pedra: pixTex({ 0: '#b8b2a8', 1: '#8f887c', 2: '#d2ccc2', 3: '#6e675c' }, ['0000300000030000', '0220300022203000', '0220300022203000', '0000300000030000', '3333333333333333', '0003000020003002', '0003022020003022', '0003000020003000', '3333333333333333', '0220300000030220', '0220300022030220', '0000300022030000', '3333333333333333', '0003000020003000', '0003022020003022', '0003000000003000']),
-    tabua: pixTex({ 0: '#9a6a3e', 1: '#7e5430', 2: '#b07a48', 3: '#5a3a20' }, ['0000000000000000', '0200020000200200', '0000000000000000', '3333333333333333', '0000000000000000', '0002000020000020', '0000000000000000', '3333333333333333', '0000000000000000', '0200000200002000', '0000000000000000', '3333333333333333', '0000000000000000', '0000200000200000', '0000000000000000', '3333333333333333']),
-    telha: pixTex({ 0: '#4e3e52', 1: '#3a2c3e', 2: '#62506a' }, ['0000200000002000', '0000100000001000', '1111111111111111', '0000000000000000', '2000000020000000', '1000000010000000', '1111111111111111', '0000000000000000', '0000200000002000', '0000100000001000', '1111111111111111', '0000000000000000', '2000000020000000', '1000000010000000', '1111111111111111', '0000000000000000']),
-    folha: ruido(8, 8, ['#2e6a40', '#255a34', '#3a7e4c'], 23),
-    casca: pixTex({ 0: '#5a3a24', 1: '#46291a', 2: '#6e4a30' }, ['0100001000010000', '0100001000010000', '0100201000010020', '0100001000010000', '0100001002010000', '0100001000010000', '2100001000010000', '0100001000010000']),
+    grama: ruido(16, 16, ['#5bbf5b', '#4fae4f', '#72d468'], 22),
+    pedra: pixTex({ 0: '#ffffff', 1: '#e2dccf', 2: '#f6f2ea', 3: '#bdb3a2' }, ['0000300000030000', '0220300022203000', '0220300022203000', '0000300000030000', '3333333333333333', '0003000020003002', '0003022020003022', '0003000020003000', '3333333333333333', '0220300000030220', '0220300022030220', '0000300022030000', '3333333333333333', '0003000020003000', '0003022020003022', '0003000000003000']),
+    tabua: pixTex({ 0: '#d89a5a', 1: '#c0834a', 2: '#eab070', 3: '#8a5a32' }, ['0000000000000000', '0200020000200200', '0000000000000000', '3333333333333333', '0000000000000000', '0002000020000020', '0000000000000000', '3333333333333333', '0000000000000000', '0200000200002000', '0000000000000000', '3333333333333333', '0000000000000000', '0000200000200000', '0000000000000000', '3333333333333333']),
+    telha: pixTex({ 0: '#ffffff', 1: '#cfc6d2', 2: '#ebe6ee' }, ['0000200000002000', '0000100000001000', '1111111111111111', '0000000000000000', '2000000020000000', '1000000010000000', '1111111111111111', '0000000000000000', '0000200000002000', '0000100000001000', '1111111111111111', '0000000000000000', '2000000020000000', '1000000010000000', '1111111111111111', '0000000000000000']),
+    folha: ruido(8, 8, ['#4cb84a', '#3a9e3e', '#72d062'], 23),
+    casca: pixTex({ 0: '#9a6238', 1: '#7e4e2a', 2: '#b07444' }, ['0100001000010000', '0100001000010000', '0100201000010020', '0100001000010000', '0100001002010000', '0100001000010000', '2100001000010000', '0100001000010000']),
     janela: pixTex({ 0: '#cfeaf6', 1: '#2a2230', 2: '#ffe9a8', 3: '#9fd3ea' }, ['1111111111111111', '1000000000000001', '1033000000003301', '1030000000000301', '1000000000000001', '1000000000000001', '1111111111111111', '1000000000000001', '1000000000000001', '1003000000003001', '1000000000000001', '1000000000000001', '1000000000000001', '1000000000000001', '1000000000000001', '1111111111111111']),
   };
   // rosto pixel art (10x10) na frente da cabeça cúbica
-  function rostoTex(pele, olho, cab) { const P = { s: pele, o: olho, b: '#1c1420', w: '#ffffff', m: '#7a2a2a', c: cab, r: '#e89aa0' }; const rows = ['ssssssssss', 'sbbssssbbs', 'ssssssssss', 'swosssswos', 'sbbssssbbs', 'ssssssssss', 'srsssssssr', 'sssmmmmsss', 'ssssmmssss', 'ssssssssss'];
+  function rostoTex(pele, olho, cab) { const P = { s: pele, o: olho, b: '#2b2340', w: '#ffffff', m: '#c8404a', c: cab, r: '#ff9aa8' }; const rows = ['ssssssssss', 'ssssssssss', 'ssbbssbbss', 'sswbsswbss', 'ssbbssbbss', 'srrssssrrs', 'ssmssssmss', 'sssmmmmsss', 'ssssssssss', 'ssssssssss'];
     const t = canvasTex(10, 10, (x) => { for (let r = 0; r < 10; r++) for (let c = 0; c < 10; c++) { x.fillStyle = P[rows[r][c]]; x.fillRect(c, r, 1, 1); } }); t.magFilter = t.minFilter = T3.NearestFilter; t.generateMipmaps = false; return t; }
   const BLOCAVEL = /Sphere|Capsule|Cylinder|Cone|Icosahedron|Dodecahedron|Extrude/;
   const _bb = new T3.Box3(), _sz = new T3.Vector3();
   function cubifica(o) { if (!o.isMesh || o.isInstancedMesh || o.isSprite || !o.geometry || o.userData.naoBloco) return; const t = o.geometry.type; if (!BLOCAVEL.test(t)) return; if (o.geometry === ROOF) return;
     o.geometry.computeBoundingBox(); _bb.copy(o.geometry.boundingBox); _bb.getSize(_sz); o.geometry = BOX; o.scale.multiply(_sz); o.children.forEach(c => { if (c.isMesh && c.material === OUTM) c.visible = false; }); }
   function texturiza(m, tex, rx, ry) { if (!m.isMesh || !m.material || !m.material.isMeshToonMaterial) return; const mat = m.material.clone(); const t = tex.clone(); t.needsUpdate = true; t.repeat.set(Math.max(1, Math.round(rx || 1)), Math.max(1, Math.round(ry || 1))); mat.map = t; mat.color.set('#ffffff'); m.material = mat; }
+  // paleta "bloquinhos coloridos": cada casa ganha uma cor de parede e de telhado
+  const PAREDES_ALEGRES = ['#ffd9a0', '#ffc2ae', '#c4e6ff', '#d2f2b8', '#fff0a0', '#ffd0e4'];
+  const TELHADOS_ALEGRES = ['#ff7a59', '#3a9ee0', '#5bbf5b', '#ffb03c', '#e8607a', '#8a6ae0'];
+  const _cdc = new Map(); function corDaCasa(m, lista) { const g = m.parent || m; if (!_cdc.has(g)) _cdc.set(g, _cdc.size); return lista[_cdc.get(g) % lista.length]; }
   const CORES_PAREDE = ['#c8b8a0', '#b8a890', '#c8b090', '#a89880', '#c0b8a8', '#b0a088', '#ffd8b0', '#e8d8c0', '#d8d0c0', '#c8c0b0', '#b8a898', '#d0c8b8'];
   function modoBlocos() { if (!BLOCOS) return;
+    // 0) sem neve na vila: telhados, pinheiros e lenha ficam coloridos
+    { const NV = TM['#ffffff']; if (NV) vil.traverse(m => { if (m.isMesh && m.material === NV) m.visible = false; }); }
     // 1) tudo que é redondo vira cubo
     world.traverse(cubifica);
     // 2) texturas pixel art pelo mundo (pela cor original da peça)
     world.traverse(m => { if (!m.isMesh || !m.material || !m.material.isMeshToonMaterial || !m.material.color) return; const c = '#' + m.material.color.getHexString(); const s = m.scale;
-      if (m === ground) { const mat = m.material.clone(); mat.map = PT.neve.clone(); mat.map.needsUpdate = true; mat.map.repeat.set(200, 200); m.material = mat; return; }
-      if (CORES_PAREDE.includes(c) && s.y > 1.5) texturiza(m, PT.pedra, s.x / 1.2, s.y / 1.2);
-      else if (c === '#4a3a4a' && m.geometry === ROOF) texturiza(m, PT.telha, s.x / 1.2, s.y / 1.2);
+      if (m === ground) { const mat = m.material.clone(); mat.map = PT.grama.clone(); mat.map.needsUpdate = true; mat.map.repeat.set(200, 200); m.material = mat; return; }
+      if (CORES_PAREDE.includes(c) && s.y > 1.5) { texturiza(m, PT.pedra, s.x / 1.2, s.y / 1.2); m.material.color.set(corDaCasa(m, PAREDES_ALEGRES)); }
+      else if (c === '#4a3a4a' && m.geometry === ROOF) { texturiza(m, PT.telha, s.x / 1.2, s.y / 1.2); m.material.color.set(corDaCasa(m, TELHADOS_ALEGRES)); }
       else if (c === '#5a3a24' || c === '#6a4a2a' || c === '#7a4a2a' || c === '#8a5a3a') { if (s.y > s.x * 1.5) texturiza(m, PT.casca, 1, Math.max(1, s.y / 0.8)); else texturiza(m, PT.tabua, Math.max(1, s.x / 0.8), Math.max(1, s.y / 0.8)); }
       else if (c === '#2a5a3a') texturiza(m, PT.folha, 2, 2);
       else if (c === '#ffc468' && s.x < 1 && s.y < 1) { texturiza(m, PT.janela, 1, 1); m.material.map.repeat.set(1, 1); } });
@@ -1223,9 +1234,32 @@
       const f = new T3.Mesh(BOX, new T3.MeshBasicMaterial({ map: rostoTex(o.skin, o.iris || '#5a3a1e', o.hairC || '#1c1a28'), toneMapped: false })); f.position.set(0, 0.125, hr * 1.0 + 0.004); f.scale.set(hr * 1.9, hr * 2.0, 0.006); f.userData.naoBloco = true; P.head.add(f); P.rosto = f; });
     // 4) todas as texturas em pixel (sem borrar)
     scene.traverse(m => { if (m.isMesh && m.material && m.material.map && !m.isSprite) { m.material.map.magFilter = T3.NearestFilter; m.material.map.needsUpdate = true; } });
-    // 5) sombreamento mais chapado
+    // 5) cores mais vivas em tudo (cenário, bichos e pessoas)
+    { const feito = new Set(Object.values(MH)); world.traverse(m => { if (!m.isMesh || !m.material) return; (Array.isArray(m.material) ? m.material : [m.material]).forEach(mt => { if (!mt.isMeshToonMaterial || mt.map || feito.has(mt)) return; feito.add(mt); mt.color.set(vivo('#' + mt.color.getHexString())); }); }); }
     hemi.intensity *= 1.15; }
   modoBlocos();
+  // ===================== MODO VÍDEO (padrão: visual liso dos vídeos — tijolo, telha de barro, ladrilho, sol quente) =====================
+  function modoVideo() { if (BLOCOS) return;
+    { const NV = TM['#ffffff']; if (NV) vil.traverse(m => { if (m.isMesh && m.material === NV) m.visible = false; }); }
+    OUTM.visible = false; GRAD.minFilter = GRAD.magFilter = T3.LinearFilter; GRAD.needsUpdate = true;
+    const TX = {
+      tijolo: canvasTex(256, 256, (x, w, h) => { x.fillStyle = '#b8946a'; x.fillRect(0, 0, w, h); const R = rng(41); for (let r = 0; r < 8; r++) { const off = (r % 2) * 32; for (let c = -1; c < 5; c++) { const v = R(); x.fillStyle = `hsl(${30 + v * 9},${40 + v * 14}%,${66 + R() * 10}%)`; x.fillRect(c * 64 + off + 2, r * 32 + 2, 60, 28); x.fillStyle = 'rgba(255,255,255,.10)'; x.fillRect(c * 64 + off + 2, r * 32 + 2, 60, 5); } } }),
+      base: canvasTex(256, 256, (x, w, h) => { x.fillStyle = '#7a746c'; x.fillRect(0, 0, w, h); const R = rng(45); for (let r = 0; r < 4; r++) { const off = (r % 2) * 48; for (let c = -1; c < 4; c++) { x.fillStyle = `hsl(30,${6 + R() * 8}%,${58 + R() * 12}%)`; x.fillRect(c * 96 + off + 3, r * 64 + 3, 90, 58); } } }),
+      telha: canvasTex(256, 256, (x, w, h) => { x.fillStyle = '#8a3418'; x.fillRect(0, 0, w, h); const R = rng(42); for (let r = 0; r < 8; r++) for (let c = -1; c < 9; c++) { const X = c * 32 + (r % 2) * 16, Y = r * 32; const l = 46 + R() * 8; const g = x.createLinearGradient(X, 0, X + 32, 0); g.addColorStop(0, `hsl(14,62%,${l - 14}%)`); g.addColorStop(0.5, `hsl(17,72%,${l + 6}%)`); g.addColorStop(1, `hsl(13,62%,${l - 16}%)`); x.fillStyle = g; x.fillRect(X + 1, Y, 30, 29); } }),
+      piso: canvasTex(256, 256, (x, w, h) => { x.fillStyle = '#a2866a'; x.fillRect(0, 0, w, h); const R = rng(43); for (let r = 0; r < 4; r++) for (let c = 0; c < 4; c++) { x.fillStyle = `hsl(${32 + R() * 6},${40 + R() * 10}%,${76 + R() * 8}%)`; x.fillRect(c * 64 + 2, r * 64 + 2, 60, 60); x.fillStyle = 'rgba(255,255,255,.14)'; x.fillRect(c * 64 + 2, r * 64 + 2, 60, 7); x.fillStyle = 'rgba(90,60,30,.08)'; x.fillRect(c * 64 + 2, r * 64 + 52, 60, 10); } }),
+      grama: canvasTex(256, 256, (x, w, h) => { x.fillStyle = '#6cb84a'; x.fillRect(0, 0, w, h); const R = rng(44); for (let i = 0; i < 1600; i++) { x.fillStyle = `hsla(${92 + R() * 22},${42 + R() * 22}%,${36 + R() * 24}%,.55)`; x.fillRect(R() * w, R() * h, 2, 3 + R() * 5); } }),
+    };
+    Object.values(TX).forEach(t => { t.wrapS = t.wrapT = T3.RepeatWrapping; });
+    const veste = (m, t, rx, ry, cor) => { const mat = m.material.clone(); const tt = t.clone(); tt.needsUpdate = true; tt.repeat.set(rx, ry); mat.map = tt; mat.color.set(cor || '#ffffff'); m.material = mat; };
+    world.traverse(m => { if (!m.isMesh || !m.visible || !m.material || !m.material.isMeshToonMaterial || m.material.map) return; const c = '#' + m.material.color.getHexString(); const sc = m.scale;
+      if (m.geometry === BOX && CORES_PAREDE.includes(c) && sc.y > 1.5) veste(m, TX.tijolo, Math.max(1, Math.round(sc.x / 1.3)), Math.max(1, Math.round(sc.y / 0.85)));
+      else if (m.geometry === BOX && c === '#7a7480') veste(m, TX.base, Math.max(1, Math.round(sc.x / 1.5)), 1);
+      else if (m.geometry === ROOF && c === '#4a3a4a') veste(m, TX.telha, 8, 5); });
+    { const gm2 = ground.material.clone(); gm2.map = TX.grama.clone(); gm2.map.needsUpdate = true; gm2.map.repeat.set(80, 80); ground.material = gm2; }
+    vil.children.forEach(m => { if (m.isMesh && m.geometry && m.geometry.type === 'RingGeometry') m.visible = false; });
+    { const t = TX.piso.clone(); t.needsUpdate = true; t.repeat.set(9, 9); const pz = new T3.Mesh(new T3.CircleGeometry(14, 64), new T3.MeshToonMaterial({ color: '#ffffff', map: t, gradientMap: GRAD })); pz.rotation.x = -Math.PI / 2; pz.position.set(0, 0.006, -3); pz.receiveShadow = true; vil.add(pz); }
+    neve.material = new T3.MeshBasicMaterial({ color: '#d9822b' }); }
+  modoVideo();
   window.__dbg = { vestePeca, atualizaPecas, PECAS, BLOCOS, modoBatalha, bmLiga, bmDesliga, BMS, ORB, get BM() { return BM; }, get hora() { return hora; }, set hora(v) { hora = v; }, usarHab2: id => classePoder2(id), BUFF, abrirCriar, aplicaClasse, CLASSES, get desp() { return desp; }, set desp(v) { desp = v; }, usarHab: id => classePoder(id), renderer, scene, world, ganhaXp, vesteFantasia, abrirPerfil, fazRetrato, irValdren, Q, heroi, ativo, AR, FERAS, golem, atacar, get vida() { return vida; }, set vida(v) { vida = v; }, abrirLoja, usarPoder: id => usarPoder(PW[id]), acao: () => acao(), get alvo() { return alvo; } };
   // ---------- laço do jogo ----------
   let vy = 0, noChao = true, facing = 0, vel = 0, gT = 0, last = performance.now();
@@ -1266,7 +1300,7 @@
     // ambiente
     { const cx = zona === 'valdren' ? VX : 0, an = (hora - 6) / 12 * Math.PI; sunBall.position.set(cx + Math.cos(an) * 110, Math.sin(an) * 70 + 4, -100); moon.position.set(cx - Math.cos(an) * 110, -Math.sin(an) * 70 + 4, -100); sunBall.visible = !dentro && sunBall.position.y > -4; moon.visible = !dentro && moon.position.y > -4; WIN.forEach(w => w.material.opacity = 0.15 + noiteF * 0.65); $('ciclo').textContent = modo === 'dia' ? '☾' : '☀'; }
     nuvens.forEach((c, i) => { c.visible = !dentro; c.position.x += dt * (0.5 + (i % 3) * 0.2); if (c.position.x > 140) c.position.x = -140; });
-    neve.visible = !dentro && zona === 'vila'; if (neve.visible) neve.userData.place((i, d) => { const R = rng(i + 91); const k = ((gT * (0.08 + R() * 0.06) + R()) % 1); d.position.set(p.x + (R() - .5) * 30 + Math.sin(gT + i) * 0.4, 12 - k * 12, p.z + (R() - .5) * 30); d.scale.setScalar(d.position.distanceTo(cam.position) < 2.5 ? 0.0001 : 0.03 + R() * 0.04); });
+    neve.visible = !BLOCOS && !dentro && zona === 'vila'; if (neve.visible) neve.userData.place((i, d) => { if (i % 3) return false; const R = rng(i + 91); const k = ((gT * (0.08 + R() * 0.06) + R()) % 1); d.position.set(p.x + (R() - .5) * 30 + Math.sin(gT + i) * 0.4, 12 - k * 12, p.z + (R() - .5) * 30); d.scale.setScalar(d.position.distanceTo(cam.position) < 2.5 ? 0.0001 : 0.03 + R() * 0.04); });
     fumaca.visible = !dentro && zona === 'vila'; if (fumaca.visible) fumaca.userData.place((i, d) => { const c = CHIM[i % CHIM.length]; const R = rng(i + 5); const k = ((gT * 0.12 + R()) % 1); c[0].updateMatrixWorld(); v3.set(c[1], c[2], c[3]); c[0].localToWorld(v3); d.position.set(v3.x + k * 1.6 + Math.sin(gT + i) * 0.2, v3.y + k * 4, v3.z); d.scale.setScalar(0.25 + k * 0.9); });
     fogoL.intensity = dentro ? 3.2 + Math.sin(gT * 13) * 0.4 : 0; chamas.forEach((f, i) => f.scale.y = 0.5 * (1 + Math.sin(gT * 15 + i * 2) * 0.2));
     poderesFrame(dt, p); combateFrame(dt, p); classeFrame(dt, p); habsFrame(dt); bmFrame(dt, p); perfilFrame(dt); criarFrame(dt); miniT += dt; if (miniT > 0.08) { miniT = 0; desenhaMini(p); }

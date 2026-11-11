@@ -5,7 +5,7 @@
   function shade(hex, k) { const c = new T3.Color(hex); c.multiplyScalar(k); return '#' + c.getHexString(); }
   cam.near = 0.03; cam.far = 1600; cam.updateProjectionMatrix(); renderer.shadowMap.enabled = true; renderer.shadowMap.type = T3.PCFSoftShadowMap;
   sun.castShadow = true; sun.shadow.mapSize.set(2048, 2048); sun.shadow.camera.left = -18; sun.shadow.camera.right = 18; sun.shadow.camera.top = 18; sun.shadow.camera.bottom = -18; sun.shadow.camera.near = 1; sun.shadow.camera.far = 120; sun.shadow.bias = -0.0008; scene.add(sun.target);
-  const GRAD = (() => { const d = new Uint8Array([95, 95, 95, 255, 175, 175, 175, 255, 255, 255, 255, 255]); const t = new T3.DataTexture(d, 3, 1); t.minFilter = t.magFilter = T3.NearestFilter; t.needsUpdate = true; return t; })();
+  const GRAD = (() => { const d = new Uint8Array([150, 150, 150, 255, 210, 210, 210, 255, 255, 255, 255, 255]); const t = new T3.DataTexture(d, 3, 1); t.minFilter = t.magFilter = T3.NearestFilter; t.needsUpdate = true; return t; })();
   const TM = {}; function tm(c) { return TM[c] || (TM[c] = new T3.MeshToonMaterial({ color: c, gradientMap: GRAD })); }
   const GM = {}; function gm(c) { return GM[c] || (GM[c] = new T3.MeshBasicMaterial({ color: c, toneMapped: false })); }
   const OUTM = new T3.MeshBasicMaterial({ color: 0x15101c, side: T3.BackSide });
