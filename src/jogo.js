@@ -42,7 +42,7 @@
   const HOUSES = [[0, -8, 0, 4.5, 4, '#c8b8a0', true], [-7, -5, 0.4, 4, 3.6, '#b8a890'], [7, -5, -0.4, 4, 3.6, '#c8b090'], [-12, 2, 0.9, 3.6, 3.4, '#a89880'], [12, 2, -0.9, 3.6, 3.4, '#c0b8a8'], [-5, -16, 0.2, 4, 3.6, '#b0a088'], [6, -17, -0.2, 4.2, 3.6, '#c8b8a0'], [-16, -10, 0.7, 3.6, 3.4, '#b8a890'], [17, -11, -0.7, 3.6, 3.4, '#a89880']];
   const casas = HOUSES.map(h => house(...h)); const casaFamilia = casas[0];
   // pinheiros nevados
-  { const R = rng(801); for (let i = 0; i < 70; i++) { const a = R() * Math.PI * 2, r = 22 + R() * 34; const x = Math.cos(a) * r, z = Math.sin(a) * r - 6; if (Math.hypot(x, z + 50) < 14 || Math.hypot(x + 14, z - 11) < 4) continue; const g = grp(vil, x, 0, z); const s = 0.8 + R() * 0.8; g.scale.setScalar(s);
+  { const R = rng(801); for (let i = 0; i < 90; i++) { const a = R() * Math.PI * 2, r = 31 + R() * 52; const x = Math.cos(a) * r, z = Math.sin(a) * r - 6; if (Math.hypot(x, z + 62) < 14 || Math.hypot(x + 14, z - 11) < 4) continue; const g = grp(vil, x, 0, z); const s = 0.8 + R() * 0.8; g.scale.setScalar(s);
       if (!VISUAL_BLOCOS) arvoreFolhas(g, R); else { tb(g, 0, 0.5, 0, 0.35, 1, 0.35, '#5a3a24'); for (let j = 0; j < 3; j++) { part(g, CONE, '#2a5a3a', 0, 1.6 + j * 1.0, 0, 1.4 - j * 0.35, 1.6, 1.4 - j * 0.35); part(g, CONE, '#ffffff', 0, 2.1 + j * 1.0, 0, 0.6 - j * 0.15, 0.6, 0.6 - j * 0.15); } } COL.push({ t: 'c', x, z, r: 0.45 * s }); } }
   // poço no meio da vila
   { const w = grp(vil, 0, 0, 0); part(w, CYL, '#8a8a94', 0, 0.45, 0, 0.9, 0.9, 0.9); part(w, CYL, '#1a2a4a', 0, 0.91, 0, 0.7, 0.02, 0.7); [-1, 1].forEach(s => tb(w, s * 0.8, 1.6, 0, 0.12, 1.6, 0.12, '#5a3a24')); part(w, ROOF, '#4a3a4a', 0, 2.7, 0, 1.2, 0.8, 1.2).rotation.y = Math.PI / 4; tb(w, 0, 2.2, 0, 1.7, 0.08, 0.08, '#5a3a24'); part(w, CYL, '#7a5a3a', 0.2, 1.7, 0, 0.12, 0.25, 0.12); COL.push({ t: 'c', x: 0, z: 0, r: 1.0 }); }
@@ -50,6 +50,17 @@
   { for (let i = -6; i <= 6; i++) { tb(vil, i * 1.1, 0.45, 9, 0.12, 0.9, 0.12, '#6a4a2a'); } tb(vil, 0, 0.7, 9, 14.4, 0.08, 0.06, '#6a4a2a'); tb(vil, 0, 0.35, 9, 14.4, 0.08, 0.06, '#6a4a2a'); COL.push({ t: 'b', x: 0, z: 9, ry: 0, hw: 7.3, hd: 0.15 });
     [[3.2, -5.4], [-3.4, -5.6]].forEach(([x, z]) => { const g = grp(vil, x, 0, z); for (let k = 0; k < 5; k++) { const l = part(g, CYL, '#8a5a3a', 0, 0.12 + Math.floor(k / 3) * 0.22, (k % 3 - 1) * 0.22 + (k > 2 ? 0.11 : 0), 0.11, 0.9, 0.11); l.rotation.z = Math.PI / 2; } part(g, CYL, '#ffffff', 0, 0.48, 0, 0.5, 0.06, 0.4); COL.push({ t: 'c', x, z, r: 0.55 }); });
     [[8.5, -1.5], [-8.6, -1.2]].forEach(([x, z]) => { part(vil, CYL, '#7a4a2a', x, 0.45, z, 0.35, 0.9, 0.35); part(vil, TOR, '#4a4a54', x, 0.7, z, 0.36, 0.36, 0.3).rotation.x = Math.PI / 2; COL.push({ t: 'c', x, z, r: 0.45 }); }); }
+  // ---------- cidade maior: anel de casas novas, feira e caminhos de terra ----------
+  const HOUSES2 = [[-14, -18, 0.5, 4, 3.6, '#c0a888'], [14, -19, -0.5, 4.2, 3.8, '#b8a890'], [-20, -4, 1.1, 3.8, 3.4, '#c8b8a0'], [20, 2, -1.2, 4, 3.6, '#a89880'], [-9, 14, 2.6, 3.6, 3.4, '#c8b090'], [10, 15, 3.4, 4, 3.6, '#b0a088'], [-19, -14, 0.8, 3.8, 3.4, '#b8a890'], [19, -13, -0.8, 3.8, 3.4, '#c0b8a8']];
+  HOUSES2.forEach(h => house(...h));
+  [0, Math.PI / 2, Math.PI, Math.PI * 1.5].forEach(a => { const caminho = new T3.Mesh(new T3.PlaneGeometry(3, 40), new T3.MeshToonMaterial({ color: '#e8c88a', gradientMap: GRAD })); caminho.rotation.x = -Math.PI / 2; caminho.rotation.z = -a; caminho.position.set(Math.sin(a) * 24, 0.012, -5 + Math.cos(a) * 24); caminho.receiveShadow = true; vil.add(caminho); });
+  // barracas de feira perto do portão leste
+  [[17, -1, 0.4], [19, -8, -0.3], [14, -6, 1.2]].forEach(([x, z, ry]) => { const g = grp(vil, x, 0, z); g.rotation.y = ry; tb(g, 0, 0.45, 0, 1.6, 0.9, 1, '#8a5a34'); tb(g, 0, 1.9, 0, 2, 0.12, 1.4, '#c84a4a'); [-0.8, 0.8].forEach(s => tb(g, s, 1.2, -0.5, 0.1, 1.6, 0.1, '#6a4024')); part(g, SPH, '#e8a030', -0.4, 1.0, 0, 0.16, 0.14, 0.16); part(g, SPH, '#7ab84a', 0.1, 1.0, 0.1, 0.15, 0.13, 0.15); part(g, SPH, '#c84a3a', 0.5, 1.0, -0.1, 0.15, 0.13, 0.15); COL.push({ t: 'c', x, z, r: 1.0 }); });
+  // ---------- muralha de pedra com neve, 4 portões e torres ----------
+  const MW = { x: 0, z: -5, r: 26 };
+  { const N = 44, seg = 2 * Math.PI * MW.r / N + 0.15; const gates = [0, Math.PI / 2, Math.PI, Math.PI * 1.5];
+    for (let i = 0; i < N; i++) { const a = i / N * Math.PI * 2; if (gates.some(g0 => Math.abs(Math.atan2(Math.sin(a - g0), Math.cos(a - g0))) < 0.14)) continue; const x = MW.x + Math.sin(a) * MW.r, z = MW.z + Math.cos(a) * MW.r; const g = grp(vil, x, 0, z); g.rotation.y = a; tb(g, 0, 1.5, 0, seg, 3, 1.2, '#8a8a94'); tb(g, 0, 3.1, 0, seg, 0.35, 1.4, '#ffffff'); for (let k = -1; k <= 1; k++) tb(g, k * seg * 0.33, 3.45, 0, seg * 0.2, 0.5, 1.1, '#8a8a94'); COL.push({ t: 'b', x, z, ry: a, hw: seg / 2, hd: 0.7 }); }
+    gates.forEach(g0 => { [-1, 1].forEach(s => { const a = g0 + s * 0.17; const x = MW.x + Math.sin(a) * MW.r, z = MW.z + Math.cos(a) * MW.r; const g = grp(vil, x, 0, z); part(g, CYL, '#7a7a88', 0, 2.2, 0, 1.1, 4.4, 1.1); part(g, CYL, '#ffffff', 0, 4.5, 0, 1.25, 0.3, 1.25); part(g, CONE, '#4a3a4a', 0, 5.3, 0, 1.3, 1.4, 1.3); part(g, CYL, '#3a2a1a', 0, 3.2, 0, 0.12, 0.5, 0.12); glowSpr(g, 0, 3.6, 0, 2.6, '#ffa040', 0.8); tb(g, 0, 6.3, 0, 0.08, 1.2, 0.08, '#5a3a24'); tb(g, 0.45, 6.6, 0, 0.9, 0.5, 0.04, '#c84a4a'); COL.push({ t: 'c', x, z, r: 1.2 }); }); }); }
   const moon = grp(world, -30, 40, -90); part(moon, SPH, '#fff6dc', 0, 0, 0, 6, 6, 6, 0, true); glowSpr(moon, 0, 0, -1, 40, '#c8d8ff', 0.6);
   const sunBall = grp(world, 40, 50, -100); part(sunBall, SPH, '#fff2c0', 0, 0, 0, 5, 5, 5, 0, true); glowSpr(sunBall, 0, 0, -1, 30, '#ffe0a0', 0.7);
   const nuvens = []; { const R = rng(5); for (let i = 0; i < 12; i++) { const c = grp(world, (R() - 0.5) * 240, 30 + R() * 12, -40 - R() * 120); for (let k = 0; k < 4; k++) part(c, SPH, '#ffffff', k * 2.6 - 4, R(), 0, 2.6, 1.3, 1.8, 0, true); nuvens.push(c); } }
@@ -476,12 +487,12 @@
 
   // ---------- MAPA: minimapa e viagem rápida ----------
   const mini = $('mini'), mx = mini.getContext('2d'); let miniT = 0;
-  function desenhaMini(p) { const W = mini.width, H = mini.height, k = zona === 'valdren' ? 3.6 : dentro ? 9 : 4.8; mx.setTransform(1, 0, 0, 1, 0, 0); mx.clearRect(0, 0, W, H);
+  function desenhaMini(p) { const W = mini.width, H = mini.height, k = zona === 'valdren' ? 3.6 : dentro ? 9 : 3.4; mx.setTransform(1, 0, 0, 1, 0, 0); mx.clearRect(0, 0, W, H);
     mx.save(); mx.beginPath(); mx.arc(W / 2, H / 2, W / 2 - 2, 0, 7); mx.clip();
     mx.fillStyle = zona === 'valdren' ? '#e8d8b8' : dentro ? '#c8925a' : '#9ed88a'; mx.fillRect(0, 0, W, H);
     mx.translate(W / 2, H / 2); mx.scale(k, k); mx.translate(-p.x, -p.z);
     if (zona === 'valdren') { mx.fillStyle = '#4a7a9a'; mx.fillRect(VX + 28, -45, 40, 90); mx.strokeStyle = '#7a7068'; mx.lineWidth = 1.6; mx.beginPath(); mx.arc(VX, 0, 46, 0, 7); mx.stroke(); }
-    else if (!dentro) { mx.fillStyle = '#f2d48a'; mx.beginPath(); mx.arc(0, 0, 5.2, 0, 7); mx.arc(0, 0, 3.2, 0, 7, true); mx.fill(); }
+    else if (!dentro) { mx.fillStyle = '#f2d48a'; mx.beginPath(); mx.arc(0, 0, 5.2, 0, 7); mx.arc(0, 0, 3.2, 0, 7, true); mx.fill(); mx.strokeStyle = '#7a7068'; mx.lineWidth = 1.6; mx.beginPath(); mx.arc(MW.x, MW.z, MW.r, 0, 7); mx.stroke(); }
     const lista = zona === 'valdren' ? COLV : dentro ? COLC : COL;
     lista.forEach(o => { if (o.t === 'c') { if (o.npc) return; mx.fillStyle = zona === 'vila' && !dentro ? '#3f9a3f' : '#8a84a0'; mx.beginPath(); mx.arc(o.x, o.z, Math.max(o.r, 0.5), 0, 7); mx.fill(); }
       else { mx.save(); mx.translate(o.x, o.z); mx.rotate(-o.ry); mx.fillStyle = zona === 'valdren' ? '#ff9a7a' : '#ff7a59'; mx.fillRect(-o.hw, -o.hd, o.hw * 2, o.hd * 2); mx.restore(); } });
@@ -579,11 +590,11 @@
   const FERAS = [];
   function solta(tipo, x, z) { const e = fera(tipo); e.home = [x, z]; e.g.position.set(x, 0, z); e.ry = Math.random() * 6.28; reseta(e); FERAS.push(e); return e; }
   function reseta(e) { e.vida = e.max = e.T.vida; e.estado = 'anda'; e.t = 0; e.cd = 0; e.morto = false; e.mortoT = 0; e.stun = 0; e.congela = 0; e.vuln = 0; e.hitT = 9; e.alvoW = e.home.slice(); e.g.visible = true; e.g.position.set(e.home[0], 0, e.home[1]); e.b.rotation.set(0, 0, 0); e.b.position.set(0, 0, 0); }
-  // Brumafria: lobos e javalis na floresta, o Golem na caverna do norte
-  [[-32, -28], [-34, -24], [-29, -31], [34, 16], [37, 13], [-38, 12], [-35, 16]].forEach(([x, z]) => solta('lobo', x, z));
-  [[30, -34], [-22, -42], [40, -6]].forEach(([x, z]) => solta('javali', x, z));
-  const GX = 0, GZ = -50; const golem = solta('golem', GX, GZ);
-  const morcegao = solta('morcego', -21, 20); // um pouco depois da Forja, saindo da cidade
+  // Brumafria: lobos e javalis na floresta, o Golem na caverna do norte — todos FORA da muralha
+  [[-44, -36], [-47, -30], [-40, -42], [46, 22], [50, 17], [-50, 16], [-46, 22]].forEach(([x, z]) => solta('lobo', x, z));
+  [[42, -44], [-30, -55], [52, -8]].forEach(([x, z]) => solta('javali', x, z));
+  const GX = 0, GZ = -62; const golem = solta('golem', GX, GZ);
+  const morcegao = solta('morcego', 0, 34); // voa em volta da cidade, por fora da muralha
   // Valdren: ratos gigantes no esgoto
   POCAS.slice(0, 7).forEach(([x, z]) => solta('rato', x, z));
 
@@ -704,8 +715,8 @@
       e.gelo.visible = e.congela > 0; if (e.congela > 0) { e.congela -= dt; }
       else if (e.stun > 0) { e.stun -= dt; e.b.rotation.z = Math.sin(gT * 18) * 0.12; }
       else { e.b.rotation.z = 0;
-        if (e.estado === 'anda') { e.t -= dt; if (e.t <= 0) { e.t = 2 + Math.random() * 3; const a = Math.random() * 6.28, r = Math.random() * (T.chefe ? 3 : 5); e.alvoW = [e.home[0] + Math.cos(a) * r, e.home[1] + Math.sin(a) * r]; } v = anda(e, e.alvoW[0], e.alvoW[1], T.vel * 0.35, dt) ? T.vel * 0.35 : 0; if (d < T.aggro && livre) { e.estado = 'caca'; if (!T.chefe && Math.random() < 0.5) numero(g, '!', '#ff5a3a', T.alt + 0.4); } }
-        else if (e.estado === 'caca') { if (!livre || Math.hypot(g.x - e.home[0], g.z - e.home[1]) > (T.chefe ? 14 : 24) || d > T.aggro * 2.2) e.estado = 'volta';
+        if (e.estado === 'anda') { e.t -= dt; if (e.tipo === 'morcego') { e.orbA = (e.orbA == null ? Math.random() * 6.28 : e.orbA) + dt * 0.35; e.alvoW = [Math.sin(e.orbA) * 34, -5 + Math.cos(e.orbA) * 34]; } else if (e.t <= 0) { e.t = 2 + Math.random() * 3; const a = Math.random() * 6.28, r = Math.random() * (T.chefe ? 3 : 5); e.alvoW = [e.home[0] + Math.cos(a) * r, e.home[1] + Math.sin(a) * r]; } v = anda(e, e.alvoW[0], e.alvoW[1], T.vel * 0.35, dt) ? T.vel * 0.35 : 0; if (d < T.aggro && livre) { e.estado = 'caca'; if (!T.chefe && Math.random() < 0.5) numero(g, '!', '#ff5a3a', T.alt + 0.4); } }
+        else if (e.estado === 'caca') { if (!livre || Math.hypot(g.x - e.home[0], g.z - e.home[1]) > (T.chefe ? 14 : 24) || d > T.aggro * 2.2 || (zona === 'vila' && Math.hypot(p.x - MW.x, p.z - MW.z) < MW.r - 1.5 && Math.hypot(g.x - MW.x, g.z - MW.z) > MW.r)) e.estado = 'volta';
           else if (T.investe && d < 10 && d > 2.6 && e.cd <= 0) { e.estado = 'mira'; e.t = 0; }
           else if (d <= T.alc + 0.2 && e.cd <= 0) { e.estado = 'ataque'; e.t = 0; }
           else if (d > T.alc * 0.75) v = anda(e, p.x, p.z, T.vel, dt); else e.ry = viraPara(e.ry, Math.atan2(p.x - g.x, p.z - g.z), dt * 8); }
@@ -719,7 +730,7 @@
           if (e.t > wind + 0.3) { e.estado = 'caca'; e.cd = T.cd * (T.chefe && e.vida < e.max / 2 ? 0.6 : 1); e.bateu2 = false; e.b.rotation.x = 0; if (T.voa) e.b.position.y = 0; if (e.head) e.head.rotation.x = 0; e.arms.forEach(a => a.rotation.x = 0); } }
         else if (e.estado === 'volta') { v = anda(e, e.home[0], e.home[1], T.vel, dt) ? T.vel : 0; e.vida = Math.min(e.max, e.vida + dt * e.max * 0.15); if (Math.hypot(g.x - e.home[0], g.z - e.home[1]) < 1.5) { e.estado = 'anda'; e.vida = e.max; } if (d < T.aggro * 0.6 && livre) e.estado = 'caca'; }
         if (d < T.raio + 0.3) { const nx = g.x - p.x, nz = g.z - p.z, nd = Math.hypot(nx, nz) || 1; g.x = p.x + nx / nd * (T.raio + 0.3); g.z = p.z + nz / nd * (T.raio + 0.3); }
-        if (zona === 'vila') { const r = Math.hypot(g.x, g.z + 6); if (r > 58) { g.x *= 58 / r; g.z = (g.z + 6) * 58 / r - 6; } } }
+        if (zona === 'vila') { const r = Math.hypot(g.x, g.z + 6); if (r > 88) { g.x *= 88 / r; g.z = (g.z + 6) * 88 / r - 6; } const rw = Math.hypot(g.x - MW.x, g.z - MW.z); if (rw < MW.r + 0.9 && rw > 1e-3) { g.x = MW.x + (g.x - MW.x) * (MW.r + 0.9) / rw; g.z = MW.z + (g.z - MW.z) * (MW.r + 0.9) / rw; } } }
       e.g.rotation.y = e.ry; const sc = e.hitT < 0.15 ? 1 + (0.15 - e.hitT) : 1; e.b.scale.setScalar(sc);
       e.L.forEach((l, i) => { const ph = T.chefe ? i * Math.PI : (i === 0 || i === 3 ? 0 : Math.PI); l.rotation.x = v > 0.2 ? Math.sin(gT * (v * 2.2 + 4) + ph) * 0.6 : 0; });
       if (e.asas) { const f = e.estado === 'ataque' ? 14 : 7; e.asas.forEach((a, i) => a.rotation.z = (i ? 1 : -1) * Math.sin(gT * f) * 0.6); if (e.estado !== 'ataque') e.b.position.y = Math.sin(gT * f) * 0.12; }
@@ -1360,7 +1371,7 @@
     vel = lerp(vel, mag > 0.08 ? (correndo ? CORRER : ANDAR) * (ativo.vento ? 1.5 + nivelHab('vento') * 0.1 : 1) * ((CLASSES && CLASSES[AR.classe]) ? CLASSES[AR.classe].vel : 1) * (BM && BM.vel ? BM.vel : 1) * mag : 0, clamp(dt * 8));
     if (ml > 0.001 && mag > 0.08) { mx /= ml; mz /= ml; const want = Math.atan2(mx, mz); let d = want - facing; while (d > Math.PI) d -= Math.PI * 2; while (d < -Math.PI) d += Math.PI * 2; facing += d * clamp(dt * 12); }
     const p = heroi.position; const dash = dashT > 0 ? dashVel : 0; dashT -= dt; p.x += Math.sin(facing) * vel * dt + Math.sin(dashAng) * dash * dt; p.z += Math.cos(facing) * vel * dt + Math.cos(dashAng) * dash * dt;
-    if (zona === 'valdren') { colide(p, COLV); const rx = p.x - VX, r = Math.hypot(rx, p.z); if (r > 44) { p.x = VX + rx * 44 / r; p.z *= 44 / r; } } else if (dentro) { p.x = clamp(p.x, IX - 4.6, IX + 4.6); p.z = clamp(p.z, -4.6, 4.6); colide(p, COLC); } else { colide(p, COL); const r = Math.hypot(p.x, p.z + 6); if (r > 60) { p.x *= 60 / r; } }
+    if (zona === 'valdren') { colide(p, COLV); const rx = p.x - VX, r = Math.hypot(rx, p.z); if (r > 44) { p.x = VX + rx * 44 / r; p.z *= 44 / r; } } else if (dentro) { p.x = clamp(p.x, IX - 4.6, IX + 4.6); p.z = clamp(p.z, -4.6, 4.6); colide(p, COLC); } else { colide(p, COL); const r = Math.hypot(p.x, p.z + 6); if (r > 95) { p.x *= 95 / r; p.z = (p.z + 6) * 95 / r - 6; } }
     if (input.jump && noChao && !conversa) { vy = saltoPronto ? PULO * 1.75 : PULO; if (saltoPronto) { burstT = 0; burstP = [p.x, p.y, p.z]; } saltoPronto = false; noChao = false; } input.jump = false;
     if (!noChao) { vy -= GRAV * dt; if (ativo.planar && vy < -1.6) vy = -1.6; p.y += vy * dt; if (p.y <= 0) { p.y = 0; vy = 0; noChao = true; if (esmaga) { esmaga = false; aterrissa(); } } }
     heroi.rotation.y = facing;
@@ -1404,3 +1415,4 @@
   mostrarLugar('Vila de Brumafria');
   setTimeout(() => $('dica').classList.add('some'), 7000);
 })();
+
