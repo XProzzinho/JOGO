@@ -1231,7 +1231,7 @@ ${_}`}class A extends Error{constructor({message:e,code:t,cause:r,name:s}){var n
     for (let k = 0; k < MM_N - 1; k++) { const C = mmCentro(k); const z0 = C.z - MM_R + 1, z1 = C.z - MM_DZ + MM_R - 1; const z = clamp(p.z, z1 - 1, z0 + 1); tenta(clamp(p.x, MX - 1.9, MX + 1.9), z); if (!MM.aberto[k]) tenta(clamp(p.x, MX - 1.9, MX + 1.9), MM.portoes[k].z + 0.6); }
     if (best) { p.x = best[0]; p.z = best[1]; } }
   function mmFaseAtual() { for (let k = 0; k < MM_N; k++) if (MM.feras.some(e => e.fase === k && !e.morto)) return k; return MM_N; }
-  function mmReinicia() { MM.feras.forEach(e => reseta(e)); MM.aberto = MM.portoes.map(() => false); MM.portoes.forEach(P => { P.g.position.y = 0; P.glow.visible = true; }); MM.saidaFim.g.visible = false; }
+  function mmReinicia() { MM.feras.forEach(e => { reseta(e); if (e.tipo === 'dragao') e.vida = e.max = Math.round(VIDA_MAX * 2); }); MM.aberto = MM.portoes.map(() => false); MM.portoes.forEach(P => { P.g.position.y = 0; P.glow.visible = true; }); MM.saidaFim.g.visible = false; }
   function mmMorte(e) { if (e.fase == null) return; const k = e.fase; if (MM.feras.some(x => x.fase === k && !x.morto)) { atualizaMM(); return; }
     if (k < MM_N - 1) { MM.aberto[k] = true; MM.portoes[k].glow.visible = false; som('portao', 1, 1); som('fase', 0.9, 1); aviso('✅ Fase ' + (k + 1) + ' concluída! O portão abriu: ' + MM_NOMES[k + 1] + '.', '#7ad87a'); }
     else { som('fase', 1, 1); MM.saidaFim.g.visible = true; if (!AR.armas.includes('dragao')) solta_loot(e.g.position.x, e.g.position.z + 1.5, 'espdragao', 1); aviso('🐉 O Dragão das Profundezas caiu! Pegue o portal dourado pra sair.', '#ffd23c'); if (AR.mm && AR.mm.estado === 1) { AR.mm.estado = 2; salvaAR(); } }
