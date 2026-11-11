@@ -42,7 +42,7 @@
   const HOUSES = [[0, -8, 0, 4.5, 4, '#c8b8a0', true], [-7, -5, 0.4, 4, 3.6, '#b8a890'], [7, -5, -0.4, 4, 3.6, '#c8b090'], [-12, 2, 0.9, 3.6, 3.4, '#a89880'], [12, 2, -0.9, 3.6, 3.4, '#c0b8a8'], [-5, -16, 0.2, 4, 3.6, '#b0a088'], [6, -17, -0.2, 4.2, 3.6, '#c8b8a0'], [-16, -10, 0.7, 3.6, 3.4, '#b8a890'], [17, -11, -0.7, 3.6, 3.4, '#a89880']];
   const casas = HOUSES.map(h => house(...h)); const casaFamilia = casas[0];
   // pinheiros nevados
-  { const R = rng(801); for (let i = 0; i < 90; i++) { const a = R() * Math.PI * 2, r = 31 + R() * 52; const x = Math.cos(a) * r, z = Math.sin(a) * r - 6; if (Math.hypot(x, z + 62) < 14 || Math.hypot(x + 14, z - 11) < 4) continue; const g = grp(vil, x, 0, z); const s = 0.8 + R() * 0.8; g.scale.setScalar(s);
+  { const R = rng(801); for (let i = 0; i < 90; i++) { const a = R() * Math.PI * 2, r = 31 + R() * 52; const x = Math.cos(a) * r, z = Math.sin(a) * r - 6; if (Math.hypot(x, z + 62) < 14 || Math.hypot(x + 14, z - 11) < 4 || Math.hypot(x - 48, z + 50) < 23) continue; const g = grp(vil, x, 0, z); const s = 0.8 + R() * 0.8; g.scale.setScalar(s);
       if (!VISUAL_BLOCOS) arvoreFolhas(g, R); else { tb(g, 0, 0.5, 0, 0.35, 1, 0.35, '#5a3a24'); for (let j = 0; j < 3; j++) { part(g, CONE, '#2a5a3a', 0, 1.6 + j * 1.0, 0, 1.4 - j * 0.35, 1.6, 1.4 - j * 0.35); part(g, CONE, '#ffffff', 0, 2.1 + j * 1.0, 0, 0.6 - j * 0.15, 0.6, 0.6 - j * 0.15); } } COL.push({ t: 'c', x, z, r: 0.45 * s }); } }
   // poço no meio da vila
   { const w = grp(vil, 0, 0, 0); part(w, CYL, '#8a8a94', 0, 0.45, 0, 0.9, 0.9, 0.9); part(w, CYL, '#1a2a4a', 0, 0.91, 0, 0.7, 0.02, 0.7); [-1, 1].forEach(s => tb(w, s * 0.8, 1.6, 0, 0.12, 1.6, 0.12, '#5a3a24')); part(w, ROOF, '#4a3a4a', 0, 2.7, 0, 1.2, 0.8, 1.2).rotation.y = Math.PI / 4; tb(w, 0, 2.2, 0, 1.7, 0.08, 0.08, '#5a3a24'); part(w, CYL, '#7a5a3a', 0.2, 1.7, 0, 0.12, 0.25, 0.12); COL.push({ t: 'c', x: 0, z: 0, r: 1.0 }); }
@@ -545,6 +545,7 @@
     javali: { nome: 'Javali', vida: 75, dano: 16, vel: 2.6, aggro: 12, alc: 1.5, cd: 2.2, raio: 0.7, alt: 1.5, moedas: [4, 7], itens: [['carne', 1], ['pele', 0.5]], zona: 'vila', investe: true },
     rato: { nome: 'Rato gigante', vida: 18, dano: 5, vel: 3.8, aggro: 8, alc: 1.0, cd: 0.9, raio: 0.4, alt: 0.9, moedas: [1, 3], itens: [], zona: 'valdren' },
     golem: { nome: 'Golem de Gelo', vida: 520, dano: 28, vel: 1.7, aggro: 14, alc: 3.8, cd: 2.6, raio: 1.5, alt: 4.6, moedas: [40, 40], itens: [['coracao', 1]], zona: 'vila', chefe: true, volta: 180, barra: '❄️ GOLEM DE GELO' },
+    goblin: { nome: 'Goblin', vida: 55, dano: 9, vel: 3.7, aggro: 10, alc: 1.3, cd: 1.2, raio: 0.5, alt: 1.35, moedas: [2, 5], itens: [['carne', 0.2]], zona: 'vila', volta: 25, perto: 9 },
     morcego: { nome: 'Morcego Gigante', vida: 300, dano: 18, vel: 3.2, aggro: 12, alc: 2.8, cd: 2.0, raio: 1.2, alt: 3.6, moedas: [25, 30], itens: [['asas', 1]], zona: 'vila', chefe: true, voa: true, volta: 60, barra: '🦇 MORCEGO GIGANTE' },
   };
   const geloMat = new T3.MeshBasicMaterial({ color: '#bfefff', transparent: true, opacity: 0.45, depthWrite: false, toneMapped: false });
@@ -576,6 +577,13 @@
       [-1, 1].forEach(s => { const piv = grp(b, s * 0.45, 2.85, 0); const w = grp(piv); w.scale.set(s * 3, 3, 3); w.rotation.x = Math.PI / 2 - 0.35; const m = new T3.Mesh(wg, memb); m.castShadow = true; w.add(m); part(w, CYL, c, 0.17, 0.17, 0.01, 0.02, 0.45, 0.02).rotation.z = -0.9; asas.push(piv); });
       [-1, 1].forEach(s => { const l = grp(b, s * 0.2, 2.0, -0.05); part(l, CYL, c, 0, -0.18, 0, 0.04, 0.36, 0.04); part(l, CONE, '#f4ecd8', 0, -0.4, 0.04, 0.05, 0.1, 0.05).rotation.x = Math.PI; });
       b.userData.asas = asas; }
+    else if (tipo === 'goblin') { const c = '#6ab04a', c2 = '#4a8a34', roupa = '#6a4a2a';
+      part(b, SPH, c, 0, 0.66, 0, 0.25, 0.3, 0.21, 0.04); part(b, CYL, roupa, 0, 0.44, 0, 0.27, 0.18, 0.23); part(b, BOX, '#4a3020', 0, 0.54, 0, 0.56, 0.05, 0.47);
+      head = grp(b, 0, 1.06, 0.02); part(head, SPH, c, 0, 0, 0, 0.26, 0.23, 0.24, 0.04); part(head, CONE, c2, 0, -0.03, 0.27, 0.05, 0.16, 0.05).rotation.x = Math.PI / 2;
+      [-1, 1].forEach(s => { const o = part(head, CONE, c, s * 0.32, 0.05, -0.02, 0.07, 0.36, 0.05, 0.04); o.rotation.z = -s * 1.3; part(head, SPH, '#ff3a2a', s * 0.1, 0.05, 0.2, 0.045, 0.04, 0.02, 0, true); part(head, CONE, '#f4ecd8', s * 0.07, -0.12, 0.2, 0.02, 0.07, 0.02).rotation.x = Math.PI; });
+      [-1, 1].forEach(s => { const a = grp(b, s * 0.27, 0.86, 0); part(a, CYL, c, 0, -0.18, 0, 0.06, 0.36, 0.06); part(a, SPH, c2, 0, -0.38, 0, 0.07, 0.07, 0.07); arms.push(a);
+        if (s > 0) { const cl = grp(a, 0, -0.38, 0.02); cl.rotation.x = 1.2; part(cl, CYL, '#7a5232', 0, 0.25, 0, 0.035, 0.5, 0.035); part(cl, SPH, '#5a3a22', 0, 0.5, 0, 0.1, 0.13, 0.1, 0.04); } });
+      [-0.11, 0.11].forEach(x => leg(x, 0, 0.36, 0.075, c2)); }
     else { const c = '#b0dcf2', c2 = '#7ab4dc';
       part(b, ICO, c, 0, 2.4, 0, 1.05, 1.1, 0.8, 0.03); part(b, ICO, c2, 0, 1.45, 0, 0.8, 0.5, 0.6, 0.03);
       head = grp(b, 0, 3.6, 0.18); part(head, ICO, c, 0, 0, 0, 0.5, 0.45, 0.45, 0.03); [-1, 1].forEach(s => part(head, SPH, '#5af0ff', s * 0.18, 0.03, 0.4, 0.08, 0.06, 0.04, 0, true)); glowSpr(head, 0, 0, 0.5, 1.3, '#5af0ff', 0.7);
@@ -592,7 +600,7 @@
   function reseta(e) { e.vida = e.max = e.T.vida; e.estado = 'anda'; e.t = 0; e.cd = 0; e.morto = false; e.mortoT = 0; e.stun = 0; e.congela = 0; e.vuln = 0; e.hitT = 9; e.alvoW = e.home.slice(); e.g.visible = true; e.g.position.set(e.home[0], 0, e.home[1]); e.b.rotation.set(0, 0, 0); e.b.position.set(0, 0, 0); }
   // Brumafria: lobos e javalis na floresta, o Golem na caverna do norte — todos FORA da muralha
   [[-44, -36], [-47, -30], [-40, -42], [46, 22], [50, 17], [-50, 16], [-46, 22]].forEach(([x, z]) => solta('lobo', x, z));
-  [[42, -44], [-30, -55], [52, -8]].forEach(([x, z]) => solta('javali', x, z));
+  [[30, -72], [-30, -55], [52, -8]].forEach(([x, z]) => solta('javali', x, z));
   const GX = 0, GZ = -62; const golem = solta('golem', GX, GZ);
   const morcegao = solta('morcego', 0, 34); // voa em volta da cidade, por fora da muralha
   // Valdren: ratos gigantes no esgoto
@@ -606,6 +614,40 @@
     glowSpr(cv2, 0, 2, -9, 9, '#7ad8ff', 0.35);
     const chao = new T3.Mesh(new T3.CircleGeometry(11, 40), new T3.MeshToonMaterial({ color: '#cfe8f6', gradientMap: GRAD })); chao.rotation.x = -Math.PI / 2; chao.position.y = 0.02; cv2.add(chao);
     for (let i = 0; i < 22; i++) { const a = Math.PI * 0.15 + i / 21 * Math.PI * 0.7 + Math.PI; COL.push({ t: 'c', x: GX + Math.cos(a) * 12, z: GZ - Math.abs(Math.sin(a) * 12), r: 1.6 }); } }
+  // ---------- FLORESTA DOS GOBLINS (a leste do portão norte) ----------
+  const GBX = 48, GBZ = -50, GTX = 3.2, GTZ = -34.5; const ENTRA = Math.atan2(GTZ - GBZ, GTX - GBX);
+  { const fl = grp(world, GBX, 0, GBZ); const R = rng(4242);
+    const chao = new T3.Mesh(new T3.CircleGeometry(20, 48), new T3.MeshToonMaterial({ color: '#3d7a32', gradientMap: GRAD })); chao.rotation.x = -Math.PI / 2; chao.position.y = 0.015; chao.receiveShadow = true; fl.add(chao);
+    const fora = (a) => Math.abs(Math.atan2(Math.sin(a - ENTRA), Math.cos(a - ENTRA))) < 0.3;
+    for (let i = 0; i < 84; i++) { const borda = i < 66; const a = R() * 6.28, r = borda ? 14 + R() * 9 : 5 + R() * 7; if (borda && fora(a)) continue; const x = Math.cos(a) * r, z = Math.sin(a) * r;
+      const g = grp(fl, x, 0, z); const s = 0.9 + R() * 0.9; g.scale.setScalar(s); g.rotation.y = R() * 6.28;
+      part(g, CYL, '#4a3220', 0, 1.2, 0, 0.22, 2.4, 0.22); [0, 1, 2].forEach(j => part(g, CONE, ['#1c4426', '#225430', '#286236'][j], 0, 2.3 + j * 0.95, 0, 1.55 - j * 0.42, 1.9, 1.55 - j * 0.42, 0.03));
+      if (R() < 0.4) { part(g, CYL, '#f0e8d8', 0.45, 0.1, 0.2, 0.04, 0.2, 0.04); part(g, SPH, '#c83a3a', 0.45, 0.22, 0.2, 0.13, 0.07, 0.13); }
+      COL.push({ t: 'c', x: GBX + x, z: GBZ + z, r: 0.35 * s }); }
+    // cabanas de goblin
+    [0.9, 2.4, 4.1, 5.4].forEach((a, i) => { const x = Math.cos(a) * 8.5, z = Math.sin(a) * 8.5; if (fora(a)) return; const g = grp(fl, x, 0, z); g.rotation.y = -a - Math.PI / 2;
+      part(g, CONE, ['#7a5a3a', '#6a4a2a', '#8a6a42', '#5a4a30'][i], 0, 1.3, 0, 1.9, 2.6, 1.9, 0.03); part(g, SPH, '#1a1008', 0, 0.55, 1.45, 0.5, 0.6, 0.3);
+      [-0.3, 0, 0.3].forEach(o => { const v = part(g, CYL, '#5a3a22', o, 2.8, 0, 0.04, 0.9, 0.04); v.rotation.z = o * 1.2; }); tb(g, 0.8, 1.2, 1.0, 0.5, 0.4, 0.04, '#a8884a');
+      COL.push({ t: 'c', x: GBX + x, z: GBZ + z, r: 1.7 }); });
+    // fogueira do acampamento
+    { const f = grp(fl, 0, 0, 0); for (let k = 0; k < 6; k++) { const l = part(f, CYL, '#6a4a2a', 0, 0.12, 0, 0.09, 1.0, 0.09); l.rotation.set(Math.PI / 2, 0, k / 6 * Math.PI); } for (let k = 0; k < 8; k++) part(f, SPH, '#7a7a84', Math.cos(k * 0.785) * 0.7, 0.1, Math.sin(k * 0.785) * 0.7, 0.18, 0.13, 0.18);
+      [0, 1, 2].forEach(i => part(f, CONE, ['#ffb030', '#ff7a1a', '#ffe070'][i], -0.15 + i * 0.15, 0.5, (i - 1) * 0.1, 0.22, 0.75 - i * 0.12, 0.22, 0, true)); glowSpr(f, 0, 0.8, 0, 4, '#ff8a3a', 0.8);
+      COL.push({ t: 'c', x: GBX, z: GBZ, r: 0.9 }); }
+    // totem e estacas na entrada
+    [-1, 1].forEach(s => { const a = ENTRA + s * 0.22; const x = Math.cos(a) * 15.5, z = Math.sin(a) * 15.5; const t = grp(fl, x, 0, z);
+      part(t, CYL, '#5a3a22', 0, 1.3, 0, 0.12, 2.6, 0.12); part(t, SPH, '#6ab04a', 0, 2.7, 0, 0.32, 0.28, 0.3, 0.04); [-1, 1].forEach(k => { const o = part(t, CONE, '#6ab04a', k * 0.38, 2.72, 0, 0.08, 0.4, 0.06, 0.04); o.rotation.z = -k * 1.3; });
+      t.rotation.y = Math.atan2(Math.cos(ENTRA), Math.sin(ENTRA)); [-1, 1].forEach(k => part(t, SPH, '#ff3a2a', k * 0.12, 2.75, 0.26, 0.05, 0.05, 0.03, 0, true)); glowSpr(t, 0, 2.75, 0.3, 0.9, '#ff3a2a', 0.5);
+      for (let k = 1; k <= 4; k++) { const b = a + s * k * 0.12; const e = part(fl, CONE, '#7a5232', Math.cos(b) * 15.5, 0.6, Math.sin(b) * 15.5, 0.1, 1.2, 0.1); e.rotation.z = (R() - 0.5) * 0.3; COL.push({ t: 'c', x: GBX + Math.cos(b) * 15.5, z: GBZ + Math.sin(b) * 15.5, r: 0.2 }); }
+      COL.push({ t: 'c', x: GBX + x, z: GBZ + z, r: 0.35 }); });
+    // placa
+    { const x = Math.cos(ENTRA) * 18, z = Math.sin(ENTRA) * 18; const g = grp(fl, x, 0, z); g.rotation.y = Math.atan2(Math.cos(ENTRA), Math.sin(ENTRA));
+      const tx = canvasTex(320, 128, (c, w, h) => { c.fillStyle = '#5a3a1e'; c.fillRect(0, 0, w, h); c.strokeStyle = '#2a1a0a'; c.lineWidth = 8; c.strokeRect(4, 4, w - 8, h - 8); c.fillStyle = '#ffe8b0'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.font = '900 34px system-ui,sans-serif'; c.fillText('👺 FLORESTA', w / 2, 44); c.fillText('DOS GOBLINS', w / 2, 88); });
+      const pl = new T3.Mesh(new T3.PlaneGeometry(2.2, 0.88), new T3.MeshBasicMaterial({ map: tx, toneMapped: false, side: T3.DoubleSide })); pl.position.set(0, 1.9, 0); g.add(pl); [-0.8, 0.8].forEach(o => tb(g, o, 0.9, -0.03, 0.1, 1.8, 0.1, '#5a3a22')); COL.push({ t: 'c', x: GBX + x, z: GBZ + z, r: 0.5 }); } }
+  // trilha do guarda até a floresta
+  { const ex = GBX + Math.cos(ENTRA) * 19, ez = GBZ + Math.sin(ENTRA) * 19, dx = ex - GTX, dz = ez - GTZ, L = Math.hypot(dx, dz); const g = grp(world, (ex + GTX) / 2, 0, (ez + GTZ) / 2); g.rotation.y = Math.atan2(dx, dz);
+    const t = new T3.Mesh(new T3.PlaneGeometry(2.4, L + 2), new T3.MeshToonMaterial({ color: '#e0c080', gradientMap: GRAD })); t.rotation.x = -Math.PI / 2; t.position.y = 0.011; t.receiveShadow = true; g.add(t); }
+  { const R = rng(55); for (let i = 0; i < 16; i++) { const a = R() * 6.28, r = 3 + R() * 9; solta('goblin', GBX + Math.cos(a) * r, GBZ + Math.sin(a) * r); } }
+  SABER.push({ x: GBX + Math.cos(ENTRA) * 12, y: 1.8, z: GBZ + Math.sin(ENTRA) * 12, t: 'Goblins andam em bando: golpes em área (Pólvora, Raio) acertam vários.' });
   const anel = new T3.Mesh(new T3.RingGeometry(0.82, 1, 48), new T3.MeshBasicMaterial({ color: '#ff3a2a', transparent: true, opacity: 0.6, depthWrite: false, toneMapped: false, side: T3.DoubleSide })); anel.rotation.x = -Math.PI / 2; anel.visible = false; world.add(anel);
   SABER.push({ x: GX, y: 3, z: GZ + 8, t: 'Gelo derrete com calor: fogo e pólvora dão dano DOBRADO no Golem.' }, { x: -32, y: 1.6, z: -27, t: 'Lobos caçam em grupo. Ataque um de cada vez.' });
 
@@ -666,7 +708,7 @@
   function congelar(e, s) { if (e.morto) return; e.congela = Math.max(e.congela, e.T.chefe ? s * 0.35 : s); }
   function morre(e) { e.morto = true; e.mortoT = 0; e.hp.style.display = 'none'; const p = e.g.position; const [a, b] = e.T.moedas; solta_loot(p.x, p.z, 'moedas', a + Math.floor(Math.random() * (b - a + 1)));
     e.T.itens.forEach(([it, ch]) => { if (Math.random() < ch) solta_loot(p.x + (Math.random() - .5), p.z + (Math.random() - .5), it, 1); });
-    AR.abates[e.tipo] = (AR.abates[e.tipo] || 0) + 1; enche(e.T.chefe ? 60 : 12); ganhaXp(XP_TIPO[e.tipo] || 10, true); const tot = Object.values(AR.abates).reduce((s, v) => s + v, 0); salvaAR();
+    AR.abates[e.tipo] = (AR.abates[e.tipo] || 0) + 1; if (e.tipo === 'goblin') goblinMorto(); enche(e.T.chefe ? 60 : 12); ganhaXp(XP_TIPO[e.tipo] || 10, true); const tot = Object.values(AR.abates).reduce((s, v) => s + v, 0); salvaAR();
     if (e.tipo === 'morcego') { ganha('morcego1', 3, 'derrotou o Morcego Gigante'); aviso('🏆 O MORCEGO GIGANTE CAIU! Pegue as 🦇 Asas de Morcego no chão.', '#c8a8ff'); }
     else if (e.T.chefe) { ganha('golem1', 5, 'derrotou o Golem de Gelo'); aviso('🏆 O GOLEM DE GELO CAIU! Leve o 💎 Coração de Gelo pra Forja.', '#7ad8ff'); }
     else { ganha('abate1:' + e.tipo, 2, 'primeiro ' + e.T.nome); if (tot % 5 === 0) setTimeout(() => ganha('abates:' + tot, 1, tot + ' bichos derrotados'), 900); } }
@@ -709,7 +751,7 @@
   const vH = new T3.Vector3();
   function ferasFrame(dt, p) { const livre = !conversa && !cenaQ && !desmaiado && $('fim').hidden && !Q.naCarroca; let chefeV = null;
     FERAS.forEach(e => { const T = e.T; const on = T.zona === zona && !dentro; e.g.visible = on && !(e.morto && e.mortoT > 1.8); if (!on) { e.hp.style.display = 'none'; if (e.morto) e.mortoT += dt; if (e.morto && e.mortoT > (T.volta || 45)) reseta(e); return; }
-      if (e.morto) { e.mortoT += dt; e.b.rotation.z = Math.min(Math.PI / 2, e.mortoT * 5); e.b.position.y = T.voa ? -Math.min(2.1, e.mortoT * 5) : -Math.min(1, e.mortoT * 0.3) * (e.mortoT > 1 ? 0.5 : 0); e.gelo.visible = false; if (e.mortoT > (T.volta || 45) && Math.hypot(p.x - e.home[0], p.z - e.home[1]) > 18) reseta(e); return; }
+      if (e.morto) { e.mortoT += dt; e.b.rotation.z = Math.min(Math.PI / 2, e.mortoT * 5); e.b.position.y = T.voa ? -Math.min(2.1, e.mortoT * 5) : -Math.min(1, e.mortoT * 0.3) * (e.mortoT > 1 ? 0.5 : 0); e.gelo.visible = false; if (e.mortoT > (T.volta || 45) && Math.hypot(p.x - e.home[0], p.z - e.home[1]) > (T.perto || 18)) reseta(e); return; }
       const g = e.g.position; const d = Math.hypot(p.x - g.x, p.z - g.z); let v = 0;
       e.cd -= dt; e.vuln -= dt; e.hitT += dt; if (e.queima > 0) { e.queima -= dt; e.qT = (e.qT || 0) + dt; if (e.qT > 1) { e.qT = 0; dano(e, 5, 'fogo'); if (e.morto) return; } }
       e.gelo.visible = e.congela > 0; if (e.congela > 0) { e.congela -= dt; }
@@ -725,7 +767,7 @@
           if (e.t > 0.75 || Math.hypot(g.x - ox, g.z - oz) < 12 * dt * 0.5) { e.estado = 'caca'; e.cd = T.cd; e.b.position.z = 0; } }
         else if (e.estado === 'ataque') { e.t += dt; const wind = T.chefe ? 0.9 : 0.35; e.ry = viraPara(e.ry, Math.atan2(p.x - g.x, p.z - g.z), dt * (T.chefe ? 2 : 6));
           if (T.chefe) { const u = clamp(e.t / wind); e.arms.forEach(a => a.rotation.x = -u * 2.6); if (T.voa) e.b.position.y = u * 0.8; anel.visible = true; anel.position.set(g.x, 0.05, g.z); anel.scale.setScalar(T.alc * (0.4 + u * 0.6)); anel.material.opacity = 0.3 + u * 0.4; }
-          else { e.b.rotation.x = e.t < wind ? -0.25 * (e.t / wind) : 0.3; if (e.head) e.head.rotation.x = e.t < wind ? -0.3 : 0.4; }
+          else { e.b.rotation.x = e.t < wind ? -0.25 * (e.t / wind) : 0.3; if (e.head) e.head.rotation.x = e.t < wind ? -0.3 : 0.4; if (e.tipo === 'goblin') e.arms[1].rotation.x = e.t < wind ? -2.4 * (e.t / wind) : 0.7; }
           if (e.t >= wind && !e.bateu2) { e.bateu2 = true; if (T.chefe) { e.arms.forEach(a => a.rotation.x = 0.4); anel.visible = false; if (T.voa) e.b.position.y = -1.3; fx(T.voa ? 'vento' : 'gelo', [g.x, 0, g.z], 0.8); fx('fumo', [g.x, 0, g.z], 1.2); tremor = Math.max(tremor, 0.5); if (d < T.alc + 0.2 && p.y < 1.2) danoHeroi(T.dano, e); } else if (d < T.alc + 0.6) danoHeroi(T.dano, e); }
           if (e.t > wind + 0.3) { e.estado = 'caca'; e.cd = T.cd * (T.chefe && e.vida < e.max / 2 ? 0.6 : 1); e.bateu2 = false; e.b.rotation.x = 0; if (T.voa) e.b.position.y = 0; if (e.head) e.head.rotation.x = 0; e.arms.forEach(a => a.rotation.x = 0); } }
         else if (e.estado === 'volta') { v = anda(e, e.home[0], e.home[1], T.vel, dt) ? T.vel : 0; e.vida = Math.min(e.max, e.vida + dt * e.max * 0.15); if (Math.hypot(g.x - e.home[0], g.z - e.home[1]) < 1.5) { e.estado = 'anda'; e.vida = e.max; } if (d < T.aggro * 0.6 && livre) e.estado = 'caca'; }
@@ -768,7 +810,7 @@
       const el = $('lvup'); el.innerHTML = `<small>SUBIU DE NÍVEL!</small>Nível ${AR.nv}<em>+5 vida · +3 mana · +1 ponto de habilidade</em>`; el.classList.remove('on'); void el.offsetWidth; el.classList.add('on'); setTimeout(fazRetrato, 300); }
     else if (motivo) numero(heroi.position, '+' + n + ' XP', '#c8a8ff', 2.6); }
   function atualizaNivel() { $('nv').textContent = 'Nv ' + AR.nv; $('xp-fill').style.width = (AR.nv >= NV_MAX ? 100 : AR.xp / xpPara(AR.nv) * 100) + '%'; }
-  const XP_TIPO = { lobo: 15, javali: 25, rato: 8, golem: 300, morcego: 150 };
+  const XP_TIPO = { goblin: 18, lobo: 15, javali: 25, rato: 8, golem: 300, morcego: 150 };
 
   // ---- reflexo do ambiente pro metal parecer metal ----
   const envTex = canvasTex(512, 256, (x, w, h) => { const g = x.createLinearGradient(0, 0, 0, h); g.addColorStop(0, '#5a7ab8'); g.addColorStop(0.35, '#cfe2ff'); g.addColorStop(0.5, '#ffffff'); g.addColorStop(0.53, '#8a8a90'); g.addColorStop(1, '#2a2a30'); x.fillStyle = g; x.fillRect(0, 0, w, h);
@@ -1430,6 +1472,33 @@
   document.addEventListener('visibilitychange',()=>{if(!document.hidden&&guildUser)scheduleGuildRefresh();});
   window.__guild={client:guildClient,open:abrirGuilda,get state(){return guildState;},arthur:arthurNPC};
 
+  // ---------- GUARDA RODRIK: missão dos 50 goblins ----------
+  const MG_META = 50; AR.mg = AR.mg || { estado: 0, n: 0, vezes: 0 };
+  const guarda = makeChar({ skin: '#d8a07a', hairStyle: 'short', hairC: '#3a2214', top: '#9aa2b2', top2: '#6a7282', pants: '#5a6272', shoe: '#3a3a44', sole: '#2a2a30', iris: '#3a5a8a', s: 1.12, ph: 7.7 });
+  { const P = guarda.userData.P, aco = '#b8c0cc', aco2 = '#7a8292', ouro = '#e2c27a';
+    part(P.head, SPH, aco, 0, 0.17, -0.01, 0.165, 0.15, 0.165, 0.04); tb(P.head, 0, 0.13, 0.15, 0.035, 0.14, 0.03, aco2); part(P.head, TOR, aco2, 0, 0.13, 0, 0.16, 0.16, 0.3).rotation.x = Math.PI / 2;
+    part(P.head, CONE, '#c83a3a', 0, 0.36, -0.03, 0.04, 0.16, 0.1); part(P.head, SPH, '#c83a3a', 0, 0.33, -0.12, 0.035, 0.08, 0.1);
+    part(P.spine, CAP, aco, 0, 0.32, 0, 0.39, 0.28, 0.27, 0.04); tb(P.spine, 0, 0.1, 0.125, 0.26, 0.42, 0.03, '#a82a2a'); part(P.spine, SPH, ouro, 0, 0.26, 0.145, 0.05, 0.05, 0.015, 0, true); tb(P.spine, 0, -0.02, 0, 0.4, 0.06, 0.29, '#4a3020'); tb(P.spine, 0, -0.02, 0.15, 0.07, 0.07, 0.02, ouro);
+    [P.shL, P.shR].forEach(sh => { part(sh, SPH, aco, 0, -0.02, 0, 0.15, 0.11, 0.15, 0.04); part(sh, SPH, aco2, 0, 0.01, 0, 0.1, 0.06, 0.1); });
+    [P.elL, P.elR].forEach(el => part(el, CYL, aco2, 0, -0.18, 0, 0.1, 0.16, 0.1)); [P.knL, P.knR].forEach(kn => part(kn, CYL, aco, 0, -0.22, 0.01, 0.12, 0.26, 0.12));
+    const lanca = grp(P.elR, 0, -0.29, 0.04); part(lanca, CYL, '#6a4a2a', 0, 0.45, 0, 0.022, 2.1, 0.022); part(lanca, CONE, aco, 0, 1.6, 0, 0.05, 0.22, 0.02); part(lanca, CYL, ouro, 0, 1.47, 0, 0.035, 0.05, 0.035);
+    const esc = grp(P.elL, -0.09, -0.2, 0.02); esc.rotation.z = Math.PI / 2; part(esc, CYL, '#a82a2a', 0, 0, 0, 0.28, 0.04, 0.34, 0.04); part(esc, CYL, aco, 0, -0.025, 0, 0.29, 0.02, 0.35); part(esc, SPH, ouro, 0, -0.04, 0, 0.07, 0.04, 0.07, 0, true); }
+  guarda.traverse(o => { if (o.isMesh) o.castShadow = true; });
+  const guardaNPC = { c: guarda, nome: 'Guarda Rodrik', x: GTX, z: GTZ, ry: 0, ry0: 0, acao: falaGuarda }; guarda.position.set(GTX, 0, GTZ); guarda.rotation.y = 0; NPCS.push(guardaNPC); COL.push({ t: 'c', x: GTX, z: GTZ, r: 0.45, npc: guardaNPC });
+  const marcaTex = {}; function marcaT(t, cor) { return marcaTex[t] || (marcaTex[t] = canvasTex(96, 128, (x, w, h) => { x.font = '900 104px system-ui,sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.lineWidth = 10; x.strokeStyle = '#3a2a10'; x.strokeText(t, w / 2, h / 2 + 6); x.fillStyle = cor; x.fillText(t, w / 2, h / 2 + 6); })); }
+  const marcaG = new T3.Sprite(new T3.SpriteMaterial({ map: marcaT('!', '#ffd23c'), transparent: true, depthWrite: false, toneMapped: false })); marcaG.scale.set(0.45, 0.6, 1); world.add(marcaG);
+  function atualizaMG() { const el = $('missao-g'); const at = AR.mg.estado === 1 || AR.mg.estado === 2; el.hidden = !at; if (at) el.innerHTML = AR.mg.estado === 2 ? '<b>MISSÃO DO GUARDA</b>✅ Volte ao Guarda Rodrik (portão norte)' : `<b>MISSÃO DO GUARDA</b>👺 Goblins derrotados: ${AR.mg.n} / ${MG_META}`;
+    const tem = AR.mg.estado === 0 || AR.mg.estado === 2; marcaG.material.map = marcaT(AR.mg.estado === 2 ? '?' : '!', '#ffd23c'); marcaG.userData.on = tem; }
+  function goblinMorto() { if (!AR.mg || AR.mg.estado !== 1) return; AR.mg.n++; if (AR.mg.n >= MG_META) { AR.mg.n = MG_META; AR.mg.estado = 2; setTimeout(() => aviso('✅ 50 goblins derrotados! Volte ao Guarda Rodrik no portão norte.', '#7ad87a'), 1200); } else if (AR.mg.n % 10 === 0) aviso('👺 ' + AR.mg.n + ' / ' + MG_META + ' goblins derrotados', '#ffd23c'); salvaAR(); atualizaMG(); }
+  function falaGuarda() { const N = 'Guarda Rodrik', m = AR.mg;
+    if (m.estado === 1) { falar({ nome: N, falas: [`Ainda faltam ${MG_META - m.n} goblins. Siga a trilha pro leste até a floresta deles.`] }); return; }
+    if (m.estado === 2) { falar({ nome: N, falas: ['Você derrotou 50 goblins?! Brumafria está bem mais segura agora.', 'Aqui está sua recompensa: 300 moedas. O reino agradece, aventureiro!'], fim: () => {
+      AR.inv.moedas += 300; m.vezes = (m.vezes || 0) + 1; m.estado = 0; m.n = 0; salvaAR(); atualizaInv(); atualizaMG(); ganhaXp(500, true); numero(heroi.position, '+300 💰', '#ffd23c', 2.4); fx('luz', [heroi.position.x, 0, heroi.position.z], 0.8);
+      aviso('🏆 Missão completa! +300 moedas e +500 XP', '#ffd23c'); if (m.vezes === 1) setTimeout(() => ganha('missao:goblins', 3, 'missão dos goblins'), 1500); } }); return; }
+    falar({ nome: N, falas: [(m.vezes ? 'Os goblins voltaram, aventureiro! ' : 'Alto aí! Sou o Rodrik, guarda do portão norte. ') + 'Uma floresta inteira virou ninho de goblins aqui a leste.', 'Eles roubam as galinhas, quebram as cercas e assustam as crianças da vila.', 'Derrote 50 goblins na Floresta dos Goblins e eu te pago 300 moedas.'],
+      escolhas: () => [{ t: '⚔️ <b>Aceitar missão</b><small>Derrotar 50 goblins na floresta a leste</small>', fn: () => { m.estado = 1; m.n = 0; salvaAR(); atualizaMG(); aviso('⚔️ Missão aceita! Siga a trilha pro leste até a Floresta dos Goblins.', '#ffd23c'); } }, { t: 'Agora não', fn: null }] }); }
+  function guardaFrame() { marcaG.visible = !!marcaG.userData.on && zona === 'vila' && !dentro; marcaG.position.set(GTX, 2.75 + Math.sin(gT * 3) * 0.1, GTZ); }
+  atualizaMG();
   window.__dbg = { abrirGuilda, arthurNPC, vestePeca, atualizaPecas, PECAS, BLOCOS, modoBatalha, bmLiga, bmDesliga, BMS, ORB, get BM() { return BM; }, get hora() { return hora; }, set hora(v) { hora = v; }, usarHab2: id => classePoder2(id), BUFF, abrirCriar, aplicaClasse, CLASSES, get desp() { return desp; }, set desp(v) { desp = v; }, usarHab: id => classePoder(id), renderer, scene, world, ganhaXp, vesteFantasia, abrirPerfil, fazRetrato, irValdren, Q, heroi, ativo, AR, FERAS, golem, atacar, get vida() { return vida; }, set vida(v) { vida = v; }, abrirLoja, usarPoder: id => usarPoder(PW[id]), acao: () => acao(), get alvo() { return alvo; } };
   // ---------- laço do jogo ----------
   let vy = 0, noChao = true, facing = 0, vel = 0, gT = 0, last = performance.now();
@@ -1483,7 +1552,7 @@
     if (tremor > 0) { tremor -= dt; cam.position.x += (Math.random() - .5) * tremor; cam.position.y += (Math.random() - .5) * tremor; }
     cam.lookAt(p.x, p.y + 0.95, p.z);
     sun.position.set(p.x + 12, 30, p.z + 10); sun.target.position.set(p.x, 0, p.z); sun.target.updateMatrixWorld();
-    guildFrame(); renderer.render(scene, cam); requestAnimationFrame(loop);
+    guildFrame(); guardaFrame(); renderer.render(scene, cam); requestAnimationFrame(loop);
   }
   cam.position.set(0, 2.6, 9.6); requestAnimationFrame(loop);
   mostrarLugar('Vila de Brumafria');

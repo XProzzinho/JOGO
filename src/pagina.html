@@ -192,6 +192,8 @@
   #saber .tag::before{content:"💡 "}
   #obj{position:fixed;left:44%;top:calc(12px + env(safe-area-inset-top,0px));transform:translateX(-50%);max-width:min(460px,60vw);padding:5px 14px;border-radius:14px;background:var(--branco);border:var(--borda);box-shadow:var(--sombra);color:var(--tinta);font-size:13px;font-weight:800;text-align:center;pointer-events:none}
   #obj b{color:var(--coral-forte);letter-spacing:1px;font-size:10px;font-weight:900;display:block}
+  #missao-g{position:fixed;left:44%;top:calc(64px + env(safe-area-inset-top,0px));transform:translateX(-50%);padding:5px 14px;border-radius:14px;background:var(--branco);border:var(--borda);box-shadow:var(--sombra);color:var(--tinta);font-size:13px;font-weight:800;text-align:center;z-index:6;pointer-events:none;white-space:nowrap}
+  #missao-g b{color:#2f8a3a;letter-spacing:1px;font-size:10px;font-weight:900;display:block}
   #fala-esc{display:grid;gap:8px;margin-top:8px}
   .esc{display:block;text-align:left;padding:9px 12px;border-radius:14px;border:var(--borda);background:var(--branco);color:var(--tinta);font-family:inherit;font-size:15px;font-weight:800;box-shadow:0 3px 0 var(--tinta)}
   .esc:active{transform:translateY(2px);box-shadow:0 1px 0 var(--tinta)}
@@ -250,6 +252,7 @@
 <div id="dica">Arraste do lado <b>esquerdo</b> pra andar · do <b>direito</b> pra girar a câmera · chegue perto das pessoas pra conversar</div>
 <div id="lugar"></div>
 <div id="obj" hidden><b>OBJETIVO</b><span id="obj-txt"></span></div>
+<div id="missao-g" hidden></div>
 <div id="fala" hidden><div id="fala-nome"></div><div id="fala-txt"></div><div id="fala-esc" hidden></div><div id="fala-mais"></div></div>
 <div id="joy"><div id="knob"></div></div>
 <button class="btn" id="correr">CORRER</button>
