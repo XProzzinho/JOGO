@@ -287,6 +287,7 @@
 .cel.tit b{color:var(--tc)}.cel.tit em{background:var(--tc)!important;color:#fff!important}
 #guild-label small{display:block;color:var(--sol);font-size:12px;margin-bottom:5px}.guild-npc-label{color:var(--sol);font-size:11px;max-width:160px}#guild-hud{font-size:11px;font-weight:900;color:var(--azul);max-width:160px;overflow-wrap:anywhere}
   @media(max-width:480px){.guild-box{padding:12px}.guild-box h2{font-size:18px}.guild-member .cb{font-size:11px}#guild-hud{max-width:116px}}
+.ico{width:1.3em;height:1.3em;vertical-align:-.28em;object-fit:contain;pointer-events:none;filter:drop-shadow(0 1px 0 rgba(0,0,0,.25))}.ico.big{width:1.6em;height:1.6em}.btn .ico.big{width:28px;height:28px}
 </style>
 </head>
 <body>
@@ -303,7 +304,7 @@
 <div class="lg-bts"><button id="lg-entrar" class="pri">Entrar</button><button id="lg-criar">Criar conta</button></div><button id="lg-esqueci" class="lnk">Esqueci a senha</button></form>
 <div id="lg-msg"></div><button id="lg-convidado" class="lnk">Jogar sem conta ›</button></div></div>
 <div id="invp" hidden><div class="ip-box">
-<div class="ip-hd"><button id="ip-troca">🤝 Trocar</button><span>INVENTÁRIO</span><button id="ip-x">✕</button></div>
+<div class="ip-hd"><button id="ip-troca"><img class="ico" src="icones/ui_troca.svg" alt=""> Trocar</button><span>INVENTÁRIO</span><button id="ip-x">✕</button></div>
 <div class="ip-tabs"><button class="on" data-t="eq">Equipar</button><button data-t="pet">Pet</button></div>
 <div id="ip-eq"></div>
 <div class="ip-bt"><button class="on" data-b="0">I</button><button data-b="1">II</button><button data-b="2">III</button><button data-b="3">IV</button><button id="ip-ord" title="Organizar">⇅</button></div>
@@ -313,7 +314,7 @@
 <div id="ip-esc" hidden></div>
 </div></div>
 <div id="trocap" hidden><div class="tr-box"><div class="ip-hd"><span>🤝 TROCA</span><button id="tr-fecha">✕</button></div><div id="tr-corpo"></div></div></div>
-<div id="perfil" hidden><div class="box"><div id="pf-esq"><div id="pf-slots"></div><div id="pf-nome">Leonardo</div><div class="pfx"><div id="pf-xp"></div></div><div id="pf-xpt"></div><div id="conta-selo"></div><div id="pf-conta"></div></div><div id="pf-dir"><div class="hd"><button class="aba on" data-a="status">📊 Status</button><button class="aba" data-a="inv">🎒 Inventário</button><button class="aba" data-a="fant">🎭 Fantasias</button><button class="aba" data-a="tit">🏷️ Títulos</button><button id="pf-fecha">Fechar</button></div><div id="pf-cont"></div></div><div id="pf-escolha" hidden></div></div></div>
+<div id="perfil" hidden><div class="box"><div id="pf-esq"><div id="pf-slots"></div><div id="pf-nome">Leonardo</div><div class="pfx"><div id="pf-xp"></div></div><div id="pf-xpt"></div><div id="conta-selo"></div><div id="pf-conta"></div></div><div id="pf-dir"><div class="hd"><button class="aba on" data-a="status"><img class="ico" src="icones/ui_status.svg" alt=""> Status</button><button class="aba" data-a="inv"><img class="ico" src="icones/ui_inventario.svg" alt=""> Inventário</button><button class="aba" data-a="fant"><img class="ico" src="icones/ui_fantasias.svg" alt=""> Fantasias</button><button class="aba" data-a="tit"><img class="ico" src="icones/ui_titulos.svg" alt=""> Títulos</button><button id="pf-fecha">Fechar</button></div><div id="pf-cont"></div></div><div id="pf-escolha" hidden></div></div></div>
 <div id="dica">Arraste do lado <b>esquerdo</b> pra andar · do <b>direito</b> pra girar a câmera · chegue perto das pessoas pra conversar</div>
 <div id="lugar"></div>
 <div id="obj" hidden><b>OBJETIVO</b><span id="obj-txt"></span></div>
@@ -321,19 +322,19 @@
 <div id="mm-hud" hidden></div>
 <div id="fala" hidden><div id="fala-nome"></div><div id="fala-txt"></div><div id="fala-esc" hidden></div><div id="fala-mais"></div></div>
 <div id="joy"><div id="knob"></div></div>
-<button class="btn" id="voar" hidden>🦇 VOAR</button>
+<button class="btn" id="voar" hidden><img class="ico" src="icones/ui_voar.svg" alt=""> VOAR</button>
 <button class="btn" id="correr">CORRER</button>
 <button class="btn" id="pular">PULAR</button>
 <button class="btn" id="acao" hidden>FALAR</button>
-<button class="btn" id="ciclo">☾</button>
+<button class="btn" id="ciclo"><img class="ico big" src="icones/ui_lua.svg" alt=""></button>
 <canvas id="mini" width="232" height="232"></canvas>
-<button class="btn" id="casa" title="Voltar pra casa">🏠</button>
-<button class="btn" id="bolsa-btn" title="Inventário">🎒</button>
-<button class="btn" id="arv-btn" title="Árvore de habilidades">🌳<span id="arv-pts" hidden>0</span></button>
+<button class="btn" id="casa" title="Voltar pra casa"><img class="ico big" src="icones/ui_casa.svg" alt=""></button>
+<button class="btn" id="bolsa-btn" title="Inventário"><img class="ico big" src="icones/ui_bolsa.svg" alt=""></button>
+<button class="btn" id="arv-btn" title="Árvore de habilidades"><img class="ico big" src="icones/ui_arvore.svg" alt=""><span id="arv-pts" hidden>0</span></button>
 <div id="arvore" hidden><div class="box"><div class="hd"><h3>🌳 Árvore de Habilidades</h3><span id="arv-ptsbox"><span id="arv-pts-txt">0 pontos</span></span><button id="arv-fecha">Fechar</button></div><div id="arv-ramos"></div><div id="arv-det"></div></div></div>
 <div id="flash"></div>
 <button class="btn" id="atacar"><span>🪵</span><small>ATACAR</small></button>
-<button class="btn" id="arma" hidden title="Trocar arma">🔄</button>
+<button class="btn" id="arma" hidden title="Trocar arma"><img class="ico big" src="icones/ui_trocar.svg" alt=""></button>
 <div id="inv"><span>💰 <b id="inv-m">0</b></span><span id="inv-pw">🐺 <b id="inv-p">0</b></span><button id="inv-cw" title="Comer">🍖 <b id="inv-c">0</b></button><span id="inv-g" hidden>💎</span></div>
 <div id="chefe" hidden><b>❄️ GOLEM DE GELO</b><div class="br"><div id="chefe-fill"></div></div></div>
 <div id="hpbs"></div><div id="nums"></div>
@@ -483,6 +484,8 @@ ${_}`}class A extends Error{constructor({message:e,code:t,cause:r,name:s}){var n
   }
 
   // ===================== JOGO — Vila de Brumafria (do vídeo O Último Conhecimento) =====================
+  const IC = (n, ext) => '<img class="ico" src="icones/' + n + '.' + (ext || 'svg') + '" alt="" draggable="false">';
+  const limpaIco = t => String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/&lt;img class="ico" src="(icones\/[\w.]+)" alt="" draggable="false">/g, '<img class="ico" src="$1" alt="" draggable="false">');
   cam.near = 0.1; cam.far = 800; cam.updateProjectionMatrix();
   const ROOF = new T3.ConeGeometry(1, 1, 4);
   const VISUAL_BLOCOS = (() => { try { const q = new URLSearchParams(location.search).get('blocos'); return q !== null ? q !== '0' : localStorage.getItem('aetherion-blocos') === '1'; } catch (e) { return false; } })();
@@ -634,7 +637,7 @@ ${_}`}class A extends Error{constructor({message:e,code:t,cause:r,name:s}){var n
   function podeVoar() { return typeof ASAS !== 'undefined' && ASAS.visible && !dentro && !conversa && !cenaQ && !desmaiado; }
   function voa(on) { if (on && !podeVoar()) { aviso('🦇 Equipe as Asas de Morcego (🎒 › Costas) pra voar.', '#c8a8ff'); return; } voando = on; input.sobe = input.desce = false;
     if (on) { feito('asas'); voSobe = 0.7; noChao = false; vy = 0; som('vento', 0.8, 1); aviso('🦇 Voando! ⬆ SUBIR e ⬇ DESCER pra altura, o controle pra ir pra frente.', '#c8a8ff'); } else { som('aterrissa', 0.5); }
-    $('voar').textContent = voando ? '🛬 POUSAR' : '🦇 VOAR'; $('pular').textContent = voando ? '⬆ SUBIR' : 'PULAR'; $('correr').textContent = voando ? '⬇ DESCER' : 'CORRER'; $('correr').classList.toggle('on', !voando && input.run); }
+    $('voar').innerHTML = voando ? IC('ui_voar') + ' POUSAR' : IC('ui_voar') + ' VOAR'; $('pular').textContent = voando ? '⬆ SUBIR' : 'PULAR'; $('correr').textContent = voando ? '⬇ DESCER' : 'CORRER'; $('correr').classList.toggle('on', !voando && input.run); }
   const segura = (el, k) => { const on = e => { if (voando) { input[k] = true; e.preventDefault(); } }, off = () => { input[k] = false; }; el.addEventListener('touchstart', on, { passive: false }); el.addEventListener('mousedown', on); ['touchend', 'touchcancel', 'mouseup', 'mouseleave'].forEach(ev => el.addEventListener(ev, off)); };
   segura($('pular'), 'sobe'); segura($('correr'), 'desce');
   tapBtn($('pular'), () => { if (!voando) input.jump = true; });
@@ -695,30 +698,30 @@ ${_}`}class A extends Error{constructor({message:e,code:t,cause:r,name:s}){var n
   let mana = 100; let MANA_MAX = 100;
   // tipo 'liga' = liga/desliga (custo por segundo) · 'uso' = gasta uma vez
   const PODERES = [
-    { id: 'memoria', nome: 'Memória', icone: '🧠', tipo: 'liga', custo: 0, fixo: true, desc: 'Memória do Mundo Antigo: você enxerga o que a ciência sabe sobre tudo em volta.' },
-    { id: 'luz', nome: 'Luz', icone: '✨', tipo: 'liga', custo: 7, fixo: true, desc: 'Um pouco de mana vira uma bola de luz que te segue. Gasta mana enquanto está ligada.' },
+    { id: 'memoria', nome: 'Memória', icone: IC('p_memoria'), tipo: 'liga', custo: 0, fixo: true, desc: 'Memória do Mundo Antigo: você enxerga o que a ciência sabe sobre tudo em volta.' },
+    { id: 'luz', nome: 'Luz', icone: IC('p_luz'), tipo: 'liga', custo: 7, fixo: true, desc: 'Um pouco de mana vira uma bola de luz que te segue. Gasta mana enquanto está ligada.' },
     // ramo Ciência
-    { id: 'sabao', ramo: 'ciencia', nivel: 0, preco: 0, nome: 'Sabão', icone: '🫧', tipo: 'uso', custo: 20, desc: '"Num mundo sem sabão, quem sabe fazer sabão vale mais que um dragão."' },
-    { id: 'ferver', ramo: 'ciencia', nivel: 1, preco: 1, nome: 'Ferver', icone: '♨️', tipo: 'uso', custo: 15, desc: 'Esquenta a água com mana até 100 °C. Vapor sobe e os germes morrem.' },
-    { id: 'remedio', ramo: 'ciencia', nivel: 2, preco: 2, nome: 'Remédio', icone: '🌿', tipo: 'uso', custo: 25, desc: 'Soro caseiro: água fervida, sal e açúcar. Cura quem está doente perto de você.' },
-    { id: 'polvora', ramo: 'ciencia', nivel: 3, preco: 3, nome: 'Pólvora', icone: '💥', tipo: 'uso', custo: 35, desc: 'Salitre + carvão + enxofre. Uma explosão na sua frente. Cuidado!' },
+    { id: 'sabao', ramo: 'ciencia', nivel: 0, preco: 0, nome: 'Sabão', icone: IC('p_sabao'), tipo: 'uso', custo: 20, desc: '"Num mundo sem sabão, quem sabe fazer sabão vale mais que um dragão."' },
+    { id: 'ferver', ramo: 'ciencia', nivel: 1, preco: 1, nome: 'Ferver', icone: IC('p_ferver'), tipo: 'uso', custo: 15, desc: 'Esquenta a água com mana até 100 °C. Vapor sobe e os germes morrem.' },
+    { id: 'remedio', ramo: 'ciencia', nivel: 2, preco: 2, nome: 'Remédio', icone: IC('p_remedio'), tipo: 'uso', custo: 25, desc: 'Soro caseiro: água fervida, sal e açúcar. Cura quem está doente perto de você.' },
+    { id: 'polvora', ramo: 'ciencia', nivel: 3, preco: 3, nome: 'Pólvora', icone: IC('p_polvora'), tipo: 'uso', custo: 35, desc: 'Salitre + carvão + enxofre. Uma explosão na sua frente. Cuidado!' },
     // ramo Mana
-    { id: 'escudo', ramo: 'mana', nivel: 1, preco: 1, nome: 'Escudo', icone: '🛡️', tipo: 'liga', custo: 5, desc: 'Uma bolha de mana em volta do corpo. Gasta mana enquanto está ligada.' },
-    { id: 'dardo', ramo: 'mana', nivel: 2, preco: 2, nome: 'Dardo', icone: '🔆', tipo: 'uso', custo: 12, desc: 'Um dardo de luz disparado pra frente.' },
-    { id: 'clarao', ramo: 'mana', nivel: 3, preco: 3, nome: 'Clarão', icone: '⚡', tipo: 'uso', custo: 40, desc: 'Toda a mana sai de uma vez num clarão que cega quem está perto.' },
+    { id: 'escudo', ramo: 'mana', nivel: 1, preco: 1, nome: 'Escudo', icone: IC('p_escudo'), tipo: 'liga', custo: 5, desc: 'Uma bolha de mana em volta do corpo. Gasta mana enquanto está ligada.' },
+    { id: 'dardo', ramo: 'mana', nivel: 2, preco: 2, nome: 'Dardo', icone: IC('p_dardo'), tipo: 'uso', custo: 12, desc: 'Um dardo de luz disparado pra frente.' },
+    { id: 'clarao', ramo: 'mana', nivel: 3, preco: 3, nome: 'Clarão', icone: IC('p_clarao'), tipo: 'uso', custo: 40, desc: 'Toda a mana sai de uma vez num clarão que cega quem está perto.' },
     // ramo Corpo
-    { id: 'salto', ramo: 'corpo', nivel: 0, preco: 0, nome: 'Salto', icone: '⬆️', tipo: 'uso', custo: 25, desc: 'A mana empurra seus pés: um pulo bem mais alto.' },
-    { id: 'vento', ramo: 'corpo', nivel: 1, preco: 1, nome: 'Vento', icone: '💨', tipo: 'liga', custo: 4, desc: 'Vento nas costas: você corre bem mais rápido. Gasta mana enquanto está ligado.' },
-    { id: 'planar', ramo: 'corpo', nivel: 2, preco: 2, nome: 'Planar', icone: '🪶', tipo: 'liga', custo: 3, desc: 'Ligado, você cai devagar depois de pular. Combina com o Salto!' },
-    { id: 'impulso', ramo: 'corpo', nivel: 3, preco: 3, nome: 'Impulso', icone: '➡️', tipo: 'uso', custo: 18, desc: 'Um empurrão de mana que te joga uns metros pra frente.' },
+    { id: 'salto', ramo: 'corpo', nivel: 0, preco: 0, nome: 'Salto', icone: IC('p_salto'), tipo: 'uso', custo: 25, desc: 'A mana empurra seus pés: um pulo bem mais alto.' },
+    { id: 'vento', ramo: 'corpo', nivel: 1, preco: 1, nome: 'Vento', icone: IC('p_vento'), tipo: 'liga', custo: 4, desc: 'Vento nas costas: você corre bem mais rápido. Gasta mana enquanto está ligado.' },
+    { id: 'planar', ramo: 'corpo', nivel: 2, preco: 2, nome: 'Planar', icone: IC('p_planar'), tipo: 'liga', custo: 3, desc: 'Ligado, você cai devagar depois de pular. Combina com o Salto!' },
+    { id: 'impulso', ramo: 'corpo', nivel: 3, preco: 3, nome: 'Impulso', icone: IC('p_impulso'), tipo: 'uso', custo: 18, desc: 'Um empurrão de mana que te joga uns metros pra frente.' },
     // ramo Física
-    { id: 'chama', ramo: 'fisica', nivel: 1, preco: 1, nome: 'Chama', icone: '🔥', tipo: 'uso', custo: 15, desc: 'Óleo + faísca: um jato de fogo curto na sua frente. Queima por 3 segundos.' },
-    { id: 'gelo', ramo: 'fisica', nivel: 2, preco: 2, nome: 'Gelo', icone: '❄️', tipo: 'uso', custo: 20, desc: 'Tira o calor do bicho mais perto e congela ele por 3 segundos.' },
-    { id: 'ima', ramo: 'fisica', nivel: 3, preco: 2, nome: 'Ímã', icone: '🧲', tipo: 'uso', custo: 15, desc: 'Magnetismo: puxa moedas e itens de longe e deixa os bichos perto desprotegidos (+50% de dano).' },
-    { id: 'raio', ramo: 'fisica', nivel: 4, preco: 3, nome: 'Raio', icone: '🌩️', tipo: 'uso', custo: 30, desc: 'Eletricidade de verdade: o raio pula de um inimigo pro outro (até 4).' },
+    { id: 'chama', ramo: 'fisica', nivel: 1, preco: 1, nome: 'Chama', icone: IC('p_chama'), tipo: 'uso', custo: 15, desc: 'Óleo + faísca: um jato de fogo curto na sua frente. Queima por 3 segundos.' },
+    { id: 'gelo', ramo: 'fisica', nivel: 2, preco: 2, nome: 'Gelo', icone: IC('p_gelo'), tipo: 'uso', custo: 20, desc: 'Tira o calor do bicho mais perto e congela ele por 3 segundos.' },
+    { id: 'ima', ramo: 'fisica', nivel: 3, preco: 2, nome: 'Ímã', icone: IC('p_ima'), tipo: 'uso', custo: 15, desc: 'Magnetismo: puxa moedas e itens de longe e deixa os bichos perto desprotegidos (+50% de dano).' },
+    { id: 'raio', ramo: 'fisica', nivel: 4, preco: 3, nome: 'Raio', icone: IC('p_raio'), tipo: 'uso', custo: 30, desc: 'Eletricidade de verdade: o raio pula de um inimigo pro outro (até 4).' },
   ];
   const PW = {}; PODERES.forEach(pw => PW[pw.id] = pw);
-  const RAMOS = [{ id: 'ciencia', nome: 'Ciência', icone: '🧪', cor: '#4ab870' }, { id: 'mana', nome: 'Mana', icone: '✨', cor: '#3a8ae8' }, { id: 'corpo', nome: 'Corpo', icone: '🏃', cor: '#e88a2a' }, { id: 'fisica', nome: 'Física', icone: '⚛️', cor: '#b84ad8' }];
+  const RAMOS = [{ id: 'ciencia', nome: 'Ciência', icone: IC('p_ciencia'), cor: '#4ab870' }, { id: 'mana', nome: 'Mana', icone: IC('p_mana'), cor: '#3a8ae8' }, { id: 'corpo', nome: 'Corpo', icone: IC('p_corpo'), cor: '#e88a2a' }, { id: 'fisica', nome: 'Física', icone: IC('p_fisica'), cor: '#b84ad8' }];
   const NSLOTS = 8;
   // progresso da árvore (salvo no aparelho)
   let AR = { pts: 3, tem: ['sabao', 'salto'], barra: ['memoria', 'luz', null, 'sabao', 'salto', null, null, null], ganhos: [] };
@@ -736,7 +739,7 @@ ${_}`}class A extends Error{constructor({message:e,code:t,cause:r,name:s}){var n
       else b.innerHTML = `<span class="ic">＋</span><span class="tc">${i + 1}</span>`; }); }
   function marca(pw, cls, on) { if (pw.el) pw.el.classList.toggle(cls, on); }
   window.addEventListener('keydown', e => { const n = parseInt(e.key); if (n >= 1 && n <= NSLOTS) { const id = AR.barra[n - 1]; if (id) usarPoder(PW[id]); } if (e.code === 'KeyT') abrirArvore(); });
-  let avisoT = null; function aviso(t, cor) { const el = $('aviso'); el.textContent = t; el.style.borderColor = cor || '#5ab8ff'; el.classList.add('on'); clearTimeout(avisoT); avisoT = setTimeout(() => el.classList.remove('on'), 3200); }
+  let avisoT = null; function aviso(t, cor) { const el = $('aviso'); el.innerHTML = limpaIco(t); el.style.borderColor = cor || '#5ab8ff'; el.classList.add('on'); clearTimeout(avisoT); avisoT = setTimeout(() => el.classList.remove('on'), 3200); }
   // efeitos dos poderes novos
   let tremor = 0, dashT = 0, dashVel = 22, dashAng = 0;
   function frente(d) { const p = heroi.position; return [p.x + Math.sin(facing) * d, p.y, p.z + Math.cos(facing) * d]; }
@@ -1053,7 +1056,7 @@ ${_}`}class A extends Error{constructor({message:e,code:t,cause:r,name:s}){var n
 
   // ---- números que sobem (dano, moedas) ----
   const vN = new T3.Vector3();
-  function numero(pos, txt, cor, alt) { vN.set(pos.x, (pos.y || 0) + (alt || 2), pos.z); vN.project(cam); if (vN.z > 1) return; const d = document.createElement('div'); d.className = 'dn'; d.textContent = txt; d.style.color = cor || '#fff'; d.style.left = ((vN.x * 0.5 + 0.5) * window.innerWidth + (Math.random() - 0.5) * 30) + 'px'; d.style.top = ((-vN.y * 0.5 + 0.5) * window.innerHeight) + 'px'; $('nums').appendChild(d); setTimeout(() => d.remove(), 900); }
+  function numero(pos, txt, cor, alt) { vN.set(pos.x, (pos.y || 0) + (alt || 2), pos.z); vN.project(cam); if (vN.z > 1) return; const d = document.createElement('div'); d.className = 'dn'; d.innerHTML = limpaIco(txt); d.style.color = cor || '#fff'; d.style.left = ((vN.x * 0.5 + 0.5) * window.innerWidth + (Math.random() - 0.5) * 30) + 'px'; d.style.top = ((-vN.y * 0.5 + 0.5) * window.innerHeight) + 'px'; $('nums').appendChild(d); setTimeout(() => d.remove(), 900); }
 
   // ---- os bichos ----
   const TIPOS = {
@@ -1300,7 +1303,7 @@ ${_}`}class A extends Error{constructor({message:e,code:t,cause:r,name:s}){var n
       if (tem) { bt.textContent = AR.arma === k ? 'Equipada' : 'Equipar'; bt.disabled = AR.arma === k; tapBtn(bt, () => { if (AR.arma === k) return; AR.arma = k; salvaAR(); mostraArma(); abrirLoja(); }); }
       else { const ok = AR.inv.moedas >= A.preco && (!A.precisa || AR.inv[A.precisa] > 0); bt.innerHTML = preco; bt.disabled = !ok; tapBtn(bt, () => { if (!ok) return; AR.inv.moedas -= A.preco; som('compra', 0.8, 1); if (A.precisa) AR.inv[A.precisa]--; AR.armas.push(k); AR.arma = k; salvaAR(); mostraArma(); atualizaInv(); aviso('Nova arma: ' + A.icone + ' ' + A.nome + '!', '#ffd23c'); abrirLoja(); }); }
       b.appendChild(bt); L.appendChild(b); });
-    const sec = t => { const h = document.createElement('div'); h.className = 'loja-sec'; h.textContent = t; L.appendChild(h); };
+    const sec = t => { const h = document.createElement('div'); h.className = 'loja-sec'; h.innerHTML = limpaIco(t); L.appendChild(h); };
     const linha = (ic, nome, sub, tem, vestido, compra, veste, cor) => { const b = document.createElement('div'); b.className = 'item'; b.innerHTML = `<span class="ic"${cor ? ` style="text-shadow:0 0 8px ${cor}"` : ''}>${ic}</span><div class="tx"><b>${nome}</b><small>${sub}</small></div>`;
       const bt = document.createElement('button'); bt.className = 'cb'; if (tem) { bt.textContent = vestido ? 'Vestido' : 'Vestir'; bt.disabled = vestido; tapBtn(bt, () => { if (vestido) return; veste(); abrirLoja(); }); } else { bt.innerHTML = 'Grátis · 0 💰'; tapBtn(bt, () => { som('compra', 0.8, 1); compra(); salvaAR(); abrirLoja(); }); } b.appendChild(bt); L.appendChild(b); };
     Object.keys(CASACOS).forEach(c => { const C = CASACOS[c]; sec(C.icone + ' ' + C.nome + ' · 5 peças (+' + SOB_DEF + '% cada, conjunto +' + SOB_BONUS + '%)');
@@ -1526,7 +1529,7 @@ ${_}`}class A extends Error{constructor({message:e,code:t,cause:r,name:s}){var n
   const SOB_PECAS = [['peito', '🧥', 'Casaco'], ['ombro', '🛡️', 'Ombreiras'], ['maos', '🧤', 'Braçadeiras'], ['calca', '👘', 'Manto'], ['pe', '🥾', 'Botas']];
   const SOB_DEF = 6, SOB_BONUS = 5;
   AR.sobs = AR.sobs || []; if (AR.fantasias) AR.fantasias = AR.fantasias.filter(f => !CASACOS[f]); if (CASACOS[AR.fantasia]) AR.fantasia = 'comum';
-  const sobInfo = (set, k) => { const C = CASACOS[set], S = SOB_PECAS.find(x => x[0] === k); return C && S ? { icone: S[1], nome: S[2] + ' · ' + C.nome, sub: 'Defesa +' + SOB_DEF + '%', cor: C.gem, set, k } : null; };
+  const sobInfo = (set, k) => { const C = CASACOS[set], S = SOB_PECAS.find(x => x[0] === k); return C && S ? { icone: IC('sob_' + set + '_' + k), nome: S[2] + ' · ' + C.nome, sub: 'Defesa +' + SOB_DEF + '%', cor: C.gem, set, k } : null; };
   const CAS = {};
   function entre(p, mat, a, b, w, d) { const dx = b[0] - a[0], dy = b[1] - a[1], dz = b[2] - a[2], L = Math.hypot(dx, dy, dz); const m = new T3.Mesh(BOX, mat); m.scale.set(w, L, d || w); m.position.set((a[0] + b[0]) / 2, (a[1] + b[1]) / 2, (a[2] + b[2]) / 2); m.quaternion.setFromUnitVectors(new T3.Vector3(0, 1, 0), new T3.Vector3(dx / L, dy / L, dz / L)); m.castShadow = true; p.add(m); return m; }
   Object.keys(CASACOS).forEach(k => { const C = CASACOS[k], P = heroi.userData.P, L = [], PCs = { peito: [], ombro: [], maos: [], calca: [], pe: [] }; let cur = 'peito'; const PU = m => { L.push(m); PCs[cur].push(m); };
@@ -1744,7 +1747,7 @@ ${_}`}class A extends Error{constructor({message:e,code:t,cause:r,name:s}){var n
         ['⚡', 'Modos de batalha', `I${AR.nv >= BM_NV[1] ? ' · II' : ''}${AR.nv >= BM_NV[2] ? ' · III' : ''}${AR.nv < BM_NV[2] ? ' (III no nv ' + BM_NV[2] + ')' : ''}`], ['🌳', 'Pontos de habilidade', AR.pts], ['🐺', 'Bichos derrotados', `${tot}${ab.golem ? ' · Golem ✔' : ''}`], ['🏆', 'Finais', `${finais.length} / 6`], ['💰', 'Moedas', AR.inv.moedas]];
       C.innerHTML = '<div class="stats">' + L.map(([i, n, v]) => `<div class="st"><span>${i}</span><small>${n}</small><b>${v}</b></div>`).join('') + '</div><p class="dica">Cada nível dá +5 de vida, +3 de mana, +2% de ataque e 1 ponto de habilidade. Ganhe XP derrotando bichos, falando com as pessoas e fazendo as missões.</p>'; return; }
     C.innerHTML = '';
-    const sec = (t) => { const h = document.createElement('div'); h.className = 'sec'; h.textContent = t; C.appendChild(h); const g = document.createElement('div'); g.className = 'grade'; C.appendChild(g); return g; };
+    const sec = (t) => { const h = document.createElement('div'); h.className = 'sec'; h.innerHTML = limpaIco(t); C.appendChild(h); const g = document.createElement('div'); g.className = 'grade'; C.appendChild(g); return g; };
     const cel = (g, ic, nome, sub, on, fn, tag) => { const b = document.createElement('button'); b.className = 'cel' + (on ? ' on' : '') + (fn ? '' : ' fixa'); b.innerHTML = `<span class="ic">${ic}</span><b>${nome}</b><small>${sub}</small>${tag ? `<em>${tag}</em>` : ''}`; if (fn) tapBtn(b, fn); g.appendChild(b); };
     if (abaPerfil === 'fant') { let g = sec('🎭 Fantasias · só visual (não mudam a defesa)');
       Object.keys(COSM).forEach(k => { const F = COSM[k], tem = AR.cosms.includes(k), on = AR.cosm === k; cel(g, tem ? F.icone : '🔒', F.nome, tem ? (on ? 'Toque pra tirar' : F.desc) : 'Derrote o Morcego Gigante', on, tem ? () => { vesteCosm(on ? null : k); desenhaPerfil(); } : null, on ? 'VESTIDA' : ''); });
@@ -1824,15 +1827,15 @@ ${_}`}class A extends Error{constructor({message:e,code:t,cause:r,name:s}){var n
     magonegro: { nome: 'Mago Negro', icone: '🌑', papel: 'Magia sombria', cor: '#a050ff', roupa: '#1a1424', vida: 95, mana: 140, atk: 1.3, def: 10, vel: 1.0, crit: 0.1, esq: 0, arma: 'sombrio', hab: 'drenar', desc: 'Uma das classes mais fortes no fim do jogo. Rouba a vida dos inimigos pra se curar.' },
   };
   const HABS = [
-    { id: 'sismico', nome: 'Sísmico', icone: '💢', custo: 25, desc: 'Golpe Sísmico: bate o espadão no chão. Dano em volta e deixa os bichos tontos.' },
-    { id: 'danca', nome: 'Dança', icone: '🌪️', custo: 20, desc: 'Dança das Lâminas: pula no bicho mais perto e corta 4 vezes. O último corte é sempre crítico.' },
-    { id: 'meteoro', nome: 'Meteoro', icone: '☄️', custo: 35, desc: 'Chuva de Meteoros: pedras de fogo caem em cima do bicho mais perto, em área.' },
-    { id: 'rajada', nome: 'Rajada', icone: '🍃', custo: 22, desc: 'Rajada Arcana: 3 flechas de luz em leque e cura 25 de vida.' },
-    { id: 'muralha', nome: 'Muralha', icone: '🧱', custo: 25, desc: 'Muralha: por 6 segundos você recebe 80% menos dano e empurra os bichos pra longe.' },
-    { id: 'runa', nome: 'Runa', icone: '✴️', custo: 22, desc: 'Lâmina Rúnica: corte mágico na frente que deixa os bichos fracos (+50% de dano) por 6 segundos.' },
-    { id: 'tufao', nome: 'Tufão', icone: '🌀', custo: 28, desc: 'Tufão de Chakrams: chakrams giram em volta de você por 4 segundos acertando tudo.' },
-    { id: 'carregado', nome: 'Carregado', icone: '💥', custo: 28, desc: 'Tiro Carregado: um raio que atravessa todos os bichos em linha reta.' },
-    { id: 'drenar', nome: 'Drenar', icone: '🩸', custo: 25, desc: 'Drenar Alma: rouba a vida do bicho mais perto e cura você.' },
+    { id: 'sismico', nome: 'Sísmico', icone: IC('p_sismico'), custo: 25, desc: 'Golpe Sísmico: bate o espadão no chão. Dano em volta e deixa os bichos tontos.' },
+    { id: 'danca', nome: 'Dança', icone: IC('p_danca'), custo: 20, desc: 'Dança das Lâminas: pula no bicho mais perto e corta 4 vezes. O último corte é sempre crítico.' },
+    { id: 'meteoro', nome: 'Meteoro', icone: IC('p_meteoro'), custo: 35, desc: 'Chuva de Meteoros: pedras de fogo caem em cima do bicho mais perto, em área.' },
+    { id: 'rajada', nome: 'Rajada', icone: IC('p_rajada'), custo: 22, desc: 'Rajada Arcana: 3 flechas de luz em leque e cura 25 de vida.' },
+    { id: 'muralha', nome: 'Muralha', icone: IC('p_muralha'), custo: 25, desc: 'Muralha: por 6 segundos você recebe 80% menos dano e empurra os bichos pra longe.' },
+    { id: 'runa', nome: 'Runa', icone: IC('p_runa'), custo: 22, desc: 'Lâmina Rúnica: corte mágico na frente que deixa os bichos fracos (+50% de dano) por 6 segundos.' },
+    { id: 'tufao', nome: 'Tufão', icone: IC('p_tufao'), custo: 28, desc: 'Tufão de Chakrams: chakrams giram em volta de você por 4 segundos acertando tudo.' },
+    { id: 'carregado', nome: 'Carregado', icone: IC('p_carregado'), custo: 28, desc: 'Tiro Carregado: um raio que atravessa todos os bichos em linha reta.' },
+    { id: 'drenar', nome: 'Drenar', icone: IC('p_drenar'), custo: 25, desc: 'Drenar Alma: rouba a vida do bicho mais perto e cura você.' },
   ];
   HABS.forEach(h => { h.tipo = 'uso'; h.classe = true; PODERES.push(h); PW[h.id] = h; });
   Object.assign(ARMAS, {
@@ -1994,7 +1997,7 @@ ${_}`}class A extends Error{constructor({message:e,code:t,cause:r,name:s}){var n
   const trNome = () => ((AR.visual && AR.visual.nome) || (CONTA.usuario && CONTA.usuario.displayName) || 'Jogador').slice(0, 20);
   function trPerfil() { const db = trDb(); if (!db) return; db.collection('perfis').doc(trMeu()).set({ nome: trNome(), codigo: trCodigo(trMeu()), nv: AR.nv || 1 }, { merge: true }).catch(() => {}); }
   // o que dá pra trocar
-  function trInfo(it) { if (it.t === 'moedas') return { ic: '💰', nome: it.n + ' moedas' }; if (it.t === 'item') return { ic: ITENS[it.k] || '❔', nome: it.n + 'x ' + ({ carne: 'Carne', pele: 'Pele de lobo', coracao: 'Coração de gelo' }[it.k] || it.k) };
+  function trInfo(it) { if (it.t === 'moedas') return { ic: IC('item_moedas'), nome: it.n + ' moedas' }; if (it.t === 'item') return { ic: (ITEM_INFO[it.k] || [])[0] || ITENS[it.k] || '❔', nome: it.n + 'x ' + ({ carne: 'Carne', pele: 'Pele de lobo', coracao: 'Coração de gelo' }[it.k] || it.k) };
     if (it.t === 'arma') { const A = ARMAS[it.k]; return { ic: A ? A.icone : '❔', nome: A ? A.nome : it.k }; } if (it.t === 'fant') { const F = FANT[it.k]; return { ic: F ? F.icone : '❔', nome: F ? F.nome : it.k }; }
     if (it.t === 'cosm') { const F = COSM[it.k]; return { ic: F ? F.icone : '❔', nome: F ? F.nome : it.k }; } if (it.t === 'sob') { const [s, k] = it.k.split(':'); const I = sobInfo(s, k); return I ? { ic: I.icone, nome: I.nome, cor: I.cor } : { ic: '❔', nome: it.k }; } return { ic: '❔', nome: '?' }; }
   function trTenho(it) { if (it.t === 'moedas') return (AR.inv.moedas || 0) >= it.n; if (it.t === 'item') return (AR.inv[it.k] || 0) >= it.n; if (it.t === 'arma') return AR.armas.includes(it.k); if (it.t === 'fant') return AR.fantasias.includes(it.k); if (it.t === 'cosm') return AR.cosms.includes(it.k); if (it.t === 'sob') return AR.sobs.includes(it.k); return false; }
@@ -2161,6 +2164,14 @@ ${_}`}class A extends Error{constructor({message:e,code:t,cause:r,name:s}){var n
   };
   Object.keys(HABS2).forEach(cls => { const base = PW[CLASSES[cls].hab]; base.ramo = 'classe'; base.nivel = 0; base.preco = 0; base.cls = cls;
     HABS2[cls].forEach(([id, nome, icone, custo, desc], i) => { const h = { id, nome, icone, custo, desc, tipo: 'uso', ramo: 'classe', cls, nivel: i + 1, preco: i + 1 }; PODERES.push(h); PW[id] = h; }); });
+  // ===== ícones em imagem (pasta icones/) =====
+  PODERES.forEach(h => { h.icone = IC('p_' + h.id); }); RAMOS.forEach(r => { r.icone = IC('p_' + r.id); });
+  Object.keys(ARMAS).forEach(k => { ARMAS[k].icone = k === 'punho' ? IC('arma_punho') : ARMAG[k] ? IC('arma_' + k, 'png') : ARMAS[k].icone; });
+  Object.keys(FANT).forEach(k => { FANT[k].icone = IC('f_' + k); }); Object.keys(CASACOS).forEach(k => { CASACOS[k].icone = IC('cas_' + k); });
+  Object.keys(CLASSES).forEach(k => { CLASSES[k].icone = IC('c_' + k); }); COSM.morcego.icone = IC('ui_voar');
+  SLOTS_EQ.forEach(sl => { sl[1] = IC('slot_' + sl[0]); }); SOB_PECAS.forEach(sp => { sp[1] = IC('slot_' + sp[0]); });
+  ITEM_INFO.carne[0] = IC('item_carne'); ITEM_INFO.pele[0] = IC('item_pele'); ITEM_INFO.coracao[0] = IC('item_coracao');
+  montaBarra(); mostraArma();
   const BUFF = {}; let esmaga = false;
   function buff(k, s) { s *= 1 + (potAtual - 1) / 2; BUFF[k] = Math.max(BUFF[k] || 0, s); }
   const LOB = [];
@@ -2607,7 +2618,7 @@ ${_}`}class A extends Error{constructor({message:e,code:t,cause:r,name:s}){var n
     if (!a || conversa || cenaQ) { SETA.visible = false; return null; } const dx = a.x - p.x, dz = a.z - p.z, d = Math.hypot(dx, dz); if (d < 3.5) { SETA.visible = false; return null; }
     const ang = Math.atan2(dx, dz); SETA.visible = true; SETA.position.set(p.x + Math.sin(ang) * 1.5, p.y, p.z + Math.cos(ang) * 1.5); SETA.rotation.y = ang + Math.PI; SETA.children[0].position.y = 0.06 + Math.abs(Math.sin(gT * 4)) * 0.08; return d; }
   atualizaMM();
-  window.__dbg = { vesteCosm, voa, get voando() { return voando; }, input, mpRecebe, entraMasmorra, saiMasmorra, MM, mmFaseAtual, mmMorte, setaFrame, equipaArma, abrirGuilda, arthurNPC, vestePeca, atualizaPecas, PECAS, BLOCOS, modoBatalha, bmLiga, bmDesliga, BMS, ORB, get BM() { return BM; }, get hora() { return hora; }, set hora(v) { hora = v; }, usarHab2: id => classePoder2(id), BUFF, abrirCriar, aplicaClasse, CLASSES, get desp() { return desp; }, set desp(v) { desp = v; }, usarHab: id => classePoder(id), renderer, scene, world, ganhaXp, vesteFantasia, abrirPerfil, fazRetrato, irValdren, Q, heroi, ativo, AR, FERAS, golem, atacar, get vida() { return vida; }, set vida(v) { vida = v; }, abrirLoja, usarPoder: id => usarPoder(PW[id]), acao: () => acao(), get alvo() { return alvo; } };
+  window.__dbg = { ARMAG, T3, vesteCosm, voa, get voando() { return voando; }, input, mpRecebe, entraMasmorra, saiMasmorra, MM, mmFaseAtual, mmMorte, setaFrame, equipaArma, abrirGuilda, arthurNPC, vestePeca, atualizaPecas, PECAS, BLOCOS, modoBatalha, bmLiga, bmDesliga, BMS, ORB, get BM() { return BM; }, get hora() { return hora; }, set hora(v) { hora = v; }, usarHab2: id => classePoder2(id), BUFF, abrirCriar, aplicaClasse, CLASSES, get desp() { return desp; }, set desp(v) { desp = v; }, usarHab: id => classePoder(id), renderer, scene, world, ganhaXp, vesteFantasia, abrirPerfil, fazRetrato, irValdren, Q, heroi, ativo, AR, FERAS, golem, atacar, get vida() { return vida; }, set vida(v) { vida = v; }, abrirLoja, usarPoder: id => usarPoder(PW[id]), acao: () => acao(), get alvo() { return alvo; } };
   // ---------- laço do jogo ----------
   let vy = 0, noChao = true, facing = 0, vel = 0, gT = 0, last = performance.now();
   const ANDAR = 3.0, CORRER = 6.5, GRAV = 22, PULO = 7.6; const tmp = new T3.Vector3();
@@ -2651,7 +2662,7 @@ ${_}`}class A extends Error{constructor({message:e,code:t,cause:r,name:s}){var n
     if (!conversa) { const alC = combateAlvo(p); if (alC) alvo = alC; }
     const btn = $('acao'); btn.hidden = !alvo || !!conversa || !!cenaQ; if (alvo) btn.textContent = alvo.rot || (alvo.tipo === 'entrar' ? 'ENTRAR' : alvo.tipo === 'sair' ? 'SAIR' : alvo.falas && !alvo.c ? 'VER' : 'FALAR');
     // ambiente
-    { const cx = zona === 'valdren' ? VX : 0, an = (hora - 6) / 12 * Math.PI; sunBall.position.set(cx + Math.cos(an) * 110, Math.sin(an) * 70 + 4, -100); moon.position.set(cx - Math.cos(an) * 110, -Math.sin(an) * 70 + 4, -100); sunBall.visible = !dentro && zona !== 'masmorra' && sunBall.position.y > -4; moon.visible = !dentro && zona !== 'masmorra' && moon.position.y > -4; WIN.forEach(w => w.material.opacity = 0.15 + noiteF * 0.65); $('ciclo').textContent = modo === 'dia' ? '☾' : '☀'; }
+    { const cx = zona === 'valdren' ? VX : 0, an = (hora - 6) / 12 * Math.PI; sunBall.position.set(cx + Math.cos(an) * 110, Math.sin(an) * 70 + 4, -100); moon.position.set(cx - Math.cos(an) * 110, -Math.sin(an) * 70 + 4, -100); sunBall.visible = !dentro && zona !== 'masmorra' && sunBall.position.y > -4; moon.visible = !dentro && zona !== 'masmorra' && moon.position.y > -4; WIN.forEach(w => w.material.opacity = 0.15 + noiteF * 0.65); { const cb = $('ciclo'), q = modo === 'dia' ? 'lua' : 'sol'; if (cb.dataset.q !== q) { cb.dataset.q = q; cb.innerHTML = '<img class="ico big" src="icones/ui_' + q + '.svg" alt="">'; } } }
     nuvens.forEach((c, i) => { c.visible = !dentro && zona !== 'masmorra'; c.position.x += dt * (0.5 + (i % 3) * 0.2); if (c.position.x > 140) c.position.x = -140; });
     neve.visible = !BLOCOS && !dentro && zona === 'vila'; if (neve.visible) neve.userData.place((i, d) => { if (i % 3) return false; const R = rng(i + 91); const k = ((gT * (0.08 + R() * 0.06) + R()) % 1); d.position.set(p.x + (R() - .5) * 30 + Math.sin(gT + i) * 0.4, 12 - k * 12, p.z + (R() - .5) * 30); d.scale.setScalar(d.position.distanceTo(cam.position) < 2.5 ? 0.0001 : 0.03 + R() * 0.04); });
     fumaca.visible = !dentro && zona === 'vila'; if (fumaca.visible) fumaca.userData.place((i, d) => { const c = CHIM[i % CHIM.length]; const R = rng(i + 5); const k = ((gT * 0.12 + R()) % 1); c[0].updateMatrixWorld(); v3.set(c[1], c[2], c[3]); c[0].localToWorld(v3); d.position.set(v3.x + k * 1.6 + Math.sin(gT + i) * 0.2, v3.y + k * 4, v3.z); d.scale.setScalar(0.25 + k * 0.9); });
