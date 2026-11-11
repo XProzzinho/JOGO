@@ -218,6 +218,8 @@
   #obj{position:fixed;left:44%;top:calc(12px + env(safe-area-inset-top,0px));transform:translateX(-50%);max-width:min(460px,60vw);padding:5px 14px;border-radius:14px;background:var(--branco);border:var(--borda);box-shadow:var(--sombra);color:var(--tinta);font-size:13px;font-weight:800;text-align:center;pointer-events:none}
   #obj b{color:var(--coral-forte);letter-spacing:1px;font-size:10px;font-weight:900;display:block}
   #missao-g{position:fixed;left:44%;top:calc(64px + env(safe-area-inset-top,0px));transform:translateX(-50%);padding:5px 14px;border-radius:14px;background:var(--branco);border:var(--borda);box-shadow:var(--sombra);color:var(--tinta);font-size:13px;font-weight:800;text-align:center;z-index:6;pointer-events:none;white-space:nowrap}
+  #mm-hud{position:fixed;left:44%;top:calc(104px + env(safe-area-inset-top,0px));transform:translateX(-50%);padding:5px 14px;border-radius:14px;background:#1c1828;border:3px solid #2b2340;box-shadow:var(--sombra);color:#f0e8ff;font-size:13px;font-weight:800;text-align:center;z-index:6;pointer-events:none;white-space:nowrap}
+  #mm-hud b{color:#c8a8ff;letter-spacing:1px;font-size:10px;font-weight:900;display:block}
   #missao-g b{color:#2f8a3a;letter-spacing:1px;font-size:10px;font-weight:900;display:block}
   #fala-esc{display:grid;gap:8px;margin-top:8px}
   .esc{display:block;text-align:left;padding:9px 12px;border-radius:14px;border:var(--borda);background:var(--branco);color:var(--tinta);font-family:inherit;font-size:15px;font-weight:800;box-shadow:0 3px 0 var(--tinta)}
@@ -288,6 +290,7 @@
 <div id="lugar"></div>
 <div id="obj" hidden><b>OBJETIVO</b><span id="obj-txt"></span></div>
 <div id="missao-g" hidden></div>
+<div id="mm-hud" hidden></div>
 <div id="fala" hidden><div id="fala-nome"></div><div id="fala-txt"></div><div id="fala-esc" hidden></div><div id="fala-mais"></div></div>
 <div id="joy"><div id="knob"></div></div>
 <button class="btn" id="correr">CORRER</button>
@@ -466,13 +469,14 @@ ${_}`}class A extends Error{constructor({message:e,code:t,cause:r,name:s}){var n
   const MODES = {
     dia: { sky: ['#4f9fe0', '#dcefff'], hemi: 1.15, sun: 2.6, sunC: '#ffefd2', fog: '#e2eef6', fogN: 50, fogF: 190, ground: '#b8a078', rim: '#ffd8a8' },
     noite: { sky: ['#14205a', '#3a5aa8'], hemi: 0.8, sun: 1.0, sunC: '#9ab8ff', fog: '#26386e', fogN: 24, fogF: 110, ground: '#3a6a5a', rim: '#7a9aff' },
+    caverna: { sky: ['#0a0812', '#1a1426'], hemi: 1.0, sun: 0.9, sunC: '#c8b8f0', fog: '#120e1c', fogN: 14, fogF: 60, ground: '#2a2030', rim: '#8a5aff' },
     casa: { sky: ['#140c08', '#140c08'], hemi: 0.75, sun: 0.25, sunC: '#ffb070', fog: '#140c08', fogN: 20, fogF: 60, ground: '#3a2418', rim: '#ff8a3a' } };
   scene.background = skyT; scene.fog = new T3.Fog('#ffffff', 30, 120);
   let modo = 'dia', hora = 8, noiteF = 0;
   function mixC(a, b, u) { const c = new T3.Color(a); c.lerp(new T3.Color(b), clamp(u)); return '#' + c.getHexString(); }
   function fatorNoite(h) { if (h >= 7 && h < 17.5) return 0; if (h >= 19.5 || h < 5) return 1; if (h < 7) return 1 - (h - 5) / 2; return (h - 17.5) / 2; }
   function ceu(dt) { hora += dt * 24 / 600; if (hora >= 24) hora -= 24; if (typeof Q !== 'undefined' && Q.noite) hora = clamp(hora < 12 ? 23.9 : hora, 20.5, 23.9);
-    const n = noiteF = fatorNoite(hora); modo = n > 0.5 ? 'noite' : 'dia'; if (dentro) { setMode('casa'); return; } const D = MODES.dia, N = MODES.noite; const por = n > 0 && n < 1 ? Math.sin(n * Math.PI) : 0;
+    const n = noiteF = fatorNoite(hora); modo = n > 0.5 ? 'noite' : 'dia'; if (dentro) { setMode('casa'); return; } if (zona === 'masmorra') { setMode('caverna'); return; } const D = MODES.dia, N = MODES.noite; const por = n > 0 && n < 1 ? Math.sin(n * Math.PI) : 0;
     setMode({ sky: [mixC(D.sky[0], N.sky[0], n), mixC(mixC(D.sky[1], N.sky[1], n), '#ff9a5a', por * 0.75)], hemi: lerp(D.hemi, N.hemi, n), sun: lerp(D.sun, N.sun, n), sunC: mixC(mixC(D.sunC, N.sunC, n), '#ffa060', por * 0.8), fog: mixC(mixC(D.fog, N.fog, n), '#e8a080', por * 0.5), fogN: lerp(D.fogN, N.fogN, n), fogF: lerp(D.fogF, N.fogF, n), ground: mixC(D.ground, N.ground, n), rim: mixC(D.rim, N.rim, n) }); }
   function setMode(k) { const M = typeof k === 'string' ? MODES[k] : k; const g = skyX.createLinearGradient(0, 0, 0, 256); g.addColorStop(0, M.sky[0]); g.addColorStop(1, M.sky[1]); skyX.fillStyle = g; skyX.fillRect(0, 0, 4, 256); skyT.needsUpdate = true;
     hemi.color.set('#ffffff'); hemi.groundColor.set(M.ground); hemi.intensity = M.hemi; sun.color.set(M.sunC); sun.intensity = M.sun; rim.color.set(M.rim); rim.intensity = 0.5; scene.fog.color.set(M.fog); scene.fog.near = M.fogN; scene.fog.far = M.fogF; }
@@ -616,18 +620,18 @@ ${_}`}class A extends Error{constructor({message:e,code:t,cause:r,name:s}){var n
   function som(n, vol, tom, gap) { if (!n) return; const a = acAudio(); if (!a) return; const t = a.currentTime; if (SFX_T[n] != null && t - SFX_T[n] < (gap == null ? 0.06 : gap)) return; SFX_T[n] = t;
     carregaSom(n).then(buf => { if (!buf) return; const s = a.createBufferSource(); s.buffer = buf; s.playbackRate.value = tom || (0.94 + Math.random() * 0.12); const g = a.createGain(); g.gain.value = (vol == null ? 1 : vol) * SFX_VOL; s.connect(g); g.connect(a.destination); s.start(); }); }
   function somEm(n, pos, vol, gap) { const d = Math.hypot(pos.x - heroi.position.x, pos.z - heroi.position.z); if (d > 30) return; som(n, (vol == null ? 1 : vol) * Math.max(0.15, 1 - d / 30), null, gap); }
-  const AMB = { amb_vila: null, amb_floresta: null, amb_cidade: null, amb_noite: null, amb_fogo: null }; let ambOk = false;
+  const AMB = { amb_caverna: null, amb_vila: null, amb_floresta: null, amb_cidade: null, amb_noite: null, amb_fogo: null }; let ambOk = false;
   function ambienteLiga() { const a = acAudio(); if (!a || ambOk) return; ambOk = true; Object.keys(AMB).forEach(n => carregaSom(n).then(buf => { if (!buf) return; const s = a.createBufferSource(); s.buffer = buf; s.loop = true; const g = a.createGain(); g.gain.value = 0; s.connect(g); g.connect(a.destination); s.start(); AMB[n] = g; })); }
   ['touchstart', 'mousedown', 'keydown'].forEach(ev => window.addEventListener(ev, () => { acAudio(); ambienteLiga(); }, { passive: true }));
   function ambienteFrame(dt, p) { const fora = !dentro, vila = zona === 'vila' && fora, df = typeof GBX !== 'undefined' ? Math.hypot(p.x - GBX, p.z - GBZ) : 99, nt = typeof noiteF !== 'undefined' ? noiteF : 0;
-    const alvoV = { amb_vila: vila ? 0.35 * clamp((df - 20) / 10) * (1 - nt * 0.7) : 0, amb_floresta: vila ? 0.5 * clamp((32 - df) / 12) : 0, amb_cidade: zona === 'valdren' && fora ? 0.4 * (1 - nt * 0.6) : 0, amb_noite: fora ? 0.4 * nt : 0, amb_fogo: dentro ? 0.5 : vila ? 0.6 * clamp((9 - df) / 6) : 0 };
+    const alvoV = { amb_caverna: zona === 'masmorra' ? 0.6 : 0, amb_vila: vila ? 0.35 * clamp((df - 20) / 10) * (1 - nt * 0.7) : 0, amb_floresta: vila ? 0.5 * clamp((32 - df) / 12) : 0, amb_cidade: zona === 'valdren' && fora ? 0.4 * (1 - nt * 0.6) : 0, amb_noite: fora && zona !== 'masmorra' ? 0.4 * nt : 0, amb_fogo: dentro ? 0.5 : vila ? 0.6 * clamp((9 - df) / 6) : 0 };
     Object.keys(AMB).forEach(n => { const g = AMB[n]; if (!g) return; g.gain.value += (alvoV[n] * SFX_VOL - g.gain.value) * clamp(dt * 1.5); }); }
   const SOM_PODER = { sabao: 'bolhas', salto: 'impulso', ferver: 'vapor', remedio: 'cura', polvora: 'explosao', dardo: 'dardo', clarao: 'luz', impulso: 'impulso', chama: 'chama', gelo: 'gelo', ima: 'ima', raio: 'raio',
     sismico: 'tremor', danca: 'espada', meteoro: 'explosao', rajada: 'dardo', muralha: 'escudo', runa: 'espada', tufao: 'vento', carregado: 'raio', drenar: 'magia', furia: 'modo', investida: 'impulso', grito: 'tremor', passo: 'impulso', veneno: 'bolhas', tempestade: 'raio', nova: 'luz', orbe: 'magia', teleporte: 'magia', chuva: 'dardo', congelante: 'gelo', floresta: 'cura', provocar: 'tremor', escudada: 'acerto', fortaleza: 'escudo', marca: 'magia', espiral: 'vento', espelho: 'escudo', bumerangue: 'golpe', esmagar: 'tremor', pele: 'escudo', granada: 'explosao', tripla: 'tiro', recuo: 'impulso', maldicao: 'magia', lanca: 'dardo', pacto: 'magia',
     escudo: 'escudo', vento: 'vento', planar: 'vento', luz: 'luz', memoria: 'magia' };
-  const SOM_GRITO = { lobo: 'lobo', javali: 'javali', goblin: 'goblin', rato: 'rato', golem: 'golem', morcego: 'morcego' };
-  const SOM_ATQ = { lobo: 'lobo', javali: 'javali', goblin: 'goblin_ataque', rato: 'rato', golem: 'golem_soco', morcego: 'morcego' };
-  const SOM_MORTE = { lobo: 'lobo_morte', javali: 'javali_morte', goblin: 'goblin_morte', rato: 'rato', golem: 'golem_morte', morcego: 'morcego_morte' };
+  const SOM_GRITO = { aranha: 'aranha', esqueleto: 'esqueleto', cogumelo: 'gosma', gosma: 'gosma', troll: 'troll', espectro: 'espectro', dragao: 'dragao', lobo: 'lobo', javali: 'javali', goblin: 'goblin', rato: 'rato', golem: 'golem', morcego: 'morcego' };
+  const SOM_ATQ = { aranha: 'aranha', esqueleto: 'espada', cogumelo: 'bolhas', gosma: 'gosma', troll: 'golem_soco', espectro: 'espectro', dragao: 'chama', lobo: 'lobo', javali: 'javali', goblin: 'goblin_ataque', rato: 'rato', golem: 'golem_soco', morcego: 'morcego' };
+  const SOM_MORTE = { aranha: 'aranha', esqueleto: 'esqueleto', cogumelo: 'gosma', gosma: 'gosma', troll: 'troll', espectro: 'espectro', dragao: 'dragao_morte', lobo: 'lobo_morte', javali: 'javali_morte', goblin: 'goblin_morte', rato: 'rato', golem: 'golem_morte', morcego: 'morcego_morte' };
   let voz = null; function calaVoz() { if (voz) { voz.pause(); voz = null; } }
   function tocaVoz(id) { calaVoz(); if (!id) return; voz = new Audio('vozes/' + id + '.mp3'); voz.play().catch(() => {}); }
   function falaAtual() { const q = conversa.quem, f = q.falas[conversa.i]; return typeof f === 'string' ? { t: f, n: q.nome, v: q.vozes && q.vozes[conversa.i] } : { t: f.t, n: f.n || q.nome, v: f.v }; }
@@ -1019,6 +1023,13 @@ ${_}`}class A extends Error{constructor({message:e,code:t,cause:r,name:s}){var n
     rato: { nome: 'Rato gigante', vida: 18, dano: 5, vel: 3.8, aggro: 8, alc: 1.0, cd: 0.9, raio: 0.4, alt: 0.9, moedas: [1, 3], itens: [], zona: 'valdren' },
     golem: { nome: 'Golem de Gelo', vida: 520, dano: 28, vel: 1.7, aggro: 14, alc: 3.8, cd: 2.6, raio: 1.5, alt: 4.6, moedas: [40, 40], itens: [['coracao', 1]], zona: 'vila', chefe: true, volta: 180, barra: '❄️ GOLEM DE GELO' },
     goblin: { nome: 'Goblin', vida: 55, dano: 9, vel: 3.7, aggro: 10, alc: 1.3, cd: 1.2, raio: 0.5, alt: 1.35, moedas: [2, 5], itens: [['carne', 0.2]], zona: 'vila', volta: 25, perto: 9 },
+    aranha: { nome: 'Aranha da Caverna', vida: 160, dano: 22, vel: 4.6, aggro: 11, alc: 1.5, cd: 1.0, raio: 0.75, alt: 1.0, moedas: [8, 14], itens: [], zona: 'masmorra', volta: 99999 },
+    esqueleto: { nome: 'Esqueleto Guerreiro', vida: 230, dano: 28, vel: 3.3, aggro: 12, alc: 1.6, cd: 1.3, raio: 0.5, alt: 1.9, moedas: [10, 16], itens: [], zona: 'masmorra', volta: 99999 },
+    cogumelo: { nome: 'Fungo Venenoso', vida: 280, dano: 26, vel: 2.5, aggro: 10, alc: 1.6, cd: 1.4, raio: 0.7, alt: 1.6, moedas: [12, 18], itens: [], zona: 'masmorra', volta: 99999 },
+    gosma: { nome: 'Gosma de Cristal', vida: 220, dano: 24, vel: 3.0, aggro: 11, alc: 1.4, cd: 1.2, raio: 0.7, alt: 1.0, moedas: [12, 18], itens: [], zona: 'masmorra', volta: 99999, investe: true },
+    troll: { nome: 'Troll de Pedra', vida: 650, dano: 42, vel: 2.3, aggro: 12, alc: 2.4, cd: 2.0, raio: 1.0, alt: 2.9, moedas: [30, 45], itens: [['carne', 1]], zona: 'masmorra', volta: 99999 },
+    espectro: { nome: 'Espectro', vida: 300, dano: 32, vel: 3.7, aggro: 13, alc: 1.7, cd: 1.3, raio: 0.6, alt: 2.0, moedas: [20, 28], itens: [], zona: 'masmorra', volta: 99999 },
+    dragao: { nome: 'Dragão das Profundezas', vida: 2600, dano: 55, vel: 2.5, aggro: 18, alc: 4.2, cd: 2.4, raio: 2.2, alt: 4.6, moedas: [300, 300], itens: [['coracao', 1]], zona: 'masmorra', chefe: true, volta: 99999, barra: '🐉 DRAGÃO DAS PROFUNDEZAS' },
     morcego: { nome: 'Morcego Gigante', vida: 300, dano: 18, vel: 3.2, aggro: 12, alc: 2.8, cd: 2.0, raio: 1.2, alt: 3.6, moedas: [25, 30], itens: [['asas', 1]], zona: 'vila', chefe: true, voa: true, volta: 60, barra: '🦇 MORCEGO GIGANTE' },
   };
   const geloMat = new T3.MeshBasicMaterial({ color: '#bfefff', transparent: true, opacity: 0.45, depthWrite: false, toneMapped: false });
@@ -1057,6 +1068,54 @@ ${_}`}class A extends Error{constructor({message:e,code:t,cause:r,name:s}){var n
       [-1, 1].forEach(s => { const a = grp(b, s * 0.27, 0.86, 0); part(a, CYL, c, 0, -0.18, 0, 0.06, 0.36, 0.06); part(a, SPH, c2, 0, -0.38, 0, 0.07, 0.07, 0.07); arms.push(a);
         if (s > 0) { const cl = grp(a, 0, -0.38, 0.02); cl.rotation.x = 1.2; part(cl, CYL, '#7a5232', 0, 0.25, 0, 0.035, 0.5, 0.035); part(cl, SPH, '#5a3a22', 0, 0.5, 0, 0.1, 0.13, 0.1, 0.04); } });
       [-0.11, 0.11].forEach(x => leg(x, 0, 0.36, 0.075, c2)); }
+    else if (tipo === 'aranha') { const c = '#2a2230', c2 = '#4a2a5a';
+      part(b, SPH, c, 0, 0.55, -0.35, 0.48, 0.4, 0.55, 0.04); part(b, SPH, c2, 0, 0.72, -0.4, 0.22, 0.06, 0.38); part(b, SPH, c, 0, 0.5, 0.25, 0.3, 0.25, 0.3, 0.04);
+      head = grp(b, 0, 0.5, 0.48); part(head, SPH, c, 0, 0, 0, 0.2, 0.17, 0.18, 0.04); [[-0.07, 0.06], [0.07, 0.06], [-0.12, 0.0], [0.12, 0.0], [-0.04, -0.02], [0.04, -0.02]].forEach(([x, y]) => part(head, SPH, '#ff2a3a', x, y, 0.16, 0.03, 0.03, 0.02, 0, true));
+      [-1, 1].forEach(s => { const f = part(head, CONE, '#c8c0a8', s * 0.06, -0.12, 0.14, 0.025, 0.13, 0.025); f.rotation.x = Math.PI - 0.4; });
+      [-1, 1].forEach(s => { for (let k = 0; k < 4; k++) { const l = grp(b, s * 0.22, 0.52, 0.42 - k * 0.2); l.rotation.y = s * (0.3 - k * 0.25); const up = grp(l); up.rotation.z = -s * 1.0; part(up, CYL, c, 0, 0.28, 0, 0.045, 0.56, 0.045); const lo = grp(up, 0, 0.56, 0); lo.rotation.z = s * 2.3; part(lo, CYL, c2, 0, 0.32, 0, 0.035, 0.64, 0.035); L.push(l); } }); }
+    else if (tipo === 'esqueleto') { const c = '#e8e2cc', c2 = '#b8b098';
+      part(b, CYL, c, 0, 1.05, 0, 0.05, 0.6, 0.05); for (let k = 0; k < 4; k++) part(b, TOR, c, 0, 1.25 - k * 0.09, 0, 0.17 - k * 0.012, 0.15 - k * 0.01, 0.17, 0.02).rotation.x = Math.PI / 2; part(b, BOX, c2, 0, 0.78, 0, 0.32, 0.1, 0.16, 0.02);
+      head = grp(b, 0, 1.62, 0); part(head, SPH, c, 0, 0, 0, 0.17, 0.18, 0.18, 0.04); part(head, BOX, c2, 0, -0.14, 0.05, 0.16, 0.06, 0.12); [-1, 1].forEach(s => { part(head, SPH, '#120a0a', s * 0.06, 0.01, 0.14, 0.045, 0.05, 0.03); part(head, SPH, '#5af0ff', s * 0.06, 0.01, 0.16, 0.02, 0.02, 0.01, 0, true); });
+      part(head, SPH, '#5a5a62', 0, 0.06, 0, 0.19, 0.12, 0.19, 0.03);
+      [-1, 1].forEach(s => { const a = grp(b, s * 0.24, 1.38, 0); part(a, CYL, c, 0, -0.22, 0, 0.035, 0.44, 0.035); part(a, CYL, c, 0, -0.62, 0.03, 0.03, 0.38, 0.03); arms.push(a);
+        if (s > 0) { const sw = grp(a, 0, -0.82, 0.05); sw.rotation.x = 1.3; part(sw, BOX, '#8a8a92', 0, 0.4, 0, 0.06, 0.8, 0.015); part(sw, BOX, '#5a4a3a', 0, -0.02, 0, 0.18, 0.04, 0.04); } else { const sh = part(a, CYL, '#5a4a3a', -0.06, -0.6, 0.05, 0.25, 0.04, 0.25, 0.03); sh.rotation.z = Math.PI / 2; } });
+      [-0.1, 0.1].forEach(x => leg(x, 0, 0.75, 0.04, c)); }
+    else if (tipo === 'cogumelo') { const c = '#e8dcc0', cap = '#a83a5a';
+      part(b, CYL, c, 0, 0.55, 0, 0.3, 0.8, 0.3, 0.04); const ch = part(b, SPH, cap, 0, 1.0, 0, 0.62, 0.36, 0.62, 0.04);
+      for (let k = 0; k < 9; k++) { const a = k * 0.7; part(b, SPH, '#f4f0e0', Math.cos(a) * (0.25 + (k % 3) * 0.1), 1.2 - (k % 3) * 0.06, Math.sin(a) * (0.25 + (k % 3) * 0.1), 0.06, 0.03, 0.06); }
+      head = grp(b, 0, 0.62, 0.27); [-1, 1].forEach(s => part(head, SPH, '#9aff5a', s * 0.09, 0.05, 0.02, 0.05, 0.06, 0.02, 0, true)); part(head, BOX, '#3a1a20', 0, -0.08, 0.02, 0.14, 0.04, 0.01);
+      glowSpr(b, 0, 1.0, 0, 1.6, '#9aff5a', 0.25);
+      [-1, 1].forEach(s => { const a = grp(b, s * 0.3, 0.7, 0); part(a, CYL, c, 0, -0.18, 0, 0.06, 0.36, 0.06); arms.push(a); });
+      [-0.13, 0.13].forEach(x => leg(x, 0, 0.18, 0.09, '#c8bca0')); }
+    else if (tipo === 'gosma') { const gm2 = new T3.MeshPhysicalMaterial({ color: '#5ad8ff', transparent: true, opacity: 0.72, roughness: 0.1, clearcoat: 1, emissive: '#1a6a9a', emissiveIntensity: 0.4 });
+      const corpo = new T3.Mesh(SPH, gm2); corpo.position.set(0, 0.42, 0); corpo.scale.set(0.62, 0.45, 0.62); b.add(corpo); b.userData.gosma = corpo;
+      for (let k = 0; k < 5; k++) { const cr = part(b, CONE, '#bff4ff', (Math.random() - 0.5) * 0.5, 0.35 + Math.random() * 0.2, (Math.random() - 0.5) * 0.5, 0.06, 0.22, 0.06, 0, true); cr.rotation.set(Math.random(), Math.random(), Math.random()); }
+      head = grp(b, 0, 0.55, 0.45); [-1, 1].forEach(s => { part(head, SPH, '#ffffff', s * 0.13, 0, 0, 0.07, 0.08, 0.04); part(head, SPH, '#102030', s * 0.13, 0, 0.03, 0.035, 0.04, 0.02); }); glowSpr(b, 0, 0.45, 0, 1.6, '#5ad8ff', 0.35); }
+    else if (tipo === 'troll') { const c = '#6a7a6a', c2 = '#4a5a4a';
+      part(b, SPH, c, 0, 1.75, 0, 0.75, 0.8, 0.6, 0.04); part(b, SPH, c2, 0, 1.2, 0.05, 0.62, 0.45, 0.5, 0.04); part(b, CYL, '#5a3a22', 0, 0.98, 0, 0.6, 0.25, 0.5);
+      for (let k = 0; k < 5; k++) part(b, SPH, '#8a8a8a', (Math.random() - 0.5) * 0.8, 2.1 + Math.random() * 0.3, -0.35, 0.16, 0.12, 0.16, 0.03);
+      head = grp(b, 0, 2.55, 0.25); part(head, SPH, c, 0, 0, 0, 0.32, 0.3, 0.32, 0.04); part(head, SPH, c2, 0, -0.08, 0.26, 0.14, 0.11, 0.1); [-1, 1].forEach(s => { part(head, SPH, '#ffb020', s * 0.12, 0.06, 0.26, 0.045, 0.035, 0.02, 0, true); const t = part(head, CONE, '#f4ecd8', s * 0.12, -0.17, 0.25, 0.035, 0.12, 0.035); });
+      [-1, 1].forEach(s => { const a = grp(b, s * 0.8, 2.1, 0); part(a, SPH, c, 0, -0.45, 0, 0.22, 0.55, 0.22, 0.04); part(a, SPH, c2, 0, -1.05, 0.05, 0.22, 0.25, 0.22, 0.04); arms.push(a);
+        if (s > 0) { const cl = grp(a, 0, -1.1, 0.1); cl.rotation.x = 1.3; part(cl, CYL, '#6a4a2a', 0, 0.4, 0, 0.07, 0.9, 0.07); part(cl, SPH, '#5a3a22', 0, 0.9, 0, 0.22, 0.3, 0.22, 0.04); for (let k = 0; k < 4; k++) part(cl, CONE, '#8a8a92', Math.cos(k * 1.57) * 0.2, 0.9, Math.sin(k * 1.57) * 0.2, 0.04, 0.14, 0.04).rotation.z = -Math.cos(k * 1.57) * 1.4; } });
+      [-0.3, 0.3].forEach(x => leg(x, 0, 0.95, 0.2, c2)); }
+    else if (tipo === 'espectro') { const vel2 = new T3.MeshStandardMaterial({ color: '#2a3048', transparent: true, opacity: 0.85, roughness: 0.6, side: T3.DoubleSide });
+      const capa = new T3.Mesh(new T3.ConeGeometry(0.55, 1.7, 18, 1, true), vel2); capa.position.y = 1.25; b.add(capa); const fim = new T3.Mesh(new T3.CylinderGeometry(0.55, 0.62, 0.25, 18, 1, true), vel2); fim.position.y = 0.32; b.add(fim);
+      head = grp(b, 0, 2.0, 0.05); part(head, SPH, '#1a1e2c', 0, 0, 0, 0.26, 0.3, 0.26, 0.03); part(head, SPH, '#020206', 0, -0.03, 0.12, 0.17, 0.2, 0.15); [-1, 1].forEach(s => part(head, SPH, '#7af0ff', s * 0.06, 0.0, 0.25, 0.03, 0.022, 0.01, 0, true));
+      glowSpr(head, 0, 0, 0.2, 0.9, '#7af0ff', 0.5); glowSpr(b, 0, 1.2, 0, 2.4, '#5a8aff', 0.25);
+      [-1, 1].forEach(s => { const a = grp(b, s * 0.36, 1.65, 0.1); part(a, CYL, '#2a3048', 0, -0.3, 0, 0.07, 0.6, 0.07); for (let k = 0; k < 3; k++) part(a, CONE, '#c8f4ff', (k - 1) * 0.04, -0.68, 0.02, 0.015, 0.14, 0.015, 0, true).rotation.x = Math.PI; arms.push(a); }); }
+    else if (tipo === 'dragao') { const c = '#3a1418', c2 = '#5a1e22', bel = '#a8502a', memb = new T3.MeshToonMaterial({ color: '#5a1a22', gradientMap: GRAD, side: T3.DoubleSide }); const asas = [];
+      part(b, SPH, c, 0, 2.2, 0, 1.2, 1.0, 2.0, 0.04); part(b, SPH, bel, 0, 1.9, 0.2, 0.9, 0.7, 1.6); for (let k = 0; k < 4; k++) part(b, BOX, '#ff6a1a', 0, 1.35 + k * 0.05, 0.9 - k * 0.5, 0.5, 0.03, 0.06, 0, true);
+      for (let k = 0; k < 6; k++) part(b, CONE, '#1a0a0c', 0, 3.15 - k * 0.05, 1.2 - k * 0.55, 0.12, 0.45, 0.12);
+      let px = 0, py = 2.7, pz = 1.6; for (let k = 0; k < 4; k++) { part(b, SPH, k % 2 ? c2 : c, px, py, pz, 0.48 - k * 0.04, 0.48 - k * 0.04, 0.5, 0.03); py += 0.45; pz += 0.32; }
+      head = grp(b, 0, py + 0.1, pz + 0.3); part(head, SPH, c, 0, 0, 0, 0.55, 0.42, 0.75, 0.04); part(head, BOX, c2, 0, -0.18, 0.55, 0.55, 0.22, 0.7); part(head, BOX, c, 0, -0.42, 0.45, 0.48, 0.12, 0.65);
+      for (let k = 0; k < 6; k++) [-1, 1].forEach(s => part(head, CONE, '#f4ecd8', s * 0.2, -0.33, 0.25 + k * 0.12, 0.03, 0.12, 0.03).rotation.x = Math.PI);
+      [-1, 1].forEach(s => { const h = part(head, CONE, '#1a0a0c', s * 0.3, 0.38, -0.35, 0.1, 0.8, 0.1); h.rotation.set(-1.0, 0, -s * 0.35); part(head, SPH, '#ffb020', s * 0.32, 0.12, 0.35, 0.09, 0.06, 0.07, 0, true); });
+      glowSpr(head, 0, -0.3, 1.0, 1.4, '#ff6a1a', 0.5);
+      [-1, 1].forEach(s => { const w = grp(b, s * 0.8, 3.0, 0.3); const sh = new T3.Shape(); sh.moveTo(0, 0); sh.lineTo(s * 3.2, 1.5); sh.lineTo(s * 3.6, -0.3); sh.lineTo(s * 2.6, -0.6); sh.lineTo(s * 1.8, -0.4); sh.lineTo(s * 1.0, -0.8); sh.closePath();
+        const m = new T3.Mesh(new T3.ShapeGeometry(sh), memb); m.rotation.x = -Math.PI / 2 + 0.5; w.add(m); part(w, CYL, c, s * 1.6, 0.35, -0.55, 0.08, 3.6, 0.08).rotation.set(0.5, 0, -s * 1.15); asas.push(w); });
+      b.userData.asas = asas;
+      let tz = -1.8, ty = 2.0; for (let k = 0; k < 7; k++) { part(b, SPH, k % 2 ? c2 : c, 0, ty, tz, 0.45 - k * 0.055, 0.42 - k * 0.05, 0.5, 0.03); tz -= 0.55; ty -= 0.18; } part(b, CONE, '#1a0a0c', 0, ty + 0.1, tz, 0.25, 0.6, 0.08).rotation.x = -Math.PI / 2;
+      [[-0.85, 1.1], [0.85, 1.1], [-0.85, -1.1], [0.85, -1.1]].forEach(([x, z]) => leg(x, z, 1.45, 0.24, c2)); }
     else { const c = '#b0dcf2', c2 = '#7ab4dc';
       part(b, ICO, c, 0, 2.4, 0, 1.05, 1.1, 0.8, 0.03); part(b, ICO, c2, 0, 1.45, 0, 0.8, 0.5, 0.6, 0.03);
       head = grp(b, 0, 3.6, 0.18); part(head, ICO, c, 0, 0, 0, 0.5, 0.45, 0.45, 0.03); [-1, 1].forEach(s => part(head, SPH, '#5af0ff', s * 0.18, 0.03, 0.4, 0.08, 0.06, 0.04, 0, true)); glowSpr(head, 0, 0, 0.5, 1.3, '#5af0ff', 0.7);
@@ -1121,6 +1180,66 @@ ${_}`}class A extends Error{constructor({message:e,code:t,cause:r,name:s}){var n
     const t = new T3.Mesh(new T3.PlaneGeometry(2.4, L + 2), new T3.MeshToonMaterial({ color: '#e0c080', gradientMap: GRAD })); t.rotation.x = -Math.PI / 2; t.position.y = 0.011; t.receiveShadow = true; g.add(t); }
   { const R = rng(55); for (let i = 0; i < 16; i++) { const a = R() * 6.28, r = 3 + R() * 9; solta('goblin', GBX + Math.cos(a) * r, GBZ + Math.sin(a) * r); } }
   SABER.push({ x: GBX + Math.cos(ENTRA) * 12, y: 1.8, z: GBZ + Math.sin(ENTRA) * 12, t: 'Goblins andam em bando: golpes em área (Pólvora, Raio) acertam vários.' });
+  // ---------- MASMORRA DAS PROFUNDEZAS (caverna com 7 fases) ----------
+  const MX = -2000, MM_R = 11, MM_DZ = 32, MM_N = 7, MM_ENT = { x: -60, z: -6 };
+  const MM_FASES = [['aranha', 6], ['esqueleto', 5], ['cogumelo', 5], ['gosma', 6], ['troll', 2], ['espectro', 4], ['dragao', 1]];
+  const MM_NOMES = ['Ninho das Aranhas', 'Cripta dos Esqueletos', 'Jardim de Fungos', 'Lago de Cristal', 'Toca dos Trolls', 'Salão dos Espectros', 'Covil do Dragão'];
+  const MM_COR = ['#a05aff', '#5af0ff', '#9aff5a', '#5ad8ff', '#ffb020', '#7a9aff', '#ff5a2a'];
+  const mmCentro = k => ({ x: MX, z: -k * MM_DZ });
+  const MM = { feras: [], portoes: [], aberto: [], saidaFim: null };
+  // entrada da caverna, a oeste da vila
+  { const g = grp(world, MM_ENT.x, 0, MM_ENT.z); g.rotation.y = Math.PI / 2; const R = rng(77);
+    for (let i = 0; i < 26; i++) { const a = Math.PI * (0.05 + 0.9 * i / 25), r = 3.2 + R() * 0.6; const s = 1.2 + R() * 1.4; const m = part(g, ICO, ['#6a6470', '#5a5460', '#7a7480'][i % 3], Math.cos(a) * r, Math.sin(a) * r * 1.05, -0.6 - R() * 1.5, s, s * 0.9, s, 0.03); m.rotation.set(R() * 3, R() * 3, R() * 3); }
+    for (let i = 0; i < 10; i++) { const s = 1.5 + R() * 1.6; part(g, ICO, '#5a5460', (R() - 0.5) * 9, s * 0.5, -2.5 - R() * 3, s, s * 0.8, s, 0.03); }
+    const boca = new T3.Mesh(new T3.CircleGeometry(3.1, 32, 0, Math.PI), new T3.MeshBasicMaterial({ color: '#05030a' })); boca.position.set(0, 0.02, -0.4); g.add(boca);
+    glowSpr(g, 0, 1.4, -0.3, 4.5, '#a05aff', 0.35);
+    [-1, 1].forEach(s => { const t = grp(g, s * 3.6, 0, 0.9); part(t, CYL, '#4a3020', 0, 0.9, 0, 0.08, 1.8, 0.08); part(t, CONE, '#ffb030', 0, 1.95, 0, 0.12, 0.35, 0.12, 0, true); glowSpr(t, 0, 2.0, 0, 1.8, '#ff9a3a', 0.8); COL.push({ t: 'c', x: MM_ENT.x + 0.9, z: MM_ENT.z - s * 3.6, r: 0.25 }); });
+    const tx = canvasTex(360, 120, (c, w, h) => { c.fillStyle = '#3a2a1a'; c.fillRect(0, 0, w, h); c.strokeStyle = '#1a0e06'; c.lineWidth = 8; c.strokeRect(4, 4, w - 8, h - 8); c.fillStyle = '#ffd8a0'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.font = '900 30px system-ui,sans-serif'; c.fillText('⚠️ MASMORRA DAS', w / 2, 42); c.fillText('PROFUNDEZAS', w / 2, 84); });
+    const pg = grp(g, 4.6, 0, 2.2); pg.rotation.y = -0.4; const pl = new T3.Mesh(new T3.PlaneGeometry(2.2, 0.74), new T3.MeshBasicMaterial({ map: tx, toneMapped: false, side: T3.DoubleSide })); pl.position.y = 1.8; pg.add(pl); [-0.8, 0.8].forEach(o => tb(pg, o, 0.9, -0.03, 0.1, 1.8, 0.1, '#4a3020'));
+    for (let i = 0; i < 12; i++) { const a = Math.PI * i / 11; COL.push({ t: 'c', x: MM_ENT.x - 1.2 - Math.sin(a) * 0.4, z: MM_ENT.z - Math.cos(a) * 3.8, r: 1.0 }); } }
+  // trilha do portão oeste até a caverna
+  { const ax = -27, az = -5, dx = MM_ENT.x + 3 - ax, dz = MM_ENT.z - az, L = Math.hypot(dx, dz); const g = grp(world, (ax + MM_ENT.x + 3) / 2, 0, (az + MM_ENT.z) / 2); g.rotation.y = Math.atan2(dx, dz); const t = new T3.Mesh(new T3.PlaneGeometry(2.2, L), new T3.MeshToonMaterial({ color: '#c8b080', gradientMap: GRAD })); t.rotation.x = -Math.PI / 2; t.position.y = 0.011; t.receiveShadow = true; g.add(t); }
+  // salões e corredores
+  { const M = grp(world, 0, 0, 0); const R = rng(303);
+    const pedra = canvasTex(256, 256, (x, w, h) => { x.fillStyle = '#2a2630'; x.fillRect(0, 0, w, h); for (let i = 0; i < 900; i++) { const v = 30 + R() * 40 | 0; x.fillStyle = `rgb(${v},${v - 4},${v + 6})`; x.beginPath(); x.arc(R() * w, R() * h, 1 + R() * 6, 0, 7); x.fill(); } }); pedra.wrapS = pedra.wrapT = T3.RepeatWrapping;
+    const chaoM = new T3.MeshStandardMaterial({ map: pedra, roughness: 0.95, color: '#c8c0d8' }); pedra.repeat.set(6, 6);
+    const rochaM = ['#3a3440', '#2e2a34', '#46404e'].map(c => new T3.MeshStandardMaterial({ color: c, roughness: 0.9, flatShading: true }));
+    const ICOF = new T3.IcosahedronGeometry(1, 0);
+    const rocha = (x, z, s, h) => { const m = new T3.Mesh(ICOF, rochaM[(R() * 3) | 0]); m.position.set(x, s * 0.4, z); m.scale.set(s, (h || s) * 1.3, s); m.rotation.set(R() * 3, R() * 3, R() * 3); m.castShadow = m.receiveShadow = true; M.add(m); };
+    const base = new T3.Mesh(new T3.PlaneGeometry(80, MM_N * MM_DZ + 60), new T3.MeshBasicMaterial({ color: '#06040a' })); base.rotation.x = -Math.PI / 2; base.position.set(MX, -0.02, -(MM_N - 1) * MM_DZ / 2); M.add(base);
+    for (let k = 0; k < MM_N; k++) { const C = mmCentro(k); const ch = new T3.Mesh(new T3.CircleGeometry(MM_R + 0.6, 40), chaoM); ch.rotation.x = -Math.PI / 2; ch.position.set(C.x, 0.0, C.z); ch.receiveShadow = true; M.add(ch);
+      for (let i = 0; i < 40; i++) { const a = i / 40 * Math.PI * 2; const fr = Math.abs(Math.atan2(Math.sin(a - Math.PI / 2), Math.cos(a - Math.PI / 2))) < 0.24, tr = Math.abs(Math.atan2(Math.sin(a + Math.PI / 2), Math.cos(a + Math.PI / 2))) < 0.24; if ((fr && k > 0) || (tr && k < MM_N - 1) || (fr && k === 0)) continue; rocha(C.x + Math.cos(a) * (MM_R + 1.3), C.z - Math.sin(a) * (MM_R + 1.3), 1.4 + R() * 1.2, 2 + R() * 1.6); }
+      for (let i = 0; i < 6; i++) { const a = R() * 6.28, r = 4 + R() * 5; const st = part(M, CONE, '#3a3440', C.x + Math.cos(a) * r, 0.6, C.z + Math.sin(a) * r, 0.25 + R() * 0.2, 1.2 + R() * 1.4, 0.25, 0.03); st.position.y = st.scale.y / 2; }
+      for (let i = 0; i < 8; i++) { const a = R() * 6.28, r = MM_R - 0.5 - R() * 1.5; const cg = grp(M, C.x + Math.cos(a) * r, 0, C.z + Math.sin(a) * r); for (let j = 0; j < 3; j++) { const cr = part(cg, CONE, MM_COR[k], (R() - 0.5) * 0.5, 0.35, (R() - 0.5) * 0.5, 0.1 + R() * 0.08, 0.6 + R() * 0.6, 0.1, 0, true); cr.rotation.set((R() - 0.5) * 0.8, 0, (R() - 0.5) * 0.8); } glowSpr(cg, 0, 0.5, 0, 2.2, MM_COR[k], 0.55); }
+      // corredor até o próximo salão, com portão
+      if (k < MM_N - 1) { const z0 = C.z - MM_R + 0.5, z1 = C.z - MM_DZ + MM_R - 0.5; const cor = new T3.Mesh(new T3.PlaneGeometry(4.6, z0 - z1 + 1), chaoM); cor.rotation.x = -Math.PI / 2; cor.position.set(MX, 0.005, (z0 + z1) / 2); M.add(cor);
+        for (let z = z0; z > z1; z -= 1.6) [-1, 1].forEach(s => rocha(MX + s * (3.2 + R() * 0.4), z, 1.1 + R() * 0.7, 2 + R()));
+        const pz = (z0 + z1) / 2; const pg = grp(M, MX, 0, pz); for (let i = -4; i <= 4; i++) part(pg, CYL, '#3a3a44', i * 0.27, 1.6, 0, 0.05, 3.2, 0.05, 0.02); [0.6, 1.6, 2.6].forEach(y => tb(pg, 0, y, 0, 2.5, 0.1, 0.08, '#2a2a32'));
+        [-1, 1].forEach(s => { part(pg, BOX, '#2e2a34', s * 1.75, 1.8, 0, 0.9, 3.6, 0.9, 0.03); const r2 = part(pg, SPH, '#ff3a2a', s * 1.75, 2.6, 0.48, 0.09, 0.09, 0.03, 0, true); r2.userData.runa = true; }); const gl = glowSpr(pg, 0, 1.6, 0.3, 3.2, '#ff3a2a', 0.25);
+        MM.portoes.push({ g: pg, z: pz, glow: gl }); }
+      // inimigos da fase
+      const [tp, n] = MM_FASES[k]; for (let i = 0; i < n; i++) { const a = (i / n) * Math.PI * 2 + 0.5, r = n === 1 ? 0 : 4.5 + (i % 2) * 2; const e = solta(tp, C.x + Math.cos(a) * r, C.z - 2 + Math.sin(a) * r); e.fase = k; MM.feras.push(e); } }
+    // saída (perto da entrada) e portal de saída no último salão
+    { const s0 = grp(M, MX, 0, MM_R - 0.9); s0.scale.setScalar(0.75); part(s0, TOR, '#a05aff', 0, 1.3, 0, 1.0, 1.25, 1, 0.02, true); glowSpr(s0, 0, 1.3, 0, 3.5, '#a05aff', 0.5); MM.saida = { x: MX, z: MM_R - 0.9 }; }
+    { const C = mmCentro(MM_N - 1); const s1 = grp(M, C.x, 0, C.z - MM_R + 2); part(s1, TOR, '#ffd23c', 0, 1.3, 0, 1.0, 1.25, 1, 0.02, true); glowSpr(s1, 0, 1.3, 0, 3.5, '#ffd23c', 0.6); s1.visible = false; MM.saidaFim = { g: s1, x: C.x, z: C.z - MM_R + 2 }; }
+    MM.grupo = M; M.visible = false; }
+  const tocha = new T3.PointLight('#ffb070', 0, 20, 1.2); world.add(tocha);
+  function mmNaArea(x, z) { for (let k = 0; k < MM_N; k++) { const C = mmCentro(k); if (Math.hypot(x - C.x, z - C.z) < MM_R - 0.3) return true; } for (let k = 0; k < MM_N - 1; k++) { const C = mmCentro(k), z0 = C.z - MM_R + 1.5, z1 = C.z - MM_DZ + MM_R - 1.5; if (Math.abs(x - MX) < 1.9 && z <= z0 && z >= z1 && (MM.aberto[k] || z > MM.portoes[k].z + 0.5)) return true; } return false; }
+  function mmLimita(p) { if (mmNaArea(p.x, p.z)) return; let best = null, bd = 1e9; const tenta = (x, z) => { const d = Math.hypot(p.x - x, p.z - z); if (d < bd && mmNaArea(x, z)) { bd = d; best = [x, z]; } };
+    for (let k = 0; k < MM_N; k++) { const C = mmCentro(k); const a = Math.atan2(p.z - C.z, p.x - C.x); tenta(C.x + Math.cos(a) * (MM_R - 0.4), C.z + Math.sin(a) * (MM_R - 0.4)); }
+    for (let k = 0; k < MM_N - 1; k++) { const C = mmCentro(k); const z0 = C.z - MM_R + 1, z1 = C.z - MM_DZ + MM_R - 1; const z = clamp(p.z, z1 - 1, z0 + 1); tenta(clamp(p.x, MX - 1.9, MX + 1.9), z); if (!MM.aberto[k]) tenta(clamp(p.x, MX - 1.9, MX + 1.9), MM.portoes[k].z + 0.6); }
+    if (best) { p.x = best[0]; p.z = best[1]; } }
+  function mmFaseAtual() { for (let k = 0; k < MM_N; k++) if (MM.feras.some(e => e.fase === k && !e.morto)) return k; return MM_N; }
+  function mmReinicia() { MM.feras.forEach(e => reseta(e)); MM.aberto = MM.portoes.map(() => false); MM.portoes.forEach(P => { P.g.position.y = 0; P.glow.visible = true; }); MM.saidaFim.g.visible = false; }
+  function mmMorte(e) { if (e.fase == null) return; const k = e.fase; if (MM.feras.some(x => x.fase === k && !x.morto)) { atualizaMM(); return; }
+    if (k < MM_N - 1) { MM.aberto[k] = true; MM.portoes[k].glow.visible = false; som('portao', 1, 1); som('fase', 0.9, 1); aviso('✅ Fase ' + (k + 1) + ' concluída! O portão abriu: ' + MM_NOMES[k + 1] + '.', '#7ad87a'); }
+    else { som('fase', 1, 1); MM.saidaFim.g.visible = true; aviso('🐉 O Dragão das Profundezas caiu! Pegue o portal dourado pra sair.', '#ffd23c'); if (AR.mm && AR.mm.estado === 1) { AR.mm.estado = 2; salvaAR(); } }
+    atualizaMM(); }
+  function entraMasmorra() { cena([{ t: 'Você desce para as profundezas...', v: null }], () => { mmReinicia(); zona = 'masmorra'; dentro = false; MM.grupo.visible = true; heroi.position.set(MX, 0, MM_R - 5.2); facing = Math.PI; camYaw = 0; cam.position.set(MX, 4, MM_R + 4); som('portal', 1, 1); mostrarLugar('Masmorra das Profundezas'); aviso('Fase 1: ' + MM_NOMES[0], '#c8a8ff'); atualizaMM(); }); }
+  function saiMasmorra() { cena([{ t: 'De volta à superfície...', v: null }], () => { zona = 'vila'; dentro = false; MM.grupo.visible = false; heroi.position.set(MM_ENT.x + 4, 0, MM_ENT.z); facing = Math.PI / 2; camYaw = -Math.PI / 2; cam.position.set(MM_ENT.x - 2, 4, MM_ENT.z); tocha.intensity = 0; som('portal', 1, 1); mostrarLugar('Vila de Brumafria'); atualizaMM(); }); }
+  function mmFrame(dt, p) { if (zona !== 'masmorra') { tocha.intensity = 0; return null; } tocha.position.set(p.x, 3, p.z + 0.5); tocha.intensity = 16;
+    MM.portoes.forEach((P, k) => { if (MM.aberto[k] && P.g.position.y > -3.4) P.g.position.y -= dt * 2.2; });
+    let al = null; if (Math.hypot(p.x - MM.saida.x, p.z - MM.saida.z) < 1.7) al = { rot: 'SAIR', acao: saiMasmorra }; if (MM.saidaFim.g.visible && Math.hypot(p.x - MM.saidaFim.x, p.z - MM.saidaFim.z) < 2.2) al = { rot: 'SAIR', acao: saiMasmorra }; return al; }
   const anel = new T3.Mesh(new T3.RingGeometry(0.82, 1, 48), new T3.MeshBasicMaterial({ color: '#ff3a2a', transparent: true, opacity: 0.6, depthWrite: false, toneMapped: false, side: T3.DoubleSide })); anel.rotation.x = -Math.PI / 2; anel.visible = false; world.add(anel);
   SABER.push({ x: GX, y: 3, z: GZ + 8, t: 'Gelo derrete com calor: fogo e pólvora dão dano DOBRADO no Golem.' }, { x: -32, y: 1.6, z: -27, t: 'Lobos caçam em grupo. Ataque um de cada vez.' });
 
@@ -1190,7 +1309,7 @@ ${_}`}class A extends Error{constructor({message:e,code:t,cause:r,name:s}){var n
   function congelar(e, s) { if (e.morto) return; e.congela = Math.max(e.congela, e.T.chefe ? s * 0.35 : s); }
   function morre(e) { somEm(SOM_MORTE[e.tipo], e.g.position, 1, 0.02); e.morto = true; e.mortoT = 0; e.hp.style.display = 'none'; const p = e.g.position; const [a, b] = e.T.moedas; solta_loot(p.x, p.z, 'moedas', a + Math.floor(Math.random() * (b - a + 1)));
     e.T.itens.forEach(([it, ch]) => { if (Math.random() < ch) solta_loot(p.x + (Math.random() - .5), p.z + (Math.random() - .5), it, 1); });
-    AR.abates[e.tipo] = (AR.abates[e.tipo] || 0) + 1; if (e.tipo === 'goblin') goblinMorto(); enche(e.T.chefe ? 60 : 12); ganhaXp(XP_TIPO[e.tipo] || 10, true); const tot = Object.values(AR.abates).reduce((s, v) => s + v, 0); salvaAR();
+    AR.abates[e.tipo] = (AR.abates[e.tipo] || 0) + 1; if (e.tipo === 'goblin') goblinMorto(); if (e.T.zona === 'masmorra') mmMorte(e); enche(e.T.chefe ? 60 : 12); ganhaXp(XP_TIPO[e.tipo] || 10, true); const tot = Object.values(AR.abates).reduce((s, v) => s + v, 0); salvaAR();
     if (e.tipo === 'morcego') { ganha('morcego1', 3, 'derrotou o Morcego Gigante'); aviso('🏆 O MORCEGO GIGANTE CAIU! Pegue as 🦇 Asas de Morcego no chão.', '#c8a8ff'); }
     else if (e.T.chefe) { ganha('golem1', 5, 'derrotou o Golem de Gelo'); aviso('🏆 O GOLEM DE GELO CAIU! Leve o 💎 Coração de Gelo pra Forja.', '#7ad8ff'); }
     else { ganha('abate1:' + e.tipo, 2, 'primeiro ' + e.T.nome); if (tot % 5 === 0) setTimeout(() => ganha('abates:' + tot, 1, tot + ' bichos derrotados'), 900); } }
@@ -1203,7 +1322,7 @@ ${_}`}class A extends Error{constructor({message:e,code:t,cause:r,name:s}){var n
     numero(heroi.position, '-' + n, '#ff5a5a', 2.1); if (vida <= 0) { vida = 0; desmaiar(); } }
   function desmaiar() { som('desmaio', 1, 1); desmaiado = true; if (typeof bmDesliga === 'function') bmDesliga(); FERAS.forEach(e => { if (!e.morto) { e.estado = 'volta'; } }); ativo.vento = ativo.escudo = ativo.planar = false; montaBarra();
     setTimeout(() => cena([{ t: 'Tudo ficou escuro...', v: 'nar03' }, { t: 'Leonardo acordou em casa, na cama. A mãe cuidou dele a noite toda.', v: 'nar04' }, { t: '"Meu filho, cuidado lá fora! Come alguma coisa antes de sair de novo."', n: 'Mãe', v: 'mae03' }], () => {
-      zona = 'vila'; dentro = true; heroi.position.set(IX + 2, 0, -1.8); facing = Math.PI; camYaw = 0; vida = VIDA_MAX; mana = MANA_MAX; desmaiado = false; mostrarLugar('Casa da família'); }), 400); }
+      zona = 'vila'; MM.grupo.visible = false; dentro = true; heroi.position.set(IX + 2, 0, -1.8); facing = Math.PI; camYaw = 0; vida = VIDA_MAX; mana = MANA_MAX; desmaiado = false; mostrarLugar('Casa da família'); }), 400); }
 
   // ---- poderes de combate ----
   const RAIOS = [];
@@ -1254,6 +1373,7 @@ ${_}`}class A extends Error{constructor({message:e,code:t,cause:r,name:s}){var n
           if (e.t > wind + 0.3) { e.estado = 'caca'; e.cd = T.cd * (T.chefe && e.vida < e.max / 2 ? 0.6 : 1); e.bateu2 = false; e.b.rotation.x = 0; if (T.voa) e.b.position.y = 0; if (e.head) e.head.rotation.x = 0; e.arms.forEach(a => a.rotation.x = 0); } }
         else if (e.estado === 'volta') { v = anda(e, e.home[0], e.home[1], T.vel, dt) ? T.vel : 0; e.vida = Math.min(e.max, e.vida + dt * e.max * 0.15); if (Math.hypot(g.x - e.home[0], g.z - e.home[1]) < 1.5) { e.estado = 'anda'; e.vida = e.max; } if (d < T.aggro * 0.6 && livre) e.estado = 'caca'; }
         if (d < T.raio + 0.3) { const nx = g.x - p.x, nz = g.z - p.z, nd = Math.hypot(nx, nz) || 1; g.x = p.x + nx / nd * (T.raio + 0.3); g.z = p.z + nz / nd * (T.raio + 0.3); }
+        if (zona === 'masmorra') mmLimita(g);
         if (zona === 'vila') { const r = Math.hypot(g.x, g.z + 6); if (r > 88) { g.x *= 88 / r; g.z = (g.z + 6) * 88 / r - 6; } const rw = Math.hypot(g.x - MW.x, g.z - MW.z); if (rw < MW.r + 0.9 && rw > 1e-3) { g.x = MW.x + (g.x - MW.x) * (MW.r + 0.9) / rw; g.z = MW.z + (g.z - MW.z) * (MW.r + 0.9) / rw; } } }
       e.g.rotation.y = e.ry; const sc = e.hitT < 0.15 ? 1 + (0.15 - e.hitT) : 1; e.b.scale.setScalar(sc);
       e.L.forEach((l, i) => { const ph = T.chefe ? i * Math.PI : (i === 0 || i === 3 ? 0 : Math.PI); l.rotation.x = v > 0.2 ? Math.sin(gT * (v * 2.2 + 4) + ph) * 0.6 : 0; });
@@ -1292,7 +1412,7 @@ ${_}`}class A extends Error{constructor({message:e,code:t,cause:r,name:s}){var n
       const el = $('lvup'); el.innerHTML = `<small>SUBIU DE NÍVEL!</small>Nível ${AR.nv}<em>+5 vida · +3 mana · +1 ponto de habilidade</em>`; el.classList.remove('on'); void el.offsetWidth; el.classList.add('on'); setTimeout(fazRetrato, 300); }
     else if (motivo) numero(heroi.position, '+' + n + ' XP', '#c8a8ff', 2.6); }
   function atualizaNivel() { $('nv').textContent = 'Nv ' + AR.nv; $('xp-fill').style.width = (AR.nv >= NV_MAX ? 100 : AR.xp / xpPara(AR.nv) * 100) + '%'; }
-  const XP_TIPO = { goblin: 18, lobo: 15, javali: 25, rato: 8, golem: 300, morcego: 150 };
+  const XP_TIPO = { aranha: 40, esqueleto: 55, cogumelo: 60, gosma: 55, troll: 160, espectro: 90, dragao: 1200, goblin: 18, lobo: 15, javali: 25, rato: 8, golem: 300, morcego: 150 };
 
   // ---- reflexo do ambiente pro metal parecer metal ----
   const envTex = canvasTex(512, 256, (x, w, h) => { const g = x.createLinearGradient(0, 0, 0, h); g.addColorStop(0, '#5a7ab8'); g.addColorStop(0.35, '#cfe2ff'); g.addColorStop(0.5, '#ffffff'); g.addColorStop(0.53, '#8a8a90'); g.addColorStop(1, '#2a2a30'); x.fillStyle = g; x.fillRect(0, 0, w, h);
@@ -2249,7 +2369,37 @@ ${_}`}class A extends Error{constructor({message:e,code:t,cause:r,name:s}){var n
       escolhas: () => [{ t: '⚔️ <b>Aceitar missão</b><small>Derrotar 50 goblins na floresta a leste</small>', fn: () => { m.estado = 1; m.n = 0; salvaAR(); atualizaMG(); som('missao', 1, 1); aviso('⚔️ Missão aceita! Siga a trilha pro leste até a Floresta dos Goblins.', '#ffd23c'); } }, { t: 'Agora não', fn: null }] }); }
   function guardaFrame() { marcaG.visible = !!marcaG.userData.on && zona === 'vila' && !dentro; marcaG.position.set(GTX, 2.75 + Math.sin(gT * 3) * 0.1, GTZ); }
   atualizaMG();
-  window.__dbg = { equipaArma, abrirGuilda, arthurNPC, vestePeca, atualizaPecas, PECAS, BLOCOS, modoBatalha, bmLiga, bmDesliga, BMS, ORB, get BM() { return BM; }, get hora() { return hora; }, set hora(v) { hora = v; }, usarHab2: id => classePoder2(id), BUFF, abrirCriar, aplicaClasse, CLASSES, get desp() { return desp; }, set desp(v) { desp = v; }, usarHab: id => classePoder(id), renderer, scene, world, ganhaXp, vesteFantasia, abrirPerfil, fazRetrato, irValdren, Q, heroi, ativo, AR, FERAS, golem, atacar, get vida() { return vida; }, set vida(v) { vida = v; }, abrirLoja, usarPoder: id => usarPoder(PW[id]), acao: () => acao(), get alvo() { return alvo; } };
+  // ---------- TOBIAS, o caçador: missão da Masmorra ----------
+  AR.mm = AR.mm || { estado: 0, vezes: 0 };
+  const TBX = 4.6, TBZ = 7.2;
+  const tobias = makeChar({ skin: '#e0a882', hairStyle: 'short', hairC: '#6a3a1a', top: '#5a6a3a', top2: '#4a3a24', pants: '#4a3a2a', shoe: '#3a2414', sole: '#2a1a10', iris: '#3a5a2a', s: 1.05, ph: 8.8 });
+  { const P = tobias.userData.P; part(P.head, CYL, '#5a4024', 0, 0.21, 0, 0.24, 0.03, 0.24); part(P.head, CYL, '#6a4a2a', 0, 0.27, 0, 0.14, 0.12, 0.14); part(P.head, CONE, '#c8402a', 0.1, 0.32, -0.06, 0.02, 0.18, 0.01).rotation.z = -0.6;
+    const arco = grp(P.spine, 0.05, 0.35, -0.16); arco.rotation.z = 0.5; part(arco, TOR, '#6a4a2a', 0, 0, 0, 0.36, 0.36, 0.25).scale.set(0.36, 0.36, 0.3); part(arco, CYL, '#e8e0c8', 0.0, 0, 0, 0.006, 0.68, 0.006);
+    tb(P.spine, 0, 0.35, 0.13, 0.08, 0.5, 0.02, '#4a3020'); const al = grp(P.spine, -0.12, 0.3, -0.15); part(al, CYL, '#5a4024', 0, 0, 0, 0.07, 0.4, 0.07); for (let i = 0; i < 3; i++) part(al, CONE, '#e8e0c8', (i - 1) * 0.03, 0.25, 0, 0.02, 0.08, 0.005);
+    const tch = grp(P.elL, 0, -0.3, 0.05); part(tch, CYL, '#4a3020', 0, 0.1, 0, 0.025, 0.35, 0.025); part(tch, CONE, '#ffb030', 0, 0.33, 0, 0.05, 0.14, 0.05, 0, true); glowSpr(tch, 0, 0.34, 0, 0.7, '#ff9a3a', 0.8); }
+  tobias.traverse(o => { if (o.isMesh) o.castShadow = true; });
+  const tobiasNPC = { c: tobias, nome: 'Tobias, o Caçador', x: TBX, z: TBZ, ry: Math.PI, ry0: Math.PI, acao: falaTobias }; tobias.position.set(TBX, 0, TBZ); tobias.rotation.y = Math.PI; NPCS.push(tobiasNPC); COL.push({ t: 'c', x: TBX, z: TBZ, r: 0.45, npc: tobiasNPC });
+  const marcaMM = new T3.Sprite(new T3.SpriteMaterial({ map: marcaT('!', '#ffd23c'), transparent: true, depthWrite: false, toneMapped: false })); marcaMM.scale.set(0.45, 0.6, 1); world.add(marcaMM);
+  function falaTobias() { const N = 'Tobias, o Caçador', m = AR.mm;
+    if (m.estado === 1) { falar({ nome: N, falas: [{ n: N, t: 'A caverna fica a oeste. Saia pelo portão oeste e siga a seta!', v: 'tob04' }] }); return; }
+    if (m.estado === 2) { falar({ nome: N, falas: [{ n: N, t: 'Você voltou vivo?! E derrotou o dragão? Você é uma lenda, aventureiro!', v: 'tob05' }, { n: N, t: 'Aqui estão suas 500 moedas. A caverna continua lá, se quiser voltar.', v: 'tob06' }], fim: () => {
+      AR.inv.moedas += 500; m.vezes = (m.vezes || 0) + 1; m.estado = 0; salvaAR(); atualizaInv(); atualizaMM(); ganhaXp(1500, true); som('missao_ok', 1, 1); numero(heroi.position, '+500 💰', '#ffd23c', 2.4); aviso('🏆 Masmorra completa! +500 moedas e +1500 XP', '#ffd23c'); if (m.vezes === 1) setTimeout(() => ganha('missao:masmorra', 5, 'masmorra'), 1500); } }); return; }
+    falar({ nome: N, falas: [{ n: N, t: 'Ei, aventureiro! Sou o Tobias, caçador de Brumafria. Achei uma caverna a oeste da vila... e ela não tem fundo.', v: 'tob01' }, { n: N, t: 'Lá embaixo tem sete salões, e cada um tem um monstro diferente. Aranhas, esqueletos... e coisa pior.', v: 'tob02' }, { n: N, t: 'No último salão mora o Dragão das Profundezas. Derrote ele e eu te pago 500 moedas.', v: 'tob03' }],
+      escolhas: () => [{ t: '🗡️ <b>Aceitar missão</b><small>Vencer as 7 fases da Masmorra das Profundezas</small>', fn: () => { m.estado = 1; salvaAR(); atualizaMM(); som('missao', 1, 1); aviso('🗡️ Missão aceita! Siga a seta até a caverna a oeste.', '#ffd23c'); } }, { t: 'Agora não', fn: null }] }); }
+  function atualizaMM() { const el = $('mm-hud'); if (!el) return; const m = AR.mm; let txt = '';
+    if (zona === 'masmorra') { const k = mmFaseAtual(); txt = k >= MM_N ? '<b>MASMORRA</b>🐉 Todas as fases vencidas! Pegue o portal dourado.' : `<b>MASMORRA · FASE ${k + 1}/7</b>${MM_NOMES[k]} · faltam ${MM.feras.filter(e => e.fase === k && !e.morto).length}`; }
+    else if (m.estado === 1) txt = '<b>MISSÃO DO CAÇADOR</b>🗡️ Vença a Masmorra das Profundezas (oeste)'; else if (m.estado === 2) txt = '<b>MISSÃO DO CAÇADOR</b>✅ Volte ao Tobias na praça';
+    el.hidden = !txt; el.innerHTML = txt; marcaMM.material.map = marcaT(m.estado === 2 ? '?' : '!', '#ffd23c'); marcaMM.userData.on = m.estado === 0 || m.estado === 2; }
+  // seta que guia o jogador
+  const SETA = grp(world); { const sh = new T3.Shape(); sh.moveTo(0, 0.55); sh.lineTo(0.32, 0.12); sh.lineTo(0.12, 0.12); sh.lineTo(0.12, -0.35); sh.lineTo(-0.12, -0.35); sh.lineTo(-0.12, 0.12); sh.lineTo(-0.32, 0.12); sh.closePath();
+    const m = new T3.Mesh(new T3.ExtrudeGeometry(sh, { depth: 0.06, bevelEnabled: false }), new T3.MeshBasicMaterial({ color: '#ffd23c', toneMapped: false, transparent: true, opacity: 0.92 })); m.rotation.x = -Math.PI / 2; m.position.y = 0.06; SETA.add(m); glowSpr(SETA, 0, 0.1, 0, 1.4, '#ffd23c', 0.4); SETA.visible = false; }
+  function setaAlvo() { const m = AR.mm; if (zona === 'masmorra') { const k = mmFaseAtual(); if (k >= MM_N) return MM.saidaFim; const C = mmCentro(k); return { x: C.x, z: C.z }; }
+    if (zona !== 'vila' || dentro) return null; if (m.estado === 1) return { x: MM_ENT.x + 2, z: MM_ENT.z }; if (m.estado === 2) return { x: TBX, z: TBZ }; return null; }
+  function setaFrame(p) { const a = setaAlvo(); marcaMM.visible = !!marcaMM.userData.on && zona === 'vila' && !dentro; marcaMM.position.set(TBX, 2.75 + Math.sin(gT * 3) * 0.1, TBZ);
+    if (!a || conversa || cenaQ) { SETA.visible = false; return null; } const dx = a.x - p.x, dz = a.z - p.z, d = Math.hypot(dx, dz); if (d < 3.5) { SETA.visible = false; return null; }
+    const ang = Math.atan2(dx, dz); SETA.visible = true; SETA.position.set(p.x + Math.sin(ang) * 1.5, p.y, p.z + Math.cos(ang) * 1.5); SETA.rotation.y = ang + Math.PI; SETA.children[0].position.y = 0.06 + Math.abs(Math.sin(gT * 4)) * 0.08; return d; }
+  atualizaMM();
+  window.__dbg = { entraMasmorra, saiMasmorra, MM, mmFaseAtual, mmMorte, setaFrame, equipaArma, abrirGuilda, arthurNPC, vestePeca, atualizaPecas, PECAS, BLOCOS, modoBatalha, bmLiga, bmDesliga, BMS, ORB, get BM() { return BM; }, get hora() { return hora; }, set hora(v) { hora = v; }, usarHab2: id => classePoder2(id), BUFF, abrirCriar, aplicaClasse, CLASSES, get desp() { return desp; }, set desp(v) { desp = v; }, usarHab: id => classePoder(id), renderer, scene, world, ganhaXp, vesteFantasia, abrirPerfil, fazRetrato, irValdren, Q, heroi, ativo, AR, FERAS, golem, atacar, get vida() { return vida; }, set vida(v) { vida = v; }, abrirLoja, usarPoder: id => usarPoder(PW[id]), acao: () => acao(), get alvo() { return alvo; } };
   // ---------- laço do jogo ----------
   let vy = 0, noChao = true, facing = 0, vel = 0, gT = 0, last = performance.now();
   const ANDAR = 3.0, CORRER = 6.5, GRAV = 22, PULO = 7.6; const tmp = new T3.Vector3();
@@ -2264,7 +2414,7 @@ ${_}`}class A extends Error{constructor({message:e,code:t,cause:r,name:s}){var n
     vel = lerp(vel, mag > 0.08 ? (correndo ? CORRER : ANDAR) * (ativo.vento ? 1.5 + nivelHab('vento') * 0.1 : 1) * ((CLASSES && CLASSES[AR.classe]) ? CLASSES[AR.classe].vel : 1) * (BM && BM.vel ? BM.vel : 1) * mag : 0, clamp(dt * 8));
     if (ml > 0.001 && mag > 0.08) { mx /= ml; mz /= ml; const want = Math.atan2(mx, mz); let d = want - facing; while (d > Math.PI) d -= Math.PI * 2; while (d < -Math.PI) d += Math.PI * 2; facing += d * clamp(dt * 12); }
     const p = heroi.position; const dash = dashT > 0 ? dashVel : 0; dashT -= dt; p.x += Math.sin(facing) * vel * dt + Math.sin(dashAng) * dash * dt; p.z += Math.cos(facing) * vel * dt + Math.cos(dashAng) * dash * dt;
-    if (zona === 'valdren') { colide(p, COLV); const rx = p.x - VX, r = Math.hypot(rx, p.z); if (r > 44) { p.x = VX + rx * 44 / r; p.z *= 44 / r; } } else if (dentro) { p.x = clamp(p.x, IX - 4.6, IX + 4.6); p.z = clamp(p.z, -4.6, 4.6); colide(p, COLC); } else { colide(p, COL); const r = Math.hypot(p.x, p.z + 6); if (r > 95) { p.x *= 95 / r; p.z = (p.z + 6) * 95 / r - 6; } }
+    if (zona === 'valdren') { colide(p, COLV); const rx = p.x - VX, r = Math.hypot(rx, p.z); if (r > 44) { p.x = VX + rx * 44 / r; p.z *= 44 / r; } } else if (zona === 'masmorra') { mmLimita(p); } else if (dentro) { p.x = clamp(p.x, IX - 4.6, IX + 4.6); p.z = clamp(p.z, -4.6, 4.6); colide(p, COLC); } else { colide(p, COL); const r = Math.hypot(p.x, p.z + 6); if (r > 95) { p.x *= 95 / r; p.z = (p.z + 6) * 95 / r - 6; } }
     if (input.jump && noChao && !conversa) { vy = saltoPronto ? PULO * 1.75 : PULO; som('pulo', 0.55); if (saltoPronto) { burstT = 0; burstP = [p.x, p.y, p.z]; } saltoPronto = false; noChao = false; } input.jump = false;
     if (!noChao) { vy -= GRAV * dt; if (ativo.planar && vy < -1.6) vy = -1.6; p.y += vy * dt; if (p.y <= 0) { p.y = 0; if (vy < -6) som('aterrissa', 0.45); vy = 0; noChao = true; if (esmaga) { esmaga = false; aterrissa(); } } }
     heroi.rotation.y = facing;
@@ -2281,14 +2431,15 @@ ${_}`}class A extends Error{constructor({message:e,code:t,cause:r,name:s}){var n
       if (n.deusa) { o.arms = { shL: [-0.35, 0, -0.15], elL: [-0.55, 0, 0] }; c.position.y = 0.25 + Math.sin(gT * 1.6) * 0.12; elyAura.position.set(n.x, 1.6 + c.position.y, n.z); elyAura.visible = true; const P = c.userData.P; P.staff.rotation.x = -(P.shL.rotation.x + P.elL.rotation.x); }
       pose(c, gT, o); if (n.deusa) { const P = c.userData.P; P.staff.rotation.x = -(P.shL.rotation.x + P.elL.rotation.x); P.staff.rotation.z = -(P.shL.rotation.z + P.elL.rotation.z); }
       if (d < melhor) { melhor = d; alvo = n; } });
-    elyAura.visible = !dentro && zona === 'vila'; heroi.visible = true; const alV = valdrenFrame(dt, p); if (zona === 'valdren') alvo = alV; $('tit').textContent = (zona === 'valdren' ? 'VALDREN' : 'BRUMAFRIA') + ' · ' + (modo === 'noite' ? '🌙 ' : '☀️ ') + String(Math.floor(hora)).padStart(2, '0') + ':' + String(Math.floor((hora % 1) * 6) * 10).padStart(2, '0');
+    elyAura.visible = !dentro && zona === 'vila'; heroi.visible = true; const alV = valdrenFrame(dt, p); if (zona === 'valdren') alvo = alV; $('tit').textContent = (zona === 'valdren' ? 'VALDREN' : zona === 'masmorra' ? 'MASMORRA' : 'BRUMAFRIA') + ' · ' + (modo === 'noite' ? '🌙 ' : '☀️ ') + String(Math.floor(hora)).padStart(2, '0') + ':' + String(Math.floor((hora % 1) * 6) * 10).padStart(2, '0');
     if (dentro) { OBJS.forEach(o => { const d = Math.hypot(p.x - o.x, p.z - o.z); if (d < 1.9 && d < melhor) { melhor = d; alvo = o; } }); if (Math.hypot(p.x - (IX - 1), p.z - 4.4) < 1.3) alvo = { tipo: 'sair' }; }
     else if (zona === 'vila') { const dp = casaFamilia.localToWorld(new T3.Vector3(casaFamilia.userData.door[0], 0, casaFamilia.userData.door[1] - 0.6)); if (Math.hypot(p.x - dp.x, p.z - dp.z) < 1.3) alvo = { tipo: 'entrar' }; }
+    { const alM = mmFrame(dt, p); if (alM) alvo = alM; if (zona === 'vila' && !dentro && Math.hypot(p.x - (MM_ENT.x + 1.5), p.z - MM_ENT.z) < 3.2) alvo = { rot: 'ENTRAR', acao: entraMasmorra }; setaFrame(p); }
     if (!conversa) { const alC = combateAlvo(p); if (alC) alvo = alC; }
     const btn = $('acao'); btn.hidden = !alvo || !!conversa || !!cenaQ; if (alvo) btn.textContent = alvo.rot || (alvo.tipo === 'entrar' ? 'ENTRAR' : alvo.tipo === 'sair' ? 'SAIR' : alvo.falas && !alvo.c ? 'VER' : 'FALAR');
     // ambiente
-    { const cx = zona === 'valdren' ? VX : 0, an = (hora - 6) / 12 * Math.PI; sunBall.position.set(cx + Math.cos(an) * 110, Math.sin(an) * 70 + 4, -100); moon.position.set(cx - Math.cos(an) * 110, -Math.sin(an) * 70 + 4, -100); sunBall.visible = !dentro && sunBall.position.y > -4; moon.visible = !dentro && moon.position.y > -4; WIN.forEach(w => w.material.opacity = 0.15 + noiteF * 0.65); $('ciclo').textContent = modo === 'dia' ? '☾' : '☀'; }
-    nuvens.forEach((c, i) => { c.visible = !dentro; c.position.x += dt * (0.5 + (i % 3) * 0.2); if (c.position.x > 140) c.position.x = -140; });
+    { const cx = zona === 'valdren' ? VX : 0, an = (hora - 6) / 12 * Math.PI; sunBall.position.set(cx + Math.cos(an) * 110, Math.sin(an) * 70 + 4, -100); moon.position.set(cx - Math.cos(an) * 110, -Math.sin(an) * 70 + 4, -100); sunBall.visible = !dentro && zona !== 'masmorra' && sunBall.position.y > -4; moon.visible = !dentro && zona !== 'masmorra' && moon.position.y > -4; WIN.forEach(w => w.material.opacity = 0.15 + noiteF * 0.65); $('ciclo').textContent = modo === 'dia' ? '☾' : '☀'; }
+    nuvens.forEach((c, i) => { c.visible = !dentro && zona !== 'masmorra'; c.position.x += dt * (0.5 + (i % 3) * 0.2); if (c.position.x > 140) c.position.x = -140; });
     neve.visible = !BLOCOS && !dentro && zona === 'vila'; if (neve.visible) neve.userData.place((i, d) => { if (i % 3) return false; const R = rng(i + 91); const k = ((gT * (0.08 + R() * 0.06) + R()) % 1); d.position.set(p.x + (R() - .5) * 30 + Math.sin(gT + i) * 0.4, 12 - k * 12, p.z + (R() - .5) * 30); d.scale.setScalar(d.position.distanceTo(cam.position) < 2.5 ? 0.0001 : 0.03 + R() * 0.04); });
     fumaca.visible = !dentro && zona === 'vila'; if (fumaca.visible) fumaca.userData.place((i, d) => { const c = CHIM[i % CHIM.length]; const R = rng(i + 5); const k = ((gT * 0.12 + R()) % 1); c[0].updateMatrixWorld(); v3.set(c[1], c[2], c[3]); c[0].localToWorld(v3); d.position.set(v3.x + k * 1.6 + Math.sin(gT + i) * 0.2, v3.y + k * 4, v3.z); d.scale.setScalar(0.25 + k * 0.9); });
     fogoL.intensity = dentro ? 3.2 + Math.sin(gT * 13) * 0.4 : 0; chamas.forEach((f, i) => f.scale.y = 0.5 * (1 + Math.sin(gT * 15 + i * 2) * 0.2));
