@@ -1496,7 +1496,7 @@
       { nome: 'Senhor das Trevas', cor: '#3a1060', atk: 2.0, roubo: 0.5, escala: 1.3, flutua: 0.5, def: 25, armaEsc: 1.5, extras: ['asas', 'chifres', 'coroa'], armaGlow: '#e0c0ff', ataque: 'fura', orbes: { tipo: 'sombra', n: 6, dano: 16, raio: 2.8 } }],
   };
   // ---- Armadura do Modo de Batalha (preta com vermelho; I, II e III vão ficando mais pesadas) ----
-  const BMA = { 1: [], 2: [], 3: [] }; let bmaTab = null, bmaTras = null, bmaCapa = null, bmaHV = null; const BMA_CAB = [];
+  const BMA = { 1: [], 2: [], 3: [] }; let bmaChifre = null, bmaGarras = []; let bmaTab = null, bmaTras = null, bmaCapa = null, bmaHV = null; const BMA_CAB = [];
   const BMA_GLOW = new T3.MeshStandardMaterial({ color: '#ff2a2a', emissive: '#ff2a2a', emissiveIntensity: 2.4, toneMapped: false });
   { const P = heroi.userData.P;
     const NEG = new T3.MeshPhysicalMaterial({ color: '#16131c', metalness: 0.85, roughness: 0.28, clearcoat: 0.7, clearcoatRoughness: 0.15, envMap: ENV, envMapIntensity: 1.2 });
@@ -1536,29 +1536,37 @@
       A(kn, CYL2, NEG, 0, -0.21, 0, 0.076, 0.3, 0.076); A(kn, BOX, VERM, 0, -0.2, 0.074, 0.018, 0.28, 0.01); for (let k = 0; k < 2; k++) A(kn, TORF, VERM, 0, -0.08 - k * 0.2, 0, 0.078, 0.078, 0.078, Math.PI / 2);
       espinho(kn, sx * 0.07, -0.15, -0.02, 0.016, 0.09, -sx * 1.4, 0);
       const ft = P['ft' + sd]; A(ft, SPH2, NEG, 0, 0.005, 0.06, 0.08, 0.066, 0.16); const bico = A(ft, CONE2, NEG, 0, 0.0, 0.22, 0.045, 0.1, 0.03); bico.rotation.x = Math.PI / 2; A(ft, BOX, VERM, 0, -0.052, 0.06, 0.13, 0.016, 0.3); });
-    // ===== Modo II: elmo aberto com crista e capa vermelha =====
+    // chifre único na testa e garras saindo dos ombros (crescem no II e no III)
+    const seg = (pa, a, b, r0, r1, mat) => { const dx = b[0] - a[0], dy = b[1] - a[1], dz = b[2] - a[2], len = Math.hypot(dx, dy, dz); const m = MG(pa, new T3.CylinderGeometry(r1, r0, len * 1.08, 12), mat, (a[0] + b[0]) / 2, (a[1] + b[1]) / 2, (a[2] + b[2]) / 2); m.quaternion.setFromUnitVectors(new T3.Vector3(0, 1, 0), new T3.Vector3(dx / len, dy / len, dz / len)); return m; };
+    const curva = (pa, pts, r0, cor) => { const n = pts.length - 1; for (let k = 0; k < n; k++) { const ra = r0 * (1 - k / n), rb = r0 * (1 - (k + 1) / n) + 0.002; seg(pa, pts[k], pts[k + 1], ra, rb, k === n - 1 ? BMA_GLOW : NEG); } };
+    bmaChifre = G(P.head, 0, 0.2, 0.12); A(bmaChifre, TORF, VERM, 0, 0, 0, 0.05, 0.05, 0.05, Math.PI / 2 - 0.3); A(bmaChifre, OCT1, BMA_GLOW, 0, -0.05, 0.035, 0.014, 0.02, 0.008);
+    curva(bmaChifre, [[0, 0, 0], [0, 0.07, 0.025], [0, 0.15, 0.02], [0, 0.22, -0.02], [0, 0.27, -0.09], [0, 0.29, -0.16]], 0.05);
+    bmaGarras = ['L', 'R'].map((sd, i) => { const sx = i ? 1 : -1; const g = G(P['sh' + sd], sx * 0.09, 0.08, 0);
+      [-0.06, 0, 0.06].forEach((z, k) => { const up = k === 1 ? 0.04 : 0; curva(g, [[0, 0, z], [sx * 0.07, 0.07 + up, z * 1.2], [sx * 0.16, 0.12 + up, z * 1.5], [sx * 0.25, 0.11 + up, z * 1.6], [sx * 0.31, 0.04 + up, z * 1.5]], 0.028); });
+      return g; });
+    // ===== Modo II: elmo aberto e capa vermelha =====
     tier = 2;
     { const h = P.head; const e = A(h, new T3.SphereGeometry(1, 32, 20, Math.PI / 2 + 0.8, Math.PI * 2 - 1.6, 0, Math.PI * 0.62), NEG, 0, 0.07, -0.01, 0.245, 0.26, 0.245); BMA_CAB.push(e);
       A(h, new T3.SphereGeometry(1, 24, 12, 0, Math.PI * 2, 0, Math.PI * 0.35), NEG2, 0, 0.12, 0.0, 0.25, 0.22, 0.25);
       [-1, 1].forEach(s => { const b = A(h, BOX, NEG, s * 0.2, -0.02, 0.07, 0.05, 0.2, 0.14); b.rotation.y = -s * 0.5; A(h, BOX, VERM, s * 0.215, 0.06, 0.1, 0.012, 0.05, 0.08).rotation.y = -s * 0.5; });
       linha(h, [[-0.19, 0.08, 0.14], [-0.1, 0.25, 0.16], [0, 0.28, 0.17], [0.1, 0.25, 0.16], [0.19, 0.08, 0.14]], 0.008, VERM);
-      const cr = A(h, CONE2, BMA_GLOW, 0, 0.36, -0.04, 0.015, 0.24, 0.08); cr.rotation.x = -0.5; const cr2 = A(h, CONE2, NEG, 0, 0.33, -0.08, 0.03, 0.26, 0.12); cr2.rotation.x = -0.7; }
-    bmaCapa = G(P.spine, 0, 0.58, -0.17); { const geo = new T3.PlaneGeometry(0.55, 1.05, 14, 14); const p = geo.attributes.position;
-      for (let i = 0; i < p.count; i++) { const x = p.getX(i), y = p.getY(i); const f = (0.52 - y) / 1.05; p.setZ(i, -Math.pow(x / 0.27, 2) * 0.07 - f * 0.12 + Math.sin(x * 14 + y * 3) * 0.015 * f); p.setX(i, x * (1 + f * 0.6)); if (y < -0.45) p.setY(i, y + (0.03 + 0.07 * Math.abs(Math.sin(x * 37))) * (Math.sin(x * 91) > 0 ? 1 : 0.3)); }
-      geo.computeVertexNormals(); MG(bmaCapa, geo, PANO, 0, -0.52, 0); A(bmaCapa, CYL2, VERM, 0, 0, 0, 0.18, 0.025, 0.025, 0, 0, Math.PI / 2); [-1, 1].forEach(s => A(bmaCapa, SPH2, BMA_GLOW, s * 0.15, 0, 0.01, 0.025, 0.025, 0.015)); }
+    }
+    bmaCapa = G(P.spine, 0, 0.58, -0.17); { const geo = new T3.PlaneGeometry(0.4, 0.68, 12, 12); const p = geo.attributes.position;
+      for (let i = 0; i < p.count; i++) { const x = p.getX(i), y = p.getY(i); const f = (0.34 - y) / 0.68; p.setZ(i, -Math.pow(x / 0.2, 2) * 0.05 - f * 0.08 + Math.sin(x * 14 + y * 3) * 0.012 * f); p.setX(i, x * (1 + f * 0.35)); if (y < -0.28) p.setY(i, y + (0.03 + 0.07 * Math.abs(Math.sin(x * 37))) * (Math.sin(x * 91) > 0 ? 1 : 0.3)); }
+      geo.computeVertexNormals(); MG(bmaCapa, geo, PANO, 0, -0.34, 0); A(bmaCapa, CYL2, VERM, 0, 0, 0, 0.14, 0.022, 0.022, 0, 0, Math.PI / 2); [-1, 1].forEach(s => A(bmaCapa, SPH2, BMA_GLOW, s * 0.12, 0, 0.01, 0.022, 0.022, 0.014)); }
     ['L', 'R'].forEach((sd, i) => { const sx = i ? 1 : -1; const o = G(P['sh' + sd], sx * 0.05, 0.03, 0); o.rotation.z = -sx * 0.3; espinho(o, sx * 0.02, 0.15, -0.06, 0.035, 0.26, -sx * 0.2, -0.45); espinho(o, sx * 0.13, 0.04, -0.05, 0.03, 0.2, -sx * 1.05, -0.2); });
     // ===== Modo III: chifres grandes, ombreiras gigantes, lâminas nas costas e capa dupla rasgada =====
     tier = 3;
-    { const h = P.head; [-1, 1].forEach(s => { let px = s * 0.17, py = 0.2, pz = -0.02; for (let k = 0; k < 5; k++) { const w = 0.06 - k * 0.01, len = 0.14; const c = A(h, k === 4 ? CONE2 : CYL2, k === 4 ? BMA_GLOW : NEG, px, py, pz, w, len, w); const ang = s * (0.9 - k * 0.32); c.rotation.set(-0.35 - k * 0.15, 0, -ang); px += Math.sin(ang) * len * 0.9; py += Math.cos(ang) * len * 0.9; pz -= 0.02 + k * 0.01; } }); }
     ['L', 'R'].forEach((sd, i) => { const sx = i ? 1 : -1; const o = G(P['sh' + sd], sx * 0.06, 0.07, 0); o.rotation.z = -sx * 0.25; A(o, HSPH, NEG, 0, 0.03, 0, 0.17, 0.1, 0.16); A(o, TORF, BMA_GLOW, 0, 0.034, 0, 0.17, 0.16, 0.17, Math.PI / 2);
       for (let k = 0; k < 4; k++) espinho(o, sx * (0.02 + k * 0.045), 0.1 - k * 0.012, -0.08 + k * 0.05, 0.03, 0.3 - k * 0.05, -sx * (0.3 + k * 0.25), -0.35); });
     { const g = G(P.spine, 0, 0.45, -0.17); [-1, 0, 1].forEach(s => { const b = A(g, CONE2, NEG, s * 0.09, 0.12 - Math.abs(s) * 0.04, -0.03, 0.03, 0.45 - Math.abs(s) * 0.1, 0.012); b.rotation.set(-0.5, 0, -s * 0.5); A(g, CONE2, BMA_GLOW, s * 0.09, 0.12 - Math.abs(s) * 0.04, -0.02, 0.008, 0.38 - Math.abs(s) * 0.1, 0.004).rotation.set(-0.5, 0, -s * 0.5); }); }
-    { const g = G(bmaCapa, 0, 0, -0.01); const geo = new T3.PlaneGeometry(0.62, 1.2, 14, 14); const p = geo.attributes.position;
-      for (let i = 0; i < p.count; i++) { const x = p.getX(i), y = p.getY(i); const f = (0.6 - y) / 1.2; p.setZ(i, -Math.pow(x / 0.31, 2) * 0.08 - f * 0.16 - 0.015); p.setX(i, x * (1 + f * 0.7)); if (y < -0.5) p.setY(i, y + (0.05 + 0.1 * Math.abs(Math.sin(x * 29))) * (Math.sin(x * 77) > 0 ? 1 : 0.2)); }
-      geo.computeVertexNormals(); MG(g, geo, PANO2, 0, -0.6, 0); }
+    { const g = G(bmaCapa, 0, 0, -0.01); const geo = new T3.PlaneGeometry(0.46, 0.8, 12, 12); const p = geo.attributes.position;
+      for (let i = 0; i < p.count; i++) { const x = p.getX(i), y = p.getY(i); const f = (0.4 - y) / 0.8; p.setZ(i, -Math.pow(x / 0.23, 2) * 0.06 - f * 0.1 - 0.015); p.setX(i, x * (1 + f * 0.4)); if (y < -0.32) p.setY(i, y + (0.05 + 0.1 * Math.abs(Math.sin(x * 29))) * (Math.sin(x * 77) > 0 ? 1 : 0.2)); }
+      geo.computeVertexNormals(); MG(g, geo, PANO2, 0, -0.4, 0); }
     [1, 2, 3].forEach(t => BMA[t].forEach(m => m.visible = false)); }
   function bmaVeste(n) { const P = heroi.userData.P;
     [1, 2, 3].forEach(t => BMA[t].forEach(m => m.visible = !!n && t <= n));
+    if (n) { bmaChifre.scale.setScalar([0, 0.6, 1, 1.5][n]); bmaChifre.position.y = n >= 2 ? 0.26 : 0.21; bmaChifre.position.z = n >= 2 ? 0.15 : 0.12; bmaGarras.forEach(g => g.scale.setScalar([0, 0.7, 1, 1.4][n])); }
     if (n) { escondeTrajes(); Object.values(PEC).forEach(l => l.forEach(m => m.visible = false)); Object.values(CAS).forEach(c => c.m.forEach(m => m.visible = false)); roupaBase.forEach(([o]) => o.material = MALHA);
       if (n >= 2 && !bmaHV) { bmaHV = []; P.head.traverse(c => { if (c.isMesh && c.visible && typeof MH !== 'undefined' && (c.material === MH.cab || (MH.cab && c.material && c.material.color && c.material.color.equals && MH.cab.color && c.material === MH.cab))) { bmaHV.push(c); c.visible = false; } }); } }
     else { if (bmaHV) { bmaHV.forEach(c => c.visible = true); bmaHV = null; } escondeTrajes(); if (AR.fantasia === 'celeste') armadura.forEach(m => m.visible = true); if (CAS[AR.fantasia]) CAS[AR.fantasia].m.forEach(m => m.visible = true); atualizaPecas(); }
