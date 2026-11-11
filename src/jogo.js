@@ -504,22 +504,23 @@
   // ===================== COMBATE: vida, armas, bichos e a forja =====================
   let vida = 100; let VIDA_MAX = 100; let semDanoT = 99, desmaiado = false;
   AR.inv = Object.assign({ moedas: 0, pele: 0, carne: 0, coracao: 0 }, AR.inv || {});
-  AR.armas = AR.armas || ['bastao']; AR.arma = AR.armas.includes(AR.arma) ? AR.arma : 'bastao'; AR.abates = AR.abates || {};
+  AR.armas = AR.armas || ['bastao']; AR.arma = AR.arma === 'punho' || AR.armas.includes(AR.arma) ? AR.arma : 'bastao'; AR.abates = AR.abates || {};
   const ARMAS = {
     bastao: { nome: 'Bastão', icone: '🪵', dano: 10, alc: 1.9, cd: 0.4, desc: 'O bastão que o seu pai te deu. Bate fraco, mas já é alguma coisa.' },
     espada: { nome: 'Espada de ferro', icone: '🗡️', dano: 22, alc: 2.3, cd: 0.36, preco: 25, desc: 'Ferro com um pouco de carbono vira aço. A 🧠 Memória ensinou o ferreiro.' },
     besta: { nome: 'Besta', icone: '🏹', dano: 30, alc: 18, cd: 0.8, longe: true, preco: 40, desc: 'Alavanca + corda tensionada: atira virotes de longe.' },
     glacial: { nome: 'Espada Glacial', icone: '❄️', dano: 38, alc: 2.5, cd: 0.34, gelo: true, preco: 30, precisa: 'coracao', desc: 'Forjada com o Coração de Gelo do Golem. Às vezes congela o inimigo.' },
+    punho: { nome: 'Mãos vazias', icone: '👊', dano: 6, alc: 1.6, cd: 0.38, oculta: true, desc: 'Sem arma equipada: soco.' },
   };
-  const ITENS = { moedas: '💰', pele: '🐺', carne: '🍖', coracao: '💎' };
+  const ITENS = { moedas: '💰', pele: '🐺', carne: '🍖', coracao: '💎', asas: '🦇' };
   // ---- arma na mão do Leonardo ----
   const maoG = grp(heroi.userData.P.elR, 0, -0.33, 0.05); const ARMAG = {};
   { let g = ARMAG.bastao = grp(maoG); part(g, CYL, '#7a4a2a', 0, 0, 0.32, 0.03, 0.95, 0.03).rotation.x = Math.PI / 2;
     g = ARMAG.espada = grp(maoG); tb(g, 0, 0, 0.55, 0.07, 0.018, 0.78, '#dfe4ee'); part(g, CONE, '#dfe4ee', 0, 0, 0.98, 0.035, 0.1, 0.01).rotation.x = Math.PI / 2; tb(g, 0, 0, 0.14, 0.26, 0.04, 0.05, '#e2c27a'); part(g, CYL, '#4a2a14', 0, 0, 0.03, 0.025, 0.18, 0.025).rotation.x = Math.PI / 2;
     g = ARMAG.glacial = grp(maoG); tb(g, 0, 0, 0.6, 0.08, 0.02, 0.9, '#9ae6ff', true); part(g, CONE, '#9ae6ff', 0, 0, 1.08, 0.04, 0.12, 0.01, 0, true).rotation.x = Math.PI / 2; tb(g, 0, 0, 0.14, 0.3, 0.05, 0.05, '#5ab8ff'); part(g, CYL, '#2a3a5a', 0, 0, 0.03, 0.025, 0.18, 0.025).rotation.x = Math.PI / 2; glowSpr(g, 0, 0, 0.6, 1.1, '#7ad8ff', 0.5);
     g = ARMAG.besta = grp(maoG); tb(g, 0, 0.02, 0.2, 0.07, 0.07, 0.6, '#7a4a2a'); tb(g, 0, 0.04, 0.42, 0.62, 0.04, 0.05, '#5a3a24'); tb(g, 0, 0.05, 0.36, 0.6, 0.008, 0.008, '#e8e0d0'); }
-  function mostraArma() { Object.keys(ARMAG).forEach(k => ARMAG[k].visible = k === AR.arma); const A = ARMAS[AR.arma] || ARMAS.bastao; $('atacar').innerHTML = `<span>${A.icone}</span><small>ATACAR</small>`; $('arma').hidden = AR.armas.length < 2; }
-  function trocaArma() { if (AR.armas.length < 2) return; const i = AR.armas.indexOf(AR.arma); AR.arma = AR.armas[(i + 1) % AR.armas.length]; salvaAR(); mostraArma(); aviso(ARMAS[AR.arma].icone + ' ' + ARMAS[AR.arma].nome, '#ffd23c'); }
+  function mostraArma() { Object.keys(ARMAG).forEach(k => ARMAG[k].visible = k === AR.arma); const A = ARMAS[AR.arma] || ARMAS.bastao; $('atacar').innerHTML = `<span>${A.icone}</span><small>ATACAR</small>`; $('arma').hidden = AR.armas.length < 2 && AR.arma !== 'punho'; }
+  function trocaArma() { if (AR.armas.length < 2 && AR.arma !== 'punho') return; const i = AR.armas.indexOf(AR.arma); AR.arma = AR.armas[(i + 1) % AR.armas.length]; salvaAR(); mostraArma(); aviso(ARMAS[AR.arma].icone + ' ' + ARMAS[AR.arma].nome, '#ffd23c'); }
   function atualizaInv() { $('inv-m').textContent = AR.inv.moedas; $('inv-p').textContent = AR.inv.pele; $('inv-c').textContent = AR.inv.carne; $('inv-cw').hidden = !AR.inv.carne; $('inv-pw').hidden = !AR.inv.pele; $('inv-g').hidden = !AR.inv.coracao; }
   function comer() { if (!AR.inv.carne) return; if (vida >= VIDA_MAX) { aviso('Você já está com a vida cheia.', '#8a9aba'); return; } AR.inv.carne--; vida = Math.min(VIDA_MAX, vida + 35); salvaAR(); atualizaInv(); numero(heroi.position, '+35 ❤️', '#7ad87a'); fx('cura', [heroi.position.x, 0, heroi.position.z], 1.2); }
 
@@ -532,7 +533,8 @@
     lobo: { nome: 'Lobo da neve', vida: 40, dano: 8, vel: 4.4, aggro: 11, alc: 1.4, cd: 1.1, raio: 0.6, alt: 1.3, moedas: [2, 4], itens: [['pele', 1], ['carne', 0.3]], zona: 'vila' },
     javali: { nome: 'Javali', vida: 75, dano: 16, vel: 2.6, aggro: 12, alc: 1.5, cd: 2.2, raio: 0.7, alt: 1.5, moedas: [4, 7], itens: [['carne', 1], ['pele', 0.5]], zona: 'vila', investe: true },
     rato: { nome: 'Rato gigante', vida: 18, dano: 5, vel: 3.8, aggro: 8, alc: 1.0, cd: 0.9, raio: 0.4, alt: 0.9, moedas: [1, 3], itens: [], zona: 'valdren' },
-    golem: { nome: 'Golem de Gelo', vida: 520, dano: 28, vel: 1.7, aggro: 14, alc: 3.8, cd: 2.6, raio: 1.5, alt: 4.6, moedas: [40, 40], itens: [['coracao', 1]], zona: 'vila', chefe: true, volta: 180 },
+    golem: { nome: 'Golem de Gelo', vida: 520, dano: 28, vel: 1.7, aggro: 14, alc: 3.8, cd: 2.6, raio: 1.5, alt: 4.6, moedas: [40, 40], itens: [['coracao', 1]], zona: 'vila', chefe: true, volta: 180, barra: '❄️ GOLEM DE GELO' },
+    morcego: { nome: 'Morcego Gigante', vida: 300, dano: 18, vel: 3.2, aggro: 12, alc: 2.8, cd: 2.0, raio: 1.2, alt: 3.6, moedas: [25, 30], itens: [['asas', 1]], zona: 'vila', chefe: true, voa: true, volta: 60, barra: '🦇 MORCEGO GIGANTE' },
   };
   const geloMat = new T3.MeshBasicMaterial({ color: '#bfefff', transparent: true, opacity: 0.45, depthWrite: false, toneMapped: false });
   function fera(tipo) { const g = grp(world); const b = grp(g); const L = []; let head = null, arms = [];
@@ -554,6 +556,15 @@
       [-1, 1].forEach(s => { part(head, SPH, '#e89aa8', s * 0.12, 0.13, -0.04, 0.08, 0.08, 0.025); part(head, SPH, '#ff2a2a', s * 0.07, 0.06, 0.08, 0.03, 0.03, 0.02, 0, true); });
       const t = part(b, CYL, '#d89aa0', 0, 0.22, -0.72, 0.025, 0.7, 0.025); t.rotation.x = Math.PI / 2 - 0.25;
       [[-0.12, 0.2], [0.12, 0.2], [-0.12, -0.22], [0.12, -0.22]].forEach(([x, z]) => leg(x, z, 0.2, 0.04, '#4a3a34')); }
+    else if (tipo === 'morcego') { const c = '#3a2840', c2 = '#5a4060', memb = new T3.MeshToonMaterial({ color: '#4a2a5a', gradientMap: GRAD, side: T3.DoubleSide }); const asas = [];
+      part(b, SPH, c, 0, 2.6, 0, 0.6, 0.7, 0.55, 0.04); part(b, SPH, c2, 0, 2.5, 0.22, 0.4, 0.5, 0.35);
+      head = grp(b, 0, 3.35, 0.2); part(head, SPH, c, 0, 0, 0, 0.42, 0.38, 0.4, 0.04); part(head, SPH, c2, 0, -0.08, 0.32, 0.16, 0.12, 0.12);
+      [-1, 1].forEach(s => { const o = part(head, CONE, c, s * 0.22, 0.42, -0.04, 0.13, 0.5, 0.08, 0.04); o.rotation.z = -s * 0.3; part(head, SPH, '#ff2a3a', s * 0.15, 0.08, 0.33, 0.07, 0.06, 0.04, 0, true); const f = part(head, CONE, '#f4ecd8', s * 0.07, -0.2, 0.36, 0.025, 0.11, 0.025); f.rotation.x = Math.PI; });
+      glowSpr(head, 0, 0.08, 0.36, 0.9, '#ff3a4a', 0.5);
+      const sh = new T3.Shape(); sh.moveTo(0, 0.04); sh.lineTo(0.34, 0.3); sh.lineTo(0.8, 0.36); sh.quadraticCurveTo(0.62, 0.2, 0.88, 0.02); sh.quadraticCurveTo(0.62, -0.04, 0.74, -0.3); sh.quadraticCurveTo(0.5, -0.18, 0.44, -0.44); sh.quadraticCurveTo(0.26, -0.22, 0.03, -0.26); sh.lineTo(0, 0.04); const wg = new T3.ShapeGeometry(sh, 10);
+      [-1, 1].forEach(s => { const piv = grp(b, s * 0.45, 2.85, 0); const w = grp(piv); w.scale.set(s * 3, 3, 3); w.rotation.x = Math.PI / 2 - 0.35; const m = new T3.Mesh(wg, memb); m.castShadow = true; w.add(m); part(w, CYL, c, 0.17, 0.17, 0.01, 0.02, 0.45, 0.02).rotation.z = -0.9; asas.push(piv); });
+      [-1, 1].forEach(s => { const l = grp(b, s * 0.2, 2.0, -0.05); part(l, CYL, c, 0, -0.18, 0, 0.04, 0.36, 0.04); part(l, CONE, '#f4ecd8', 0, -0.4, 0.04, 0.05, 0.1, 0.05).rotation.x = Math.PI; });
+      b.userData.asas = asas; }
     else { const c = '#b0dcf2', c2 = '#7ab4dc';
       part(b, ICO, c, 0, 2.4, 0, 1.05, 1.1, 0.8, 0.03); part(b, ICO, c2, 0, 1.45, 0, 0.8, 0.5, 0.6, 0.03);
       head = grp(b, 0, 3.6, 0.18); part(head, ICO, c, 0, 0, 0, 0.5, 0.45, 0.45, 0.03); [-1, 1].forEach(s => part(head, SPH, '#5af0ff', s * 0.18, 0.03, 0.4, 0.08, 0.06, 0.04, 0, true)); glowSpr(head, 0, 0, 0.5, 1.3, '#5af0ff', 0.7);
@@ -563,7 +574,7 @@
     const T = TIPOS[tipo]; const gelo = new T3.Mesh(BOX, geloMat); gelo.scale.set(T.raio * 2.2, T.alt * 1.05, T.raio * 2.4); gelo.position.y = T.alt * 0.5; gelo.visible = false; g.add(gelo);
     g.traverse(o => { if (o.isMesh) o.castShadow = true; });
     const hp = document.createElement('div'); hp.className = 'hpb'; hp.innerHTML = '<i></i>'; $('hpbs').appendChild(hp);
-    return { tipo, T, g, b, L, head, arms, gelo: gelo, hp };
+    return { tipo, T, g, b, L, head, arms, gelo: gelo, hp, asas: b.userData.asas || null };
   }
   const FERAS = [];
   function solta(tipo, x, z) { const e = fera(tipo); e.home = [x, z]; e.g.position.set(x, 0, z); e.ry = Math.random() * 6.28; reseta(e); FERAS.push(e); return e; }
@@ -572,6 +583,7 @@
   [[-32, -28], [-34, -24], [-29, -31], [34, 16], [37, 13], [-38, 12], [-35, 16]].forEach(([x, z]) => solta('lobo', x, z));
   [[30, -34], [-22, -42], [40, -6]].forEach(([x, z]) => solta('javali', x, z));
   const GX = 0, GZ = -50; const golem = solta('golem', GX, GZ);
+  const morcegao = solta('morcego', -21, 20); // um pouco depois da Forja, saindo da cidade
   // Valdren: ratos gigantes no esgoto
   POCAS.slice(0, 7).forEach(([x, z]) => solta('rato', x, z));
 
@@ -597,11 +609,11 @@
   SABER.push({ x: FX0, y: 2.6, z: FZ0, t: 'Aço = ferro + um pouco de carbono. Mais duro que ferro puro.' });
 
   function abrirLoja() { if (conversa || cenaQ) return; const L = $('loja-lista'); L.innerHTML = ''; $('loja-m').textContent = AR.inv.moedas;
-    Object.keys(ARMAS).forEach(k => { const A = ARMAS[k], tem = AR.armas.includes(k); if (A.classe) return; const b = document.createElement('div'); b.className = 'item';
+    Object.keys(ARMAS).forEach(k => { const A = ARMAS[k], tem = AR.armas.includes(k); if (A.classe || A.oculta) return; const b = document.createElement('div'); b.className = 'item';
       const preco = A.preco ? `${A.preco} 💰${A.precisa ? ' + 💎 Coração de Gelo' : ''}` : 'Presente do seu pai';
       b.innerHTML = `<span class="ic">${A.icone}</span><div class="tx"><b>${A.nome}</b><small>${A.longe ? 'De longe' : 'Corpo a corpo'} · dano ${A.dano}</small><small>${A.desc}</small></div>`;
       const bt = document.createElement('button'); bt.className = 'cb';
-      if (tem) { bt.textContent = AR.arma === k ? 'Na mão' : 'Usar'; bt.disabled = AR.arma === k; tapBtn(bt, () => { if (AR.arma === k) return; AR.arma = k; salvaAR(); mostraArma(); abrirLoja(); }); }
+      if (tem) { bt.textContent = AR.arma === k ? 'Equipada' : 'Equipar'; bt.disabled = AR.arma === k; tapBtn(bt, () => { if (AR.arma === k) return; AR.arma = k; salvaAR(); mostraArma(); abrirLoja(); }); }
       else { const ok = AR.inv.moedas >= A.preco && (!A.precisa || AR.inv[A.precisa] > 0); bt.innerHTML = preco; bt.disabled = !ok; tapBtn(bt, () => { if (!ok) return; AR.inv.moedas -= A.preco; if (A.precisa) AR.inv[A.precisa]--; AR.armas.push(k); AR.arma = k; salvaAR(); mostraArma(); atualizaInv(); aviso('Nova arma: ' + A.icone + ' ' + A.nome + '!', '#ffd23c'); abrirLoja(); }); }
       b.appendChild(bt); L.appendChild(b); });
     const v = document.createElement('div'); v.className = 'item'; v.innerHTML = `<span class="ic">🐺</span><div class="tx"><b>Vender peles de lobo</b><small>3 💰 cada · você tem ${AR.inv.pele}</small></div>`; const bv = document.createElement('button'); bv.className = 'cb'; bv.textContent = 'Vender tudo'; bv.disabled = !AR.inv.pele;
@@ -633,7 +645,7 @@
       else if (atkN === 1) { P.shR.rotation.set(lerp(-2.9, -0.4, u), 0, 0.15); P.elR.rotation.set(-0.15, 0, 0); P.spine.rotation.x = lerp(-0.1, 0.25, u); }
       else if (atkN === 2) { P.shR.rotation.set(-1.45, 0, 0); P.elR.rotation.set(-0.1, 0, 0); P.spine.rotation.y = lerp(1.0, -1.0, u); }
       else { P.shR.rotation.set(-1.5, 0, 1.0); P.elR.rotation.set(0, 0, 0); heroi.rotation.y = facing + u * Math.PI * 2; } }
-    else if (A.longe) { P.shR.rotation.x = -0.7; P.elR.rotation.x = -0.9; } }
+    else if (A.longe && naMao) { P.shR.rotation.x = -0.7; P.elR.rotation.x = -0.9; } }
 
   // ---- dano nos bichos ----
   function dano(e, n, tipo, crit) { if (e.morto) return; if (e.T.chefe && tipo === 'fogo') n *= 2; if (e.vuln > 0) n *= 1.5; n = Math.round(n); e.vida -= n; e.hitT = 0; enche(crit ? 5 : 3); if (BM && BM.roubo && n > 0) { const rb = Math.max(1, Math.round(n * BM.roubo)); if (vida < VIDA_MAX) { vida = Math.min(VIDA_MAX, vida + rb); if (Math.random() < 0.4) numero(heroi.position, '+' + rb + ' ❤️', '#c890ff', 2.3); } }
@@ -644,7 +656,8 @@
   function morre(e) { e.morto = true; e.mortoT = 0; e.hp.style.display = 'none'; const p = e.g.position; const [a, b] = e.T.moedas; solta_loot(p.x, p.z, 'moedas', a + Math.floor(Math.random() * (b - a + 1)));
     e.T.itens.forEach(([it, ch]) => { if (Math.random() < ch) solta_loot(p.x + (Math.random() - .5), p.z + (Math.random() - .5), it, 1); });
     AR.abates[e.tipo] = (AR.abates[e.tipo] || 0) + 1; enche(e.T.chefe ? 60 : 12); ganhaXp(XP_TIPO[e.tipo] || 10, true); const tot = Object.values(AR.abates).reduce((s, v) => s + v, 0); salvaAR();
-    if (e.T.chefe) { ganha('golem1', 5, 'derrotou o Golem de Gelo'); aviso('🏆 O GOLEM DE GELO CAIU! Leve o 💎 Coração de Gelo pra Forja.', '#7ad8ff'); }
+    if (e.tipo === 'morcego') { ganha('morcego1', 3, 'derrotou o Morcego Gigante'); aviso('🏆 O MORCEGO GIGANTE CAIU! Pegue as 🦇 Asas de Morcego no chão.', '#c8a8ff'); }
+    else if (e.T.chefe) { ganha('golem1', 5, 'derrotou o Golem de Gelo'); aviso('🏆 O GOLEM DE GELO CAIU! Leve o 💎 Coração de Gelo pra Forja.', '#7ad8ff'); }
     else { ganha('abate1:' + e.tipo, 2, 'primeiro ' + e.T.nome); if (tot % 5 === 0) setTimeout(() => ganha('abates:' + tot, 1, tot + ' bichos derrotados'), 900); } }
   // ---- coisas que caem ----
   const LOOT = []; const EMO = {};
@@ -685,7 +698,7 @@
   const vH = new T3.Vector3();
   function ferasFrame(dt, p) { const livre = !conversa && !cenaQ && !desmaiado && $('fim').hidden && !Q.naCarroca; let chefeV = null;
     FERAS.forEach(e => { const T = e.T; const on = T.zona === zona && !dentro; e.g.visible = on && !(e.morto && e.mortoT > 1.8); if (!on) { e.hp.style.display = 'none'; if (e.morto) e.mortoT += dt; if (e.morto && e.mortoT > (T.volta || 45)) reseta(e); return; }
-      if (e.morto) { e.mortoT += dt; e.b.rotation.z = Math.min(Math.PI / 2, e.mortoT * 5); e.b.position.y = -Math.min(1, e.mortoT * 0.3) * (e.mortoT > 1 ? 0.5 : 0); e.gelo.visible = false; if (e.mortoT > (T.volta || 45) && Math.hypot(p.x - e.home[0], p.z - e.home[1]) > 18) reseta(e); return; }
+      if (e.morto) { e.mortoT += dt; e.b.rotation.z = Math.min(Math.PI / 2, e.mortoT * 5); e.b.position.y = T.voa ? -Math.min(2.1, e.mortoT * 5) : -Math.min(1, e.mortoT * 0.3) * (e.mortoT > 1 ? 0.5 : 0); e.gelo.visible = false; if (e.mortoT > (T.volta || 45) && Math.hypot(p.x - e.home[0], p.z - e.home[1]) > 18) reseta(e); return; }
       const g = e.g.position; const d = Math.hypot(p.x - g.x, p.z - g.z); let v = 0;
       e.cd -= dt; e.vuln -= dt; e.hitT += dt; if (e.queima > 0) { e.queima -= dt; e.qT = (e.qT || 0) + dt; if (e.qT > 1) { e.qT = 0; dano(e, 5, 'fogo'); if (e.morto) return; } }
       e.gelo.visible = e.congela > 0; if (e.congela > 0) { e.congela -= dt; }
@@ -700,21 +713,22 @@
         else if (e.estado === 'investe') { e.t += dt; const ox = g.x, oz = g.z; g.x += e.dir[0] * 12 * dt; g.z += e.dir[1] * 12 * dt; colide(g, COLZ()); v = 12; if (!e.bateu && d < 1.4) { e.bateu = true; danoHeroi(T.dano + 4, e); const nx = p.x - g.x, nz = p.z - g.z, nd = Math.hypot(nx, nz) || 1; p.x += nx / nd * 1.5; p.z += nz / nd * 1.5; }
           if (e.t > 0.75 || Math.hypot(g.x - ox, g.z - oz) < 12 * dt * 0.5) { e.estado = 'caca'; e.cd = T.cd; e.b.position.z = 0; } }
         else if (e.estado === 'ataque') { e.t += dt; const wind = T.chefe ? 0.9 : 0.35; e.ry = viraPara(e.ry, Math.atan2(p.x - g.x, p.z - g.z), dt * (T.chefe ? 2 : 6));
-          if (T.chefe) { const u = clamp(e.t / wind); e.arms.forEach(a => a.rotation.x = -u * 2.6); anel.visible = true; anel.position.set(g.x, 0.05, g.z); anel.scale.setScalar(T.alc * (0.4 + u * 0.6)); anel.material.opacity = 0.3 + u * 0.4; }
+          if (T.chefe) { const u = clamp(e.t / wind); e.arms.forEach(a => a.rotation.x = -u * 2.6); if (T.voa) e.b.position.y = u * 0.8; anel.visible = true; anel.position.set(g.x, 0.05, g.z); anel.scale.setScalar(T.alc * (0.4 + u * 0.6)); anel.material.opacity = 0.3 + u * 0.4; }
           else { e.b.rotation.x = e.t < wind ? -0.25 * (e.t / wind) : 0.3; if (e.head) e.head.rotation.x = e.t < wind ? -0.3 : 0.4; }
-          if (e.t >= wind && !e.bateu2) { e.bateu2 = true; if (T.chefe) { e.arms.forEach(a => a.rotation.x = 0.4); anel.visible = false; fx('gelo', [g.x, 0, g.z], 0.8); fx('fumo', [g.x, 0, g.z], 1.2); tremor = Math.max(tremor, 0.5); if (d < T.alc + 0.2 && p.y < 1.2) danoHeroi(T.dano, e); } else if (d < T.alc + 0.6) danoHeroi(T.dano, e); }
-          if (e.t > wind + 0.3) { e.estado = 'caca'; e.cd = T.cd * (T.chefe && e.vida < e.max / 2 ? 0.6 : 1); e.bateu2 = false; e.b.rotation.x = 0; if (e.head) e.head.rotation.x = 0; e.arms.forEach(a => a.rotation.x = 0); } }
+          if (e.t >= wind && !e.bateu2) { e.bateu2 = true; if (T.chefe) { e.arms.forEach(a => a.rotation.x = 0.4); anel.visible = false; if (T.voa) e.b.position.y = -1.3; fx(T.voa ? 'vento' : 'gelo', [g.x, 0, g.z], 0.8); fx('fumo', [g.x, 0, g.z], 1.2); tremor = Math.max(tremor, 0.5); if (d < T.alc + 0.2 && p.y < 1.2) danoHeroi(T.dano, e); } else if (d < T.alc + 0.6) danoHeroi(T.dano, e); }
+          if (e.t > wind + 0.3) { e.estado = 'caca'; e.cd = T.cd * (T.chefe && e.vida < e.max / 2 ? 0.6 : 1); e.bateu2 = false; e.b.rotation.x = 0; if (T.voa) e.b.position.y = 0; if (e.head) e.head.rotation.x = 0; e.arms.forEach(a => a.rotation.x = 0); } }
         else if (e.estado === 'volta') { v = anda(e, e.home[0], e.home[1], T.vel, dt) ? T.vel : 0; e.vida = Math.min(e.max, e.vida + dt * e.max * 0.15); if (Math.hypot(g.x - e.home[0], g.z - e.home[1]) < 1.5) { e.estado = 'anda'; e.vida = e.max; } if (d < T.aggro * 0.6 && livre) e.estado = 'caca'; }
         if (d < T.raio + 0.3) { const nx = g.x - p.x, nz = g.z - p.z, nd = Math.hypot(nx, nz) || 1; g.x = p.x + nx / nd * (T.raio + 0.3); g.z = p.z + nz / nd * (T.raio + 0.3); }
         if (zona === 'vila') { const r = Math.hypot(g.x, g.z + 6); if (r > 58) { g.x *= 58 / r; g.z = (g.z + 6) * 58 / r - 6; } } }
       e.g.rotation.y = e.ry; const sc = e.hitT < 0.15 ? 1 + (0.15 - e.hitT) : 1; e.b.scale.setScalar(sc);
       e.L.forEach((l, i) => { const ph = T.chefe ? i * Math.PI : (i === 0 || i === 3 ? 0 : Math.PI); l.rotation.x = v > 0.2 ? Math.sin(gT * (v * 2.2 + 4) + ph) * 0.6 : 0; });
+      if (e.asas) { const f = e.estado === 'ataque' ? 14 : 7; e.asas.forEach((a, i) => a.rotation.z = (i ? 1 : -1) * Math.sin(gT * f) * 0.6); if (e.estado !== 'ataque') e.b.position.y = Math.sin(gT * f) * 0.12; }
       if (T.chefe && e.estado !== 'ataque') e.arms.forEach((a, i) => a.rotation.x = v > 0.2 ? Math.sin(gT * 4 + i * Math.PI) * 0.3 : 0);
       if (T.chefe) { if (d < 22) chefeV = e; e.hp.style.display = 'none'; return; }
       // barrinha de vida
       if (e.vida < e.max && d < 25) { vH.set(g.x, T.alt + 0.25, g.z); vH.project(cam); if (vH.z < 1 && Math.abs(vH.x) < 1.05 && Math.abs(vH.y) < 1.05) { e.hp.style.display = 'block'; e.hp.style.left = ((vH.x * 0.5 + 0.5) * window.innerWidth) + 'px'; e.hp.style.top = ((-vH.y * 0.5 + 0.5) * window.innerHeight) + 'px'; e.hp.firstChild.style.width = (e.vida / e.max * 100) + '%'; } else e.hp.style.display = 'none'; } else e.hp.style.display = 'none'; });
-    if (!golem.estado || golem.estado !== 'ataque' || golem.morto || zona !== 'vila') anel.visible = false;
-    const cb = $('chefe'); cb.hidden = !chefeV; if (chefeV) $('chefe-fill').style.width = (chefeV.vida / chefeV.max * 100) + '%'; }
+    if (!FERAS.some(e => e.T.chefe && e.estado === 'ataque' && !e.morto && e.T.zona === zona && !dentro)) anel.visible = false;
+    const cb = $('chefe'); cb.hidden = !chefeV; if (chefeV && chefeV.T.barra) cb.firstChild.textContent = chefeV.T.barra; if (chefeV) $('chefe-fill').style.width = (chefeV.vida / chefeV.max * 100) + '%'; }
 
   function combateFrame(dt, p) {
     if (!desmaiado) { semDanoT += dt; if (semDanoT > 5 && vida < VIDA_MAX) vida = Math.min(VIDA_MAX, vida + dt * 3); }
@@ -725,7 +739,7 @@
     for (let i = RAIOS.length - 1; i >= 0; i--) { const r = RAIOS[i]; r.t += dt; r.s.material.opacity = 1 - r.t / 0.3; if (r.t > 0.3) { world.remove(r.s); r.s.material.dispose(); RAIOS.splice(i, 1); } }
     for (let i = LOOT.length - 1; i >= 0; i--) { const l = LOOT[i]; l.t += dt; l.s.visible = l.zona === zona && !dentro; if (!l.s.visible) continue; const s = l.s.position; s.y = 0.5 + Math.sin(gT * 3 + i) * 0.12;
       const d = Math.hypot(s.x - p.x, s.z - p.z); if (l.puxa || (d < 3 && l.t > 0.6)) { const k = clamp(dt * (l.puxa ? 6 : 4)); s.x += (p.x - s.x) * k; s.z += (p.z - s.z) * k; }
-      if (d < 1.0 && l.t > 0.4) { AR.inv[l.item] = (AR.inv[l.item] || 0) + l.n; salvaAR(); atualizaInv(); numero(p, '+' + l.n + ' ' + ITENS[l.item], '#ffd23c', 2.4); if (l.item === 'coracao') aviso('💎 Coração de Gelo! O ferreiro da Forja faz uma Espada Glacial com ele.', '#7ad8ff'); world.remove(l.s); LOOT.splice(i, 1); }
+      if (d < 1.0 && l.t > 0.4) { if (l.item === 'asas') { if (!AR.cosms.includes('morcego')) { AR.cosms.push('morcego'); aviso('🦇 Você ganhou as Asas de Morcego! Equipe no perfil, no espaço Costas.', '#c8a8ff'); } else aviso('🦇 Você já tem as Asas de Morcego.', '#8a9aba'); } else AR.inv[l.item] = (AR.inv[l.item] || 0) + l.n; salvaAR(); atualizaInv(); numero(p, '+' + l.n + ' ' + ITENS[l.item], '#ffd23c', 2.4); if (l.item === 'coracao') aviso('💎 Coração de Gelo! O ferreiro da Forja faz uma Espada Glacial com ele.', '#7ad8ff'); world.remove(l.s); LOOT.splice(i, 1); }
       else if (l.t > 90) { world.remove(l.s); LOOT.splice(i, 1); } } }
   function combateAlvo(p) { if (zona === 'vila' && !dentro && Math.hypot(p.x - FX0, p.z - FZ0) < 2.4) return { acao: abrirLoja, rot: 'FORJA' }; return null; }
   tapBtn($('atacar'), atacar); tapBtn($('arma'), trocaArma); tapBtn($('inv-cw'), comer);
@@ -743,7 +757,7 @@
       const el = $('lvup'); el.innerHTML = `<small>SUBIU DE NÍVEL!</small>Nível ${AR.nv}<em>+5 vida · +3 mana · +1 ponto de habilidade</em>`; el.classList.remove('on'); void el.offsetWidth; el.classList.add('on'); setTimeout(fazRetrato, 300); }
     else if (motivo) numero(heroi.position, '+' + n + ' XP', '#c8a8ff', 2.6); }
   function atualizaNivel() { $('nv').textContent = 'Nv ' + AR.nv; $('xp-fill').style.width = (AR.nv >= NV_MAX ? 100 : AR.xp / xpPara(AR.nv) * 100) + '%'; }
-  const XP_TIPO = { lobo: 15, javali: 25, rato: 8, golem: 300 };
+  const XP_TIPO = { lobo: 15, javali: 25, rato: 8, golem: 300, morcego: 150 };
 
   // ---- reflexo do ambiente pro metal parecer metal ----
   const envTex = canvasTex(512, 256, (x, w, h) => { const g = x.createLinearGradient(0, 0, 0, h); g.addColorStop(0, '#5a7ab8'); g.addColorStop(0.35, '#cfe2ff'); g.addColorStop(0.5, '#ffffff'); g.addColorStop(0.53, '#8a8a90'); g.addColorStop(1, '#2a2a30'); x.fillStyle = g; x.fillRect(0, 0, w, h);
@@ -873,8 +887,8 @@
 
   // ---- janela do perfil ----
   let abaPerfil = 'status';
-  function abrirPerfil() { if (conversa || cenaQ) return; $('perfil').hidden = false; desenhaPerfil(); }
-  function desenhaPerfil() { document.querySelectorAll('#perfil .aba').forEach(b => b.classList.toggle('on', b.dataset.a === abaPerfil)); const C = $('pf-cont'); const A = ARMAS[AR.arma] || ARMAS.bastao;
+  function abrirPerfil() { if (conversa || cenaQ) return; $('perfil').hidden = false; $('pf-escolha').hidden = true; desenhaPerfil(); }
+  function desenhaPerfil() { desenhaSlots(); document.querySelectorAll('#perfil .aba').forEach(b => b.classList.toggle('on', b.dataset.a === abaPerfil)); const C = $('pf-cont'); const A = ARMAS[AR.arma] || ARMAS.bastao;
     const CLp = CLA(); $('pf-nome').innerHTML = `${(AR.visual.nome || 'Leonardo').replace(/</g, '')} <b>Nv ${AR.nv}</b><small>${CLp ? CLp.icone + ' ' + CLp.nome : ''}</small>`; const CU = window.CONTA && CONTA.usuario; $('pf-conta').innerHTML = CU ? `<span>👤 ${(CU.displayName || CU.email || '').replace(/</g, '')}</span><button id="pf-sair">Sair da conta</button>` : `<button id="pf-sair">Entrar / criar conta</button>`;
     tapBtn($('pf-sair'), () => { if (CU) CONTA.sair(); else { try { sessionStorage.removeItem('aetherion-convidado'); } catch (e) {} $('perfil').hidden = true; $('login').hidden = false; } }); if (window.CONTA && CONTA.selo) CONTA.selo(); const ev = document.createElement('button'); ev.textContent = '✏️ Editar visual'; $('pf-conta').prepend(ev); tapBtn(ev, () => { $('perfil').hidden = true; abrirCriar(2, true); }); $('pf-xp').style.width = (AR.nv >= NV_MAX ? 100 : AR.xp / xpPara(AR.nv) * 100) + '%'; $('pf-xpt').textContent = AR.nv >= NV_MAX ? 'NÍVEL MÁXIMO' : `XP ${AR.xp} / ${xpPara(AR.nv)}`;
     if (abaPerfil === 'status') { const ab = AR.abates; const tot = Object.values(ab).reduce((s, v) => s + v, 0);
@@ -884,19 +898,21 @@
     C.innerHTML = '';
     const sec = (t) => { const h = document.createElement('div'); h.className = 'sec'; h.textContent = t; C.appendChild(h); const g = document.createElement('div'); g.className = 'grade'; C.appendChild(g); return g; };
     const cel = (g, ic, nome, sub, on, fn, tag) => { const b = document.createElement('button'); b.className = 'cel' + (on ? ' on' : '') + (fn ? '' : ' fixa'); b.innerHTML = `<span class="ic">${ic}</span><b>${nome}</b><small>${sub}</small>${tag ? `<em>${tag}</em>` : ''}`; if (fn) tapBtn(b, fn); g.appendChild(b); };
-    let g = sec('👕 Fantasias');
+    let g = sec('⚔️ Armas · toque pra equipar ou desequipar');
+    Object.keys(ARMAS).forEach(k => { const W = ARMAS[k], tem = AR.armas.includes(k); if (W.oculta || (W.classe && !tem)) return; const on = AR.arma === k; cel(g, tem ? W.icone : '🔒', W.nome, tem ? (on ? 'Toque pra desequipar' : 'Dano ' + W.dano) : 'Na Forja', on, tem ? () => { equipaArma(on ? null : k); desenhaPerfil(); } : null, on ? 'EQUIPADA' : ''); });
+    g = sec('🎭 Fantasias · só visual');
+    Object.keys(COSM).forEach(k => { const F = COSM[k], tem = AR.cosms.includes(k), on = AR.cosm === k; cel(g, tem ? F.icone : '🔒', F.nome, tem ? (on ? 'Toque pra tirar' : F.desc) : '🔒', on, tem ? () => { vesteCosm(on ? null : k); desenhaPerfil(); } : null, on ? 'VESTIDA' : ''); });
+    g = sec('👕 Armaduras');
     Object.keys(FANT).forEach(k => { const F = FANT[k], tem = AR.fantasias.includes(k); cel(g, F.icone, F.nome, tem ? (F.def ? 'Defesa +' + F.def + '%' : 'Sem defesa') : '🔒', AR.fantasia === k, tem && AR.fantasia !== k ? () => { vesteFantasia(k); aviso('Vestiu: ' + F.icone + ' ' + F.nome, '#7ac8ff'); desenhaPerfil(); } : null, AR.fantasia === k ? 'VESTIDO' : ''); });
     g = sec('🧊 Armadura Glacial · peças (+5% cada, conjunto completo +10%)');
     PECAS.forEach(([k, ic, nm]) => { const on = AR.pecas[k] === 'glacial'; cel(g, ic, nm, 'Defesa +5%', on, () => { vestePeca(k, !on); desenhaPerfil(); }, on ? 'VESTIDA' : ''); });
     { const todas = PECAS.every(([k]) => AR.pecas[k] === 'glacial'); cel(g, '❄️', 'Conjunto completo', todas ? 'Tirar tudo' : 'Vestir tudo', todas, () => { PECAS.forEach(([k]) => { AR.pecas[k] = todas ? null : 'glacial'; }); if (!todas && AR.fantasia === 'celeste') { AR.fantasia = 'comum'; armadura.forEach(m => m.visible = false); } salvaAR(); atualizaPecas(); setTimeout(fazRetrato, 60); desenhaPerfil(); }, todas ? 'VESTIDO' : ''); }
-    g = sec('⚔️ Armas');
-    Object.keys(ARMAS).forEach(k => { const W = ARMAS[k], tem = AR.armas.includes(k); if (W.classe && !tem) return; cel(g, tem ? W.icone : '🔒', W.nome, tem ? 'Dano ' + W.dano : 'Na Forja', AR.arma === k, tem && AR.arma !== k ? () => { AR.arma = k; salvaAR(); mostraArma(); desenhaPerfil(); } : null, AR.arma === k ? 'NA MÃO' : ''); });
     g = sec('🎒 Itens');
     cel(g, '💰', 'Moedas', AR.inv.moedas + 'x', false, null); cel(g, '🐺', 'Pele de lobo', AR.inv.pele + 'x · vende na Forja', false, null);
     cel(g, '🍖', 'Carne', AR.inv.carne + 'x · toque pra comer', false, AR.inv.carne ? () => { comer(); desenhaPerfil(); } : null); if (AR.inv.coracao) cel(g, '💎', 'Coração de Gelo', AR.inv.coracao + 'x · Espada Glacial', false, null); }
   document.querySelectorAll('#perfil .aba').forEach(b => tapBtn(b, () => { abaPerfil = b.dataset.a; desenhaPerfil(); }));
   tapBtn($('perfil-btn'), abrirPerfil); tapBtn($('pf-fecha'), () => { $('perfil').hidden = true; });
-  let previaT = 0; function perfilFrame(dt) { if ($('perfil').hidden) return; previaT += dt; if (previaT > 0.06) { fazPrevia(previaT); previaT = 0; } }
+  let previaT = 0; function perfilFrame(dt) { if ($('perfil').hidden || !$('previa')) return; previaT += dt; if (previaT > 0.06) { fazPrevia(previaT); previaT = 0; } }
   aplicaNivel(); atualizaNivel(); vesteFantasia(AR.fantasia); setTimeout(fazRetrato, 700);
   // ===================== CLASSES E CRIAÇÃO DO PERSONAGEM =====================
   CLASSES = {
@@ -952,6 +968,75 @@
     g = ARMAG.sombrio = grp(maoG); pc(g, CYL2, MADN, 0, 0.25, 0.04, 0.026, 1.55, 0.026); { const lua = new T3.Mesh(new T3.TorusGeometry(0.16, 0.022, 8, 30, Math.PI * 1.3), met('#c8c0d8', 0.3, 0.9)); lua.position.set(0, 1.05, 0.04); lua.rotation.set(0, Math.PI / 2, 0.6); g.add(lua); } pc(g, CONE2, G('#c890ff'), 0, 1.06, 0.04, 0.05, 0.18, 0.05); glowSpr(g, 0, 1.06, 0.04, 0.9, '#a050ff', 0.85);
     Object.values(ARMAE).forEach(x => x.visible = false); Object.values(ARMAG).forEach(x => x.traverse(o => { if (o.isMesh) o.castShadow = true; })); }
   const mostraArma0 = mostraArma; mostraArma = function () { mostraArma0(); Object.keys(ARMAE).forEach(k => ARMAE[k].visible = k === AR.arma && !(typeof duploG !== 'undefined' && duploG)); };
+
+  // ===================== EQUIPAMENTO: uma arma só e slot de fantasia =====================
+  // A arma equipada fica nas costas; vai pra mão quando ele ataca e volta pras costas uns segundos depois.
+  const P0 = heroi.userData.P; const costasG = grp(P0.spine, 0, 0, 0); let naMao = true, armaNasCostas = null;
+  const ARMA_EIXO_Y = { cajado: 1, sombrio: 1, arco: 1 }; const SEGURA_MAO = 3;
+  const mBase = (x, y, z) => new T3.Matrix4().makeBasis(new T3.Vector3(...x).normalize(), new T3.Vector3(...y).normalize(), new T3.Vector3(...z).normalize());
+  const POSE_COSTAS = {
+    lamina: { pos: [0.16, 0.8, -0.2], m: mBase([0.89, -0.45, 0], [0, 0, 1], [-0.45, -0.89, 0]) },     // cabo no ombro, lâmina descendo cruzada
+    vara: { pos: [0.0, 0.28, -0.19], m: mBase([0.894, -0.447, 0], [0.447, 0.894, 0], [0, 0, 1]) }, // cajado/arco em diagonal
+    lamina2: { pos: [-0.16, 0.8, -0.21], m: mBase([0.89, 0.45, 0], [0, 0, 1], [0.45, -0.89, 0]) },      // segunda lâmina cruzando a outra
+    escudo: { pos: [0.0, 0.3, -0.16], m: mBase([0, 0, 1], [0, 1, 0], [-1, 0, 0]) } };
+  function poeNaMao() { P0.elR.add(maoG); maoG.position.set(0, -0.33, 0.05); maoG.quaternion.identity(); P0.elL.add(maoE); maoE.position.set(0, -0.33, 0.05); maoE.quaternion.identity(); }
+  function poeNasCostas(k) { const ps = (g, cfg) => { costasG.add(g); g.position.set(...cfg.pos); g.quaternion.setFromRotationMatrix(cfg.m); };
+    ps(maoG, ARMA_EIXO_Y[k] ? POSE_COSTAS.vara : POSE_COSTAS.lamina);
+    if (k === 'escudo') ps(maoE, POSE_COSTAS.escudo); else ps(maoE, POSE_COSTAS.lamina2);
+    if (ARMAE.runica) ARMAE.runica.visible = false; }
+  function armaVisivel() { return Object.keys(ARMAG).find(k => ARMAG[k].visible) || null; }
+  function equipaArma(k) { AR.arma = k && AR.armas.includes(k) ? k : 'punho'; salvaAR(); mostraArma(); armaNasCostas = null; setTimeout(fazRetrato, 60);
+    const A = ARMAS[AR.arma]; aviso(AR.arma === 'punho' ? '👊 Arma guardada na mochila' : 'Equipou: ' + A.icone + ' ' + A.nome, '#ffd23c'); }
+
+  // ---- fantasias de enfeite (só visual) ----
+  const COSM = { morcego: { nome: 'Asas de Morcego', icone: '🦇', desc: 'Só de enfeite. Batem quando você corre e pula.' } };
+  AR.cosms = AR.cosms || []; if (!AR.cosmV2) { AR.cosms = AR.cosms.filter(c => c !== 'morcego'); AR.cosmV2 = 1; } if (!AR.cosms.includes(AR.cosm)) AR.cosm = null; // asas agora caem do Morcego Gigante
+  const ASAS = grp(P0.spine, 0, 0.44, -0.13); const ASA = {};
+  { const MEMB = new T3.MeshToonMaterial({ color: '#3a1f4a', gradientMap: GRAD, side: T3.DoubleSide }); const OSSO = tm('#1a0e24'); const GARRA = tm('#e8e0d0');
+    const s = new T3.Shape(); s.moveTo(0, 0.04); s.lineTo(0.34, 0.3); s.lineTo(0.8, 0.36); s.quadraticCurveTo(0.62, 0.2, 0.88, 0.02); s.quadraticCurveTo(0.62, -0.04, 0.74, -0.3); s.quadraticCurveTo(0.5, -0.18, 0.44, -0.44); s.quadraticCurveTo(0.26, -0.22, 0.03, -0.26); s.lineTo(0, 0.04);
+    const memGeo = new T3.ShapeGeometry(s, 10); const up = new T3.Vector3(0, 1, 0);
+    const osso = (p, a, b, r) => { const A = new T3.Vector3(...a), B = new T3.Vector3(...b), d = B.clone().sub(A); const m = new T3.Mesh(CYL, OSSO); m.position.copy(A).add(B).multiplyScalar(0.5); m.scale.set(r, d.length(), r); m.quaternion.setFromUnitVectors(up, d.normalize()); m.castShadow = true; p.add(m); };
+    [['R', 1], ['L', -1]].forEach(([n, sx]) => { const w = grp(ASAS, 0.05 * sx, 0, 0); const g = grp(w); g.scale.x = sx; const mem = new T3.Mesh(memGeo, MEMB); mem.castShadow = true; g.add(mem);
+      osso(g, [0, 0.04, 0.004], [0.34, 0.3, 0.004], 0.018); [[0.8, 0.36], [0.88, 0.02], [0.74, -0.3], [0.44, -0.44]].forEach(([x, y]) => osso(g, [0.34, 0.3, 0.004], [x, y, 0.004], 0.009));
+      const c = new T3.Mesh(CONE, GARRA); c.position.set(0.36, 0.35, 0.004); c.scale.set(0.018, 0.07, 0.018); c.rotation.z = -0.5; g.add(c); ASA[n] = w; }); }
+  function vesteCosm(k) { AR.cosm = k && AR.cosms.includes(k) ? k : null; salvaAR(); ASAS.visible = AR.cosm === 'morcego'; setTimeout(fazRetrato, 60); if (k && COSM[k]) aviso('Vestiu: ' + COSM[k].icone + ' ' + COSM[k].nome, '#c8a8ff'); }
+  ASAS.visible = AR.cosm === 'morcego';
+
+  // ---- espaços de equipamento na janela do perfil (no lugar da prévia do personagem) ----
+  const SLOTS_EQ = [['cabeca', '⛑️', 'Elmo'], ['peito', '🦺', 'Peitoral'], ['maos', '🧤', 'Luvas'], ['calca', '🩳', 'Calça'], ['costas', '🦇', 'Costas'], ['arma', '⚔️', 'Arma'], ['greva', '🦵', 'Grevas'], ['pe', '🥾', 'Botas']];
+  const pecaInfo = k => { const p = PECAS.find(x => x[0] === k); return p ? { icone: p[1], nome: p[2], sub: 'Defesa +5%' } : null; };
+  function slotItem(k) {
+    if (k === 'arma') { const W = ARMAS[AR.arma]; return AR.arma !== 'punho' && W ? W : null; }
+    if (k === 'costas') return COSM[AR.cosm] || null;
+    if (k === 'peito' && AR.fantasia === 'celeste') return FANT.celeste;
+    return AR.pecas[k] === 'glacial' ? pecaInfo(k) : null; }
+  function opcoesSlot(k) {
+    if (k === 'arma') return AR.armas.filter(w => ARMAS[w] && !ARMAS[w].oculta).map(w => ({ icone: ARMAS[w].icone, nome: ARMAS[w].nome, sub: 'Dano ' + ARMAS[w].dano, on: AR.arma === w, fn: () => equipaArma(w) }));
+    if (k === 'costas') return AR.cosms.filter(c => COSM[c]).map(c => ({ icone: COSM[c].icone, nome: COSM[c].nome, sub: 'Só visual', on: AR.cosm === c, fn: () => vesteCosm(c) }));
+    const P = pecaInfo(k); const ops = [{ ...P, on: AR.pecas[k] === 'glacial', fn: () => vestePeca(k, true) }];
+    if (k === 'peito' && AR.fantasias.includes('celeste')) ops.push({ icone: FANT.celeste.icone, nome: FANT.celeste.nome, sub: 'Conjunto · defesa +' + FANT.celeste.def + '%', on: AR.fantasia === 'celeste', fn: () => vesteFantasia('celeste') });
+    return ops; }
+  function tiraSlot(k) {
+    if (k === 'arma') return equipaArma(null);
+    if (k === 'costas') return vesteCosm(null);
+    if (k === 'peito' && AR.fantasia === 'celeste') return vesteFantasia('comum');
+    vestePeca(k, false); }
+  function abreSlot(k) { const S = SLOTS_EQ.find(s => s[0] === k), box = $('pf-escolha');
+    box.innerHTML = `<div class="pe-hd"><span>${S[1]} ${S[2]}</span><button class="pe-x">Voltar</button></div><div class="grade"></div>`; const g = box.querySelector('.grade'); const ops = opcoesSlot(k);
+    if (!ops.length) g.innerHTML = '<p class="dica">Você ainda não tem nada pra esse espaço.</p>';
+    ops.forEach(o => { const b = document.createElement('button'); b.className = 'cel' + (o.on ? ' on' : ''); b.innerHTML = `<span class="ic">${o.icone}</span><b>${o.nome}</b><small>${o.on ? 'Toque pra tirar' : o.sub}</small>${o.on ? '<em>EQUIPADO</em>' : ''}`;
+      tapBtn(b, () => { if (o.on) tiraSlot(k); else o.fn(); box.hidden = true; desenhaPerfil(); }); g.appendChild(b); });
+    tapBtn(box.querySelector('.pe-x'), () => { box.hidden = true; }); box.hidden = false; }
+  function desenhaSlots() { const el = $('pf-slots'); if (!el) return; el.innerHTML = '';
+    SLOTS_EQ.forEach(([k, ic, nm]) => { const it = slotItem(k); const b = document.createElement('button'); b.className = 'eqs' + (it ? ' on' : ''); b.innerHTML = `<span>${it ? it.icone : ic}</span><small>${nm}</small>`; b.title = it ? it.nome : nm + ' (vazio)'; tapBtn(b, () => abreSlot(k)); el.appendChild(b); }); }
+
+  let asaT = 0;
+  function equipFrame(dt) { const k = armaVisivel(); const temArma = !!k;
+    const quer = !temArma || atkT < SEGURA_MAO || !!BM; // sem arma, lutando ou em modo de batalha: mão
+    if (quer !== naMao || (!quer && armaNasCostas !== k)) { naMao = quer; if (quer) { poeNaMao(); armaNasCostas = null; mostraArma(); } else { poeNasCostas(k); armaNasCostas = k; } }
+    if (ASAS.visible) { const voa = typeof noChao !== 'undefined' && !noChao, corre = typeof vel !== 'undefined' ? vel : 0;
+      const f = voa ? 13 : corre > 4.2 ? 9 : corre > 0.4 ? 4 : 2, a = voa ? 0.7 : corre > 4.2 ? 0.45 : corre > 0.4 ? 0.25 : 0.12; asaT += dt * f;
+      const ang = 0.45 + Math.sin(asaT) * a; ASA.R.rotation.y = ang; ASA.L.rotation.y = -ang; ASA.R.rotation.z = Math.sin(asaT) * a * 0.3; ASA.L.rotation.z = -ASA.R.rotation.z; } }
 
   // ---- aparência ----
   const PELES = ['#f2b48e', '#f8d0b8', '#e8a878', '#c88a5e', '#9a6440', '#6a4430'];
@@ -1158,7 +1243,7 @@
   function bmDesliga() { if (!BM) return; BM = null; bmN = 0; heroi.scale.setScalar(ESCALA0); maoG.scale.setScalar(1); maoE.scale.setScalar(1); armaGlowS.material.opacity = 0; Object.keys(EXTRA).forEach(k => EXTRA[k].visible = false); if (duploG) { maoE.remove(duploG); duploG = null; } ORB.visible = false; despAura.material.opacity = 0; mostraArma(); }
   function bmLiga(n) { const c = CLA(); if (!c) return; const M = BMS[AR.classe][n - 1]; BM = M; bmN = n; despT = BM_DUR[n - 1]; desp = 0;
     bmMat = bmMatCor(M.cor); Object.keys(EXTRA).forEach(k => { EXTRA[k].traverse(o => { if (o.isMesh) o.material = bmMat; }); EXTRA[k].visible = false; });
-    (M.extras || []).forEach(k => { if (k === 'espinhos') { EXTRA.espshL.visible = EXTRA.espshR.visible = true; } else if (k === 'duplo') { duploG = ARMAG[AR.arma].clone(); duploG.visible = true; duploG.scale.x = -1; maoE.add(duploG); Object.values(ARMAE).forEach(x => x.visible = false); } else if (EXTRA[k]) EXTRA[k].visible = true; });
+    (M.extras || []).forEach(k => { if (k === 'espinhos') { EXTRA.espshL.visible = EXTRA.espshR.visible = true; } else if (k === 'duplo' && ARMAG[AR.arma]) { duploG = ARMAG[AR.arma].clone(); duploG.visible = true; duploG.scale.x = -1; maoE.add(duploG); Object.values(ARMAE).forEach(x => x.visible = false); } else if (EXTRA[k]) EXTRA[k].visible = true; });
     heroi.scale.setScalar(ESCALA0 * (M.escala || 1)); maoG.scale.setScalar(M.armaEsc || 1); maoE.scale.setScalar(M.armaEsc || 1); armaGlowS.material.color.set(M.armaGlow || M.cor); armaGlowS.material.opacity = M.armaGlow ? 0.7 : 0;
     montaOrbes(M.orbes, M.cor); ORB.visible = !!M.orbes; despAura.material.color.set(M.cor);
     flash('rgba(255,255,255,.6)'); tremor = 0.35; fx('luz', [heroi.position.x, 0, heroi.position.z], 1.2); fx('cura', [heroi.position.x, 0, heroi.position.z], 1.4);
@@ -1282,7 +1367,7 @@
     if (!noChao) pose(heroi, gT, { mood: 'smile', arms: { shL: [-2.6, 0, -0.3], shR: [-2.6, 0, 0.3], elL: [-0.3, 0, 0], elR: [-0.3, 0, 0] }, legs: { thL: -0.9, knL: 1.4, thR: -0.3, knR: 0.6 } });
     else if (vel > 0.4) pose(heroi, gT, vel > 4.2 ? { run: true, mood: 'smile' } : { walk: true, mood: 'neutral' });
     else pose(heroi, gT, { mood: conversa ? 'smile' : 'neutral' });
-    armaPose(); armaduraFrame();
+    armaPose(); armaduraFrame(); equipFrame(dt);
     sombra.position.set(p.x, 0.012, p.z); sombra.material.opacity = 0.2 * (1 - clamp(p.y / 4));
     // personagens: olham pro herói quando ele chega perto
     alvo = null; let melhor = 2.6;
