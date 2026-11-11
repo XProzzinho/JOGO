@@ -32,6 +32,7 @@
   .btn{position:fixed;border-radius:24px;display:flex;align-items:center;justify-content:center;font-family:var(--fonte-titulo);font-weight:400;letter-spacing:.5px;color:var(--tinta);background:var(--branco);border:var(--borda);box-shadow:0 5px 0 var(--tinta);transition:transform .08s,box-shadow .08s}
   .btn:active{transform:translateY(3px);box-shadow:0 2px 0 var(--tinta)}
   #pular{right:calc(28px + env(safe-area-inset-right,0px));bottom:calc(70px + env(safe-area-inset-bottom,0px));width:96px;height:96px;font-size:19px;background:var(--grama);border-radius:28px}
+  #voar{right:calc(222px + env(safe-area-inset-right,0px));bottom:calc(214px + env(safe-area-inset-bottom,0px));width:80px;height:44px;font-size:13px;font-weight:900;background:#3a2a50;color:#fff;border-radius:16px}
   #correr{right:calc(140px + env(safe-area-inset-right,0px));bottom:calc(40px + env(safe-area-inset-bottom,0px));width:72px;height:72px;font-size:14px;background:var(--ceu);border-radius:22px}
   #correr.on{background:var(--sol)}
   #perfil-btn{position:fixed;left:calc(12px + env(safe-area-inset-left,0px));top:calc(10px + env(safe-area-inset-top,0px));display:flex;align-items:center;gap:8px;padding:4px 14px 4px 4px;border-radius:999px;background:var(--branco);border:var(--borda);box-shadow:var(--sombra);color:var(--tinta);cursor:pointer}
@@ -315,6 +316,7 @@
 <div id="mm-hud" hidden></div>
 <div id="fala" hidden><div id="fala-nome"></div><div id="fala-txt"></div><div id="fala-esc" hidden></div><div id="fala-mais"></div></div>
 <div id="joy"><div id="knob"></div></div>
+<button class="btn" id="voar" hidden>🦇 VOAR</button>
 <button class="btn" id="correr">CORRER</button>
 <button class="btn" id="pular">PULAR</button>
 <button class="btn" id="acao" hidden>FALAR</button>
@@ -622,8 +624,17 @@ ${_}`}class A extends Error{constructor({message:e,code:t,cause:r,name:s}){var n
   cv.addEventListener('wheel', e => { camDist = clamp(camDist + e.deltaY * 0.005, 3, 14); }, { passive: true });
   const SEM_CLIQUE = ['atacar', 'pular', 'correr', 'acao', 'fala', 'cena', 'arma'];
   const tapBtn = (el, fn) => { const f0 = fn; fn = () => { if (!el.classList.contains('slot') && !SEM_CLIQUE.includes(el.id)) som('clique', 0.4, 1); f0(); }; el.addEventListener('touchstart', e => { fn(); e.preventDefault(); e.stopPropagation(); }, { passive: false }); el.addEventListener('mousedown', e => { fn(); e.stopPropagation(); }); };
-  tapBtn($('pular'), () => { input.jump = true; });
-  tapBtn($('correr'), () => { input.run = !input.run; $('correr').classList.toggle('on', input.run); });
+  // ---- VOO com as asas ----
+  let voando = false, voSobe = 0, voPitch = 0;
+  function podeVoar() { return typeof ASAS !== 'undefined' && ASAS.visible && !dentro && !conversa && !cenaQ && !desmaiado; }
+  function voa(on) { if (on && !podeVoar()) { aviso('🦇 Equipe as Asas de Morcego (🎒 › Costas) pra voar.', '#c8a8ff'); return; } voando = on; input.sobe = input.desce = false;
+    if (on) { voSobe = 0.7; noChao = false; vy = 0; som('vento', 0.8, 1); aviso('🦇 Voando! ⬆ SUBIR e ⬇ DESCER pra altura, o controle pra ir pra frente.', '#c8a8ff'); } else { som('aterrissa', 0.5); }
+    $('voar').textContent = voando ? '🛬 POUSAR' : '🦇 VOAR'; $('pular').textContent = voando ? '⬆ SUBIR' : 'PULAR'; $('correr').textContent = voando ? '⬇ DESCER' : 'CORRER'; $('correr').classList.toggle('on', !voando && input.run); }
+  const segura = (el, k) => { const on = e => { if (voando) { input[k] = true; e.preventDefault(); } }, off = () => { input[k] = false; }; el.addEventListener('touchstart', on, { passive: false }); el.addEventListener('mousedown', on); ['touchend', 'touchcancel', 'mouseup', 'mouseleave'].forEach(ev => el.addEventListener(ev, off)); };
+  segura($('pular'), 'sobe'); segura($('correr'), 'desce');
+  tapBtn($('pular'), () => { if (!voando) input.jump = true; });
+  tapBtn($('voar'), () => voa(!voando));
+  tapBtn($('correr'), () => { if (voando) return; input.run = !input.run; $('correr').classList.toggle('on', input.run); });
   tapBtn($('acao'), () => acao());
   tapBtn($('ciclo'), () => { if (dentro || Q.noite) return; hora = modo === 'dia' ? 18.6 : 5.4; aviso(modo === 'dia' ? 'O sol está se pondo...' : 'Amanhecendo...', '#ffd23c'); });
   tapBtn($('fala'), () => proximaFala()); tapBtn($('cena'), () => proximaCena());
@@ -2466,7 +2477,7 @@ ${_}`}class A extends Error{constructor({message:e,code:t,cause:r,name:s}){var n
       MP.ch.on('broadcast', { event: 'p' }, m => mpRecebe(m.payload)).on('broadcast', { event: 'sai' }, m => { const o = m.payload && MP.outros[m.payload.id]; if (o) o.t = 0; })
         .subscribe(st => { MP.ok = st === 'SUBSCRIBED'; }); } catch (e) { MP.ch = null; } }
   window.addEventListener('pagehide', () => { try { MP.ch && MP.ch.send({ type: 'broadcast', event: 'sai', payload: { id: MP.id } }); } catch (e) {} });
-  function mpEstado(p) { const G = typeof guildState !== 'undefined' && guildState && guildState.guild; return { id: MP.id, n: (AR.visual && AR.visual.nome) || 'Leonardo', lv: AR.nv, g: G ? G.name : '', ge: G && typeof emblemIcon === 'function' ? emblemIcon(G.emblem) : '', z: zona, dn: dentro ? 1 : 0, x: +p.x.toFixed(2), y: +p.y.toFixed(2), zz: +p.z.toFixed(2), r: +facing.toFixed(2), a: !noChao ? 'pulo' : atkT < 0.3 ? 'atk' : vel > 4.2 ? 'corre' : vel > 0.4 ? 'anda' : 'para', w: AR.arma }; }
+  function mpEstado(p) { const G = typeof guildState !== 'undefined' && guildState && guildState.guild; return { id: MP.id, n: (AR.visual && AR.visual.nome) || 'Leonardo', lv: AR.nv, g: G ? G.name : '', ge: G && typeof emblemIcon === 'function' ? emblemIcon(G.emblem) : '', z: zona, dn: dentro ? 1 : 0, x: +p.x.toFixed(2), y: +p.y.toFixed(2), zz: +p.z.toFixed(2), r: +facing.toFixed(2), a: voando ? (voPitch > 0.6 ? 'voa' : 'paira') : !noChao ? 'pulo' : atkT < 0.3 ? 'atk' : vel > 4.2 ? 'corre' : vel > 0.4 ? 'anda' : 'para', w: AR.arma }; }
   function mpFrame(dt, p) { mpLiga(); MP.envT -= dt;
     if (MP.ok && MP.envT <= 0) { const e = mpEstado(p); const s = JSON.stringify(e); if (s !== MP.ult || MP.envT < -2) { MP.ult = s; MP.envT = 0.15; try { MP.ch.send({ type: 'broadcast', event: 'p', payload: e }); } catch (er) {} } else MP.envT = 0.15; }
     const agora = performance.now(); let n = 0;
@@ -2474,7 +2485,8 @@ ${_}`}class A extends Error{constructor({message:e,code:t,cause:r,name:s}){var n
       const mesma = o.d.z === zona && !!o.d.dn === !!dentro && !dentro; o.c.visible = mesma; if (!mesma) { o.tag.hidden = true; return; } n++;
       const k = clamp(dt * 8); o.x += (o.tx - o.x) * k; o.z += (o.tz - o.z) * k; o.y += (o.ty - o.y) * k; let dr = o.tr - o.r; while (dr > Math.PI) dr -= Math.PI * 2; while (dr < -Math.PI) dr += Math.PI * 2; o.r += dr * clamp(dt * 10);
       o.c.position.set(o.x, o.y, o.z); o.c.rotation.y = o.r;
-      const P = o.c.userData.P; if (o.a === 'pulo') pose(o.c, gT, { mood: 'smile', arms: { shL: [-2.6, 0, -0.3], shR: [-2.6, 0, 0.3], elL: [-0.3, 0, 0], elR: [-0.3, 0, 0] }, legs: { thL: -0.9, knL: 1.4, thR: -0.3, knR: 0.6 } });
+      o.c.rotation.order = 'YXZ'; o.c.rotation.x += ((o.a === 'voa' ? 1.3 : o.a === 'paira' ? 0.12 : 0) - o.c.rotation.x) * clamp(dt * 5);
+      const P = o.c.userData.P; if (o.a === 'voa') pose(o.c, gT, { mood: 'smile', arms: { shL: [-2.95, 0, -0.12], shR: [-2.95, 0, 0.12], elL: [0, 0, 0], elR: [0, 0, 0] }, legs: { thL: 0.08, knL: 0.12, thR: -0.04, knR: 0.18 } }); else if (o.a === 'paira') pose(o.c, gT, { mood: 'smile', arms: { shL: [-0.35, 0, -0.55], shR: [-0.35, 0, 0.55], elL: [-0.5, 0, 0], elR: [-0.5, 0, 0] }, legs: { thL: -0.25, knL: 0.5, thR: 0.1, knR: 0.35 } }); else if (o.a === 'pulo') pose(o.c, gT, { mood: 'smile', arms: { shL: [-2.6, 0, -0.3], shR: [-2.6, 0, 0.3], elL: [-0.3, 0, 0], elR: [-0.3, 0, 0] }, legs: { thL: -0.9, knL: 1.4, thR: -0.3, knR: 0.6 } });
       else if (o.a === 'corre' || o.a === 'anda') pose(o.c, gT + o.ph, o.a === 'corre' ? { run: true, mood: 'smile' } : { walk: true, mood: 'neutral' }); else pose(o.c, gT, { mood: 'neutral' });
       if (o.a === 'atk') { P.shR.rotation.x = -1.6 + Math.sin(gT * 18) * 0.9; }
       const dd = Math.hypot(o.x - p.x, o.z - p.z); if (dd > 22) { o.tag.hidden = true; return; } guildPosition(o.tag, o.c, 1.75); o.tag.style.transform = 'translate(-50%,-100%) scale(' + clamp(1.15 - dd / 22, 0.5, 1).toFixed(2) + ')'; o.tag.style.zIndex = String(100 - Math.round(dd)); });
@@ -2541,7 +2553,7 @@ ${_}`}class A extends Error{constructor({message:e,code:t,cause:r,name:s}){var n
     if (!a || conversa || cenaQ) { SETA.visible = false; return null; } const dx = a.x - p.x, dz = a.z - p.z, d = Math.hypot(dx, dz); if (d < 3.5) { SETA.visible = false; return null; }
     const ang = Math.atan2(dx, dz); SETA.visible = true; SETA.position.set(p.x + Math.sin(ang) * 1.5, p.y, p.z + Math.cos(ang) * 1.5); SETA.rotation.y = ang + Math.PI; SETA.children[0].position.y = 0.06 + Math.abs(Math.sin(gT * 4)) * 0.08; return d; }
   atualizaMM();
-  window.__dbg = { mpRecebe, entraMasmorra, saiMasmorra, MM, mmFaseAtual, mmMorte, setaFrame, equipaArma, abrirGuilda, arthurNPC, vestePeca, atualizaPecas, PECAS, BLOCOS, modoBatalha, bmLiga, bmDesliga, BMS, ORB, get BM() { return BM; }, get hora() { return hora; }, set hora(v) { hora = v; }, usarHab2: id => classePoder2(id), BUFF, abrirCriar, aplicaClasse, CLASSES, get desp() { return desp; }, set desp(v) { desp = v; }, usarHab: id => classePoder(id), renderer, scene, world, ganhaXp, vesteFantasia, abrirPerfil, fazRetrato, irValdren, Q, heroi, ativo, AR, FERAS, golem, atacar, get vida() { return vida; }, set vida(v) { vida = v; }, abrirLoja, usarPoder: id => usarPoder(PW[id]), acao: () => acao(), get alvo() { return alvo; } };
+  window.__dbg = { vesteCosm, voa, get voando() { return voando; }, input, mpRecebe, entraMasmorra, saiMasmorra, MM, mmFaseAtual, mmMorte, setaFrame, equipaArma, abrirGuilda, arthurNPC, vestePeca, atualizaPecas, PECAS, BLOCOS, modoBatalha, bmLiga, bmDesliga, BMS, ORB, get BM() { return BM; }, get hora() { return hora; }, set hora(v) { hora = v; }, usarHab2: id => classePoder2(id), BUFF, abrirCriar, aplicaClasse, CLASSES, get desp() { return desp; }, set desp(v) { desp = v; }, usarHab: id => classePoder(id), renderer, scene, world, ganhaXp, vesteFantasia, abrirPerfil, fazRetrato, irValdren, Q, heroi, ativo, AR, FERAS, golem, atacar, get vida() { return vida; }, set vida(v) { vida = v; }, abrirLoja, usarPoder: id => usarPoder(PW[id]), acao: () => acao(), get alvo() { return alvo; } };
   // ---------- laço do jogo ----------
   let vy = 0, noChao = true, facing = 0, vel = 0, gT = 0, last = performance.now();
   const ANDAR = 3.0, CORRER = 6.5, GRAV = 22, PULO = 7.6; const tmp = new T3.Vector3();
@@ -2553,14 +2565,19 @@ ${_}`}class A extends Error{constructor({message:e,code:t,cause:r,name:s}){var n
     if (!guildPanel.hidden || conversa || cenaQ || !$('fim').hidden || Q.naCarroca || desmaiado) { ix = 0; iy = 0; }
     const mag = Math.min(1, Math.hypot(ix, iy)); const correndo = input.run || keys.ShiftLeft || mag > 0.92;
     const fx = -Math.sin(camYaw), fz = -Math.cos(camYaw); let mx = fx * -iy + -fz * ix, mz = fz * -iy + fx * ix; const ml = Math.hypot(mx, mz);
-    vel = lerp(vel, mag > 0.08 ? (correndo ? CORRER : ANDAR) * (ativo.vento ? 1.5 + nivelHab('vento') * 0.1 : 1) * ((CLASSES && CLASSES[AR.classe]) ? CLASSES[AR.classe].vel : 1) * (BM && BM.vel ? BM.vel : 1) * mag : 0, clamp(dt * 8));
+    vel = lerp(vel, mag > 0.08 ? (correndo ? CORRER : ANDAR) * (ativo.vento ? 1.5 + nivelHab('vento') * 0.1 : 1) * ((CLASSES && CLASSES[AR.classe]) ? CLASSES[AR.classe].vel : 1) * (BM && BM.vel ? BM.vel : 1) * (voando ? 1.9 : 1) * mag : 0, clamp(dt * 8));
     if (ml > 0.001 && mag > 0.08) { mx /= ml; mz /= ml; const want = Math.atan2(mx, mz); let d = want - facing; while (d > Math.PI) d -= Math.PI * 2; while (d < -Math.PI) d += Math.PI * 2; facing += d * clamp(dt * 12); }
     const p = heroi.position; const dash = dashT > 0 ? dashVel : 0; dashT -= dt; p.x += Math.sin(facing) * vel * dt + Math.sin(dashAng) * dash * dt; p.z += Math.cos(facing) * vel * dt + Math.cos(dashAng) * dash * dt;
-    if (zona === 'valdren') { colide(p, COLV); const rx = p.x - VX, r = Math.hypot(rx, p.z); if (r > 44) { p.x = VX + rx * 44 / r; p.z *= 44 / r; } } else if (zona === 'masmorra') { mmLimita(p); } else if (dentro) { p.x = clamp(p.x, IX - 4.6, IX + 4.6); p.z = clamp(p.z, -4.6, 4.6); colide(p, COLC); } else { colide(p, COL); const r = Math.hypot(p.x, p.z + 6); if (r > 95) { p.x *= 95 / r; p.z = (p.z + 6) * 95 / r - 6; } }
+    if (zona === 'valdren') { colide(p, COLV); const rx = p.x - VX, r = Math.hypot(rx, p.z); if (r > 44) { p.x = VX + rx * 44 / r; p.z *= 44 / r; } } else if (zona === 'masmorra') { mmLimita(p); } else if (dentro) { p.x = clamp(p.x, IX - 4.6, IX + 4.6); p.z = clamp(p.z, -4.6, 4.6); colide(p, COLC); } else { if (p.y < 3.6) colide(p, COL); const r = Math.hypot(p.x, p.z + 6); if (r > 95) { p.x *= 95 / r; p.z = (p.z + 6) * 95 / r - 6; } }
     if (input.jump && noChao && !conversa) { vy = saltoPronto ? PULO * 1.75 : PULO; som('pulo', 0.55); if (saltoPronto) { burstT = 0; burstP = [p.x, p.y, p.z]; } saltoPronto = false; noChao = false; } input.jump = false;
-    if (!noChao) { vy -= GRAV * dt; if (ativo.planar && vy < -1.6) vy = -1.6; p.y += vy * dt; if (p.y <= 0) { p.y = 0; if (vy < -6) som('aterrissa', 0.45); vy = 0; noChao = true; if (esmaga) { esmaga = false; aterrissa(); } } }
-    heroi.rotation.y = facing;
-    if (!noChao) pose(heroi, gT, { mood: 'smile', arms: { shL: [-2.6, 0, -0.3], shR: [-2.6, 0, 0.3], elL: [-0.3, 0, 0], elR: [-0.3, 0, 0] }, legs: { thL: -0.9, knL: 1.4, thR: -0.3, knR: 0.6 } });
+    if (voando && !podeVoar()) voa(false);
+    if (voando) { noChao = false; vy = 0; voSobe -= dt; const up = voSobe > 0 ? 1.4 : (input.sobe || keys.Space ? 1 : 0) - (input.desce || keys.KeyQ ? 1 : 0); p.y = clamp(p.y + up * 6.5 * dt, 0, zona === 'masmorra' ? 5 : 45); if (p.y <= 0 && up < 0) { voa(false); noChao = true; } }
+    else if (!noChao) { vy -= GRAV * dt; if (ativo.planar && vy < -1.6) vy = -1.6; p.y += vy * dt; if (p.y <= 0) { p.y = 0; if (vy < -6) som('aterrissa', 0.45); vy = 0; noChao = true; if (esmaga) { esmaga = false; aterrissa(); } } }
+    heroi.rotation.y = facing; heroi.rotation.order = 'YXZ';
+    { const alvoP = voando && voSobe <= 0 && vel > 0.8 ? 1.3 : voando ? 0.12 : 0; voPitch += (alvoP - voPitch) * clamp(dt * 5); heroi.rotation.x = voPitch; }
+    if (voando) { const b = Math.sin(gT * 6) * 0.08; if (voPitch > 0.6) pose(heroi, gT, { mood: 'smile', arms: { shL: [-2.95, 0, -0.12 + b], shR: [-2.95, 0, 0.12 - b], elL: [-0.05, 0, 0], elR: [-0.05, 0, 0] }, legs: { thL: 0.08 + b, knL: 0.12, thR: -0.04 - b, knR: 0.18 } });
+      else pose(heroi, gT, { mood: 'smile', arms: { shL: [-0.35, 0, -0.55 + b], shR: [-0.35, 0, 0.55 - b], elL: [-0.5, 0, 0], elR: [-0.5, 0, 0] }, legs: { thL: -0.25 + b * 2, knL: 0.5, thR: 0.1 - b * 2, knR: 0.35 } }); }
+    else if (!noChao) pose(heroi, gT, { mood: 'smile', arms: { shL: [-2.6, 0, -0.3], shR: [-2.6, 0, 0.3], elL: [-0.3, 0, 0], elR: [-0.3, 0, 0] }, legs: { thL: -0.9, knL: 1.4, thR: -0.3, knR: 0.6 } });
     else if (vel > 0.4) pose(heroi, gT, vel > 4.2 ? { run: true, mood: 'smile' } : { walk: true, mood: 'neutral' });
     else pose(heroi, gT, { mood: conversa ? 'smile' : 'neutral' });
     armaPose(); armaduraFrame(); equipFrame(dt);
@@ -2576,7 +2593,7 @@ ${_}`}class A extends Error{constructor({message:e,code:t,cause:r,name:s}){var n
     elyAura.visible = !dentro && zona === 'vila'; heroi.visible = true; const alV = valdrenFrame(dt, p); if (zona === 'valdren') alvo = alV; $('tit').textContent = (zona === 'valdren' ? 'VALDREN' : zona === 'masmorra' ? 'MASMORRA' : 'BRUMAFRIA') + ' · ' + (modo === 'noite' ? '🌙 ' : '☀️ ') + String(Math.floor(hora)).padStart(2, '0') + ':' + String(Math.floor((hora % 1) * 6) * 10).padStart(2, '0');
     if (dentro) { OBJS.forEach(o => { const d = Math.hypot(p.x - o.x, p.z - o.z); if (d < 1.9 && d < melhor) { melhor = d; alvo = o; } }); if (Math.hypot(p.x - (IX - 1), p.z - 4.4) < 1.3) alvo = { tipo: 'sair' }; }
     else if (zona === 'vila') { const dp = casaFamilia.localToWorld(new T3.Vector3(casaFamilia.userData.door[0], 0, casaFamilia.userData.door[1] - 0.6)); if (Math.hypot(p.x - dp.x, p.z - dp.z) < 1.3) alvo = { tipo: 'entrar' }; }
-    { const alM = mmFrame(dt, p); if (alM) alvo = alM; if (zona === 'vila' && !dentro && Math.hypot(p.x - (MM_ENT.x + 1.5), p.z - MM_ENT.z) < 3.2) alvo = { rot: 'ENTRAR', acao: entraMasmorra }; setaFrame(p); }
+    { const alM = mmFrame(dt, p); if (alM) alvo = alM; if (zona === 'vila' && !dentro && Math.hypot(p.x - (MM_ENT.x + 1.5), p.z - MM_ENT.z) < 3.2) alvo = { rot: 'ENTRAR', acao: entraMasmorra }; setaFrame(p); $('voar').hidden = !voando && !(ASAS.visible && !dentro); }
     if (!conversa) { const alC = combateAlvo(p); if (alC) alvo = alC; }
     const btn = $('acao'); btn.hidden = !alvo || !!conversa || !!cenaQ; if (alvo) btn.textContent = alvo.rot || (alvo.tipo === 'entrar' ? 'ENTRAR' : alvo.tipo === 'sair' ? 'SAIR' : alvo.falas && !alvo.c ? 'VER' : 'FALAR');
     // ambiente

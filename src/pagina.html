@@ -32,6 +32,7 @@
   .btn{position:fixed;border-radius:24px;display:flex;align-items:center;justify-content:center;font-family:var(--fonte-titulo);font-weight:400;letter-spacing:.5px;color:var(--tinta);background:var(--branco);border:var(--borda);box-shadow:0 5px 0 var(--tinta);transition:transform .08s,box-shadow .08s}
   .btn:active{transform:translateY(3px);box-shadow:0 2px 0 var(--tinta)}
   #pular{right:calc(28px + env(safe-area-inset-right,0px));bottom:calc(70px + env(safe-area-inset-bottom,0px));width:96px;height:96px;font-size:19px;background:var(--grama);border-radius:28px}
+  #voar{right:calc(222px + env(safe-area-inset-right,0px));bottom:calc(214px + env(safe-area-inset-bottom,0px));width:80px;height:44px;font-size:13px;font-weight:900;background:#3a2a50;color:#fff;border-radius:16px}
   #correr{right:calc(140px + env(safe-area-inset-right,0px));bottom:calc(40px + env(safe-area-inset-bottom,0px));width:72px;height:72px;font-size:14px;background:var(--ceu);border-radius:22px}
   #correr.on{background:var(--sol)}
   #perfil-btn{position:fixed;left:calc(12px + env(safe-area-inset-left,0px));top:calc(10px + env(safe-area-inset-top,0px));display:flex;align-items:center;gap:8px;padding:4px 14px 4px 4px;border-radius:999px;background:var(--branco);border:var(--borda);box-shadow:var(--sombra);color:var(--tinta);cursor:pointer}
@@ -315,6 +316,7 @@
 <div id="mm-hud" hidden></div>
 <div id="fala" hidden><div id="fala-nome"></div><div id="fala-txt"></div><div id="fala-esc" hidden></div><div id="fala-mais"></div></div>
 <div id="joy"><div id="knob"></div></div>
+<button class="btn" id="voar" hidden>🦇 VOAR</button>
 <button class="btn" id="correr">CORRER</button>
 <button class="btn" id="pular">PULAR</button>
 <button class="btn" id="acao" hidden>FALAR</button>
