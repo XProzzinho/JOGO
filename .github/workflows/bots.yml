@@ -1,0 +1,24 @@
+name: Teste com jogadores (bots)
+on:
+  workflow_dispatch:
+    inputs:
+      minutos:
+        description: "Quantos minutos os bots ficam online"
+        default: "30"
+      qtd:
+        description: "Quantos jogadores de teste (até 40)"
+        default: "20"
+jobs:
+  bots:
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: cd bots && npm init -y >/dev/null && npm i @supabase/supabase-js@2 --silent
+      - run: cd bots && node bots.js
+        env:
+          MINUTOS: ${{ inputs.minutos }}
+          QTD: ${{ inputs.qtd }}

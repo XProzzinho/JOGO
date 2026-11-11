@@ -1971,6 +1971,37 @@
   const arthurNPC={c:arthur,nome:'Arthur · Gerente de guilda',x:-3.5,z:5.7,ry:0,ry0:0,acao:()=>{tocaVoz('art01');abrirGuilda();}};arthur.position.set(arthurNPC.x,0,arthurNPC.z);NPCS.push(arthurNPC);COL.push({t:'c',x:arthurNPC.x,z:arthurNPC.z,r:.45,npc:arthurNPC});
   function guildPosition(el,obj,height){const pos=obj.position.clone();pos.y+=height;pos.project(cam);const visible=pos.z<1&&pos.z>-1&&Math.abs(pos.x)<1&&Math.abs(pos.y)<1&&obj.visible;el.hidden=!visible;if(visible){el.style.left=((pos.x+1)*innerWidth/2)+'px';el.style.top=((1-pos.y)*innerHeight/2)+'px';}}
   function guildFrame(){guildPosition(guildLabel,heroi,2.05);guildLabel.querySelector('b').textContent=AR.visual?.nome||'Leonardo';guildPosition(guildArthurLabel,arthur,2.25);}
+  // ---------- ONLINE: ver outros jogadores na mesma zona (Supabase Realtime) ----------
+  const MP = { id: (() => { try { let i = sessionStorage.getItem('aetherion-mp-id'); if (!i) { i = Math.random().toString(36).slice(2, 10); sessionStorage.setItem('aetherion-mp-id', i); } return i; } catch (e) { return Math.random().toString(36).slice(2, 10); } })(), ch: null, ok: false, outros: {}, envT: 0, ult: '' };
+  const mpTags = document.createElement('div'); mpTags.id = 'mp-tags'; document.body.appendChild(mpTags);
+  const mpCont = document.createElement('div'); mpCont.id = 'mp-on'; mpCont.hidden = true; document.body.appendChild(mpCont);
+  const MP_ROUPAS = [['#2a4a8a', '#1e3466'], ['#8a2a2a', '#661e1e'], ['#2a6a3a', '#1e4e2a'], ['#6a3a8a', '#4e2a66'], ['#8a6a2a', '#664e1e'], ['#2a6a7a', '#1e4e5a'], ['#3a3a44', '#26262e'], ['#a8a8b8', '#7a7a8a']];
+  const MP_PELE = ['#f2b48e', '#e0a882', '#c88a5e', '#a86a42', '#f6d6c0', '#8a5a3a']; const MP_CAB = ['#1c1a28', '#3a2214', '#6a3a1a', '#c8402a', '#e8d070', '#f0f0fa', '#2a2a5a'];
+  function mpHash(s) { let h = 0; for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0; return Math.abs(h); }
+  function mpCria(id, d) { const h = mpHash(id), R = MP_ROUPAS[h % MP_ROUPAS.length]; const c = makeChar({ skin: MP_PELE[(h >> 3) % MP_PELE.length], hairStyle: ['short', 'long', 'short', 'bald'][(h >> 5) % 4], hairC: MP_CAB[(h >> 7) % MP_CAB.length], top: R[0], top2: R[1], pants: '#3a3040', shoe: '#2a2020', iris: '#3a2a1a', s: 0.82, ph: (h % 100) / 10 });
+    c.traverse(o => { if (o.isMesh) o.castShadow = true; }); world.add(c); const tag = document.createElement('div'); tag.className = 'mp-tag'; mpTags.appendChild(tag);
+    if (d.w && d.w !== 'punho') { const sw = grp(c.userData.P.elR, 0, -0.33, 0.05); tb(sw, 0, 0, 0.5, 0.06, 0.02, 0.75, d.w === 'dragao' ? '#ffb040' : d.w === 'glacial' ? '#9ae6ff' : '#dfe4ee'); tb(sw, 0, 0, 0.1, 0.22, 0.04, 0.04, '#e2c27a'); }
+    return { c, tag, ph: (h % 100) / 10, x: d.x, z: d.zz, y: d.y || 0, r: d.r || 0, tx: d.x, tz: d.zz, ty: d.y || 0, tr: d.r || 0, a: d.a, t: performance.now(), d }; }
+  function mpRecebe(d) { if (!d || d.id === MP.id) return; let o = MP.outros[d.id]; if (!o) o = MP.outros[d.id] = mpCria(d.id, d);
+    o.tx = d.x; o.tz = d.zz; o.ty = d.y || 0; o.tr = d.r || 0; o.a = d.a; o.d = d; o.t = performance.now();
+    o.tag.innerHTML = `<b>${String(d.n || 'Jogador').replace(/</g, '').slice(0, 20)}${d.lv ? ` <i>Nv ${d.lv | 0}</i>` : ''}</b>${d.g ? `<small>${String(d.ge || '🛡️').slice(0, 4)} ${String(d.g).replace(/</g, '').slice(0, 24)}</small>` : ''}`; }
+  function mpLiga() { if (MP.ch || typeof guildClient === 'undefined') return; try { MP.ch = guildClient.channel('aetherion-mundo', { config: { broadcast: { self: false, ack: false } } });
+      MP.ch.on('broadcast', { event: 'p' }, m => mpRecebe(m.payload)).on('broadcast', { event: 'sai' }, m => { const o = m.payload && MP.outros[m.payload.id]; if (o) o.t = 0; })
+        .subscribe(st => { MP.ok = st === 'SUBSCRIBED'; }); } catch (e) { MP.ch = null; } }
+  window.addEventListener('pagehide', () => { try { MP.ch && MP.ch.send({ type: 'broadcast', event: 'sai', payload: { id: MP.id } }); } catch (e) {} });
+  function mpEstado(p) { const G = typeof guildState !== 'undefined' && guildState && guildState.guild; return { id: MP.id, n: (AR.visual && AR.visual.nome) || 'Leonardo', lv: AR.nv, g: G ? G.name : '', ge: G && typeof emblemIcon === 'function' ? emblemIcon(G.emblem) : '', z: zona, dn: dentro ? 1 : 0, x: +p.x.toFixed(2), y: +p.y.toFixed(2), zz: +p.z.toFixed(2), r: +facing.toFixed(2), a: !noChao ? 'pulo' : atkT < 0.3 ? 'atk' : vel > 4.2 ? 'corre' : vel > 0.4 ? 'anda' : 'para', w: AR.arma }; }
+  function mpFrame(dt, p) { mpLiga(); MP.envT -= dt;
+    if (MP.ok && MP.envT <= 0) { const e = mpEstado(p); const s = JSON.stringify(e); if (s !== MP.ult || MP.envT < -2) { MP.ult = s; MP.envT = 0.15; try { MP.ch.send({ type: 'broadcast', event: 'p', payload: e }); } catch (er) {} } else MP.envT = 0.15; }
+    const agora = performance.now(); let n = 0;
+    Object.keys(MP.outros).forEach(id => { const o = MP.outros[id]; if (agora - o.t > 8000) { world.remove(o.c); o.tag.remove(); delete MP.outros[id]; return; }
+      const mesma = o.d.z === zona && !!o.d.dn === !!dentro && !dentro; o.c.visible = mesma; if (!mesma) { o.tag.hidden = true; return; } n++;
+      const k = clamp(dt * 8); o.x += (o.tx - o.x) * k; o.z += (o.tz - o.z) * k; o.y += (o.ty - o.y) * k; let dr = o.tr - o.r; while (dr > Math.PI) dr -= Math.PI * 2; while (dr < -Math.PI) dr += Math.PI * 2; o.r += dr * clamp(dt * 10);
+      o.c.position.set(o.x, o.y, o.z); o.c.rotation.y = o.r;
+      const P = o.c.userData.P; if (o.a === 'pulo') pose(o.c, gT, { mood: 'smile', arms: { shL: [-2.6, 0, -0.3], shR: [-2.6, 0, 0.3], elL: [-0.3, 0, 0], elR: [-0.3, 0, 0] }, legs: { thL: -0.9, knL: 1.4, thR: -0.3, knR: 0.6 } });
+      else if (o.a === 'corre' || o.a === 'anda') pose(o.c, gT + o.ph, o.a === 'corre' ? { run: true, mood: 'smile' } : { walk: true, mood: 'neutral' }); else pose(o.c, gT, { mood: 'neutral' });
+      if (o.a === 'atk') { P.shR.rotation.x = -1.6 + Math.sin(gT * 18) * 0.9; }
+      const dd = Math.hypot(o.x - p.x, o.z - p.z); if (dd > 22) { o.tag.hidden = true; return; } guildPosition(o.tag, o.c, 1.75); o.tag.style.transform = 'translate(-50%,-100%) scale(' + clamp(1.15 - dd / 22, 0.5, 1).toFixed(2) + ')'; o.tag.style.zIndex = String(100 - Math.round(dd)); });
+    mpCont.hidden = !MP.ok; mpCont.textContent = '🌐 Online: ' + (n + 1); }
   guildClient.auth.onAuthStateChange((event,session)=>{guildUser=session?.user||null;if(event==='PASSWORD_RECOVERY'){guildRecovery=true;guildPanel.hidden=false;}if(event==='SIGNED_OUT')guildState=null;setTimeout(async()=>{try{await guildLoad();}catch(e){guildMessage(e.message,true);}if(guildChannel){guildClient.removeChannel(guildChannel);guildChannel=null;}if(guildUser){guildChannel=guildClient.channel('guild-'+guildUser.id+'-'+Math.random().toString(36).slice(2)).on('postgres_changes',{event:'*',schema:'public',table:'guild_members'},()=>scheduleGuildRefresh()).on('postgres_changes',{event:'*',schema:'public',table:'guild_invites'},()=>scheduleGuildRefresh()).on('postgres_changes',{event:'*',schema:'public',table:'guilds'},()=>scheduleGuildRefresh()).subscribe();}},0);});
   function scheduleGuildRefresh(){clearTimeout(guildRefreshTimer);guildRefreshTimer=setTimeout(()=>guildLoad().catch(e=>guildMessage(e.message,true)),150);}
   document.addEventListener('visibilitychange',()=>{if(!document.hidden&&guildUser)scheduleGuildRefresh();});
@@ -2033,7 +2064,7 @@
     if (!a || conversa || cenaQ) { SETA.visible = false; return null; } const dx = a.x - p.x, dz = a.z - p.z, d = Math.hypot(dx, dz); if (d < 3.5) { SETA.visible = false; return null; }
     const ang = Math.atan2(dx, dz); SETA.visible = true; SETA.position.set(p.x + Math.sin(ang) * 1.5, p.y, p.z + Math.cos(ang) * 1.5); SETA.rotation.y = ang + Math.PI; SETA.children[0].position.y = 0.06 + Math.abs(Math.sin(gT * 4)) * 0.08; return d; }
   atualizaMM();
-  window.__dbg = { entraMasmorra, saiMasmorra, MM, mmFaseAtual, mmMorte, setaFrame, equipaArma, abrirGuilda, arthurNPC, vestePeca, atualizaPecas, PECAS, BLOCOS, modoBatalha, bmLiga, bmDesliga, BMS, ORB, get BM() { return BM; }, get hora() { return hora; }, set hora(v) { hora = v; }, usarHab2: id => classePoder2(id), BUFF, abrirCriar, aplicaClasse, CLASSES, get desp() { return desp; }, set desp(v) { desp = v; }, usarHab: id => classePoder(id), renderer, scene, world, ganhaXp, vesteFantasia, abrirPerfil, fazRetrato, irValdren, Q, heroi, ativo, AR, FERAS, golem, atacar, get vida() { return vida; }, set vida(v) { vida = v; }, abrirLoja, usarPoder: id => usarPoder(PW[id]), acao: () => acao(), get alvo() { return alvo; } };
+  window.__dbg = { mpRecebe, entraMasmorra, saiMasmorra, MM, mmFaseAtual, mmMorte, setaFrame, equipaArma, abrirGuilda, arthurNPC, vestePeca, atualizaPecas, PECAS, BLOCOS, modoBatalha, bmLiga, bmDesliga, BMS, ORB, get BM() { return BM; }, get hora() { return hora; }, set hora(v) { hora = v; }, usarHab2: id => classePoder2(id), BUFF, abrirCriar, aplicaClasse, CLASSES, get desp() { return desp; }, set desp(v) { desp = v; }, usarHab: id => classePoder(id), renderer, scene, world, ganhaXp, vesteFantasia, abrirPerfil, fazRetrato, irValdren, Q, heroi, ativo, AR, FERAS, golem, atacar, get vida() { return vida; }, set vida(v) { vida = v; }, abrirLoja, usarPoder: id => usarPoder(PW[id]), acao: () => acao(), get alvo() { return alvo; } };
   // ---------- laço do jogo ----------
   let vy = 0, noChao = true, facing = 0, vel = 0, gT = 0, last = performance.now();
   const ANDAR = 3.0, CORRER = 6.5, GRAV = 22, PULO = 7.6; const tmp = new T3.Vector3();
@@ -2087,7 +2118,7 @@
     if (tremor > 0) { tremor -= dt; cam.position.x += (Math.random() - .5) * tremor; cam.position.y += (Math.random() - .5) * tremor; }
     cam.lookAt(p.x, p.y + 0.95, p.z);
     sun.position.set(p.x + 12, 30, p.z + 10); sun.target.position.set(p.x, 0, p.z); sun.target.updateMatrixWorld();
-    guildFrame(); guardaFrame(); ambienteFrame(dt, p); renderer.render(scene, cam); requestAnimationFrame(loop);
+    guildFrame(); guardaFrame(); mpFrame(dt, p); ambienteFrame(dt, p); renderer.render(scene, cam); requestAnimationFrame(loop);
   }
   cam.position.set(0, 2.6, 9.6); requestAnimationFrame(loop);
   mostrarLugar('Vila de Brumafria');
