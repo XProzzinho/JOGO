@@ -84,6 +84,30 @@
   .sw{width:28px;height:28px;border-radius:9px;border:var(--borda);padding:0;box-shadow:0 2px 0 var(--tinta)}.sw.on{box-shadow:0 0 0 3px var(--sol),0 2px 0 var(--tinta);transform:scale(1.12)}
   .sw.tx{width:auto;height:28px;padding:0 10px;border-radius:999px;background:var(--branco);color:var(--tinta);font-family:inherit;font-size:11px;font-weight:900}.sw.tx.on{background:var(--sol);transform:none}
   #pf-nome small{display:block;text-align:center;font-family:var(--fonte);font-size:11px;font-weight:800;color:var(--tinta2)}
+  #bolsa-btn{right:calc(16px + env(safe-area-inset-right,0px));top:calc(188px + env(safe-area-inset-top,0px));width:50px;height:50px;font-size:24px;border-radius:16px;background:#3a3440;color:#fff}
+  #invp{position:fixed;top:0;bottom:0;right:calc(76px + env(safe-area-inset-right,0px));display:flex;align-items:center;z-index:27;pointer-events:none}
+  #invp .ip-box{pointer-events:auto;position:relative;width:272px;max-height:96vh;box-sizing:border-box;display:flex;flex-direction:column;gap:4px;padding:5px 7px 6px;background:linear-gradient(#17181c,#0b0c0e);border:2px solid #3c3a36;outline:1px solid #000;border-radius:6px;box-shadow:0 10px 30px rgba(0,0,0,.6),inset 0 0 0 1px #24252a;color:#d8d0c0;font:700 11px system-ui,sans-serif}
+  .ip-hd{display:flex;align-items:center;justify-content:center;position:relative;height:18px;letter-spacing:3px;font-size:11px;color:#b8b0a0;text-shadow:0 1px 0 #000}
+  #ip-x{position:absolute;right:0;top:-2px;width:22px;height:20px;border:1px solid #4a4640;border-radius:4px;background:#26221e;color:#c8b890;font-size:11px;padding:0}
+  .ip-tabs{display:flex;gap:3px;border-bottom:1px solid #34322e}
+  .ip-tabs button,.ip-bt button{font:700 11px system-ui,sans-serif;color:#9a9282;background:#141518;border:1px solid #34322e;border-bottom:none;border-radius:4px 4px 0 0;padding:2px 10px}
+  .ip-tabs button.on,.ip-bt button.on{color:#f0e6cc;background:linear-gradient(#3a3832,#24231f)}
+  #ip-eq{display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(4,30px);gap:3px;grid-template-areas:"elmo peito costas" "arma peito ombro" "arma peito greva" "luvas calca pe"}
+  .ip-s{position:relative;display:flex;align-items:center;justify-content:center;border:1px solid #2c2b28;border-radius:3px;background:radial-gradient(#1c1d22,#0d0e10);box-shadow:inset 0 0 6px #000;padding:0;color:#fff}
+  .ip-s span{font-size:22px;opacity:.16;filter:grayscale(1)}.ip-s.big span{font-size:34px}
+  .ip-s small{position:absolute;left:3px;top:1px;font-size:8px;color:#5a564e;letter-spacing:.5px}
+  .ip-s.on{border-color:#7a6430;box-shadow:inset 0 0 10px rgba(255,200,90,.25),0 0 4px rgba(255,190,80,.25)}.ip-s.on span{opacity:1;filter:drop-shadow(0 0 4px rgba(255,210,120,.6))}.ip-s.on small{color:#c8a860}
+  .ip-bt{display:flex;gap:2px;border-bottom:1px solid #34322e;margin-top:2px}.ip-bt button{padding:2px 9px}#ip-ord{margin-left:auto;border-radius:4px!important;border-bottom:1px solid #34322e!important;padding:1px 6px!important}
+  #ip-grade{display:grid;grid-template-columns:repeat(8,1fr);gap:1px;background:#050506;border:1px solid #26252a;padding:1px}
+  .ip-c{position:relative;height:27px;display:flex;align-items:center;justify-content:center;background:#141519;border:1px solid #1e1f24;padding:0;font-size:17px;color:#fff}
+  .ip-c b{position:absolute;right:1px;bottom:0;font-size:9px;color:#fff;text-shadow:0 0 2px #000,0 0 2px #000}.ip-c.eq{box-shadow:inset 0 0 0 1px #7a6430}.ip-c.sel{background:#2a2618;box-shadow:inset 0 0 0 1px #e8c060}
+  .ip-c i,.ip-s i{position:absolute;left:3px;bottom:3px;width:5px;height:5px;border-radius:50%;box-shadow:0 0 4px currentColor}
+  #ip-info{position:absolute;left:7px;right:7px;bottom:30px;z-index:1;padding:5px 7px;border:1px solid #7a6430;border-radius:3px;background:rgba(10,10,12,.96);box-shadow:0 -4px 12px rgba(0,0,0,.6);color:#a89e88;font-size:10px;font-weight:700;line-height:1.3}#ip-info b{color:#f0d890}#ip-info button{float:right;margin-left:6px;font:800 10px system-ui;color:#1a1408;background:linear-gradient(#f0d070,#b8902a);border:1px solid #000;border-radius:3px;padding:2px 8px}
+  .ip-ouro{display:flex;justify-content:flex-end;align-items:center;gap:6px;padding:3px 6px;border:1px solid #26252a;background:#0e0f12}.ip-ouro b{min-width:110px;text-align:right;color:#e8e0cc;font-size:12px;letter-spacing:.5px}
+  #ip-esc{position:absolute;inset:26px 6px 6px;z-index:2;padding:6px;background:#0f1013;border:1px solid #5a4a28;border-radius:4px;overflow:auto}
+  #ip-esc .hd{display:flex;justify-content:space-between;align-items:center;color:#f0d890;margin-bottom:5px}#ip-esc .hd button{font:700 10px system-ui;color:#c8b890;background:#26221e;border:1px solid #4a4640;border-radius:3px;padding:2px 8px}
+  #ip-esc .op{display:flex;align-items:center;gap:7px;width:100%;margin-bottom:4px;padding:5px;text-align:left;background:#17181c;border:1px solid #2c2b28;border-radius:3px;color:#d8d0c0;font:700 11px system-ui}#ip-esc .op span{font-size:20px}#ip-esc .op small{display:block;color:#8a8270;font-size:9px}#ip-esc .op.on{border-color:#7a6430;background:#221e14}
+  .ip-pet{grid-column:1/-1;grid-row:1/-1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:#7a7262;border:1px dashed #34322e;border-radius:4px}.ip-pet span{font-size:30px;opacity:.4}
   #perfil{position:fixed;inset:0;background:rgba(43,35,64,.55);display:flex;align-items:center;justify-content:center;z-index:27}
   #perfil .box{width:min(860px,96vw);height:min(400px,94vh);box-sizing:border-box;display:flex;gap:12px;padding:12px;border-radius:22px;background:var(--papel);border:4px solid var(--tinta);box-shadow:var(--sombra-g);color:var(--tinta)}
   #pf-esq{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;gap:6px}
@@ -155,6 +179,7 @@
   #loja .mo{padding:4px 12px;border-radius:999px;background:var(--tinta);color:var(--sol);font-weight:900;font-size:13px}
   #loja-fecha,#arv-fecha,#mapa-fecha{padding:6px 16px;border-radius:14px;border:var(--borda);background:var(--coral);color:var(--tinta);font-family:var(--fonte-titulo);font-size:14px;box-shadow:0 3px 0 var(--tinta)}
   #loja-lista{display:grid;gap:8px}
+  #loja .loja-sec{margin:8px 2px 2px;font-family:var(--fonte-titulo);font-size:14px;color:var(--tinta)}
   #loja .item{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:14px;background:var(--branco);border:var(--borda);box-shadow:0 3px 0 var(--tinta)}
   #loja .item .ic{font-size:30px}#loja .item .tx{flex:1;min-width:0;display:flex;flex-direction:column}#loja .item b{font-size:14px;font-weight:900}#loja .item small{font-size:11px;font-weight:700;color:var(--tinta2)}
   .cb{padding:7px 12px;border-radius:12px;border:2px solid var(--tinta);background:var(--grama);color:var(--tinta);font-family:inherit;font-weight:900;font-size:12px;white-space:nowrap;box-shadow:0 2px 0 var(--tinta)}.cb:disabled{background:var(--apagado);color:var(--tinta3)}
@@ -248,6 +273,16 @@
 <form id="lg-form" autocomplete="on"><label id="lg-nomewrap" hidden>Nome de jogador<input id="lg-nome" maxlength="20" autocomplete="nickname"></label><label>E-mail<input id="lg-email" type="email" autocomplete="email" inputmode="email"></label><label>Senha<input id="lg-senha" type="password" autocomplete="current-password"></label>
 <div class="lg-bts"><button id="lg-entrar" class="pri">Entrar</button><button id="lg-criar">Criar conta</button></div><button id="lg-esqueci" class="lnk">Esqueci a senha</button></form>
 <div id="lg-msg"></div><button id="lg-convidado" class="lnk">Jogar sem conta ›</button></div></div>
+<div id="invp" hidden><div class="ip-box">
+<div class="ip-hd"><span>INVENTÁRIO</span><button id="ip-x">✕</button></div>
+<div class="ip-tabs"><button class="on" data-t="eq">Equipar</button><button data-t="pet">Pet</button></div>
+<div id="ip-eq"></div>
+<div class="ip-bt"><button class="on" data-b="0">I</button><button data-b="1">II</button><button data-b="2">III</button><button data-b="3">IV</button><button id="ip-ord" title="Organizar">⇅</button></div>
+<div id="ip-grade"></div>
+<div id="ip-info" hidden></div>
+<div class="ip-ouro"><span>🪙</span><b id="ip-moedas">0</b></div>
+<div id="ip-esc" hidden></div>
+</div></div>
 <div id="perfil" hidden><div class="box"><div id="pf-esq"><div id="pf-slots"></div><div id="pf-nome">Leonardo</div><div class="pfx"><div id="pf-xp"></div></div><div id="pf-xpt"></div><div id="conta-selo"></div><div id="pf-conta"></div></div><div id="pf-dir"><div class="hd"><button class="aba on" data-a="status">📊 Status</button><button class="aba" data-a="inv">🎒 Inventário</button><button id="pf-fecha">Fechar</button></div><div id="pf-cont"></div></div><div id="pf-escolha" hidden></div></div></div>
 <div id="dica">Arraste do lado <b>esquerdo</b> pra andar · do <b>direito</b> pra girar a câmera · chegue perto das pessoas pra conversar</div>
 <div id="lugar"></div>
@@ -261,6 +296,7 @@
 <button class="btn" id="ciclo">☾</button>
 <canvas id="mini" width="232" height="232"></canvas>
 <button class="btn" id="casa" title="Voltar pra casa">🏠</button>
+<button class="btn" id="bolsa-btn" title="Inventário">🎒</button>
 <button class="btn" id="arv-btn" title="Árvore de habilidades">🌳<span id="arv-pts" hidden>0</span></button>
 <div id="arvore" hidden><div class="box"><div class="hd"><h3>🌳 Árvore de Habilidades</h3><span id="arv-ptsbox"><span id="arv-pts-txt">0 pontos</span></span><button id="arv-fecha">Fechar</button></div><div id="arv-ramos"></div><div id="arv-det"></div></div></div>
 <div id="flash"></div>
