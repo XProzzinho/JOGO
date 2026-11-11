@@ -288,6 +288,20 @@
 #guild-label small{display:block;color:var(--sol);font-size:12px;margin-bottom:5px}.guild-npc-label{color:var(--sol);font-size:11px;max-width:160px}#guild-hud{font-size:11px;font-weight:900;color:var(--azul);max-width:160px;overflow-wrap:anywhere}
   @media(max-width:480px){.guild-box{padding:12px}.guild-box h2{font-size:18px}.guild-member .cb{font-size:11px}#guild-hud{max-width:116px}}
 .ico{width:1.3em;height:1.3em;vertical-align:-.28em;object-fit:contain;pointer-events:none;filter:drop-shadow(0 1px 0 rgba(0,0,0,.25))}.ico.big{width:1.6em;height:1.6em}.btn .ico.big{width:28px;height:28px}
+#livp{position:fixed;inset:0;z-index:60;display:flex;align-items:center;justify-content:center;background:rgba(6,4,16,.6)}#livp[hidden]{display:none}
+#livp .box{width:min(680px,96vw);max-height:94vh;box-sizing:border-box;display:flex;flex-direction:column;padding:10px 12px;border-radius:14px;background:linear-gradient(#1c1830,#0e0c1a);border:2px solid #c8a85a;box-shadow:0 0 0 2px #2b2340,0 12px 40px rgba(0,0,0,.6);color:#e8e2f4}
+#livp .hd{display:flex;align-items:center;gap:10px}#livp h3{flex:1;margin:0;font-family:var(--fonte-titulo);font-weight:400;font-size:19px;color:#ffe08a}#livp .mo{font-weight:900;background:#0008;border:1px solid #c8a85a66;border-radius:10px;padding:3px 9px}
+#liv-fecha{background:#ff6a5a;color:#fff;border:2px solid #2b2340;border-radius:10px;font-weight:900;padding:6px 12px}
+#liv-cls{font-size:12px;font-weight:800;margin:6px 0;display:flex;flex-wrap:wrap;gap:4px 8px;align-items:center}#liv-cls b{color:#ffd23c}#liv-cls em{color:#ff8a7a;font-style:normal}#liv-cls span{margin-left:auto;color:#a8a0c0;font-size:10px}
+#liv-ranks{display:flex;gap:4px;overflow-x:auto;padding-bottom:4px;flex-shrink:0}#liv-ranks .lr{flex:0 0 auto;background:#2a2440;color:#cfc6e6;border:1px solid #4a4068;border-radius:8px;padding:4px 8px;font-weight:900;font-size:11px;display:flex;flex-direction:column;align-items:center}#liv-ranks .lr small{font-size:9px;color:#8a82a8}#liv-ranks .lr.on{background:#c8a85a;color:#1a1428;border-color:#ffe08a}#liv-ranks .lr.on small{color:#3a2c10}
+#liv-lista{overflow:auto;display:flex;flex-direction:column;gap:5px;padding-right:2px}
+#liv-lista .li{display:flex;gap:8px;align-items:center;background:#ffffff0a;border:1px solid #ffffff18;border-radius:10px;padding:5px 7px}#liv-lista .li.tem{background:#c8a85a1c;border-color:#c8a85a66}
+#liv-lista .ic .ico{width:44px;height:44px;vertical-align:middle}#liv-lista .tx{flex:1;min-width:0;display:flex;flex-direction:column}#liv-lista .tx b{font-size:13px}#liv-lista .tx small{font-size:10px;font-weight:700;color:#b0a8c8}
+#liv-lista .ac{display:flex;gap:3px;flex-wrap:wrap;justify-content:flex-end;max-width:150px}#liv-lista .cp{background:#4ab870;color:#fff;border:2px solid #1a3a24;border-radius:8px;font-weight:900;font-size:11px;padding:6px 8px}#liv-lista .cp:disabled{background:#4a4458;color:#9a92b0;border-color:#2a2438}
+#liv-lista .sl{width:26px;height:26px;border-radius:6px;background:#2a2440;color:#e8e2f4;border:1px solid #6a5a8a;font-weight:900;font-size:11px}#liv-lista .sl.aqui{background:#ffd23c;color:#1a1428}#liv-lista .ok{font-size:11px;font-weight:900;color:#7ad87a}#liv-lista .trava{font-size:11px;font-weight:900;color:#ff8a7a}
+.slot .nm{max-width:calc(var(--s) - 4px);overflow:hidden;text-overflow:ellipsis}
+.slot .cdv{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(10,8,24,.62);color:#fff;font-weight:900;font-size:calc(var(--s) * .34);border-radius:inherit;pointer-events:none}
+#pag-btn{width:calc(var(--s) * .6);height:var(--s);border-radius:10px;background:#2a2440;color:#ffe08a;border:2px solid #c8a85a;font-weight:900;font-size:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0}#pag-btn small{font-size:9px;color:#fff}
 </style>
 </head>
 <body>
@@ -338,6 +352,7 @@
 <div id="inv"><span>💰 <b id="inv-m">0</b></span><span id="inv-pw">🐺 <b id="inv-p">0</b></span><button id="inv-cw" title="Comer">🍖 <b id="inv-c">0</b></button><span id="inv-g" hidden>💎</span></div>
 <div id="chefe" hidden><b>❄️ GOLEM DE GELO</b><div class="br"><div id="chefe-fill"></div></div></div>
 <div id="hpbs"></div><div id="nums"></div>
+<div id="livp" hidden><div class="box"><div class="hd"><h3><img class="ico" src="icones/p_runa.svg" alt=""> Livros de Habilidade · Elysia</h3><span class="mo"><img class="ico" src="icones/item_moedas.svg" alt=""> <b id="liv-m">0</b></span><button id="liv-fecha">Fechar</button></div><div id="liv-cls"></div><div id="liv-ranks"></div><div id="liv-lista"></div></div></div>
 <div id="loja" hidden><div class="box"><div class="hd"><h3>⚒️ Forja de Brumafria</h3><span class="mo">💰 <b id="loja-m">0</b></span><button id="loja-fecha">Fechar</button></div><div id="loja-lista"></div></div></div>
 <div id="mapa" hidden><div class="box"><h3>🗺️ Mapa de Aetherion</h3><p>Toque num lugar pra viajar.</p><div id="mapa-lista"></div><button id="mapa-fecha">Fechar</button></div></div>
 <div id="saber"></div>

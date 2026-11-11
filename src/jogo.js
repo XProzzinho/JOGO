@@ -262,7 +262,7 @@
   function nivelHab(id) { return AR.nivHab[id] || 1; }
   function potHab(id) { return 1 + (nivelHab(id) - 1) * 0.2; }
   function custoDe(pw) { return Math.max(1, Math.round(pw.custo * (1 - (nivelHab(pw.id) - 1) * 0.06))); }
-  function usarPoder(pw) { if (conversa || cenaQ) return; potAtual = potHab(pw.id); try { usarPoder0(pw); } finally { potAtual = 1; } }
+  function usarPoder(pw) { if (conversa || cenaQ) return; if (pw && pw.cabal && !cbPode(pw)) return; potAtual = potHab(pw.id); try { usarPoder0(pw); } finally { potAtual = 1; } }
   function usarPoder0(pw) {
     if (pw.tipo === 'liga') { ativo[pw.id] = !ativo[pw.id]; if (ativo[pw.id]) som(SOM_PODER[pw.id] || 'magia', 0.7); else som('clique', 0.5, 1); if (ativo[pw.id] && pw.custo && mana < 5) { ativo[pw.id] = false; aviso('Sem mana! Espera ela voltar.', '#ff6a6a'); return; } marca(pw, 'on', !!ativo[pw.id]); if (ativo[pw.id]) aviso(pw.desc, pw.id === 'memoria' ? '#ffd23c' : '#5ab8ff'); else if (pw.id !== 'memoria') aviso(pw.nome + ' desligado.', '#8a9aba'); return; }
     if (mana < custoDe(pw)) { aviso('Sem mana! Precisa de ' + custoDe(pw) + '.', '#ff6a6a'); marca(pw, 'erro', true); setTimeout(() => marca(pw, 'erro', false), 400); return; }
@@ -278,7 +278,7 @@
     if (pw.id === 'dardo') { const d = glowSpr(world, p.x, p.y + 1.3, p.z, 0.9, '#bfe8ff', 1); dardos.push({ s: d, t: 0, dx: Math.sin(facing), dz: Math.cos(facing), dano: 25 * atkMult() }); }
     if (pw.id === 'clarao') { flash('rgba(255,255,255,.95)'); fx('luz', [p.x, p.y, p.z], 1.2); tremor = 0.25; aviso('CLARÃO! Quem estava olhando ficou vendo estrelas.', '#fff3a0'); }
     if (pw.id === 'impulso') { dashT = 0.28; dashVel = 22; dashAng = facing; fx('vento', [p.x, p.y, p.z], 0.8); }
-    combatePoder(pw.id); classePoder(pw.id); classePoder2(pw.id); }
+    combatePoder(pw.id); classePoder(pw.id); classePoder2(pw.id); cabalPoder(pw); }
   function flash(cor) { const f = $('flash'); f.style.transition = 'none'; f.style.background = cor; f.style.opacity = 1; requestAnimationFrame(() => requestAnimationFrame(() => { f.style.transition = 'opacity .9s'; f.style.opacity = 0; })); }
   // partículas de efeito (vapor, cura, fogo, fumaça, luz, vento)
   const FXC = { vapor: ['#ffffff', 0.14, 'sobe'], cura: ['#7aff9a', 0.07, 'espiral'], fogo: ['#ff8a2a', 0.16, 'explode'], fumo: ['#6a625a', 0.3, 'nuvem'], luz: ['#fff6c0', 0.12, 'explode'], vento: ['#dff2ff', 0.06, 'anel'], chama: ['#ff8a2a', 0.14, 'jato'], gelo: ['#bff2ff', 0.1, 'explode'] };
@@ -875,7 +875,7 @@
   function emoTex(t) { return EMO[t] || (EMO[t] = canvasTex(96, 96, (x, w, h) => { x.font = '72px system-ui,"Noto Color Emoji",sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(t, w / 2, h / 2 + 4); })); }
   function solta_loot(x, z, item, n) { const s = new T3.Sprite(new T3.SpriteMaterial({ map: emoTex(ITENS[item]), transparent: true, depthWrite: false, toneMapped: false })); s.scale.set(0.6, 0.6, 1); s.position.set(x, 0.5, z); world.add(s); LOOT.push({ s, item, n, t: 0, zona }); }
   // ---- dano no Leonardo ----
-  function danoHeroi(n, de) { if (desmaiado) return; const cl = CLA(); if (cl && Math.random() < (cl.esq || 0) + (BM && BM.esq ? BM.esq : 0)) { numero(heroi.position, 'Desviou!', '#9ae6ff', 2.1); return; } n *= 1 - defesa() / 100; if (muralhaT > 0) n *= 0.2; if (BUFF.espelho > 0) { n *= 0.5; if (de && !de.morto) dano(de, n, 'luz'); } if (BM && BM.espelho && de && !de.morto) dano(de, n * BM.espelho, 'luz'); enche(4); if (ativo.escudo) { n *= Math.max(0.1, 0.3 - (nivelHab('escudo') - 1) * 0.05); fx('luz', [heroi.position.x, heroi.position.y, heroi.position.z], 0.3); } n = Math.round(n); vida -= n; som('dano', 0.7, null, 0.3); semDanoT = 0; flash('rgba(255,40,40,.35)'); tremor = Math.max(tremor, 0.18);
+  function danoHeroi(n, de) { if (desmaiado) return; const cl = CLA(); if (cl && Math.random() < (cl.esq || 0) + (BM && BM.esq ? BM.esq : 0) + (typeof BUFF !== 'undefined' && BUFF.cb_esq > 0 ? 0.25 : 0)) { numero(heroi.position, 'Desviou!', '#9ae6ff', 2.1); return; } n *= 1 - defesa() / 100; if (typeof BUFF !== 'undefined') { if (BUFF.cb_inv > 0) n = 0; if (BUFF.cb_res > 0) n *= 0.8; if (BUFF.cb_abs > 0) n *= 0.6; } if (muralhaT > 0) n *= 0.2; if (BUFF.espelho > 0) { n *= 0.5; if (de && !de.morto) dano(de, n, 'luz'); } if (BM && BM.espelho && de && !de.morto) dano(de, n * BM.espelho, 'luz'); enche(4); if (ativo.escudo) { n *= Math.max(0.1, 0.3 - (nivelHab('escudo') - 1) * 0.05); fx('luz', [heroi.position.x, heroi.position.y, heroi.position.z], 0.3); } n = Math.round(n); vida -= n; som('dano', 0.7, null, 0.3); semDanoT = 0; flash('rgba(255,40,40,.35)'); tremor = Math.max(tremor, 0.18);
     numero(heroi.position, '-' + n, '#ff5a5a', 2.1); if (vida <= 0) { vida = 0; desmaiar(); } }
   function desmaiar() { feito('nocaute'); som('desmaio', 1, 1); desmaiado = true; if (typeof bmDesliga === 'function') bmDesliga(); FERAS.forEach(e => { if (!e.morto) { e.estado = 'volta'; } }); ativo.vento = ativo.escudo = ativo.planar = false; montaBarra();
     setTimeout(() => cena([{ t: 'Tudo ficou escuro...', v: 'nar03' }, { t: 'Leonardo acordou em casa, na cama. A mãe cuidou dele a noite toda.', v: 'nar04' }, { t: '"Meu filho, cuidado lá fora! Come alguma coisa antes de sair de novo."', n: 'Mãe', v: 'mae03' }], () => {
@@ -962,7 +962,7 @@
   // ===================== NÍVEL, PERFIL, INVENTÁRIO E FANTASIAS =====================
   AR.nv = AR.nv || 1; AR.xp = AR.xp || 0; AR.fantasias = AR.fantasias || ['comum', 'celeste']; AR.fantasia = AR.fantasia || 'comum'; AR.pecas = AR.pecas || {};
   const NV_MAX = 100; const xpPara = n => 60 + n * 30;
-  function aplicaNivel() { const c = CLASSES && CLASSES[AR.classe]; VIDA_MAX = (c ? c.vida : 100) + (AR.nv - 1) * 5; MANA_MAX = (c ? c.mana : 100) + (AR.nv - 1) * 3 + ((FANT[AR.fantasia] && FANT[AR.fantasia].mana) || 0); }
+  function aplicaNivel() { const c = CLASSES && CLASSES[AR.classe]; VIDA_MAX = (c ? c.vida : 100) + (AR.nv - 1) * 5 + cbPas('vida'); MANA_MAX = (c ? c.mana : 100) + (AR.nv - 1) * 3 + cbPas('mana') + ((FANT[AR.fantasia] && FANT[AR.fantasia].mana) || 0); }
   function ganhaXp(n, motivo) { if (AR.nv >= NV_MAX) return; AR.xp += n; let subiu = false; while (AR.nv < NV_MAX && AR.xp >= xpPara(AR.nv)) { AR.xp -= xpPara(AR.nv); AR.nv++; subiu = true; AR.pts++; }
     if (AR.nv >= NV_MAX) AR.xp = 0; salvaAR(); atualizaNivel();
     if (subiu) { som('nivel', 1, 1); aplicaNivel(); vida = VIDA_MAX; mana = MANA_MAX; atualizaPts(); fx('luz', [heroi.position.x, 0, heroi.position.z], 1.2); fx('cura', [heroi.position.x, 0, heroi.position.z], 1.6); flash('rgba(255,230,120,.45)');
@@ -1030,7 +1030,7 @@
       const ft = P['ft' + s]; A(ft, SPH2, MALHA, 0, 0.005, 0.05, 0.075, 0.062, 0.142); for (let k = 0; k < 3; k++) A(ft, SPH2, k % 2 ? AZ2 : PR, 0, 0.02 - k * 0.004, 0.1 + k * 0.04, 0.072 - k * 0.006, 0.05, 0.05); A(ft, BOX, COU, 0, -0.048, 0.05, 0.125, 0.02, 0.27); });
     armadura.forEach(m => m.visible = false); }
   function vesteFantasia(k) { if (!FANT[k]) k = 'comum'; AR.fantasia = k; if (k !== 'comum') AR.pecas = {}; salvaAR(); escondeTrajes(); if (k === 'celeste') armadura.forEach(m => m.visible = true); if (CAS[k]) CAS[k].m.forEach(m => m.visible = true); aplicaNivel(); mana = Math.min(mana, MANA_MAX); atualizaPecas(); setTimeout(fazRetrato, 60); }
-  function defesa() { const c = CLASSES && CLASSES[AR.classe]; return Math.min(85, (FANT[AR.fantasia].def || 0) + pecaDef() + (c ? c.def : 0) + (BM && BM.def ? BM.def : 0) + (typeof BUFF !== 'undefined' ? (BUFF.provocar > 0 ? 20 : 0) + (BUFF.fortaleza > 0 ? 30 : 0) + (BUFF.pele > 0 ? 40 : 0) : 0)); }
+  function defesa() { const c = CLASSES && CLASSES[AR.classe]; return Math.min(85, (FANT[AR.fantasia].def || 0) + pecaDef() + (c ? c.def : 0) + (BM && BM.def ? BM.def : 0) + (typeof BUFF !== 'undefined' ? (BUFF.provocar > 0 ? 20 : 0) + (BUFF.fortaleza > 0 ? 30 : 0) + (BUFF.pele > 0 ? 40 : 0) + (BUFF.cb_def > 0 ? 20 : 0) + (BUFF.cb_tudo > 0 ? 10 : 0) : 0) + cbPas('def')); }
   function armaduraFrame() { casacoFrame(); if (!tabardo || AR.fantasia !== 'celeste') return; const P = heroi.userData.P; const f = Math.min(P.thL.rotation.x, P.thR.rotation.x), b = Math.max(P.thL.rotation.x, P.thR.rotation.x); tabardo.rotation.x = Math.min(0, f) * 0.95; tabardo.userData.costas.rotation.x = Math.max(0, b) * 0.95; }
 
 
@@ -1600,8 +1600,8 @@
 
   // ---- aplicar classe ----
   function CLA() { return CLASSES[AR.classe] || null; }
-  function atkMult() { const c = CLA(); return (1 + (AR.nv - 1) * 0.02) * (c ? c.atk : 1) * potAtual * (BM && BM.atk ? BM.atk : 1) * (BUFF.furia > 0 ? 1.4 : 1) * (BUFF.pacto > 0 ? 1.5 : 1); }
-  function critico() { const c = CLA(); return Math.random() < (c ? c.crit : 0.05) + (BM && BM.crit ? BM.crit : 0); }
+  function atkMult() { const c = CLA(); return (1 + (AR.nv - 1) * 0.02) * (c ? c.atk : 1) * potAtual * (BM && BM.atk ? BM.atk : 1) * (BUFF.furia > 0 ? 1.4 : 1) * (BUFF.pacto > 0 ? 1.5 : 1) * (1 + cbPas('atk')) * (BUFF.cb_atk > 0 ? 1.25 : 1) * (BUFF.cb_tudo > 0 ? 1.15 : 1); }
+  function critico() { const c = CLA(); return Math.random() < (c ? c.crit : 0.05) + (BM && BM.crit ? BM.crit : 0) + cbPas('crit') + (BUFF.cb_crit > 0 ? 0.15 : 0) + (BUFF.cb_tudo > 0 ? 0.05 : 0); }
   function aplicaClasse(id) { if (typeof bmDesliga === 'function') bmDesliga(); const c = CLASSES[id]; AR.classe = id; if (!AR.armas.includes(c.arma)) AR.armas.push(c.arma); AR.arma = c.arma;
     const v = AR.barra[2]; if (v && !(PW[v] && PW[v].classe)) { const k = AR.barra.indexOf(null, 3); if (k >= 3 && !AR.barra.slice(3).includes(v)) AR.barra[k] = v; }
     AR.barra[2] = c.hab; if (!AR.tem.includes(c.hab)) AR.tem.push(c.hab); HABS.forEach(h => { const i = AR.barra.indexOf(h.id); if (i > 2) AR.barra[i] = null; });
@@ -1725,7 +1725,7 @@
       case 'pacto': { const custo = Math.round(VIDA_MAX * 0.2); vida = Math.max(1, vida - custo); mana = Math.min(MANA_MAX, mana + 60); buff('pacto', 8); numero(p, '-' + custo + ' ❤️  +60 🔷', '#c890ff'); flash('rgba(120,40,180,.35)'); break; }
     } }
   function aterrissa() { const p = heroi.position; som('tremor'); fx('fumo', [p.x, 0, p.z], 1.1); fx('luz', [p.x, 0, p.z], 0.5); tremor = 0.5; area(p.x, p.z, 3.8, e => { dano(e, 40 * atkMult(), null, critico()); e.stun = Math.max(e.stun, 1.5); }); }
-  function habsFrame(dt) { Object.keys(BUFF).forEach(k => { if (BUFF[k] > 0) BUFF[k] -= dt; }); if (BUFF.regen > 0) vida = Math.min(VIDA_MAX, vida + 8 * dt); if (BUFF.fortaleza > 0) vida = Math.min(VIDA_MAX, vida + 5 * dt);
+  function habsFrame(dt) { cbFrame(dt); Object.keys(BUFF).forEach(k => { if (BUFF[k] > 0) BUFF[k] -= dt; }); if (BUFF.regen > 0) vida = Math.min(VIDA_MAX, vida + 8 * dt); if (BUFF.fortaleza > 0) vida = Math.min(VIDA_MAX, vida + 5 * dt);
     for (let i = LOB.length - 1; i >= 0; i--) { const l = LOB[i]; l.t += dt; const u = Math.min(1, l.t / l.dur); l.s.position.set(lerp(l.a[0], l.b[0], u), lerp(l.a[1], 0.3, u) + Math.sin(u * Math.PI) * 3.5, lerp(l.a[2], l.b[1], u)); if (u >= 1) { world.remove(l.s); LOB.splice(i, 1); l.fn(); } } }
   // ===================== MODOS DE BATALHA (3 por classe, mudam o corpo e a arma) =====================
   // atk/def/vel/atkVel/crit/esq/roubo = bônus · escala = tamanho do corpo · flutua = levita · armaEsc = tamanho da arma
@@ -2133,7 +2133,8 @@
     if (!a || conversa || cenaQ) { SETA.visible = false; return null; } const dx = a.x - p.x, dz = a.z - p.z, d = Math.hypot(dx, dz); if (d < 3.5) { SETA.visible = false; return null; }
     const ang = Math.atan2(dx, dz); SETA.visible = true; SETA.position.set(p.x + Math.sin(ang) * 1.5, p.y, p.z + Math.cos(ang) * 1.5); SETA.rotation.y = ang + Math.PI; SETA.children[0].position.y = 0.06 + Math.abs(Math.sin(gT * 4)) * 0.08; return d; }
   atualizaMM();
-  window.__dbg = { ARMAG, T3, vesteCosm, voa, get voando() { return voando; }, input, mpRecebe, entraMasmorra, saiMasmorra, MM, mmFaseAtual, mmMorte, setaFrame, equipaArma, abrirGuilda, arthurNPC, vestePeca, atualizaPecas, PECAS, BLOCOS, modoBatalha, bmLiga, bmDesliga, BMS, ORB, get BM() { return BM; }, get hora() { return hora; }, set hora(v) { hora = v; }, usarHab2: id => classePoder2(id), BUFF, abrirCriar, aplicaClasse, CLASSES, get desp() { return desp; }, set desp(v) { desp = v; }, usarHab: id => classePoder(id), renderer, scene, world, ganhaXp, vesteFantasia, abrirPerfil, fazRetrato, irValdren, Q, heroi, ativo, AR, FERAS, golem, atacar, get vida() { return vida; }, set vida(v) { vida = v; }, abrirLoja, usarPoder: id => usarPoder(PW[id]), acao: () => acao(), get alvo() { return alvo; } };
+  //@@HABILIDADES@@
+  window.__dbg = { CB_LISTA, abrirLivros, trocaPag, get mana() { return mana; }, set mana(v) { mana = v; }, ARMAG, T3, vesteCosm, voa, get voando() { return voando; }, input, mpRecebe, entraMasmorra, saiMasmorra, MM, mmFaseAtual, mmMorte, setaFrame, equipaArma, abrirGuilda, arthurNPC, vestePeca, atualizaPecas, PECAS, BLOCOS, modoBatalha, bmLiga, bmDesliga, BMS, ORB, get BM() { return BM; }, get hora() { return hora; }, set hora(v) { hora = v; }, usarHab2: id => classePoder2(id), BUFF, abrirCriar, aplicaClasse, CLASSES, get desp() { return desp; }, set desp(v) { desp = v; }, usarHab: id => classePoder(id), renderer, scene, world, ganhaXp, vesteFantasia, abrirPerfil, fazRetrato, irValdren, Q, heroi, ativo, AR, FERAS, golem, atacar, get vida() { return vida; }, set vida(v) { vida = v; }, abrirLoja, usarPoder: id => usarPoder(PW[id]), acao: () => acao(), get alvo() { return alvo; } };
   // ---------- laço do jogo ----------
   let vy = 0, noChao = true, facing = 0, vel = 0, gT = 0, last = performance.now();
   const ANDAR = 3.0, CORRER = 6.5, GRAV = 22, PULO = 7.6; const tmp = new T3.Vector3();
