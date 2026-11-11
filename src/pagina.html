@@ -302,6 +302,7 @@
 .slot .nm{max-width:calc(var(--s) - 4px);overflow:hidden;text-overflow:ellipsis}
 .slot .cdv{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(10,8,24,.62);color:#fff;font-weight:900;font-size:calc(var(--s) * .34);border-radius:inherit;pointer-events:none}
 #pag-btn{width:calc(var(--s) * .6);height:var(--s);border-radius:10px;background:#2a2440;color:#ffe08a;border:2px solid #c8a85a;font-weight:900;font-size:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0}#pag-btn small{font-size:9px;color:#fff}
+#gm-buffs{position:fixed;left:calc(12px + env(safe-area-inset-left,0px));top:calc(118px + env(safe-area-inset-top,0px));display:flex;gap:4px;z-index:6;pointer-events:none}#gm-buffs span{display:flex;flex-direction:column;align-items:center;background:#0e0c1acc;border:2px solid var(--c);border-radius:9px;padding:2px 3px;box-shadow:0 0 8px var(--c)}#gm-buffs .ico{width:26px;height:26px}#gm-buffs small{font:900 9px sans-serif;color:#fff}
 </style>
 </head>
 <body>
@@ -332,7 +333,7 @@
 <div id="dica">Arraste do lado <b>esquerdo</b> pra andar · do <b>direito</b> pra girar a câmera · chegue perto das pessoas pra conversar</div>
 <div id="lugar"></div>
 <div id="obj" hidden><b>OBJETIVO</b><span id="obj-txt"></span></div>
-<div id="missao-g" hidden></div>
+<div id="missao-g" hidden></div><div id="gm-buffs" hidden></div>
 <div id="mm-hud" hidden></div>
 <div id="fala" hidden><div id="fala-nome"></div><div id="fala-txt"></div><div id="fala-esc" hidden></div><div id="fala-mais"></div></div>
 <div id="joy"><div id="knob"></div></div>

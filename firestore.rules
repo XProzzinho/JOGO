@@ -53,6 +53,37 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    // ===== Painel ADM (GM / ADM) =====
+    function logado() { return request.auth != null; }
+    function cargo() {
+      return logado() && exists(/databases/$(database)/documents/staff/$(request.auth.uid))
+        ? get(/databases/$(database)/documents/staff/$(request.auth.uid)).data.cargo : '';
+    }
+    function souAdm() { return logado() && (request.auth.token.email == 'geansdp2@gmail.com' || cargo() == 'adm'); }
+    function souStaff() { return souAdm() || cargo() == 'gm'; }
+
+    // Buffs de cada jogador: o jogador só lê os dele; GM e ADM leem e mudam de todos
+    match /buffs/{uid} {
+      allow read: if logado() && (request.auth.uid == uid || souStaff());
+      allow write: if souStaff();
+    }
+    // Histórico: GM/ADM registram e consultam; ninguém apaga nem muda
+    match /buffLog/{id} {
+      allow read: if souStaff();
+      allow create: if souStaff() && request.resource.data.por == request.auth.uid;
+      allow update, delete: if false;
+    }
+    // Equipe (quem é GM ou ADM): só ADM mexe
+    match /staff/{uid} {
+      allow read: if logado() && (request.auth.uid == uid || souStaff());
+      allow write: if souAdm();
+    }
+    // Limites do GM
+    match /config/{id} {
+      allow read: if logado();
+      allow write: if souAdm();
+    }
+
     // Qualquer outra coisa fica bloqueada
     match /{document=**} {
       allow read, write: if false;
