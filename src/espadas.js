@@ -73,4 +73,46 @@
         CONTA.db.collection('buffLog').add({ acao: 'aplicar', alvo: uid, alvoNome: nome, por: CONTA.usuario.uid, porNome: trNome(), cargo: souAdmin() ? 'adm' : 'gm', tipo: item.tipo, pct: bfPct, min: bfMin, criado: Date.now() }).catch(() => {});
         aviso(IC('gm_' + bfTipo) + ' ' + GMB_INFO[bfTipo][0] + ' enviado pra ' + nome + '!', GMB_INFO[bfTipo][1]); fx('luz', [heroi.position.x, 0, heroi.position.z], 0.6); som('magia', 0.7); } catch (e) { aviso('Não deu: ' + (e.code || e.message), '#ff6a6a'); } b.disabled = false; }); }
   tapBtn(buffBtn, () => { if (buffP.hidden) { bfDesenha(); buffP.hidden = false; } else buffP.hidden = true; });
-  function espFrame() { const A = ARMAS[AR.arma]; buffBtn.hidden = !(A && A.staff) || !!conversa; if (buffBtn.hidden) buffP.hidden = true; }
+  function espFrame() { if (!podeArma(AR.arma)) equipaArma(null); const A = ARMAS[AR.arma]; buffBtn.hidden = !(A && A.staff) || !!conversa; if (buffBtn.hidden) buffP.hidden = true; }
+  // ---- lâminas GL do Gladiador (manopla + meia-lua em cada braço) ----
+  function fazGarras(T){
+ const mt=(c,m,r,e,ei)=>new T.MeshStandardMaterial({envMap:ENV,envMapIntensity:1.1,color:c,metalness:m==null?.6:m,roughness:r==null?.32:r,emissive:e||'#000',emissiveIntensity:e?(ei||.6):0,side:T.DoubleSide});
+ const neon=c=>new T.MeshBasicMaterial({color:c,toneMapped:false,side:T.DoubleSide});
+ const spr=(c,s)=>{const cv=document.createElement('canvas');cv.width=cv.height=64;const x=cv.getContext('2d');const g=x.createRadialGradient(32,32,0,32,32,32);g.addColorStop(0,c);g.addColorStop(1,'rgba(0,0,0,0)');x.fillStyle=g;x.fillRect(0,0,64,64);const m=new T.Sprite(new T.SpriteMaterial({map:new T.CanvasTexture(cv),transparent:true,depthWrite:false,blending:T.AdditiveBlending,toneMapped:false}));m.scale.set(s,s,1);return m};
+ const ext=(sh,d,b)=>{const g=new T.ExtrudeGeometry(sh,{depth:d,bevelEnabled:true,bevelThickness:b||.01,bevelSize:b||.01,bevelSegments:2,curveSegments:24});g.translate(0,0,-d/2);return g};
+ const add=(p,g,m,x,y,z)=>{const o=new T.Mesh(g,m);o.position.set(x||0,y||0,z||0);p.add(o);return o};
+ const SPH=new T.SphereGeometry(1,20,14),CYL=new T.CylinderGeometry(1,1,1,16),CON=new T.ConeGeometry(1,1,10),TOR=new T.TorusGeometry(1,.14,10,40);
+ // lâmina crescente grande: arco de A0 a A1, com 2 ganchos no lado de dentro e ponta afiada
+ const crescente=(R,W,A0,A1,serra)=>{const s=new T.Shape(),N=70,a0=A0*Math.PI/180,a1=A1*Math.PI/180;const fora=[],dentro=[];
+   for(let i=0;i<=N;i++){const t=i/N,a=a0+(a1-a0)*t;let r=R;if(serra&&i%7===3&&t>.15&&t<.85)r+=serra;fora.push([Math.cos(a)*r,Math.sin(a)*r]);
+     let w=W*Math.pow(Math.sin(Math.PI*t),.7);const gan=[.3,.7].some(g=>Math.abs(t-g)<.05);if(gan)w*=1.6;else if([.3,.7].some(g=>Math.abs(t-g)<.08))w*=.75;const ri=R-w;dentro.push([Math.cos(a)*ri,Math.sin(a)*ri]);}
+   s.moveTo(...fora[0]);fora.forEach(p=>s.lineTo(...p));dentro.reverse().forEach(p=>s.lineTo(...p));s.closePath();return s};
+ const filete=(g,R,A0,A1,mat,z)=>{const pts=[];for(let i=0;i<=40;i++){const a=(A0+(A1-A0)*i/40)*Math.PI/180;pts.push(new T.Vector3(Math.cos(a)*R-.66,Math.sin(a)*R,z));}const c=new T.CatmullRomCurve3(pts);add(g,new T.TubeGeometry(c,60,.008,6,false),mat);};
+ const espiral=(g,cx,cy,r,mat,z,v)=>{const pts=[];for(let i=0;i<=30;i++){const t=i/30,a=t*Math.PI*2.2*v;pts.push(new T.Vector3(cx+Math.cos(a)*r*(1-t*.8),cy+Math.sin(a)*r*(1-t*.8),z));}add(g,new T.TubeGeometry(new T.CatmullRomCurve3(pts),40,.006,6,false),mat);};
+ const fazer=(cor)=>{const g=new T.Group();const C1=mt(cor.base,.75,.32),C2=mt(cor.ouro,.95,.22),BL=cor.vidro?new T.MeshPhysicalMaterial({color:cor.lam,emissive:cor.brilho,emissiveIntensity:.9,transparent:true,opacity:.88,roughness:.1,side:T.DoubleSide}):mt(cor.lam,.7,.3,cor.lamE,.4);
+  // manopla no antebraço
+  const m=add(g,CYL,C1,0,-.16,0);m.scale.set(.09,.3,.09);for(let i=0;i<3;i++){const r=add(g,TOR,C2,0,-.05-i*.1,0);r.rotation.x=Math.PI/2;r.scale.set(.092,.092,.12);}
+  // placas com espinhos em cima do braço
+  for(let i=0;i<3;i++){const e=add(g,CON,C2,.06,-.04-i*.09,0);e.scale.set(.025,.11,.025);e.rotation.z=-1.1;}
+  // emblema-engrenagem com gema
+  const em=new T.Group();em.position.set(.12,-.24,0);em.rotation.y=Math.PI/2;g.add(em);const st=new T.Shape();for(let i=0;i<=24;i++){const a=i/24*Math.PI*2,r=i%2?.06:.085;i?st.lineTo(Math.cos(a)*r,Math.sin(a)*r):st.moveTo(Math.cos(a)*r,Math.sin(a)*r);}
+  add(em,ext(st,.02),C2);add(em,new T.CylinderGeometry(.05,.05,.03,20),C1,0,0,.015).rotation.x=Math.PI/2;const gm=add(em,SPH,neon(cor.gema),0,0,.03);gm.scale.set(.03,.03,.02);const gl=spr(cor.gemaG,.4);gl.position.set(0,0,.05);em.add(gl);
+  if(cor.cranio){const k=add(g,SPH,mt('#d8ccb0',.3,.5),.11,-.11,0);k.scale.set(.05,.055,.055);[-1,1].forEach(s=>{const o=add(g,SPH,neon(cor.gema),.155,-.1,s*.02);o.scale.set(.012,.012,.012);const h=add(g,CON,C2,.12,-.06,s*.045);h.scale.set(.012,.06,.012);h.rotation.x=s*.7;});}
+  // lâmina crescente presa do lado de fora do braço, plano (y,z) = virada pra frente
+  const L=new T.Group();L.position.set(.13,-.2,0);L.rotation.y=-Math.PI/2;g.add(L);const sh=crescente(.72,.16,-80,100,cor.serra||0);
+  const lam=add(L,ext(sh,.03),BL,-.66,0,0);const borda=add(L,ext(crescente(.735,.03,-80,100,0),.035,.004),neon(cor.fio),-.66,0,0);
+  [.66,.6].forEach((r,i)=>filete(L,r,-62,82,C2,.03+i*.001));[-1,1].forEach(z=>{filete(L,.62,-50,70,C2,z*.022);});
+  for(let k=0;k<4;k++){const a=(-40+k*36)*Math.PI/180;espiral(L,-.66+Math.cos(a)*.62,Math.sin(a)*.62,.04,C2,.024,k%2?1:-1);}
+  // lâmina menor do outro lado (pra baixo/atrás)
+  const L2=new T.Group();L2.position.set(.1,-.3,0);L2.rotation.set(0,-Math.PI/2,Math.PI*0.95);g.add(L2);add(L2,ext(crescente(.32,.07,-70,80,0),.025),BL,-.29,0,0);add(L2,ext(crescente(.335,.018,-70,80,0),.03,.004),neon(cor.fio),-.29,0,0);
+  const aura=spr(cor.auraC,1.6);aura.position.set(.2,0,0);g.add(aura);return g};
+ const P=[
+  {base:'#232022',ouro:'#c8a050',lam:'#141315',fio:'#e8c878',gema:'#ff7a1a',gemaG:'rgba(255,140,40,.9)',auraC:'rgba(255,170,90,.18)',cranio:true},
+  {base:'#14102a',ouro:'#5a6ad8',lam:'#1a4aff',brilho:'#1a6aff',vidro:true,fio:'#9af0ff',gema:'#c45aff',gemaG:'rgba(200,100,255,.9)',auraC:'rgba(80,160,255,.45)',cranio:true},
+  {base:'#1a0e26',ouro:'#b46aff',lam:'#2a1240',lamE:'#5a1a8a',fio:'#e08aff',gema:'#ff5ad8',gemaG:'rgba(255,90,220,.9)',auraC:'rgba(180,90,255,.35)',cranio:true,serra:.03},
+  {base:'#2a0c0c',ouro:'#e8a040',lam:'#7a0e0e',lamE:'#5a0000',fio:'#ff8a3a',gema:'#ffd23c',gemaG:'rgba(255,200,60,.9)',auraC:'rgba(255,90,40,.35)',cranio:false,serra:.04},
+  {base:'#b8bccc',ouro:'#ffd86a',lam:'#e8ecf6',lamE:'#2a3a5a',fio:'#5ae8ff',gema:'#5ae8ff',gemaG:'rgba(90,230,255,.9)',auraC:'rgba(140,220,255,.3)',cranio:false}];
+ const G={};P.forEach((c,i)=>G[i+1]=()=>fazer(c));return G;}
+  const GAR_MOD = fazGarras(T3); const GL_K = ['gl_eclipse', 'gl_abismo', 'gl_ceifador', 'gl_sangrenta', 'gl_prata'];
+  GL_K.forEach((k, i) => { [[maoG, ARMAG, 1], [maoE, ARMAE, -1]].forEach(([mao, LST, sx]) => { const G = grp(mao); const m = GAR_MOD[i + 1](); m.position.set(0, 0.33, -0.05); m.scale.setScalar(0.8); m.scale.x *= sx; G.add(m); G.visible = false; G.traverse(o => { if (o.isMesh) o.castShadow = true; }); LST[k] = G; }); });
+  function podeArma(k) { const A = ARMAS[k]; return !A || !A.soClasse || AR.classe === A.soClasse; }

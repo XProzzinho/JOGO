@@ -657,6 +657,11 @@
     esp_executora: { nome: 'Executora Dupla', icone: '⚔️', dano: 78, alc: 2.7, cd: 0.34, preco: 2000, esp: 'exec', desc: 'Especial: dano x2,5 em inimigos com pouca vida e o 3º golpe dispara uma lâmina de energia.' },
     esp_adm: { nome: 'Lâmina Suprema ADM', icone: '⚔️', dano: 999, alc: 3.2, cd: 0.28, staff: 'adm', esp: 'staff', defMax: true, desc: 'Só do Administrador. Dano e defesa no máximo. Botão BUFF manda buffs pros jogadores.' },
     esp_gm: { nome: 'Executora GM', icone: '⚔️', dano: 999, alc: 3.2, cd: 0.28, staff: 'gm', esp: 'staff', defMax: true, desc: 'Só de GM. Dano e defesa no máximo. Botão BUFF manda buffs pros jogadores.' },
+    gl_eclipse: { nome: 'Eclipse Negro GL', icone: '🌙', dano: 62, alc: 2.8, cd: 0.32, giro: true, braco: true, soClasse: 'gladiador', preco: 800, esp: 'sup', desc: 'Só Gladiador. Acerta tudo em volta. Especial: +15% de crítico e o 3º golpe solta uma onda de choque.' },
+    gl_abismo: { nome: 'Abismo Azul GL', icone: '🌙', dano: 68, alc: 2.8, cd: 0.32, giro: true, braco: true, soClasse: 'gladiador', preco: 1200, gelo: true, desc: 'Só Gladiador. Acerta tudo em volta. Especial: às vezes congela os inimigos.' },
+    gl_ceifador: { nome: 'Ceifador Roxo GL', icone: '🌙', dano: 74, alc: 2.8, cd: 0.32, giro: true, braco: true, soClasse: 'gladiador', preco: 1600, esp: 'cel', desc: 'Só Gladiador. Acerta tudo em volta. Especial: cada golpe recupera 3% da sua vida.' },
+    gl_sangrenta: { nome: 'Lua Sangrenta GL', icone: '🌙', dano: 80, alc: 2.8, cd: 0.32, giro: true, braco: true, soClasse: 'gladiador', preco: 2000, fogo: true, esp: 'drag', desc: 'Só Gladiador. Acerta tudo em volta. Especial: queima e o 3º golpe explode em fogo.' },
+    gl_prata: { nome: 'Lua de Prata GL', icone: '🌙', dano: 90, alc: 2.9, cd: 0.32, giro: true, braco: true, soClasse: 'gladiador', preco: 2600, esp: 'exec', desc: 'Só Gladiador. Acerta tudo em volta. Especial: dano x2,5 em quem tem pouca vida e o 3º golpe dispara uma lâmina.' },
     punho: { nome: 'Mãos vazias', icone: '👊', dano: 6, alc: 1.6, cd: 0.38, oculta: true, desc: 'Sem arma equipada: soco.' },
   };
   const ITENS = { moedas: '💰', pele: '🐺', carne: '🍖', coracao: '💎', asas: '🦇', espdragao: '🐉' };
@@ -924,8 +929,8 @@
       const preco = A.preco ? `${A.preco} 💰${A.precisa ? ' + 💎 Coração de Gelo' : ''}` : 'Presente do seu pai';
       b.innerHTML = `<span class="ic">${A.icone}</span><div class="tx"><b>${A.nome}</b><small>${A.longe ? 'De longe' : 'Corpo a corpo'} · dano ${A.dano}</small><small>${A.desc}</small></div>`;
       const bt = document.createElement('button'); bt.className = 'cb';
-      if (tem) { bt.textContent = AR.arma === k ? 'Equipada' : 'Equipar'; bt.disabled = AR.arma === k; tapBtn(bt, () => { if (AR.arma === k) return; AR.arma = k; salvaAR(); mostraArma(); abrirLoja(); }); }
-      else { const ok = AR.inv.moedas >= A.preco && (!A.precisa || AR.inv[A.precisa] > 0); bt.innerHTML = preco; bt.disabled = !ok; tapBtn(bt, () => { if (!ok) return; AR.inv.moedas -= A.preco; som('compra', 0.8, 1); if (A.precisa) AR.inv[A.precisa]--; AR.armas.push(k); AR.arma = k; salvaAR(); mostraArma(); atualizaInv(); aviso('Nova arma: ' + A.icone + ' ' + A.nome + '!', '#ffd23c'); abrirLoja(); }); }
+      if (tem) { bt.textContent = AR.arma === k ? 'Equipada' : 'Equipar'; bt.disabled = AR.arma === k; tapBtn(bt, () => { if (AR.arma === k) return; equipaArma(k); abrirLoja(); }); }
+      else if (A.soClasse && AR.classe !== A.soClasse) { bt.innerHTML = '🔒 Só ' + CLASSES[A.soClasse].nome; bt.disabled = true; } else { const ok = AR.inv.moedas >= A.preco && (!A.precisa || AR.inv[A.precisa] > 0); bt.innerHTML = preco; bt.disabled = !ok; tapBtn(bt, () => { if (!ok) return; AR.inv.moedas -= A.preco; som('compra', 0.8, 1); if (A.precisa) AR.inv[A.precisa]--; AR.armas.push(k); equipaArma(k); atualizaInv(); aviso('Nova arma: ' + A.icone + ' ' + A.nome + '!', '#ffd23c'); abrirLoja(); }); }
       b.appendChild(bt); L.appendChild(b); });
     const sec = t => { const h = document.createElement('div'); h.className = 'loja-sec'; h.innerHTML = limpaIco(t); L.appendChild(h); };
     const linha = (ic, nome, sub, tem, vestido, compra, veste, cor) => { const b = document.createElement('div'); b.className = 'item'; b.innerHTML = `<span class="ic"${cor ? ` style="text-shadow:0 0 8px ${cor}"` : ''}>${ic}</span><div class="tx"><b>${nome}</b><small>${sub}</small></div>`;
@@ -1534,7 +1539,7 @@
     if (ARMAE.runica) ARMAE.runica.visible = false; }
   //@@ESPADAS@@
   function armaVisivel() { return Object.keys(ARMAG).find(k => ARMAG[k].visible) || null; }
-  function equipaArma(k) { AR.arma = k && AR.armas.includes(k) ? k : 'punho'; salvaAR(); mostraArma(); armaNasCostas = null; setTimeout(fazRetrato, 60);
+  function equipaArma(k) { if (k && typeof podeArma === 'function' && !podeArma(k)) { aviso('🔒 ' + ARMAS[k].nome + ': só ' + CLASSES[ARMAS[k].soClasse].nome + ' pode usar.', '#ff6a6a'); k = null; } AR.arma = k && AR.armas.includes(k) ? k : 'punho'; salvaAR(); mostraArma(); armaNasCostas = null; setTimeout(fazRetrato, 60);
     const A = ARMAS[AR.arma]; aviso(AR.arma === 'punho' ? '👊 Arma guardada na mochila' : 'Equipou: ' + A.icone + ' ' + A.nome, '#ffd23c'); }
 
   // ---- fantasias de enfeite (só visual) ----
@@ -1721,7 +1726,7 @@
   setInterval(() => { if (trDb()) { trOuveConvites(); if (!TR.perfilOk) { TR.perfilOk = true; trPerfil(); } } }, 5000);
   let asaT = 0;
   function equipFrame(dt) { const k = armaVisivel(); const temArma = !!k;
-    const quer = !temArma || atkT < SEGURA_MAO || !!BM; // sem arma, lutando ou em modo de batalha: mão
+    const quer = !temArma || atkT < SEGURA_MAO || !!BM || !!(ARMAS[k] && ARMAS[k].braco); // sem arma, lutando ou em modo de batalha: mão
     if (quer !== naMao || (!quer && armaNasCostas !== k)) { naMao = quer; if (quer) { poeNaMao(); armaNasCostas = null; mostraArma(); } else { poeNasCostas(k); armaNasCostas = k; } }
     if (ASAS.visible) { const voa = typeof noChao !== 'undefined' && !noChao, corre = typeof vel !== 'undefined' ? vel : 0;
       const f = voa ? 13 : corre > 4.2 ? 9 : corre > 0.4 ? 4 : 2, a = voa ? 0.7 : corre > 4.2 ? 0.45 : corre > 0.4 ? 0.25 : 0.12; asaT += dt * f;
