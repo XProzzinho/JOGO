@@ -218,6 +218,7 @@
     else if (x.t === 'cosm' && COSM[x.k]) { if (!AR.cosms.includes(x.k)) AR.cosms.push(x.k); nome = COSM[x.k].nome; }
     else if (x.t === 'mont' && MONT[x.k]) { if (!AR.monts.includes(x.k)) AR.monts.push(x.k); nome = MONT[x.k].nome; }
     else if (x.t === 'pet' && PETS[x.k]) { if (!AR.pets.includes(x.k)) AR.pets.push(x.k); nome = PETS[x.k].nome; }
+    else if (x.t === 'divino' && DIVINOS[x.k]) { if (!AR.divinos.includes(x.k)) AR.divinos.push(x.k); nome = DIVINOS[x.k].nome; setTimeout(() => divVeste(x.k), 300); }
     else if (x.t === 'item') { AR.inv[x.k] = (AR.inv[x.k] || 0) + n; nome = (ITEM_INFO[x.k] || [0, x.k])[1] + ' x' + n; }
     else if (x.t === 'moedas') { AR.inv.moedas += n; nome = n.toLocaleString('pt-BR') + ' moedas'; }
     else if (x.t === 'xp') { ganhaXp(n, true); nome = n.toLocaleString('pt-BR') + ' de XP'; }
@@ -252,7 +253,7 @@
     C.fant = Object.keys(FANT).filter(k => k !== 'comum').map(k => [k, FANT[k].nome, src(FANT[k].icone), 'Conjunto']);
     C.sob = []; Object.keys(CASACOS).forEach(st => ['peito', 'ombro', 'maos', 'calca', 'pe'].forEach(pc => { const I = sobInfo(st, pc); if (I) C.sob.push([st + ':' + pc, I.nome, src(I.icone), CASACOS[st].nome || st]); }));
     C.cosm = Object.keys(COSM).map(k => [k, COSM[k].nome, src(COSM[k].icone), 'Asas']); C.mont = Object.keys(MONT).map(k => [k, MONT[k].nome, src(MONT[k].icone), 'Montaria']); C.pet = Object.keys(PETS).map(k => [k, PETS[k].nome, src(PETS[k].icone), 'Pet']);
-    C.item = Object.keys(ITEM_INFO).map(k => [k, ITEM_INFO[k][1], src(ITEM_INFO[k][0]), 'Item']); C.titulo = Object.keys(TITULOS).filter(k => k !== 'admin').map(k => [k, TITULOS[k].nome, '', TITULOS[k].r]); return C; };
+    C.divino = Object.keys(DIVINOS).map(k => [k, DIVINOS[k].nome, src(DIVINOS[k].icone), 'Item divino']); C.item = Object.keys(ITEM_INFO).map(k => [k, ITEM_INFO[k][1], src(ITEM_INFO[k][0]), 'Item']); C.titulo = Object.keys(TITULOS).filter(k => k !== 'admin').map(k => [k, TITULOS[k].nome, '', TITULOS[k].r]); return C; };
   // ===================== MAPA-MÚNDI COM TELEPORTE + MAGO TELEPORTADOR =====================
   function lugaresMapa() { const lib = Q.passo >= 1 || finais.some(f => f[0] === 'A') || souAdmin(); const S = SALAO, sx = S[0] + Math.sin(S[2]) * 11, sz = S[1] + Math.cos(S[2]) * 11;
     return [{ id: 'vila', nome: 'Brumafria', ic: '🏠', x: 0, z: 4.2, cor: '#ffd23c' }, { id: 'praca', nome: 'Praça dos Aventureiros', ic: '🏰', x: PRACA.x, z: PRACA.z + 8, cor: '#ff5a3a', sub: 'Calabouços, Torre, Missões' },
@@ -284,3 +285,15 @@
     orin.traverse(o => { if (o.isMesh) o.castShadow = true; }); const x = -2.8, z = 7.6; orin.position.set(x, 0, z); world.add(orin); glowSpr(orin, 0, 0.05, 0, 2.4, '#5ae8ff', 0.3);
     const n = { c: orin, nome: 'Orin · Mago Teleportador', x, z, ry: Math.PI, ry0: Math.PI, acao: () => falar({ nome: 'Orin', falas: [{ n: 'Orin', t: 'Saudações, aventureiro! Com minha magia eu te levo a qualquer lugar do reino num piscar de olhos.' }], escolhas: () => [{ t: '🗺️ <b>Abrir o mapa</b><small>Escolha o lugar no mapa</small>', fn: () => setTimeout(mapaMundi, 50) }, ...lugaresMapa().filter(L => !L.trava && L.id !== 'vila').slice(0, 6).map(L => ({ t: L.ic + ' <b>' + L.nome + '</b>' + (L.sub ? '<small>' + L.sub + '</small>' : ''), fn: () => vaiPara(L) })), { t: 'Agora não', fn: null }] }) };
     NPCS.push(n); COL.push({ t: 'c', x, z, r: 0.45, npc: n }); n.marca = new T3.Sprite(new T3.SpriteMaterial({ map: marcaT('✦', '#5ae8ff'), transparent: true, depthWrite: false, toneMapped: false })); n.marca.scale.set(0.45, 0.6, 1); n.marca.position.set(x, 2.8, z); world.add(n.marca); }
+
+  // ===================== ITENS DIVINOS (slot próprio) =====================
+  const DIVINOS = { mandala: { nome: 'Mandala do Juízo Solar', icone: IC('cb_mandala'), preco: 15000, habs: ['cb_mandala', 'cb_mandala_def'], desc: 'Gira nas suas costas com os elos dourados e o fogo vermelho. Libera 2 habilidades divinas na barra: ⚔️ Juízo Solar (os elos atacam) e 🛡️ Égide Solar (defesa total por 30 s).' } };
+  AR.divinos = AR.divinos || []; if (AR.divino === undefined) AR.divino = null;
+  if ((AR.cbt || []).includes('cb_mandala')) { if (!AR.divinos.includes('mandala')) AR.divinos.push('mandala'); AR.cbt = AR.cbt.filter(x => x !== 'cb_mandala'); if (!AR.divino) AR.divino = 'mandala'; }
+  function divItem() { const D = DIVINOS[AR.divino]; return D ? { icone: D.icone, nome: D.nome } : null; }
+  function divOps() { return AR.divinos.filter(k => DIVINOS[k]).map(k => ({ icone: DIVINOS[k].icone, nome: DIVINOS[k].nome, sub: 'Item divino · 2 habilidades', on: AR.divino === k, fn: () => divVeste(k) })); }
+  function divVeste(k) { const antes = AR.divino && DIVINOS[AR.divino] ? DIVINOS[AR.divino].habs : []; antes.forEach(id => { for (let i = 3; i < AR.barra.length; i++) if (AR.barra[i] === id) AR.barra[i] = null; });
+    AR.divino = k && DIVINOS[k] ? k : null; if (AR.divino) { DIVINOS[k].habs.forEach(id => { if (AR.barra.indexOf(id) >= 0) return; const v = AR.barra.indexOf(null, 3); if (v >= 3) AR.barra[v] = id; }); aviso('✦ ' + DIVINOS[k].nome + ' equipada! Habilidades na barra.', '#ffd86a'); fx('luz', [heroi.position.x, 1, heroi.position.z], 1); }
+    BUFF.mandala = 0; BUFF.mandef = 0; salvaAR(); montaBarra(); if (typeof desenhaPerfil === 'function' && !$('perfil').hidden) desenhaPerfil(); }
+  SLOTS_EQ.push(['divino', IC('cb_mandala'), 'Divino']);
+  if (AR.divino) setTimeout(() => divVeste(AR.divino), 500);

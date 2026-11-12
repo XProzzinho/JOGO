@@ -1024,7 +1024,7 @@
   function emoTex(t) { return EMO[t] || (EMO[t] = canvasTex(96, 96, (x, w, h) => { x.font = '72px system-ui,"Noto Color Emoji",sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(t, w / 2, h / 2 + 4); })); }
   function solta_loot(x, z, item, n) { const s = new T3.Sprite(new T3.SpriteMaterial({ map: emoTex(ITENS[item]), transparent: true, depthWrite: false, toneMapped: false })); s.scale.set(0.6, 0.6, 1); s.position.set(x, 0.5, z); world.add(s); LOOT.push({ s, item, n, t: 0, zona }); }
   // ---- dano no Leonardo ----
-  function danoHeroi(n, de) { if (desmaiado) return; const cl = CLA(); if (cl && Math.random() < (cl.esq || 0) + (BM && BM.esq ? BM.esq : 0) + (typeof BUFF !== 'undefined' && BUFF.cb_esq > 0 ? 0.25 : 0)) { numero(heroi.position, 'Desviou!', '#9ae6ff', 2.1); return; } n *= 1 - defesa() / 100; if (GMB && GMB.length) { if (gmImune()) n = 0; n *= 1 - Math.min(0.8, gmPct('protecao')); } if (typeof BUFF !== 'undefined') { if (BUFF.cb_inv > 0) n = 0; if (BUFF.cb_res > 0) n *= 0.8; if (BUFF.cb_abs > 0) n *= 0.6; } if (muralhaT > 0) n *= 0.2; if (BUFF.espelho > 0) { n *= 0.5; if (de && !de.morto) dano(de, n, 'luz'); } if (BM && BM.espelho && de && !de.morto) dano(de, n * BM.espelho, 'luz'); enche(4); if (ativo.escudo) { n *= Math.max(0.1, 0.3 - (nivelHab('escudo') - 1) * 0.05); fx('luz', [heroi.position.x, heroi.position.y, heroi.position.z], 0.3); } n = Math.round(n); vida -= n; som('dano', 0.7, null, 0.3); semDanoT = 0; flash('rgba(255,40,40,.35)'); tremor = Math.max(tremor, 0.18);
+  function danoHeroi(n, de) { if (desmaiado) return; if (typeof BUFF !== 'undefined' && BUFF.mandef > 0) { numero(heroi.position, '🛡️ Bloqueado!', '#ffd86a', 2.1); if (typeof haloBloqueia === 'function') haloBloqueia(); return; } const cl = CLA(); if (cl && Math.random() < (cl.esq || 0) + (BM && BM.esq ? BM.esq : 0) + (typeof BUFF !== 'undefined' && BUFF.cb_esq > 0 ? 0.25 : 0)) { numero(heroi.position, 'Desviou!', '#9ae6ff', 2.1); return; } n *= 1 - defesa() / 100; if (GMB && GMB.length) { if (gmImune()) n = 0; n *= 1 - Math.min(0.8, gmPct('protecao')); } if (typeof BUFF !== 'undefined') { if (BUFF.cb_inv > 0) n = 0; if (BUFF.cb_res > 0) n *= 0.8; if (BUFF.cb_abs > 0) n *= 0.6; } if (muralhaT > 0) n *= 0.2; if (BUFF.espelho > 0) { n *= 0.5; if (de && !de.morto) dano(de, n, 'luz'); } if (BM && BM.espelho && de && !de.morto) dano(de, n * BM.espelho, 'luz'); enche(4); if (ativo.escudo) { n *= Math.max(0.1, 0.3 - (nivelHab('escudo') - 1) * 0.05); fx('luz', [heroi.position.x, heroi.position.y, heroi.position.z], 0.3); } n = Math.round(n); vida -= n; som('dano', 0.7, null, 0.3); semDanoT = 0; flash('rgba(255,40,40,.35)'); tremor = Math.max(tremor, 0.18);
     numero(heroi.position, '-' + n, '#ff5a5a', 2.1); if (vida <= 0) { vida = 0; desmaiar(); } }
   function desmaiar() { feito('nocaute'); som('desmaio', 1, 1); desmaiado = true; if (typeof bmDesliga === 'function') bmDesliga(); FERAS.forEach(e => { if (!e.morto) { e.estado = 'volta'; } }); ativo.vento = ativo.escudo = ativo.planar = false; montaBarra();
     setTimeout(() => cena([{ t: 'Tudo ficou escuro...', v: 'nar03' }, { t: 'Leonardo acordou em casa, na cama. A mãe cuidou dele a noite toda.', v: 'nar04' }, { t: '"Meu filho, cuidado lá fora! Come alguma coisa antes de sair de novo."', n: 'Mãe', v: 'mae03' }], () => {
@@ -1658,11 +1658,13 @@
     if (k === 'arma') { const W = ARMAS[AR.arma]; return AR.arma !== 'punho' && W ? W : null; }
     if (k === 'costas') return COSM[AR.cosm] || null;
     if (k === 'montaria') return montaria();
+    if (k === 'divino') return divItem();
     if (k === 'peito' && AR.fantasia !== 'comum' && FANT[AR.fantasia]) return FANT[AR.fantasia];
     if (CASACOS[AR.pecas[k]]) return sobInfo(AR.pecas[k], k);
     return AR.pecas[k] === 'glacial' ? pecaInfo(k) : null; }
   function opcoesSlot(k) {
     if (k === 'arma') return AR.armas.filter(w => ARMAS[w] && !ARMAS[w].oculta).map(w => ({ icone: ARMAS[w].icone, nome: ARMAS[w].nome, sub: 'Dano ' + ARMAS[w].dano, on: AR.arma === w, fn: () => equipaArma(w) }));
+    if (k === 'divino') return divOps();
     if (k === 'montaria') return AR.monts.filter(m => MONT[m]).map(m => ({ icone: MONT[m].icone, nome: MONT[m].nome, sub: MONT[m].desc.replace('Montaria: ', ''), on: AR.mont === m, fn: () => montaVeste(m) }));
     if (k === 'costas') return AR.cosms.filter(c => COSM[c]).map(c => ({ icone: COSM[c].icone, nome: COSM[c].nome, sub: COSM[c].b ? COSM[c].desc.split('.')[0] : 'Dá pra voar', on: AR.cosm === c, fn: () => vesteCosm(c) }));
     const P = pecaInfo(k); const ops = P ? [{ ...P, on: AR.pecas[k] === 'glacial', fn: () => vestePeca(k, true) }] : [];
@@ -1673,6 +1675,7 @@
     if (k === 'arma') return equipaArma(null);
     if (k === 'costas') return vesteCosm(null);
     if (k === 'montaria') return montaVeste(null);
+    if (k === 'divino') return divVeste(null);
     if (k === 'peito' && AR.fantasia !== 'comum') return vesteFantasia('comum');
     vestePeca(k, false); }
   function abreSlot(k) { const S = SLOTS_EQ.find(s => s[0] === k), box = $('pf-escolha');
@@ -2297,7 +2300,7 @@
   //@@GM@@
   //@@MUNDO@@
   //@@CALAB@@
-  window.__dbg = { abrirLoja, aprimora, falar, dano, CAL, DGS, calEntra, MIS, abreMural, get PRACA() { return PRACA; }, staffArmas, equipaArma, MONT3D, PET3D, get MONT() { return MONT; }, montar, petChama, MQ, set GMB(v) { GMB = v; gmHud(); }, gmPct, ASAT, COSM, vesteCosm, CB_LISTA, abrirLivros, trocaPag, get mana() { return mana; }, set mana(v) { mana = v; }, ARMAG, T3, vesteCosm, voa, get voando() { return voando; }, input, mpRecebe, entraMasmorra, saiMasmorra, MM, mmFaseAtual, mmMorte, setaFrame, equipaArma, abrirGuilda, arthurNPC, vestePeca, atualizaPecas, PECAS, BLOCOS, modoBatalha, bmLiga, bmDesliga, BMS, ORB, get BM() { return BM; }, get hora() { return hora; }, set hora(v) { hora = v; }, usarHab2: id => classePoder2(id), BUFF, abrirCriar, aplicaClasse, CLASSES, get desp() { return desp; }, set desp(v) { desp = v; }, usarHab: id => classePoder(id), renderer, scene, world, ganhaXp, vesteFantasia, abrirPerfil, fazRetrato, irValdren, Q, heroi, ativo, AR, FERAS, golem, atacar, get vida() { return vida; }, set vida(v) { vida = v; }, abrirLoja, usarPoder: id => usarPoder(PW[id]), acao: () => acao(), get alvo() { return alvo; } };
+  window.__dbg = { danoHeroi, abrirLoja, aprimora, falar, dano, CAL, DGS, calEntra, MIS, abreMural, get PRACA() { return PRACA; }, staffArmas, equipaArma, MONT3D, PET3D, get MONT() { return MONT; }, montar, petChama, MQ, set GMB(v) { GMB = v; gmHud(); }, gmPct, ASAT, COSM, vesteCosm, CB_LISTA, abrirLivros, trocaPag, get mana() { return mana; }, set mana(v) { mana = v; }, ARMAG, T3, vesteCosm, voa, get voando() { return voando; }, input, mpRecebe, entraMasmorra, saiMasmorra, MM, mmFaseAtual, mmMorte, setaFrame, equipaArma, abrirGuilda, arthurNPC, vestePeca, atualizaPecas, PECAS, BLOCOS, modoBatalha, bmLiga, bmDesliga, BMS, ORB, get BM() { return BM; }, get hora() { return hora; }, set hora(v) { hora = v; }, usarHab2: id => classePoder2(id), BUFF, abrirCriar, aplicaClasse, CLASSES, get desp() { return desp; }, set desp(v) { desp = v; }, usarHab: id => classePoder(id), renderer, scene, world, ganhaXp, vesteFantasia, abrirPerfil, fazRetrato, irValdren, Q, heroi, ativo, AR, FERAS, golem, atacar, get vida() { return vida; }, set vida(v) { vida = v; }, abrirLoja, usarPoder: id => usarPoder(PW[id]), acao: () => acao(), get alvo() { return alvo; } };
   // ---------- laço do jogo ----------
   let vy = 0, noChao = true, facing = 0, vel = 0, gT = 0, last = performance.now();
   const ANDAR = 3.0, CORRER = 6.5, GRAV = 22, PULO = 7.6; const tmp = new T3.Vector3();

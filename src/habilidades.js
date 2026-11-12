@@ -2,7 +2,7 @@
   // ===================== LIVROS DE HABILIDADE (vendidos pela deusa Elysia) =====================
   // Por enquanto: Guerreiro. Cada classe só aprende/usa as habilidades da própria classe.
   // As habilidades de classe vão entrar uma por uma. Por enquanto a Elysia vende as asas e as habilidades delas.
-  var CB_LISTA = [{ id: 'cb_voar', nome: 'Voar', r: 1, t: 'voo', e: 'vento', req: '*' }, { id: 'cb_impulso_eletrico', nome: 'Impulso Elétrico', r: 1, t: 'impulso', e: 'raio', req: 'asa_thunder' }, { id: 'cb_teleporte_galactico', nome: 'Teleporte Galáctico', r: 1, t: 'teleg', e: 'magia', req: 'asa_galaxy' }, { id: 'cb_mandala', nome: 'Mandala do Juízo Solar', r: 10, t: 'mandala', e: 'luz', lendaria: true }];
+  var CB_LISTA = [{ id: 'cb_voar', nome: 'Voar', r: 1, t: 'voo', e: 'vento', req: '*' }, { id: 'cb_impulso_eletrico', nome: 'Impulso Elétrico', r: 1, t: 'impulso', e: 'raio', req: 'asa_thunder' }, { id: 'cb_teleporte_galactico', nome: 'Teleporte Galáctico', r: 1, t: 'teleg', e: 'magia', req: 'asa_galaxy' }, { id: 'cb_mandala', nome: 'Juízo Solar', r: 10, t: 'mandala', e: 'luz', lendaria: true, divino: 'mandala' }, { id: 'cb_mandala_def', nome: 'Égide Solar', r: 10, t: 'mandef', e: 'luz', lendaria: true, divino: 'mandala' }];
   var CB_COR = { magia: '#b46aff', terra: '#d8a24a', agua: '#4ab0ff', vento: '#7affc8', fogo: '#ff6a2a', gelo: '#bff2ff', raio: '#ffe85a', veneno: '#8aff4a', luz: '#fff2a8', sombra: '#a05aff', sangue: '#ff3a4a', cura: '#7aff9a', aco: '#dfe4ee' };
   var CB_ELN = { magia: 'magia', terra: 'terra', agua: 'água', vento: 'vento', fogo: 'fogo', gelo: 'gelo', raio: 'raio', veneno: 'veneno', luz: 'luz', sombra: 'sombra', sangue: 'sangue', cura: 'cura', aco: 'aço' };
   var CB_PRECO = [0, 0, 40, 70, 100, 150, 200, 260, 330, 420, 500];
@@ -18,14 +18,14 @@
     b_atk: [15, 30, 'Por {d} s: +25% de ataque.'], b_def: [15, 30, 'Por {d} s: +20% de defesa.'], b_crit: [15, 30, 'Por {d} s: +15% de chance de crítico.'], b_res: [15, 30, 'Por {d} s: recebe 20% menos dano.'],
     b_regen: [15, 30, 'Por {d} s: a vida volta sozinha.'], b_mana: [10, 30, 'Por {d} s: a mana volta mais rápido.'], b_inv: [40, 60, 'Por 4 s: não leva dano nenhum.'], b_esq: [15, 30, 'Por {d} s: +25% de esquiva.'],
     b_abs: [25, 40, 'Por {d} s: uma barreira absorve 40% do dano.'], b_tudo: [25, 45, 'Por {d} s: +15% ataque, +10% defesa e +5% crítico.'], b_aura: [20, 30, 'Por {d} s: aura de {el} que machuca quem chegar perto.'],
-    mandala: [40, 45, 'LENDÁRIA · Por 30 s a Mandala do Juízo Solar gira nas suas costas: os dois elos dourados se soltam, voam girando, cortam os inimigos várias vezes e voltam. A cada ataque eles saem de novo.'], gm: [0, 30, 'Só o Administrador: tudo no máximo por 60 s e vida cheia.'], gm_mal: [0, 20, 'Só o Administrador: amaldiçoa todos os bichos em volta.'],
+    mandala: [40, 45, 'DIVINA · Ataque: por 30 s, a cada ataque os dois elos dourados da Mandala se soltam, voam girando, cortam os inimigos várias vezes e voltam pras costas.'], mandef: [35, 60, 'DIVINA · Defesa: a Mandala vem pra frente, se expande e gira rápido, um anel pra cada lado. Bloqueia TODO o dano por 30 s.'], gm: [0, 30, 'Só o Administrador: tudo no máximo por 60 s e vida cheia.'], gm_mal: [0, 20, 'Só o Administrador: amaldiçoa todos os bichos em volta.'],
     p_atk: [0, 0, 'Passiva: +4% de ataque pra sempre.'], p_def: [0, 0, 'Passiva: +3% de defesa pra sempre.'], p_crit: [0, 0, 'Passiva: +2% de crítico pra sempre.'], p_vida: [0, 0, 'Passiva: +15 de vida máxima.'], p_mana: [0, 0, 'Passiva: +10 de mana máxima.'], p_tudo: [0, 0, 'Passiva: +5% ataque, +4% defesa, +3% crítico e +20 de vida.'] };
   var CB_PW = {}, CB_CD = {}, cbAuraEl = null, cbAuraT = 0;
   CB_LISTA.forEach(s => { const I = CB_INFO[s.t]; s.icone = IC(s.id); s.passiva = s.t.indexOf('p_') === 0; s.custo = Math.round(I[0] * (1 + (s.r - 1) * 0.12)); s.cdS = I[1]; s.dur = 15 + s.r * 2;
     s.desc = I[2].replace('{el}', CB_ELN[s.e] || 'energia').replace('{d}', s.dur); s.tipo = 'uso'; s.ramo = 'livro'; s.cabal = true; s.preco = s.lendaria ? 15000 : CB_PRECO[s.r]; s.nvMin = 1; if (s.lendaria) s.dur = 30; CB_PW[s.id] = s; PW[s.id] = s; PODERES.push(s); });
   AR.cbt = (AR.cbt || []).filter(id => CB_PW[id]); for (let i = 3; i < NSLOTS; i++) if (/^cb_/.test(AR.barra[i] || '') && !CB_PW[AR.barra[i]]) AR.barra[i] = null;
   (AR.pags || []).forEach(pg => pg && pg.forEach((id, i) => { if (/^cb_/.test(id || '') && !CB_PW[id]) pg[i] = null; }));
-  function cbTem(id) { return (AR.cbt || []).includes(id); }
+  function cbTem(id) { const s = CB_PW && CB_PW[id]; if (s && s.divino) return AR.divino === s.divino; return (AR.cbt || []).includes(id); }
   function cbPas(k) { let v = 0; if (!CB_PW || AR.classe !== 'guerreiro') return v; (AR.cbt || []).forEach(id => { const s = CB_PW[id]; if (!s || !s.passiva) return; const t = s.t;
       if (k === 'atk') v += t === 'p_atk' ? 0.04 : t === 'p_tudo' ? 0.05 : 0; if (k === 'def') v += t === 'p_def' ? 3 : t === 'p_tudo' ? 4 : 0; if (k === 'crit') v += t === 'p_crit' ? 0.02 : t === 'p_tudo' ? 0.03 : 0;
       if (k === 'vida') v += t === 'p_vida' ? 15 : t === 'p_tudo' ? 20 : 0; if (k === 'mana') v += t === 'p_mana' ? 10 : 0; }); return v; }
@@ -71,6 +71,7 @@
       case 'salto': if (!noChao) { CB_CD[s.id] = 0; break; } vy = PULO * 1.7; noChao = false; esmaga = true; break;
       case 'grito': area(p.x, p.z, 7, e => { e.stun = Math.max(e.stun, 2); e.vuln = 6; hit(e, 15); }); fx('vento', [p.x, 0, p.z], 0.9); flash('rgba(255,120,80,.2)'); som('grito', 0.7); break;
       case 'mandala': buffA('mandala', s.dur, 'os elos dourados te protegem por ' + s.dur + ' s!'); flash('rgba(255,200,80,.45)'); som('missao_ok', 0.8, 0.8); setTimeout(() => haloAtk(true), 350); break;
+      case 'mandef': buffA('mandef', 30, 'defesa total por 30 s!'); BUFF.mandala = 0; flash('rgba(255,220,120,.5)'); som('portal', 0.9, 1.2); tremor = Math.max(tremor, 0.25); break;
       case 'voo': voa(!voando); break;
       case 'impulso': { const a0 = facing; caminho(p.x, p.z, a0, 9, 1.1, e => { hit(e, 36); e.stun = Math.max(e.stun, 1.2); }); linhaLuz({ x: p.x, y: p.y + 1, z: p.z }, { x: p.x + Math.sin(a0) * 9, y: p.y + 1, z: p.z + Math.cos(a0) * 9 }, c, 12); arranca(a0, 9, 0.22); flash('rgba(120,220,255,.3)'); som('raio', 0.7); break; }
       case 'teleg': fx('luz', [p.x, p.y, p.z], 0.5); p.x += Math.sin(facing) * 9; p.z += Math.cos(facing) * 9; fx('luz', [p.x, p.y, p.z], 0.5); flash('rgba(160,90,255,.3)'); break;
@@ -95,24 +96,29 @@
     for (let i = 3; i < NSLOTS; i++) { const v = AR.barra[i]; if (v && ativo[v] && !nv.includes(v)) ativo[v] = false; AR.barra[i] = nv[i - 3] || null; } salvaAR(); montaBarra(); pagBtn.innerHTML = '⇅<small>' + (AR.pag + 1) + '/3</small>'; som('clique', 0.5, 1); }
   var pagBtn = document.createElement('button'); pagBtn.id = 'pag-btn'; pagBtn.innerHTML = '⇅<small>' + ((AR.pag || 0) + 1) + '/3</small>'; barra.appendChild(pagBtn); tapBtn(pagBtn, trocaPag);
   // ---- loja da deusa ----
-  var livAba = 'asas';
+  var livAba = 'div';
   function abrirLivros() { if (conversa || cenaQ) return; som('magia', 0.6); desenhaLivros(); $('livp').hidden = false; }
   function livBtn(txt, cls, fn, off) { const b = document.createElement('button'); b.className = cls; b.innerHTML = txt; b.disabled = !!off; if (!off && fn) tapBtn(b, fn); return b; }
   function desenhaLivros() { const L = $('liv-lista'); L.innerHTML = ''; $('liv-m').textContent = (AR.inv.moedas || 0).toLocaleString('pt-BR'); const adm = souAdmin();
     $('liv-cls').innerHTML = livAba === 'asas' ? 'Asas tecnológicas: vista em <b>Costas</b> e ganhe o bônus. <b>Voar</b> só com permissão do Administrador.' : livAba === 'mont' ? 'Montarias: equipe em <b>🎒 › Montaria</b> e toque em <b>MONTAR</b>.' : livAba === 'pet' ? 'Pets: ficam do seu lado e ajudam na luta.' : 'Habilidades: as de cada classe vão chegar aos poucos.<span>Página da barra: ' + ((AR.pag || 0) + 1) + '/3 (⇅ troca)</span>';
-    const R = $('liv-ranks'); R.innerHTML = ''; [['asas', 'Asas'], ['mont', 'Montarias'], ['pet', 'Pets'], ['hab', 'Habilidades']].forEach(([k, t]) => R.appendChild(livBtn(t, 'lr' + (livAba === k ? ' on' : ''), () => { livAba = k; desenhaLivros(); })));
+    const R = $('liv-ranks'); R.innerHTML = ''; [['div', '✦ Divinos'], ['asas', 'Asas'], ['mont', 'Montarias'], ['pet', 'Pets'], ['hab', 'Habilidades']].forEach(([k, t]) => R.appendChild(livBtn(t, 'lr' + (livAba === k ? ' on' : ''), () => { livAba = k; desenhaLivros(); })));
     if (livAba === 'mont' || livAba === 'pet') { const pet = livAba === 'pet', LST = pet ? PETS : MONT, tenho = pet ? AR.pets : AR.monts;
       Object.keys(LST).forEach(k => { const F = LST[k], tem = tenho.includes(k), on = pet ? AR.pet === k : AR.mont === k; const d = document.createElement('div'); d.className = 'li asa' + (tem ? ' tem' : '');
         d.innerHTML = `<span class="ic">${F.icone}</span><div class="tx"><b>${F.nome}</b><small>${F.desc}</small></div><div class="ac"></div>`; const ac = d.querySelector('.ac');
         if (tem) ac.appendChild(livBtn(pet ? (on ? 'Guardar' : 'Chamar') : (on ? '✔ Equipada' : 'Equipar'), 'cp', () => { if (pet) petChama(k); else montaVeste(on ? null : k); desenhaLivros(); }));
         else { const caro = !adm && (AR.inv.moedas || 0) < F.preco; ac.appendChild(livBtn(adm ? 'Pegar (ADM)' : 'Comprar · ' + F.preco + ' <img class="ico" src="icones/item_moedas.svg" alt="">', 'cp', () => { if (!adm) AR.inv.moedas -= F.preco; tenho.push(k); if (pet) petChama(k); else montaVeste(k); atualizaInv(); som('compra', 0.8, 1); flash('rgba(255,255,255,.3)'); desenhaLivros(); }, caro)); }
         L.appendChild(d); }); return; }
+    if (livAba === 'div') { Object.keys(DIVINOS).forEach(k => { const F = DIVINOS[k], tem = AR.divinos.includes(k), on = AR.divino === k; const d = document.createElement('div'); d.className = 'li lend' + (tem ? ' tem' : '');
+        d.innerHTML = `<span class="ic">${F.icone}</span><div class="tx"><b><i class="lendtag">✦ DIVINO</i> ${F.nome}</b><small>${F.desc}</small><small>Habilidades: ${F.habs.map(id => CB_PW[id].icone.replace('class="ico"', 'class="ico mini"') + ' ' + CB_PW[id].nome).join(' · ')}</small></div><div class="ac"></div>`; const ac = d.querySelector('.ac');
+        if (tem) ac.appendChild(livBtn(on ? '✔ Equipado' : 'Equipar', 'cp', () => { divVeste(on ? null : k); desenhaLivros(); }));
+        else { const caro = !adm && (AR.inv.moedas || 0) < F.preco; ac.appendChild(livBtn(adm ? 'Pegar (ADM)' : 'Comprar · ' + F.preco.toLocaleString('pt-BR') + ' <img class="ico" src="icones/item_moedas.svg" alt="">', 'cp', () => { if (!adm) AR.inv.moedas -= F.preco; AR.divinos.push(k); divVeste(k); atualizaInv(); som('compra', 0.8, 1); flash('rgba(255,220,120,.45)'); desenhaLivros(); }, caro)); }
+        L.appendChild(d); }); $('liv-cls').innerHTML = 'Itens divinos: equipe no espaço <b>✦ Divino</b> do seu equipamento. Eles liberam habilidades próprias na barra.'; return; }
     if (livAba === 'asas') { Object.keys(COSM).filter(k => COSM[k].loja).forEach(k => { const F = COSM[k], tem = AR.cosms.includes(k), on = AR.cosm === k; const d = document.createElement('div'); d.className = 'li asa' + (tem ? ' tem' : '');
         d.innerHTML = `<span class="ic">${F.icone}</span><div class="tx"><b style="color:${F.cor}">${F.nome}</b><small>${F.desc}</small></div><div class="ac"></div>`; const ac = d.querySelector('.ac');
         if (tem) ac.appendChild(livBtn(on ? '✔ Vestida' : 'Vestir', 'cp', () => { vesteCosm(on ? null : k); desenhaLivros(); }));
         else { const caro = !adm && (AR.inv.moedas || 0) < F.preco; ac.appendChild(livBtn(adm ? 'Pegar (ADM)' : 'Comprar · ' + F.preco + ' <img class="ico" src="icones/item_moedas.svg" alt="">', 'cp', () => { if (!adm) AR.inv.moedas -= F.preco; AR.cosms.push(k); vesteCosm(k); atualizaInv(); som('compra', 0.8, 1); flash('rgba(255,255,255,.3)'); aviso('Comprou: ' + F.icone + ' ' + F.nome + '! Já está vestida.', F.cor); desenhaLivros(); }, caro)); }
         L.appendChild(d); }); return; }
-    CB_LISTA.slice().sort((a, b) => !!b.lendaria - !!a.lendaria).forEach(s => { const tem = cbTem(s.id); const d = document.createElement('div'); d.className = 'li' + (tem ? ' tem' : '') + (s.lendaria ? ' lend' : '');
+    CB_LISTA.filter(s => !s.divino).forEach(s => { const tem = cbTem(s.id); const d = document.createElement('div'); d.className = 'li' + (tem ? ' tem' : '') + (s.lendaria ? ' lend' : '');
       const req = s.req === '*' ? 'Precisa de asas' : s.req ? 'Precisa da ' + COSM[s.req].nome : '';
       d.innerHTML = `<span class="ic">${s.icone}</span><div class="tx"><b>${s.lendaria ? '<i class="lendtag">✦ LENDÁRIA</i> ' : ''}${s.nome}</b><small>${s.passiva ? 'Passiva' : 'Mana ' + s.custo + ' · recarga ' + s.cdS + ' s'}${req ? ' · ' + req : ''}</small><small>${s.desc}</small></div><div class="ac"></div>`; const ac = d.querySelector('.ac');
       if (s.cls && AR.classe !== s.cls) ac.innerHTML = '<span class="trava">🔒 Só ' + CLASSES[s.cls].nome + '</span>';

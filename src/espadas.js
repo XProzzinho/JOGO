@@ -129,12 +129,26 @@
     const A = pl(texA, 2.3); A.position.z = -0.03; H.add(A); const B = pl(texB, 1.55); H.add(B); const F = pl(texF, 1.9); F.position.z = 0.02; H.add(F);
     const anc = m => ({ p: m.position.clone(), q: m.quaternion.clone(), s: m.scale.clone() });
     return { H, A, B, F, G, ancA: anc(A), ancB: anc(B), elos: [], cd: 0 }; })();
-  function haloOn() { const W = ARMAS[AR.arma]; return !!(W && W.halo) || BUFF.mandala > 0; }
+  function haloOn() { const W = ARMAS[AR.arma]; return (!!(W && W.halo) || BUFF.mandala > 0) && !(BUFF.mandef > 0); }
+  function haloVis() { const W = ARMAS[AR.arma]; return !!(W && W.halo) || AR.divino === 'mandala' || BUFF.mandala > 0 || BUFF.mandef > 0; }
   function haloAtk(forca) { if (!haloOn() || HALO.elos.length || (HALO.cd > 0 && !forca)) return; HALO.H.visible = true; const alvo = maisPerto(24); if (!alvo) return;
     HALO.cd = 3.2; som('magia', 0.8, 0.8); fx('luz', [heroi.position.x, 1.5, heroi.position.z], 0.6);
     [[HALO.A, 1, HALO.ancA], [HALO.B, -1, HALO.ancB]].forEach(([m, sd, anc]) => { world.attach(m); HALO.elos.push({ m, sd, anc, alvo, fase: 'ida', t: 0, hit: 0, ang: sd > 0 ? 0 : Math.PI, spin: 0, s0: m.scale.x }); }); }
-  function haloFrame(dt) { const quer = haloOn() && !dentro; HALO.H.visible = quer || HALO.elos.length > 0; if (HALO.cd > 0) HALO.cd -= dt;
+  // ---- MODO DEFESA (Égide Solar): a Mandala vem pra frente, expande e bloqueia tudo ----
+  const BOLHA = new T3.Mesh(new T3.SphereGeometry(1.55, 32, 20), new T3.MeshBasicMaterial({ color: '#ffcc55', transparent: true, opacity: 0.12, blending: T3.AdditiveBlending, depthWrite: false, toneMapped: false })); BOLHA.position.y = 1.0; BOLHA.visible = false; heroi.add(BOLHA);
+  const DEF_ANEL = new T3.Mesh(new T3.TorusGeometry(1.25, 0.03, 8, 60), new T3.MeshBasicMaterial({ color: '#fff2b0', transparent: true, opacity: 0.9, blending: T3.AdditiveBlending, depthWrite: false, toneMapped: false })); DEF_ANEL.position.z = 0.03; DEF_ANEL.visible = false; HALO.H.add(DEF_ANEL);
+  const DEF_FL = new T3.Sprite(new T3.SpriteMaterial({ map: HALO.G.material.map, transparent: true, depthWrite: false, blending: T3.AdditiveBlending, toneMapped: false })); DEF_FL.position.z = 0.12; DEF_FL.scale.set(0.01, 0.01, 1); HALO.H.add(DEF_FL);
+  function haloBloqueia() { if (!HALO.def) return; DEF_FL.userData.t = 0.22; DEF_FL.position.set((Math.random() - 0.5) * 1.2, (Math.random() - 0.5) * 1.2, 0.12); som('espada', 0.45, 0.6 + Math.random() * 0.2, 0.05); }
+  function haloDefFrame(dt) { const quer = BUFF.mandef > 0 && !dentro;
+    if (quer && !HALO.def) { HALO.elos.slice().forEach(o => { HALO.H.add(o.m); o.m.position.copy(o.anc.p); o.m.quaternion.copy(o.anc.q); o.m.scale.copy(o.anc.s); }); HALO.elos.length = 0;
+      heroi.add(HALO.H); HALO.H.position.set(0, 1.25, 1.15); HALO.H.rotation.set(0, 0, 0); HALO.def = { t: 0 }; BOLHA.visible = DEF_ANEL.visible = true; }
+    if (!quer && HALO.def) { heroi.userData.P.spine.add(HALO.H); HALO.H.position.set(0, 0.62, -0.62); HALO.H.rotation.set(0, 0, 0); HALO.H.scale.setScalar(1); HALO.def = null; BOLHA.visible = DEF_ANEL.visible = false; DEF_FL.scale.set(0.01, 0.01, 1); if (!(BUFF.mandef > 0)) aviso('🛡️ Égide Solar acabou.', '#c8b48a'); }
+    if (!HALO.def) return; const D = HALO.def; D.t += dt; const ex = Math.min(1, D.t / 0.45), k = 0.15 + ex * 1.05 + (D.t < 0.6 ? Math.sin(ex * Math.PI) * 0.18 : 0); HALO.H.scale.setScalar(k);
+    BOLHA.material.opacity = ex * (0.12 + Math.sin(gT * 6) * 0.04); BOLHA.scale.setScalar(0.3 + ex * 0.7); DEF_ANEL.material.opacity = 0.6 + Math.sin(gT * 9) * 0.3; HALO.G.material.opacity = 0.45 + Math.sin(gT * 7) * 0.15;
+    if (DEF_FL.userData.t > 0) { DEF_FL.userData.t -= dt; const s = 2.3 * Math.max(0, DEF_FL.userData.t / 0.22); DEF_FL.scale.set(s, s, 1); } else DEF_FL.scale.set(0.01, 0.01, 1); }
+  function haloFrame(dt) { const quer = haloVis() && !dentro; haloDefFrame(dt); HALO.H.visible = quer || HALO.elos.length > 0; if (HALO.cd > 0) HALO.cd -= dt;
     if (!HALO.H.visible) return; HALO.F.rotation.z += dt * 2.1; HALO.G.material.opacity = 0.32 + Math.sin(gT * 3) * 0.1;
+    if (HALO.def) { HALO.A.rotation.z += dt * 6; HALO.B.rotation.z -= dt * 9; HALO.F.rotation.z += dt * 4; return; }
     if (!HALO.elos.length) { HALO.A.rotation.z += dt * 0.55; HALO.B.rotation.z -= dt * 1.5; return; }
     const W0 = ARMAS[AR.arma] || ARMAS.punho, W = { dano: Math.max(W0.dano || 10, 30) }, tmpV = new T3.Vector3();
     for (let i = HALO.elos.length - 1; i >= 0; i--) { const o = HALO.elos[i], m = o.m; o.t += dt; o.spin += dt * (o.sd > 0 ? 14 : -18);
