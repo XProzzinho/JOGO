@@ -180,11 +180,29 @@
     else if (x.t === 'xp') { ganhaXp(n, true); nome = n.toLocaleString('pt-BR') + ' de XP'; }
     else if (x.t === 'titulo' && TITULOS[x.k]) { ganhaTitulo(x.k, true); nome = 'título ' + TITULOS[x.k].nome; }
     else return;
-    aviso('🎁 ' + (x.porNome || 'O Administrador') + ' te deu: <b>' + nome + '</b>', '#ff8aff'); flash('rgba(255,140,255,.3)'); som('missao_ok', 0.8, 1); }
+    aviso('🎁 ' + (x.porNome || 'O Administrador') + ' te deu: ' + nome, '#ff8aff'); flash('rgba(255,140,255,.3)'); som('missao_ok', 0.8, 1); }
+  // Caixa de Mensagens: o presente chega como carta; o jogador abre e toca em Resgatar
+  AR.correio = AR.correio || [];
+  function presInfo(x) { const C = window.__catalogo ? __catalogo() : {}; const it = (C[x.t] || []).find(i => i[0] === x.k); const n = Math.max(1, x.n | 0 || 1);
+    if (x.t === 'moedas') return { nome: n.toLocaleString('pt-BR') + ' moedas', img: 'icones/ui_moeda.svg' }; if (x.t === 'xp') return { nome: n.toLocaleString('pt-BR') + ' de XP', img: '' };
+    return { nome: (it ? it[1] : x.k) + (x.t === 'item' && n > 1 ? ' x' + n : ''), img: it ? it[2] : '' }; }
+  function correioBadge() { const b = $('correio-n'), n = AR.correio.length; if (!b) return; b.hidden = !n; b.textContent = n > 9 ? '9+' : n; $('correio-btn').classList.toggle('pisca', AR.correio.some(m => !m.lido)); }
+  function correioAbre() { if (conversa || cenaQ) return; $('correio').hidden = false; AR.correio.forEach(m => m.lido = true); correioDesenha(); correioBadge(); salvaAR(); }
+  function correioResgata(ids) { const L = AR.correio.filter(m => ids.includes(m.id)); if (!L.length) return; AR.correio = AR.correio.filter(m => !ids.includes(m.id));
+    L.forEach((x, i) => setTimeout(() => presAplica(x), i * 700)); setTimeout(() => { salvaAR(); atualizaInv(); if (typeof montaBarra === 'function') montaBarra(); }, L.length * 700 + 100); correioDesenha(); correioBadge(); salvaAR(); }
+  function correioDesenha() { const L = $('correio-lista'); L.innerHTML = ''; $('correio-tudo').hidden = AR.correio.length < 2;
+    if (!AR.correio.length) { L.innerHTML = '<p class="vazio">📭 Nenhuma mensagem por enquanto.</p>'; return; }
+    AR.correio.slice().reverse().forEach(m => { const I = presInfo(m), d = document.createElement('div'); d.className = 'carta';
+      const dt = m.criado ? new Date(m.criado).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : '';
+      d.innerHTML = `<div class="c-ic">${I.img ? `<img src="${I.img}" alt="">` : '<span>🎁</span>'}</div><div class="c-tx"><small>📩 De: <b>${limpa(m.porNome || 'Administrador')}</b> · ${dt}</small>${m.msg ? `<p>“${limpa(m.msg)}”</p>` : ''}<b class="c-it">🎁 ${limpa(I.nome)}</b></div>`;
+      const bt = document.createElement('button'); bt.textContent = 'Resgatar'; tapBtn(bt, () => correioResgata([m.id])); d.appendChild(bt); L.appendChild(d); }); }
+  function limpa(t) { return String(t == null ? '' : t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
   function presOuve() { if (presOuv || !window.CONTA || !CONTA.db || !CONTA.usuario) return; presOuv = true;
     CONTA.db.collection('presentes').doc(CONTA.usuario.uid).onSnapshot(d => { const L = (d.exists && d.data().lista) || []; const novos = L.filter(x => x && x.id && !AR.presVistos.includes(x.id)); if (!novos.length) return;
-      novos.forEach((x, i) => setTimeout(() => presAplica(x), i * 900)); AR.presVistos = AR.presVistos.concat(novos.map(x => x.id)).slice(-300);
-      setTimeout(() => { salvaAR(); atualizaInv(); if (typeof montaBarra === 'function') montaBarra(); }, novos.length * 900 + 100); d.ref.set({ lista: [] }).catch(() => {}); }, () => { presOuv = false; }); }
+      novos.forEach(x => AR.correio.push(Object.assign({}, x, { lido: false }))); AR.presVistos = AR.presVistos.concat(novos.map(x => x.id)).slice(-300);
+      aviso('📩 Nova mensagem de ' + (novos[0].porNome || 'Administrador') + '! Abra a caixa de mensagens.', '#ff8aff'); som('missao_ok', 0.7, 1.2);
+      correioBadge(); if (!$('correio').hidden) correioDesenha(); salvaAR(); d.ref.set({ lista: [] }).catch(() => {}); }, () => { presOuv = false; }); }
+  tapBtn($('correio-btn'), correioAbre); tapBtn($('correio-fecha'), () => { $('correio').hidden = true; }); tapBtn($('correio-tudo'), () => correioResgata(AR.correio.map(m => m.id))); correioBadge();
   setInterval(presOuve, 5000);
   window.__catalogo = () => { const src = h => { const m = /src="([^"]+)"/.exec(h || ''); return m ? m[1] : ''; }; const C = {};
     C.arma = Object.keys(ARMAS).filter(k => k !== 'punho').map(k => [k, ARMAS[k].nome, src(ARMAS[k].icone), ARMAS[k].staff ? 'Só ' + ARMAS[k].staff.toUpperCase() : ARMAS[k].soClasse ? 'Só ' + CLASSES[ARMAS[k].soClasse].nome : ARMAS[k].classe ? 'Classe ' + CLASSES[ARMAS[k].classe].nome : 'Dano ' + ARMAS[k].dano]);
