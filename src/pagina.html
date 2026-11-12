@@ -344,6 +344,7 @@
 #muralp .fl{display:flex;gap:4px;margin-bottom:6px;flex-wrap:wrap}#muralp .fl button{background:#fff;border:2px solid #6a4424;border-radius:8px;padding:3px 9px;font-weight:900;color:var(--c,#2b2340)}#muralp .fl button.on{background:#6a4424;color:#fff}
 #muralp .ls{overflow:auto;display:flex;flex-direction:column;gap:5px}#muralp .ms{display:flex;gap:8px;align-items:center;background:#fffaf0;border:1px solid #c8b088;border-radius:10px;padding:6px}#muralp .ms.at{border:2px solid #4ab870;background:#f0fff0}#muralp .ms .tx{flex:1;display:flex;flex-direction:column}#muralp .ms small{font-size:11px;font-weight:600}#muralp .ms .pg{color:#2a8a3a;font-weight:900}
 #muralp .ms button{background:#4ab870;color:#fff;border:0;border-radius:8px;padding:7px 10px;font-weight:900;min-width:86px}#muralp .ms button:disabled{background:#a8a0b0}#muralp .vz{text-align:center;opacity:.7}
+#mapa .box{max-height:94vh;overflow:auto}#mapa-cv{width:100%;max-width:600px;border-radius:12px;border:3px solid #2b2340;display:block;margin:6px auto;cursor:pointer}#mapa-lista{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:5px}
 </style>
 </head>
 <body>
@@ -396,7 +397,7 @@
 <div id="hpbs"></div><div id="nums"></div>
 <div id="livp" hidden><div class="box"><div class="hd"><h3><img class="ico" src="icones/p_runa.svg" alt=""> Loja da Deusa · Elysia</h3><span class="mo"><img class="ico" src="icones/item_moedas.svg" alt=""> <b id="liv-m">0</b></span><button id="liv-fecha">Fechar</button></div><div id="liv-cls"></div><div id="liv-ranks"></div><div id="liv-lista"></div></div></div>
 <div id="loja" hidden><div class="box"><div class="hd"><h3>⚒️ Forja de Brumafria</h3><span class="mo">💰 <b id="loja-m">0</b></span><button id="loja-fecha">Fechar</button></div><div id="loja-lista"></div></div></div>
-<div id="mapa" hidden><div class="box"><h3>🗺️ Mapa de Aetherion</h3><p>Toque num lugar pra viajar.</p><div id="mapa-lista"></div><button id="mapa-fecha">Fechar</button></div></div>
+<div id="mapa" hidden><div class="box"><h3>🗺️ Mapa de Aetherion</h3><p>Toque num lugar do mapa (ou da lista) pra teleportar.</p><canvas id="mapa-cv" width="600" height="380"></canvas><div id="mapa-lista"></div><button id="mapa-fecha">Fechar</button></div></div>
 <div id="saber"></div>
 <div id="aviso"></div>
 <div id="cena" hidden><div id="cena-quem"></div><div id="cena-txt"></div><div id="cena-mais">toque pra continuar ▸</div></div>

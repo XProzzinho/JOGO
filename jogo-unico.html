@@ -344,6 +344,7 @@
 #muralp .fl{display:flex;gap:4px;margin-bottom:6px;flex-wrap:wrap}#muralp .fl button{background:#fff;border:2px solid #6a4424;border-radius:8px;padding:3px 9px;font-weight:900;color:var(--c,#2b2340)}#muralp .fl button.on{background:#6a4424;color:#fff}
 #muralp .ls{overflow:auto;display:flex;flex-direction:column;gap:5px}#muralp .ms{display:flex;gap:8px;align-items:center;background:#fffaf0;border:1px solid #c8b088;border-radius:10px;padding:6px}#muralp .ms.at{border:2px solid #4ab870;background:#f0fff0}#muralp .ms .tx{flex:1;display:flex;flex-direction:column}#muralp .ms small{font-size:11px;font-weight:600}#muralp .ms .pg{color:#2a8a3a;font-weight:900}
 #muralp .ms button{background:#4ab870;color:#fff;border:0;border-radius:8px;padding:7px 10px;font-weight:900;min-width:86px}#muralp .ms button:disabled{background:#a8a0b0}#muralp .vz{text-align:center;opacity:.7}
+#mapa .box{max-height:94vh;overflow:auto}#mapa-cv{width:100%;max-width:600px;border-radius:12px;border:3px solid #2b2340;display:block;margin:6px auto;cursor:pointer}#mapa-lista{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:5px}
 </style>
 </head>
 <body>
@@ -396,7 +397,7 @@
 <div id="hpbs"></div><div id="nums"></div>
 <div id="livp" hidden><div class="box"><div class="hd"><h3><img class="ico" src="icones/p_runa.svg" alt=""> Loja da Deusa · Elysia</h3><span class="mo"><img class="ico" src="icones/item_moedas.svg" alt=""> <b id="liv-m">0</b></span><button id="liv-fecha">Fechar</button></div><div id="liv-cls"></div><div id="liv-ranks"></div><div id="liv-lista"></div></div></div>
 <div id="loja" hidden><div class="box"><div class="hd"><h3>⚒️ Forja de Brumafria</h3><span class="mo">💰 <b id="loja-m">0</b></span><button id="loja-fecha">Fechar</button></div><div id="loja-lista"></div></div></div>
-<div id="mapa" hidden><div class="box"><h3>🗺️ Mapa de Aetherion</h3><p>Toque num lugar pra viajar.</p><div id="mapa-lista"></div><button id="mapa-fecha">Fechar</button></div></div>
+<div id="mapa" hidden><div class="box"><h3>🗺️ Mapa de Aetherion</h3><p>Toque num lugar do mapa (ou da lista) pra teleportar.</p><canvas id="mapa-cv" width="600" height="380"></canvas><div id="mapa-lista"></div><button id="mapa-fecha">Fechar</button></div></div>
 <div id="saber"></div>
 <div id="aviso"></div>
 <div id="cena" hidden><div id="cena-quem"></div><div id="cena-txt"></div><div id="cena-mais">toque pra continuar ▸</div></div>
@@ -1173,7 +1174,7 @@ ${_}`}class A extends Error{constructor({message:e,code:t,cause:r,name:s}){var n
     mx.restore();
     mx.save(); mx.translate(W / 2, H / 2); mx.rotate(-facing + Math.PI); mx.fillStyle = '#2a7aff'; mx.strokeStyle = '#fff'; mx.lineWidth = 2; mx.beginPath(); mx.moveTo(0, -9); mx.lineTo(6, 6); mx.lineTo(0, 3); mx.lineTo(-6, 6); mx.closePath(); mx.fill(); mx.stroke(); mx.restore();
     mx.strokeStyle = 'rgba(255,255,255,.9)'; mx.lineWidth = 2; mx.beginPath(); mx.arc(W / 2, H / 2, W / 2 - 2, 0, 7); mx.stroke(); mx.fillStyle = '#fff'; mx.font = 'bold 12px sans-serif'; mx.textAlign = 'center'; mx.fillText('N', W / 2, 13); }
-  function abrirMapa() { if (conversa || cenaQ) return; const lib = Q.passo >= 1 || finais.some(f => f[0] === 'A'); const L = [
+  function abrirMapa() { if (typeof mapaMundi === 'function' && zona !== 'masmorra') { mapaMundi(); return; } if (conversa || cenaQ) return; const lib = Q.passo >= 1 || finais.some(f => f[0] === 'A'); const L = [
       { id: 'vila', nome: 'Vila de Brumafria', sub: 'Sua cidade natal 🏠', on: true },
       { id: 'valdren', nome: 'Valdren', sub: lib ? 'A capital · Academia Real' : '🔒 Fale com o Professor pra ir', on: lib } ];
     $('mapa-lista').innerHTML = ''; L.forEach(l => { const b = document.createElement('button'); b.className = 'lugar' + (zona === l.id ? ' aqui' : ''); b.disabled = !l.on; b.innerHTML = `<b>${l.nome}</b><small>${zona === l.id ? '📍 Você está aqui' : l.sub}</small>`; if (l.on && zona !== l.id) tapBtn(b, () => viajar(l.id)); $('mapa-lista').appendChild(b); }); $('mapa').hidden = false; }
@@ -3478,6 +3479,37 @@ ${_}`}class A extends Error{constructor({message:e,code:t,cause:r,name:s}){var n
     C.sob = []; Object.keys(CASACOS).forEach(st => ['peito', 'ombro', 'maos', 'calca', 'pe'].forEach(pc => { const I = sobInfo(st, pc); if (I) C.sob.push([st + ':' + pc, I.nome, src(I.icone), CASACOS[st].nome || st]); }));
     C.cosm = Object.keys(COSM).map(k => [k, COSM[k].nome, src(COSM[k].icone), 'Asas']); C.mont = Object.keys(MONT).map(k => [k, MONT[k].nome, src(MONT[k].icone), 'Montaria']); C.pet = Object.keys(PETS).map(k => [k, PETS[k].nome, src(PETS[k].icone), 'Pet']);
     C.item = Object.keys(ITEM_INFO).map(k => [k, ITEM_INFO[k][1], src(ITEM_INFO[k][0]), 'Item']); C.titulo = Object.keys(TITULOS).filter(k => k !== 'admin').map(k => [k, TITULOS[k].nome, '', TITULOS[k].r]); return C; };
+  // ===================== MAPA-MÚNDI COM TELEPORTE + MAGO TELEPORTADOR =====================
+  function lugaresMapa() { const lib = Q.passo >= 1 || finais.some(f => f[0] === 'A') || souAdmin(); const S = SALAO, sx = S[0] + Math.sin(S[2]) * 11, sz = S[1] + Math.cos(S[2]) * 11;
+    return [{ id: 'vila', nome: 'Brumafria', ic: '🏠', x: 0, z: 4.2, cor: '#ffd23c' }, { id: 'praca', nome: 'Praça dos Aventureiros', ic: '🏰', x: PRACA.x, z: PRACA.z + 8, cor: '#ff5a3a', sub: 'Calabouços, Torre, Missões' },
+      { id: 'guilda', nome: 'Salão das Guildas', ic: '🛡️', x: sx, z: sz, cor: '#5ab8ff' }, { id: 'masmorra', nome: 'Masmorra', ic: '💀', x: MM_ENT.x + 4, z: MM_ENT.z, cor: '#a07aff' },
+      { id: 'goblin', nome: 'Floresta Goblin', ic: '👺', x: GBX - 10, z: GBZ + 10, cor: '#4ab84a' }, { id: 'ponte', nome: 'Ponte do Rio', ic: '🌉', x: RIO.ponte[0] - 9, z: RIO.ponte[1], cor: '#4aa8e8' },
+      { id: 'pousada', nome: 'Pousada do Meio', ic: '🏡', x: POUSADA[0], z: POUSADA[1] + 4, cor: '#e8a040' }, { id: 'colosso', nome: 'Colosso (chefe de mundo)', ic: '🌋', x: 205, z: -48, cor: '#ff6a2a' },
+      { id: 'valdren', nome: 'Valdren', ic: '🏛️', x: VX, z: 40, cor: '#ffe8a0', trava: !lib, sub: lib ? 'A capital' : '🔒 Fale com o Professor' }]; }
+  function vaiPara(L) { $('mapa').hidden = true; if (Q.naCarroca || conversa) return; if (L.trava) { aviso(L.sub, '#ff6a6a'); return; } if (L.id === 'valdren') { viajar('valdren'); return; }
+    if (CAL.on) { calLimpa(); CAL.on = false; CALG.visible = false; } if (montado) montar(false); if (voando) voa(false);
+    cena([{ t: '✨ Teleportando para ' + L.nome + '...', v: null }], () => { dentro = false; zona = 'vila'; heroi.position.set(L.x, 0, L.z); facing = Math.PI; camYaw = 0; cam.position.set(L.x, 4, L.z + 7); fx('luz', [L.x, 0, L.z], 1); som('portal', 0.8, 1); mostrarLugar(L.nome); }); }
+  const MAPA_B = [-120, -175, 480, 205]; // xmin, zmin, xmax, zmax
+  function desenhaMapaMundi() { const cv = $('mapa-cv'), W = cv.width, H = cv.height, x = cv.getContext('2d'); const [x0, z0, x1, z1] = MAPA_B, k = Math.min(W / (x1 - x0), H / (z1 - z0)); const P = (a, b) => [(a - x0) * k, (b - z0) * k];
+    x.fillStyle = '#7ac86a'; x.fillRect(0, 0, W, H); x.fillStyle = '#6ab85a'; for (let i = 0; i < 60; i++) { const [a, b] = P(x0 + ((i * 97) % 600), z0 + ((i * 53) % 380)); x.beginPath(); x.arc(a, b, 6, 0, 7); x.fill(); }
+    x.strokeStyle = '#3a8ad8'; x.lineWidth = 10 * k; x.lineCap = 'round'; x.beginPath(); RIO.forEach(([a, b], i) => { const [u, v] = P(a, b); i ? x.lineTo(u, v) : x.moveTo(u, v); }); x.stroke();
+    x.strokeStyle = '#c8b48a'; x.lineWidth = 6.4 * k + 2; x.beginPath(); ESTRADA.forEach(([a, b], i) => { const [u, v] = P(a, b); i ? x.lineTo(u, v) : x.moveTo(u, v); }); x.stroke();
+    const circ = (a, b, r, f, s) => { const [u, v] = P(a, b); x.beginPath(); x.arc(u, v, r * k, 0, 7); x.fillStyle = f; x.fill(); if (s) { x.strokeStyle = s; x.lineWidth = 2; x.stroke(); } };
+    circ(MW.x, MW.z, MW.r, '#e8d8b0', '#7a7068'); circ(VX, 0, 46, '#e8d8b8', '#7a7068'); circ(PRACA.x, PRACA.z, 15, '#d8ccb4', '#8a5a3a'); circ(POUSADA[0], POUSADA[1], 17, '#e0c890');
+    x.fillStyle = '#2a6a2a'; [[GBX, GBZ, 22]].forEach(([a, b, r]) => circ(a, b, r, '#3a8a3a'));
+    lugaresMapa().forEach(L => { const [u, v] = P(L.x, L.z); x.beginPath(); x.arc(u, v, 13, 0, 7); x.fillStyle = L.trava ? '#8a8a9a' : L.cor; x.fill(); x.lineWidth = 2.5; x.strokeStyle = '#2b2340'; x.stroke(); x.font = '14px sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(L.ic, u, v + 1);
+      x.font = 'bold 11px sans-serif'; x.lineWidth = 3; x.strokeStyle = '#fff'; x.strokeText(L.nome, u, v + 22); x.fillStyle = '#2b2340'; x.fillText(L.nome, u, v + 22); });
+    if (zona === 'vila' || zona === 'valdren') { const [u, v] = P(heroi.position.x, heroi.position.z); x.save(); x.translate(u, v); x.rotate(-facing + Math.PI); x.fillStyle = '#2a7aff'; x.strokeStyle = '#fff'; x.lineWidth = 2; x.beginPath(); x.moveTo(0, -10); x.lineTo(7, 7); x.lineTo(0, 3); x.lineTo(-7, 7); x.closePath(); x.fill(); x.stroke(); x.restore(); }
+    cv.onclick = ev => { const r = cv.getBoundingClientRect(), mx = (ev.clientX - r.left) * W / r.width, my = (ev.clientY - r.top) * H / r.height; let best = null, bd = 30; lugaresMapa().forEach(L => { const [u, v] = P(L.x, L.z), d = Math.hypot(u - mx, v - my); if (d < bd) { bd = d; best = L; } }); if (best) vaiPara(best); }; }
+  function mapaMundi() { if (conversa || cenaQ) return; $('mapa').hidden = false; desenhaMapaMundi(); const Lst = $('mapa-lista'); Lst.innerHTML = '';
+    lugaresMapa().forEach(L => { const b = document.createElement('button'); b.className = 'lugar'; b.disabled = !!L.trava; b.innerHTML = `<b>${L.ic} ${L.nome}</b><small>${L.sub || 'Toque pra teleportar'}</small>`; if (!L.trava) tapBtn(b, () => vaiPara(L)); Lst.appendChild(b); }); }
+  // Mago Orin, na praça central, perto de onde você começa
+  { const orin = makeChar({ skin: '#e8c8a8', hairStyle: 'long', hairC: '#f0f0f8', top: '#2a3a8a', top2: '#e2c27a', pants: '#1a2a5a', shoe: '#1a1028', iris: '#5ae8ff', s: 1.05, ph: 2.2 }); const P = orin.userData.P;
+    part(P.hips, CONE, '#2a3a8a', 0, -0.42, 0, 0.38, 1.0, 0.38, 0.03); const ch = grp(P.head, 0, 0.16, -0.02); part(ch, CONE, '#2a3a8a', 0, 0.22, 0, 0.26, 0.55, 0.26, 0.03); part(ch, CYL, '#2a3a8a', 0, 0.0, 0, 0.36, 0.04, 0.36);
+    part(P.head, CONE, '#f0f0f8', 0, -0.2, 0.12, 0.1, 0.3, 0.06).rotation.x = Math.PI; const cj = grp(P.elR, 0.02, -0.3, 0.06); part(cj, CYL, '#6a4a2a', 0, 0.3, 0, 0.03, 1.5, 0.03); part(cj, SPH, '#5ae8ff', 0, 1.1, 0, 0.09, 0.09, 0.09, 0, true); glowSpr(cj, 0, 1.1, 0, 0.8, '#5ae8ff', 0.8);
+    orin.traverse(o => { if (o.isMesh) o.castShadow = true; }); const x = -2.8, z = 7.6; orin.position.set(x, 0, z); world.add(orin); glowSpr(orin, 0, 0.05, 0, 2.4, '#5ae8ff', 0.3);
+    const n = { c: orin, nome: 'Orin · Mago Teleportador', x, z, ry: Math.PI, ry0: Math.PI, acao: () => falar({ nome: 'Orin', falas: [{ n: 'Orin', t: 'Saudações, aventureiro! Com minha magia eu te levo a qualquer lugar do reino num piscar de olhos.' }], escolhas: () => [{ t: '🗺️ <b>Abrir o mapa</b><small>Escolha o lugar no mapa</small>', fn: () => setTimeout(mapaMundi, 50) }, ...lugaresMapa().filter(L => !L.trava && L.id !== 'vila').slice(0, 6).map(L => ({ t: L.ic + ' <b>' + L.nome + '</b>' + (L.sub ? '<small>' + L.sub + '</small>' : ''), fn: () => vaiPara(L) })), { t: 'Agora não', fn: null }] }) };
+    NPCS.push(n); COL.push({ t: 'c', x, z, r: 0.45, npc: n }); n.marca = new T3.Sprite(new T3.SpriteMaterial({ map: marcaT('✦', '#5ae8ff'), transparent: true, depthWrite: false, toneMapped: false })); n.marca.scale.set(0.45, 0.6, 1); n.marca.position.set(x, 2.8, z); world.add(n.marca); }
 
   window.__dbg = { dano, CAL, DGS, calEntra, MIS, abreMural, get PRACA() { return PRACA; }, staffArmas, equipaArma, MONT3D, PET3D, get MONT() { return MONT; }, montar, petChama, MQ, set GMB(v) { GMB = v; gmHud(); }, gmPct, ASAT, COSM, vesteCosm, CB_LISTA, abrirLivros, trocaPag, get mana() { return mana; }, set mana(v) { mana = v; }, ARMAG, T3, vesteCosm, voa, get voando() { return voando; }, input, mpRecebe, entraMasmorra, saiMasmorra, MM, mmFaseAtual, mmMorte, setaFrame, equipaArma, abrirGuilda, arthurNPC, vestePeca, atualizaPecas, PECAS, BLOCOS, modoBatalha, bmLiga, bmDesliga, BMS, ORB, get BM() { return BM; }, get hora() { return hora; }, set hora(v) { hora = v; }, usarHab2: id => classePoder2(id), BUFF, abrirCriar, aplicaClasse, CLASSES, get desp() { return desp; }, set desp(v) { desp = v; }, usarHab: id => classePoder(id), renderer, scene, world, ganhaXp, vesteFantasia, abrirPerfil, fazRetrato, irValdren, Q, heroi, ativo, AR, FERAS, golem, atacar, get vida() { return vida; }, set vida(v) { vida = v; }, abrirLoja, usarPoder: id => usarPoder(PW[id]), acao: () => acao(), get alvo() { return alvo; } };
   // ---------- laço do jogo ----------
