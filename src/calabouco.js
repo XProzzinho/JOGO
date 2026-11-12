@@ -64,7 +64,7 @@
   function calVence() { CAL.fim = true; const d = CAL.d, nv = CAL.nv, seg = Math.round((performance.now() - CAL.t0) / 1000);
     const moed = Math.round(40 * (1 + nv * (CAL.torre ? 0.35 : 0.9))), xp = Math.round(90 * (1 + nv * (CAL.torre ? 0.6 : 1.4)));
     AR.inv.moedas += moed; ganhaXp(xp, true); atualizaInv();
-    if (CAL.torre) { if (CAL.torre > AR.torre) AR.torre = CAL.torre; misEvento('torre', CAL.torre); aviso('🗼 Andar ' + CAL.torre + ' vencido! +' + moed + ' moedas, +' + xp + ' XP. Portal: próximo andar ou sair.', '#7ad87a'); }
+    if (CAL.torre) { if (CAL.torre > AR.torre) AR.torre = CAL.torre; if (CAL.torre % 5 === 0) { const ck = CAL.torre >= 70 ? 'cristal_altissimo' : CAL.torre >= 35 ? 'cristal_alto' : 'cristal_baixo'; AR.inv[ck] = (AR.inv[ck] || 0) + 1; setTimeout(() => aviso('🗼 Prêmio do andar ' + CAL.torre + ': ' + ITEM_INFO[ck][0] + ' ' + ITEM_INFO[ck][1] + '!', '#7ad8ff'), 2400); } misEvento('torre', CAL.torre); aviso('🗼 Andar ' + CAL.torre + ' vencido! +' + moed + ' moedas, +' + xp + ' XP. Portal: próximo andar ou sair.', '#7ad87a'); }
     else { const pri = !(AR.dg[d.id] > 0); AR.dg[d.id] = (AR.dg[d.id] || 0) + 1; misEvento('dg', d.id, nv); aviso('🏆 ' + d.nome + ' conquistado em ' + seg + 's! +' + moed + ' moedas, +' + xp + ' XP' + (pri ? ' · primeira vez!' : ''), '#ffd23c');
       if (pri) { const t = 'dg_' + d.id; if (TITULOS[t]) setTimeout(() => ganhaTitulo(t), 1500); }
       setTimeout(() => bauSurge(d), 1800); }
@@ -81,6 +81,10 @@
     sombras: [['arma', 'esp_executora', 5], ['arma', 'gl_eclipse', 5], ['fant', 'mago_divino', 3], ['cosm', 'asa_galaxy', 3], ['mont', 'moto_sombra', 4]],
     trono: [['arma', 'dragao', 8], ['arma', 'esp_executora', 7], ['arma', 'gl_eclipse', 6], ['pet', 'dragao', 5], ['cosm', 'asa_galaxy', 5], ['mont', 'tigre_dourado', 5], ['mont', 'moto_ceifadora', 4]],
     vazio: [['arma', 'esp_executora', 12], ['arma', 'dragao', 10], ['arma', 'gl_eclipse', 10], ['pet', 'dragao', 8], ['fant', 'mago_divino', 8], ['cosm', 'asa_galaxy', 8], ['mont', 'moto_sombra', 8], ['mont', 'moto_ceifadora_r', 6]] };
+  // cristais de aprimoramento por DG: [cristal, chance %, mín, máx]
+  const BAU_CRIST = { ratos: [['cristal_baixo', 60, 1, 1]], cripta: [['cristal_baixo', 70, 1, 2]], aranhas: [['cristal_baixo', 80, 1, 2]], bandidos: [['cristal_baixo', 90, 1, 3], ['cristal_alto', 8, 1, 1]],
+    cristal: [['cristal_baixo', 100, 2, 3], ['cristal_alto', 55, 1, 1]], trolls: [['cristal_alto', 70, 1, 2], ['cristal_baixo', 100, 2, 3]],
+    sombras: [['cristal_alto', 85, 1, 2], ['cristal_altissimo', 25, 1, 1]], trono: [['cristal_alto', 100, 1, 3], ['cristal_altissimo', 40, 1, 1]], vazio: [['cristal_altissimo', 65, 1, 2], ['cristal_alto', 100, 2, 3]] };
   const BAUG = grp(CALG, 0, 0, 0); BAUG.visible = false; let BAU = null;
   { const ouro = '#ffd23c', mad = '#7a4a22', madE = '#5a3214'; part(BAUG, BOX, mad, 0, 0.45, 0, 1.6, 0.9, 1.0); part(BAUG, BOX, madE, 0, 0.05, 0, 1.7, 0.1, 1.1);
     [-0.6, 0, 0.6].forEach(x => part(BAUG, BOX, ouro, x, 0.45, 0, 0.1, 0.94, 1.04, 0.2)); part(BAUG, BOX, ouro, 0, 0.88, 0, 1.64, 0.08, 1.04, 0.2);
@@ -96,8 +100,9 @@
   function bauTem(t, k) { return t === 'arma' ? AR.armas.includes(k) : t === 'fant' ? AR.fantasias.includes(k) : t === 'cosm' ? AR.cosms.includes(k) : t === 'mont' ? AR.monts.includes(k) : t === 'pet' ? AR.pets.includes(k) : false; }
   function bauAbre() { BAU.aberto = true; const d = BAU.d, gl = AR.classe === 'gladiador'; som('missao_ok', 1, 0.8); flash('rgba(255,220,120,.5)'); fx('luz', [CAL_X, 1, CAL_Z], 1.6);
     const L = BAU_LOOT[d.id].filter(([t, k]) => !k.startsWith('gl_') || gl).map(([t, k, pc]) => { const I = presInfo({ t, k, n: 1 }); const ganhou = Math.random() * 100 < pc; const ja = ganhou && bauTem(t, k); return { t, k, pc, I, ganhou, ja }; });
+    (BAU_CRIST[d.id] || []).forEach(([k, pc, a, b]) => { const n = a + Math.floor(Math.random() * (b - a + 1)), I = presInfo({ t: 'item', k, n }); L.unshift({ t: 'item', k, n, pc, I, ganhou: Math.random() * 100 < pc, ja: false }); });
     const moedBonus = Math.round(60 + d.nv * 25); let extra = moedBonus; L.forEach(x => { if (x.ja) extra += Math.round(150 + d.nv * 20); });
-    AR.inv.moedas += extra; L.filter(x => x.ganhou && !x.ja).forEach((x, i) => setTimeout(() => presAplica({ t: x.t, k: x.k, n: 1, porNome: '📦 O Baú do Chefe' }), 900 + i * 900));
+    AR.inv.moedas += extra; L.filter(x => x.ganhou && !x.ja).forEach((x, i) => setTimeout(() => presAplica({ t: x.t, k: x.k, n: x.n || 1, porNome: '📦 O Baú do Chefe' }), 900 + i * 900));
     setTimeout(() => { salvaAR(); atualizaInv(); if (typeof montaBarra === 'function') montaBarra(); }, 1200 + L.length * 900);
     let P = $('bau-p'); if (!P) { P = document.createElement('div'); P.id = 'bau-p'; document.body.appendChild(P); }
     const nG = L.filter(x => x.ganhou).length;

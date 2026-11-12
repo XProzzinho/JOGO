@@ -933,6 +933,14 @@
     COL.push({ t: 'c', x: FX0, z: FZ0, r: 0.6 }, { t: 'c', x: FX0 - 1.6 * Math.cos(0.6) - 0.4 * Math.sin(0.6), z: FZ0 + 1.6 * Math.sin(0.6) - 0.4 * Math.cos(0.6), r: 0.9 }); }
   SABER.push({ x: FX0, y: 2.6, z: FZ0, t: 'Aço = ferro + um pouco de carbono. Mais duro que ferro puro.' });
 
+  // ---------- APRIMORAMENTO com cristais ----------
+  const APRIM_PCT = 0.06, APRIM_MAX = 15;
+  function aprimNv(k) { return (AR.aprim && AR.aprim[k]) || 0; }
+  function aprimReq(n) { if (n >= APRIM_MAX) return null; if (n < 5) return { c: 'cristal_baixo', m: 60 + n * 40, ch: [100, 95, 85, 75, 65][n] }; if (n < 10) return { c: 'cristal_alto', m: 400 + (n - 5) * 120, ch: [60, 55, 50, 45, 40][n - 5] }; return { c: 'cristal_altissimo', m: 1200 + (n - 10) * 300, ch: [35, 30, 25, 20, 15][n - 10] }; }
+  function aprimora(k) { const n = aprimNv(k), R = aprimReq(n); if (!R || !(AR.inv[R.c] > 0) || AR.inv.moedas < R.m) return; AR.inv[R.c]--; AR.inv.moedas -= R.m; AR.aprim = AR.aprim || {};
+    if (Math.random() * 100 < R.ch) { AR.aprim[k] = n + 1; som('missao_ok', 0.9, 1.2); flash('rgba(255,230,120,.45)'); fx('luz', [heroi.position.x, 0, heroi.position.z], 0.8); aviso('✨ SUCESSO! ' + ARMAS[k].icone + ' ' + ARMAS[k].nome + ' agora é +' + (n + 1) + ' (ataque +' + Math.round((n + 1) * APRIM_PCT * 100) + '%)', '#ffd23c'); if (typeof misEvento === 'function') misEvento('aprim', n + 1); }
+    else { som('gelo', 0.8, 0.7); flash('rgba(120,120,140,.35)'); aviso('💨 O cristal rachou... ' + ARMAS[k].nome + ' continua +' + n + '. Tente de novo!', '#8a8aa0'); }
+    salvaAR(); atualizaInv(); abrirLoja(); }
   function abrirLoja() { if (conversa || cenaQ) return; som('forja', 0.8); const L = $('loja-lista'); L.innerHTML = ''; $('loja-m').textContent = AR.inv.moedas;
     Object.keys(ARMAS).forEach(k => { const A = ARMAS[k], tem = AR.armas.includes(k); if (A.classe || A.oculta || A.staff || (A.drop && !AR.armas.includes(k))) return; const b = document.createElement('div'); b.className = 'item';
       const preco = A.preco ? `${A.preco} 💰${A.precisa ? ' + 💎 Coração de Gelo' : ''}` : 'Presente do seu pai';
@@ -942,6 +950,11 @@
       else if (A.soClasse && AR.classe !== A.soClasse) { bt.innerHTML = '🔒 Só ' + CLASSES[A.soClasse].nome; bt.disabled = true; } else { const ok = AR.inv.moedas >= A.preco && (!A.precisa || AR.inv[A.precisa] > 0); bt.innerHTML = preco; bt.disabled = !ok; tapBtn(bt, () => { if (!ok) return; AR.inv.moedas -= A.preco; som('compra', 0.8, 1); if (A.precisa) AR.inv[A.precisa]--; AR.armas.push(k); equipaArma(k); atualizaInv(); aviso('Nova arma: ' + A.icone + ' ' + A.nome + '!', '#ffd23c'); abrirLoja(); }); }
       b.appendChild(bt); L.appendChild(b); });
     const sec = t => { const h = document.createElement('div'); h.className = 'loja-sec'; h.innerHTML = limpaIco(t); L.appendChild(h); };
+    { const ap = AR.armas.filter(k => ARMAS[k] && k !== 'punho' && !ARMAS[k].oculta); if (ap.length) { sec('✨ Aprimorar armas · ' + ITEM_INFO.cristal_baixo[0] + ' ' + (AR.inv.cristal_baixo || 0) + '  ' + ITEM_INFO.cristal_alto[0] + ' ' + (AR.inv.cristal_alto || 0) + '  ' + ITEM_INFO.cristal_altissimo[0] + ' ' + (AR.inv.cristal_altissimo || 0));
+      ap.sort((x, y) => (y === AR.arma) - (x === AR.arma)).forEach(k => { const A = ARMAS[k], n = aprimNv(k), R = aprimReq(n), b = document.createElement('div'); b.className = 'item' + (n ? ' aprim a' + Math.min(3, Math.ceil(n / 5)) : '');
+        b.innerHTML = `<span class="ic">${A.icone}</span><div class="tx"><b>${A.nome} ${n ? '<em class="apn">+' + n + '</em>' : ''}</b><small>Bônus de ataque: +${Math.round(n * APRIM_PCT * 100)}%${R ? ' → +' + Math.round((n + 1) * APRIM_PCT * 100) + '%' : ''}</small><small>${R ? 'Precisa: ' + ITEM_INFO[R.c][0] + ' 1 + ' + R.m + ' 💰 · chance ' + R.ch + '%' : '🌟 Aprimoramento máximo!'}</small></div>`;
+        const bt = document.createElement('button'); bt.className = 'cb'; if (!R) { bt.textContent = 'MÁX'; bt.disabled = true; } else { const ok = (AR.inv[R.c] || 0) > 0 && AR.inv.moedas >= R.m; bt.innerHTML = ok ? '✨ Aprimorar' : 'Falta ' + ((AR.inv[R.c] || 0) > 0 ? 'moeda' : 'cristal'); bt.disabled = !ok; tapBtn(bt, () => aprimora(k)); }
+        b.appendChild(bt); L.appendChild(b); }); } }
     const linha = (ic, nome, sub, tem, vestido, compra, veste, cor) => { const b = document.createElement('div'); b.className = 'item'; b.innerHTML = `<span class="ic"${cor ? ` style="text-shadow:0 0 8px ${cor}"` : ''}>${ic}</span><div class="tx"><b>${nome}</b><small>${sub}</small></div>`;
       const bt = document.createElement('button'); bt.className = 'cb'; if (tem) { bt.textContent = vestido ? 'Vestido' : 'Vestir'; bt.disabled = vestido; tapBtn(bt, () => { if (vestido) return; veste(); abrirLoja(); }); } else { bt.innerHTML = 'Grátis · 0 💰'; tapBtn(bt, () => { som('compra', 0.8, 1); compra(); salvaAR(); abrirLoja(); }); } b.appendChild(bt); L.appendChild(b); };
     Object.keys(CASACOS).forEach(c => { const C = CASACOS[c]; sec(C.icone + ' ' + C.nome + ' · 5 peças (+' + SOB_DEF + '% cada, conjunto +' + SOB_BONUS + '%)');
@@ -1639,7 +1652,8 @@
 
   // ---------- MENU DE INVENTÁRIO (estilo MMO: equipamentos em cima, bolsa embaixo) ----------
   const IP_AREA = { cabeca: 'elmo', peito: 'peito', costas: 'costas', arma: 'arma', greva: 'greva', maos: 'luvas', calca: 'calca', pe: 'pe', ombro: 'ombro' }; const IP_BIG = ['peito', 'arma'];
-  const ITEM_INFO = { carne: ['🍖', 'Carne', 'Recupera 35 de vida.', 'Comer'], pele: ['🐺', 'Pele de lobo', 'Venda na Forja: 3 moedas cada.'], coracao: ['💎', 'Coração de gelo', 'Material raro do Golem de Gelo. Usado na Forja.'] };
+  const ITEM_INFO = { carne: ['🍖', 'Carne', 'Recupera 35 de vida.', 'Comer'], pele: ['🐺', 'Pele de lobo', 'Venda na Forja: 3 moedas cada.'], coracao: ['💎', 'Coração de gelo', 'Material raro do Golem de Gelo. Usado na Forja.'],
+    cristal_baixo: ['💚', 'Cristal de Aprimoramento Baixo', 'Leve na Forja: aprimora armas de +1 até +5. Cai nas DGs baixas.'], cristal_alto: ['💙', 'Cristal de Aprimoramento Alto', 'Leve na Forja: aprimora armas de +6 até +10. Cai nas DGs altas.'], cristal_altissimo: ['🧡', 'Cristal de Aprimoramento Altíssimo', 'Leve na Forja: aprimora armas de +11 até +15. Cai nas DGs altíssimas.'] };
   let ipTab = 'eq', ipPag = 0, ipSel = null;
   function itensBolsa() { const L = [];
     AR.armas.filter(w => ARMAS[w] && !ARMAS[w].oculta && AR.arma !== w).forEach(w => L.push({ ic: ARMAS[w].icone, nome: ARMAS[w].nome, sub: 'Arma · dano ' + ARMAS[w].dano, acao: 'Equipar', fn: () => equipaArma(w) }));
@@ -1765,7 +1779,7 @@
 
   // ---- aplicar classe ----
   function CLA() { return CLASSES[AR.classe] || null; }
-  function atkMult() { const c = CLA(); return (1 + (AR.nv - 1) * 0.02) * (c ? c.atk : 1) * potAtual * (BM && BM.atk ? BM.atk : 1) * (BUFF.furia > 0 ? 1.4 : 1) * (BUFF.pacto > 0 ? 1.5 : 1) * (1 + cbPas('atk')) * (BUFF.cb_atk > 0 ? 1.25 : 1) * (BUFF.cb_tudo > 0 ? 1.15 : 1) * asaB('dano') * (1 + gmPct('forca')); }
+  function atkMult() { const c = CLA(); return (1 + (AR.nv - 1) * 0.02) * (c ? c.atk : 1) * potAtual * (BM && BM.atk ? BM.atk : 1) * (BUFF.furia > 0 ? 1.4 : 1) * (BUFF.pacto > 0 ? 1.5 : 1) * (1 + cbPas('atk')) * (BUFF.cb_atk > 0 ? 1.25 : 1) * (BUFF.cb_tudo > 0 ? 1.15 : 1) * asaB('dano') * (1 + gmPct('forca')) * (1 + aprimNv(AR.arma) * APRIM_PCT); }
   function critico() { const c = CLA(); return Math.random() < (c ? c.crit : 0.05) + (BM && BM.crit ? BM.crit : 0) + cbPas('crit') + (BUFF.cb_crit > 0 ? 0.15 : 0) + (BUFF.cb_tudo > 0 ? 0.05 : 0) + (ARMAS[AR.arma] && ARMAS[AR.arma].esp === 'sup' ? 0.15 : 0); }
   function aplicaClasse(id) { if (typeof bmDesliga === 'function') bmDesliga(); const c = CLASSES[id]; AR.classe = id; if (!AR.armas.includes(c.arma)) AR.armas.push(c.arma); AR.arma = c.arma;
     const v = AR.barra[2]; if (v && !(PW[v] && PW[v].classe)) { const k = AR.barra.indexOf(null, 3); if (k >= 3 && !AR.barra.slice(3).includes(v)) AR.barra[k] = v; }
@@ -1850,7 +1864,7 @@
   Object.keys(FANT).forEach(k => { FANT[k].icone = IC('f_' + k); }); Object.keys(CASACOS).forEach(k => { CASACOS[k].icone = IC('cas_' + k); });
   Object.keys(CLASSES).forEach(k => { CLASSES[k].icone = IC('c_' + k); }); Object.keys(COSM).forEach(k => { COSM[k].icone = k === 'morcego' ? IC('ui_voar') : IC(k, 'png'); });
   SLOTS_EQ.forEach(sl => { sl[1] = IC('slot_' + sl[0]); }); SOB_PECAS.forEach(sp => { sp[1] = IC('slot_' + sp[0]); });
-  ITEM_INFO.carne[0] = IC('item_carne'); ITEM_INFO.pele[0] = IC('item_pele'); ITEM_INFO.coracao[0] = IC('item_coracao');
+  ITEM_INFO.carne[0] = IC('item_carne'); ITEM_INFO.pele[0] = IC('item_pele'); ITEM_INFO.coracao[0] = IC('item_coracao'); ['cristal_baixo', 'cristal_alto', 'cristal_altissimo'].forEach(k => ITEM_INFO[k][0] = IC('item_' + k));
   montaBarra(); mostraArma();
   const BUFF = {}; let esmaga = false;
   function buff(k, s) { s *= 1 + (potAtual - 1) / 2; BUFF[k] = Math.max(BUFF[k] || 0, s); }
@@ -2248,7 +2262,7 @@
   //@@GM@@
   //@@MUNDO@@
   //@@CALAB@@
-  window.__dbg = { falar, dano, CAL, DGS, calEntra, MIS, abreMural, get PRACA() { return PRACA; }, staffArmas, equipaArma, MONT3D, PET3D, get MONT() { return MONT; }, montar, petChama, MQ, set GMB(v) { GMB = v; gmHud(); }, gmPct, ASAT, COSM, vesteCosm, CB_LISTA, abrirLivros, trocaPag, get mana() { return mana; }, set mana(v) { mana = v; }, ARMAG, T3, vesteCosm, voa, get voando() { return voando; }, input, mpRecebe, entraMasmorra, saiMasmorra, MM, mmFaseAtual, mmMorte, setaFrame, equipaArma, abrirGuilda, arthurNPC, vestePeca, atualizaPecas, PECAS, BLOCOS, modoBatalha, bmLiga, bmDesliga, BMS, ORB, get BM() { return BM; }, get hora() { return hora; }, set hora(v) { hora = v; }, usarHab2: id => classePoder2(id), BUFF, abrirCriar, aplicaClasse, CLASSES, get desp() { return desp; }, set desp(v) { desp = v; }, usarHab: id => classePoder(id), renderer, scene, world, ganhaXp, vesteFantasia, abrirPerfil, fazRetrato, irValdren, Q, heroi, ativo, AR, FERAS, golem, atacar, get vida() { return vida; }, set vida(v) { vida = v; }, abrirLoja, usarPoder: id => usarPoder(PW[id]), acao: () => acao(), get alvo() { return alvo; } };
+  window.__dbg = { abrirLoja, aprimora, falar, dano, CAL, DGS, calEntra, MIS, abreMural, get PRACA() { return PRACA; }, staffArmas, equipaArma, MONT3D, PET3D, get MONT() { return MONT; }, montar, petChama, MQ, set GMB(v) { GMB = v; gmHud(); }, gmPct, ASAT, COSM, vesteCosm, CB_LISTA, abrirLivros, trocaPag, get mana() { return mana; }, set mana(v) { mana = v; }, ARMAG, T3, vesteCosm, voa, get voando() { return voando; }, input, mpRecebe, entraMasmorra, saiMasmorra, MM, mmFaseAtual, mmMorte, setaFrame, equipaArma, abrirGuilda, arthurNPC, vestePeca, atualizaPecas, PECAS, BLOCOS, modoBatalha, bmLiga, bmDesliga, BMS, ORB, get BM() { return BM; }, get hora() { return hora; }, set hora(v) { hora = v; }, usarHab2: id => classePoder2(id), BUFF, abrirCriar, aplicaClasse, CLASSES, get desp() { return desp; }, set desp(v) { desp = v; }, usarHab: id => classePoder(id), renderer, scene, world, ganhaXp, vesteFantasia, abrirPerfil, fazRetrato, irValdren, Q, heroi, ativo, AR, FERAS, golem, atacar, get vida() { return vida; }, set vida(v) { vida = v; }, abrirLoja, usarPoder: id => usarPoder(PW[id]), acao: () => acao(), get alvo() { return alvo; } };
   // ---------- laço do jogo ----------
   let vy = 0, noChao = true, facing = 0, vel = 0, gT = 0, last = performance.now();
   const ANDAR = 3.0, CORRER = 6.5, GRAV = 22, PULO = 7.6; const tmp = new T3.Vector3();
