@@ -355,6 +355,12 @@
 #correio .hd #correio-tudo{background:#7ae87a}#correio .carta{display:flex;align-items:center;gap:10px;background:#fff;border:3px solid var(--tinta);border-radius:14px;padding:8px;margin:8px 0}
 #correio .c-ic{width:52px;height:52px;flex:none;border-radius:12px;background:#f3e6ff;display:flex;align-items:center;justify-content:center;font-size:28px}#correio .c-ic img{width:46px;height:46px;object-fit:contain}
 #correio .c-tx{flex:1;min-width:0}#correio .c-tx p{margin:3px 0;font-style:italic;font-size:13px}#correio .c-it{display:block;color:#a03ad0}#correio .carta button{background:#7ae87a}#correio .vazio{text-align:center;opacity:.7;padding:20px}
+#bau-p{position:fixed;inset:0;background:rgba(20,10,4,.65);z-index:62;display:flex;align-items:center;justify-content:center}#bau-p[hidden]{display:none}
+#bau-p .box{background:linear-gradient(#fff6e0,#ffe8b8);border:4px solid var(--tinta);border-radius:20px;width:min(560px,94vw);max-height:92vh;overflow:auto;padding:12px 14px;font-family:var(--fonte);color:var(--tinta);text-align:center;box-shadow:0 0 40px #ffd23c}
+#bau-p h3{margin:4px 0}#bau-p .sub{margin:2px 0 8px;font-weight:800}#bau-p .bl{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:6px}
+#bau-p .bi{background:#fff;border:3px solid #c8b490;border-radius:14px;padding:6px;display:flex;flex-direction:column;align-items:center;gap:1px;opacity:.55;filter:grayscale(.7)}#bau-p .bi.win{opacity:1;filter:none;border-color:#ff8aff;box-shadow:0 0 14px #ff8aff;background:#fff0ff}
+#bau-p .ic{width:50px;height:50px;display:flex;align-items:center;justify-content:center;font-size:30px}#bau-p .ic img{width:48px;height:48px;object-fit:contain}#bau-p .bi b{font-size:12px;line-height:1.1}#bau-p .pc{font-size:11px;font-weight:900;color:#a07010}#bau-p .st{font-size:11px;font-weight:900;color:#a03ad0}
+#bau-p .mo{font-weight:900;margin:8px 0 2px}#bau-p .dica{font-size:11px;opacity:.7;margin:2px}#bau-p button{font-family:var(--fonte);font-weight:900;font-size:16px;border:3px solid var(--tinta);border-radius:14px;padding:8px 22px;background:#7ae87a;margin-top:6px}
 </style>
 </head>
 <body>
@@ -3338,7 +3344,7 @@ ${_}`}class A extends Error{constructor({message:e,code:t,cause:r,name:s}){var n
     if (CAL_COR[cls]) { glowSpr(e.g, 0, B.alt * 0.5, 0, B.alt * 1.7, CAL_COR[cls], cls === 'elite' ? 0.35 : 0.55); }
     if (cls === 'super' || cls === 'boss') e.g.traverse(o => { if (o.isMesh && o.material && o.material.color && !o.material.isMeshBasicMaterial && Math.random() < 0.5) { o.material = o.material.clone(); o.material.color.lerp(new T3.Color(cls === 'super' ? '#3a0a5a' : '#5a0a0a'), 0.45); } });
     return e; }
-  function calLimpa() { CAL.feras.forEach(e => { if (e.g.parent) e.g.parent.remove(e.g); e.hp.remove(); const i = FERAS.indexOf(e); if (i >= 0) FERAS.splice(i, 1); }); CAL.feras = []; CAL.boss = null; }
+  function calLimpa() { bauEsconde(); CAL.feras.forEach(e => { if (e.g.parent) e.g.parent.remove(e.g); e.hp.remove(); const i = FERAS.indexOf(e); if (i >= 0) FERAS.splice(i, 1); }); CAL.feras = []; CAL.boss = null; }
   const calPos = (r0, r1) => { const a = Math.random() * 6.28, r = r0 + Math.random() * (r1 - r0); return [CAL_X + Math.sin(a) * r, CAL_Z + Math.cos(a) * r - 6]; };
   function calOndasDG(d) { const nv = d.nv, P = d.pool, rr = () => P[Math.floor(Math.random() * P.length)];
     return [{ txt: 'Onda 1: um bando de inimigos fracos!', m: Array.from({ length: 8 }, () => [rr(), 'trash']) },
@@ -3366,10 +3372,47 @@ ${_}`}class A extends Error{constructor({message:e,code:t,cause:r,name:s}){var n
     if (CAL.torre) { if (CAL.torre > AR.torre) AR.torre = CAL.torre; misEvento('torre', CAL.torre); aviso('🗼 Andar ' + CAL.torre + ' vencido! +' + moed + ' moedas, +' + xp + ' XP. Portal: próximo andar ou sair.', '#7ad87a'); }
     else { const pri = !(AR.dg[d.id] > 0); AR.dg[d.id] = (AR.dg[d.id] || 0) + 1; misEvento('dg', d.id, nv); aviso('🏆 ' + d.nome + ' conquistado em ' + seg + 's! +' + moed + ' moedas, +' + xp + ' XP' + (pri ? ' · primeira vez!' : ''), '#ffd23c');
       if (pri) { const t = 'dg_' + d.id; if (TITULOS[t]) setTimeout(() => ganhaTitulo(t), 1500); }
-      const sem = ['esp_suprema', 'esp_corrompida', 'esp_celestial', 'esp_dragao_real', 'esp_executora'].filter(k => !AR.armas.includes(k)); if (sem.length && Math.random() < 0.08 + nv / 400) { const k = sem[Math.floor(Math.random() * sem.length)]; AR.armas.push(k); setTimeout(() => aviso('🎁 O chefe deixou cair: ' + ARMAS[k].icone + ' ' + ARMAS[k].nome + '!', '#ff8aff'), 2600); } }
+      setTimeout(() => bauSurge(d), 1800); }
     salvaAR(); flash('rgba(255,230,140,.4)'); som('missao_ok', 1, 1); fx('luz', [heroi.position.x, 0, heroi.position.z], 1.2); calHud(); }
+  // ---------- BAÚ FINAL de cada DG: os itens mais fortes, cada um com sua chance ----------
+  // [tipo, chave, chance %]  (GL só cai pra Gladiador)
+  const BAU_LOOT = {
+    ratos: [['arma', 'esp_suprema', 3], ['fant', 'celeste', 3], ['cosm', 'asa_neon', 2], ['mont', 'lobo_neve', 2]],
+    cripta: [['arma', 'esp_suprema', 5], ['arma', 'esp_corrompida', 3], ['fant', 'mago_gelo', 3], ['cosm', 'asa_shadow', 3], ['mont', 'javali_guerra', 3]],
+    aranhas: [['arma', 'esp_corrompida', 5], ['arma', 'esp_celestial', 3], ['arma', 'gl_ceifador', 4], ['fant', 'mago_natureza', 3], ['cosm', 'asa_celeste', 3]],
+    bandidos: [['arma', 'esp_celestial', 5], ['arma', 'gl_sangrenta', 4], ['fant', 'mago_fogo', 3], ['cosm', 'asa_thunder', 3], ['mont', 'moto_rubra', 3]],
+    cristal: [['arma', 'esp_dragao_real', 4], ['arma', 'gl_prata', 4], ['arma', 'gl_abismo', 3], ['fant', 'mago_arcano', 3], ['cosm', 'asa_quantum', 3], ['mont', 'moto_astral', 3]],
+    trolls: [['arma', 'esp_dragao_real', 6], ['arma', 'esp_executora', 3], ['arma', 'gl_eclipse', 3], ['cosm', 'asa_titan', 3], ['mont', 'tigre_dourado', 3]],
+    sombras: [['arma', 'esp_executora', 5], ['arma', 'gl_eclipse', 5], ['fant', 'mago_divino', 3], ['cosm', 'asa_galaxy', 3], ['mont', 'moto_sombra', 4]],
+    trono: [['arma', 'dragao', 8], ['arma', 'esp_executora', 7], ['arma', 'gl_eclipse', 6], ['pet', 'dragao', 5], ['cosm', 'asa_galaxy', 5], ['mont', 'tigre_dourado', 5]],
+    vazio: [['arma', 'esp_executora', 12], ['arma', 'dragao', 10], ['arma', 'gl_eclipse', 10], ['pet', 'dragao', 8], ['fant', 'mago_divino', 8], ['cosm', 'asa_galaxy', 8], ['mont', 'moto_sombra', 8]] };
+  const BAUG = grp(CALG, 0, 0, 0); BAUG.visible = false; let BAU = null;
+  { const ouro = '#ffd23c', mad = '#7a4a22', madE = '#5a3214'; part(BAUG, BOX, mad, 0, 0.45, 0, 1.6, 0.9, 1.0); part(BAUG, BOX, madE, 0, 0.05, 0, 1.7, 0.1, 1.1);
+    [-0.6, 0, 0.6].forEach(x => part(BAUG, BOX, ouro, x, 0.45, 0, 0.1, 0.94, 1.04, 0.2)); part(BAUG, BOX, ouro, 0, 0.88, 0, 1.64, 0.08, 1.04, 0.2);
+    const tampa = grp(BAUG, 0, 0.9, -0.5); BAUG.userData.tampa = tampa; part(tampa, CYL, mad, 0, 0, 0.5, 0.5, 1.6, 0.5).rotation.z = Math.PI / 2; [-0.6, 0, 0.6].forEach(x => { const r = part(tampa, CYL, ouro, x, 0, 0.5, 0.53, 0.1, 0.53, 0.2); r.rotation.z = Math.PI / 2; });
+    part(tampa, BOX, ouro, 0, -0.1, 1.02, 0.28, 0.32, 0.08, 0.2); part(tampa, SPH, '#ff3a5a', 0, -0.08, 1.07, 0.07, 0.07, 0.05, 0, true);
+    BAUG.userData.luz = glowSpr(BAUG, 0, 1.0, 0, 3.2, '#ffd23c', 0.7); BAUG.traverse(o => { if (o.isMesh) o.castShadow = true; }); }
+  function bauEsconde() { BAUG.visible = false; BAU = null; const P = $('bau-p'); if (P) P.hidden = true; }
+  function bauSurge(d) { if (!CAL.on || CAL.torre || !BAU_LOOT[d.id]) return; BAU = { d, aberto: false, t: 0 }; BAUG.position.set(0, 0, 0); BAUG.rotation.y = 0; BAUG.userData.tampa.rotation.x = 0; BAUG.visible = true; BAUG.scale.setScalar(0.01);
+    fx('luz', [CAL_X, 0, CAL_Z], 1.4); som('portal', 0.8, 1.3); aviso('📦 O BAÚ DO CHEFE apareceu no centro da arena! Vá até ele pra abrir.', '#ffd23c'); }
+  function bauFrame(dt, p) { if (!BAU) return; BAU.t += dt; const s = Math.min(1.25, BAUG.scale.x + dt * 2.5); BAUG.scale.setScalar(s); BAUG.userData.luz.material.opacity = 0.45 + Math.sin(gT * 3) * 0.25;
+    if (BAU.aberto) { const tp = BAUG.userData.tampa; tp.rotation.x = Math.max(-1.9, tp.rotation.x - dt * 3); return; }
+    BAUG.position.y = Math.abs(Math.sin(gT * 2.4)) * 0.08; if (Math.hypot(p.x - CAL_X, p.z - CAL_Z) < 2.6 && BAU.t > 0.8) bauAbre(); }
+  function bauTem(t, k) { return t === 'arma' ? AR.armas.includes(k) : t === 'fant' ? AR.fantasias.includes(k) : t === 'cosm' ? AR.cosms.includes(k) : t === 'mont' ? AR.monts.includes(k) : t === 'pet' ? AR.pets.includes(k) : false; }
+  function bauAbre() { BAU.aberto = true; const d = BAU.d, gl = AR.classe === 'gladiador'; som('missao_ok', 1, 0.8); flash('rgba(255,220,120,.5)'); fx('luz', [CAL_X, 1, CAL_Z], 1.6);
+    const L = BAU_LOOT[d.id].filter(([t, k]) => !k.startsWith('gl_') || gl).map(([t, k, pc]) => { const I = presInfo({ t, k, n: 1 }); const ganhou = Math.random() * 100 < pc; const ja = ganhou && bauTem(t, k); return { t, k, pc, I, ganhou, ja }; });
+    const moedBonus = Math.round(60 + d.nv * 25); let extra = moedBonus; L.forEach(x => { if (x.ja) extra += Math.round(150 + d.nv * 20); });
+    AR.inv.moedas += extra; L.filter(x => x.ganhou && !x.ja).forEach((x, i) => setTimeout(() => presAplica({ t: x.t, k: x.k, n: 1, porNome: '📦 O Baú do Chefe' }), 900 + i * 900));
+    setTimeout(() => { salvaAR(); atualizaInv(); if (typeof montaBarra === 'function') montaBarra(); }, 1200 + L.length * 900);
+    let P = $('bau-p'); if (!P) { P = document.createElement('div'); P.id = 'bau-p'; document.body.appendChild(P); }
+    const nG = L.filter(x => x.ganhou).length;
+    P.innerHTML = `<div class="box"><h3>📦 Baú do Chefe · ${d.nome}</h3><p class="sub">${nG ? '✨ Você teve sorte! ' + nG + ' item(ns) raro(s)!' : 'Nenhum item raro dessa vez... tente de novo!'}</p><div class="bl">` +
+      L.map(x => `<div class="bi ${x.ganhou ? 'win' : ''}"><div class="ic">${x.I.img ? `<img src="${x.I.img}" alt="">` : '🎁'}</div><b>${x.I.nome}</b><span class="pc">${x.pc}%</span><span class="st">${x.ganhou ? (x.ja ? 'Já tinha → moedas' : 'GANHOU!') : '—'}</span></div>`).join('') +
+      `</div><p class="mo">💰 +${extra.toLocaleString('pt-BR')} moedas do baú</p>${gl ? '' : '<p class="dica">Armas GL só caem pra Gladiador.</p>'}<button id="bau-ok">Pegar tudo</button></div>`;
+    P.hidden = false; tapBtn($('bau-ok'), () => { P.hidden = true; }); }
   // ---------- quadro de cada frame ----------
   function calFrame(dt, p) { if (!CAL.on) return null; if (zona !== 'calab') { calLimpa(); CAL.on = false; CALG.visible = false; return null; }
+    bauFrame(dt, p);
     colide(p, CALCOL); const rx = p.x - CAL_X, rz = p.z - CAL_Z, r = Math.hypot(rx, rz); if (r > CAL_R - 1) { p.x = CAL_X + rx * (CAL_R - 1) / r; p.z = CAL_Z + rz * (CAL_R - 1) / r; }
     CAL.feras.forEach(e => { const g = e.g.position, q = Math.hypot(g.x - CAL_X, g.z - CAL_Z); if (q > CAL_R - 1.5) { g.x = CAL_X + (g.x - CAL_X) * (CAL_R - 1.5) / q; g.z = CAL_Z + (g.z - CAL_Z) * (CAL_R - 1.5) / q; } });
     calPortal.userData.d.material.opacity = CAL.fim ? 0.75 + Math.sin(gT * 4) * 0.15 : 0.15; calPortal.rotation.y += dt * 0.3;
