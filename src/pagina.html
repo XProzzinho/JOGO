@@ -243,7 +243,7 @@
   #mm-hud{position:fixed;left:44%;top:calc(104px + env(safe-area-inset-top,0px));transform:translateX(-50%);padding:5px 14px;border-radius:14px;background:#1c1828;border:3px solid #2b2340;box-shadow:var(--sombra);color:#f0e8ff;font-size:13px;font-weight:800;text-align:center;z-index:6;pointer-events:none;white-space:nowrap}
   #mm-hud b{color:#c8a8ff;letter-spacing:1px;font-size:10px;font-weight:900;display:block}
   #missao-g b{color:#2f8a3a;letter-spacing:1px;font-size:10px;font-weight:900;display:block}
-  #fala-esc{display:grid;gap:8px;margin-top:8px}
+  #fala-esc{display:grid;gap:8px;margin-top:8px;max-height:calc(100vh - 200px - env(safe-area-inset-top,0px));overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding-right:4px}
   .esc{display:block;text-align:left;padding:9px 12px;border-radius:14px;border:var(--borda);background:var(--branco);color:var(--tinta);font-family:inherit;font-size:15px;font-weight:800;box-shadow:0 3px 0 var(--tinta)}
   .esc:active{transform:translateY(2px);box-shadow:0 1px 0 var(--tinta)}
   .esc small{display:block;font-weight:700;font-size:12px;color:var(--tinta2);margin-top:2px}

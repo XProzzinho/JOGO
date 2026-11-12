@@ -79,8 +79,8 @@
     cristal: [['arma', 'esp_dragao_real', 4], ['arma', 'gl_prata', 4], ['arma', 'gl_abismo', 3], ['fant', 'mago_arcano', 3], ['cosm', 'asa_quantum', 3], ['mont', 'moto_astral', 3]],
     trolls: [['arma', 'esp_dragao_real', 6], ['arma', 'esp_executora', 3], ['arma', 'gl_eclipse', 3], ['cosm', 'asa_titan', 3], ['mont', 'tigre_dourado', 3]],
     sombras: [['arma', 'esp_executora', 5], ['arma', 'gl_eclipse', 5], ['fant', 'mago_divino', 3], ['cosm', 'asa_galaxy', 3], ['mont', 'moto_sombra', 4]],
-    trono: [['arma', 'dragao', 8], ['arma', 'esp_executora', 7], ['arma', 'gl_eclipse', 6], ['pet', 'dragao', 5], ['cosm', 'asa_galaxy', 5], ['mont', 'tigre_dourado', 5]],
-    vazio: [['arma', 'esp_executora', 12], ['arma', 'dragao', 10], ['arma', 'gl_eclipse', 10], ['pet', 'dragao', 8], ['fant', 'mago_divino', 8], ['cosm', 'asa_galaxy', 8], ['mont', 'moto_sombra', 8]] };
+    trono: [['arma', 'dragao', 8], ['arma', 'esp_executora', 7], ['arma', 'gl_eclipse', 6], ['pet', 'dragao', 5], ['cosm', 'asa_galaxy', 5], ['mont', 'tigre_dourado', 5], ['mont', 'moto_ceifadora', 4]],
+    vazio: [['arma', 'esp_executora', 12], ['arma', 'dragao', 10], ['arma', 'gl_eclipse', 10], ['pet', 'dragao', 8], ['fant', 'mago_divino', 8], ['cosm', 'asa_galaxy', 8], ['mont', 'moto_sombra', 8], ['mont', 'moto_ceifadora_r', 6]] };
   const BAUG = grp(CALG, 0, 0, 0); BAUG.visible = false; let BAU = null;
   { const ouro = '#ffd23c', mad = '#7a4a22', madE = '#5a3214'; part(BAUG, BOX, mad, 0, 0.45, 0, 1.6, 0.9, 1.0); part(BAUG, BOX, madE, 0, 0.05, 0, 1.7, 0.1, 1.1);
     [-0.6, 0, 0.6].forEach(x => part(BAUG, BOX, ouro, x, 0.45, 0, 0.1, 0.94, 1.04, 0.2)); part(BAUG, BOX, ouro, 0, 0.88, 0, 1.64, 0.08, 1.04, 0.2);

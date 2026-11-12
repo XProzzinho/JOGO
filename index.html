@@ -243,7 +243,7 @@
   #mm-hud{position:fixed;left:44%;top:calc(104px + env(safe-area-inset-top,0px));transform:translateX(-50%);padding:5px 14px;border-radius:14px;background:#1c1828;border:3px solid #2b2340;box-shadow:var(--sombra);color:#f0e8ff;font-size:13px;font-weight:800;text-align:center;z-index:6;pointer-events:none;white-space:nowrap}
   #mm-hud b{color:#c8a8ff;letter-spacing:1px;font-size:10px;font-weight:900;display:block}
   #missao-g b{color:#2f8a3a;letter-spacing:1px;font-size:10px;font-weight:900;display:block}
-  #fala-esc{display:grid;gap:8px;margin-top:8px}
+  #fala-esc{display:grid;gap:8px;margin-top:8px;max-height:calc(100vh - 200px - env(safe-area-inset-top,0px));overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding-right:4px}
   .esc{display:block;text-align:left;padding:9px 12px;border-radius:14px;border:var(--borda);background:var(--branco);color:var(--tinta);font-family:inherit;font-size:15px;font-weight:800;box-shadow:0 3px 0 var(--tinta)}
   .esc:active{transform:translateY(2px);box-shadow:0 1px 0 var(--tinta)}
   .esc small{display:block;font-weight:700;font-size:12px;color:var(--tinta2);margin-top:2px}
@@ -766,7 +766,14 @@ ${_}`}class A extends Error{constructor({message:e,code:t,cause:r,name:s}){var n
   cv.addEventListener('mousedown', onDown); window.addEventListener('mousemove', e => { if (joyId === 'm' || camId === 'm') onMove(e); }); window.addEventListener('mouseup', onUp);
   cv.addEventListener('wheel', e => { camDist = clamp(camDist + e.deltaY * 0.005, 3, 14); }, { passive: true });
   const SEM_CLIQUE = ['atacar', 'pular', 'correr', 'acao', 'fala', 'cena', 'arma'];
-  const tapBtn = (el, fn) => { const f0 = fn; fn = () => { if (!el.classList.contains('slot') && !SEM_CLIQUE.includes(el.id)) som('clique', 0.4, 1); f0(); }; el.addEventListener('touchstart', e => { fn(); e.preventDefault(); e.stopPropagation(); }, { passive: false }); el.addEventListener('mousedown', e => { fn(); e.stopPropagation(); }); };
+  const tapBtn = (el, fn) => { const f0 = fn; fn = () => { if (!el.classList.contains('slot') && !SEM_CLIQUE.includes(el.id)) som('clique', 0.4, 1); f0(); }; el.addEventListener('touchstart', e => { e.stopPropagation(); if (rolavel(el)) { const t = e.touches[0]; el._t0 = [t.clientX, t.clientY, Date.now()]; el._mov = false; return; } fn(); e.preventDefault(); }, { passive: false });
+    el.addEventListener('touchmove', e => { if (!el._t0) return; const t = e.touches[0]; if (Math.hypot(t.clientX - el._t0[0], t.clientY - el._t0[1]) > 10) el._mov = true; }, { passive: true });
+    el.addEventListener('touchend', e => { if (!el._t0) return; const ok = !el._mov && Date.now() - el._t0[2] < 900; el._t0 = null; if (ok) { e.preventDefault(); fn(); } e.stopPropagation(); }, { passive: false });
+    el.addEventListener('touchcancel', () => { el._t0 = null; });
+    el.addEventListener('mousedown', e => { e.stopPropagation(); if (rolavel(el)) { el._m0 = [e.clientX, e.clientY]; return; } fn(); });
+    el.addEventListener('mouseup', e => { if (!el._m0) return; const ok = Math.hypot(e.clientX - el._m0[0], e.clientY - el._m0[1]) < 10; el._m0 = null; if (ok) fn(); e.stopPropagation(); }); };
+  // botão dentro de lista que rola (conversas, mural, lojas...): só escolhe no toque sem arrastar, pra dar pra rolar
+  function rolavel(el) { for (let n = el.parentElement; n && n !== document.body; n = n.parentElement) { const st = getComputedStyle(n); if (/(auto|scroll)/.test(st.overflowY + st.overflowX) && (n.scrollHeight > n.clientHeight + 2 || n.scrollWidth > n.clientWidth + 2)) return true; } return false; }
   // ---- VOO com as asas ----
   let voando = false, voSobe = 0, voPitch = 0;
   var vooLiberado = false; function temVoo() { return vooLiberado || souAdmin(); }
@@ -3249,6 +3256,8 @@ ${_}`}class A extends Error{constructor({message:e,code:t,cause:r,name:s}){var n
     moto_astral: { nome: 'Moto Astral Azul', moto: 'astral', vel: 2.3, preco: 3000, desc: 'Montaria: +130% de velocidade. Flutua com energia azul.', sela: 0.3, c1: '#1c2c8a', c2: '#3a5ad8', neon: '#3ad8ff', metal: '#c8d4ec' },
     moto_sombra: { nome: 'Moto Astral Sombra', moto: 'astral', vel: 2.4, preco: 3500, desc: 'Montaria: +140% de velocidade. Preta com energia dourada.', sela: 0.3, c1: '#121218', c2: '#2a2a34', neon: '#ffc23a', metal: '#3a3a48' },
     moto_rubra: { nome: 'Chopper Rubra', moto: 'chopper', vel: 2.2, def: 10, preco: 4000, desc: 'Montaria: +120% de velocidade e +10% de defesa. Escapamento solta fogo.', sela: 0.16, c1: '#b81a1a', c2: '#1a1a1e', neon: '#ff6a2a', metal: '#dfe4ee' },
+    moto_ceifadora: { nome: 'Ceifadora Branca', moto: 'lamina', vel: 2.6, def: 15, preco: 6000, desc: 'Montaria: +160% de velocidade e +15% de defesa. Braços-lâmina abrem parada e fecham acelerando.', sela: 0.22, c1: '#e8eaf0', c2: '#3a3e4a', neon: '#3ad8ff', metal: '#c8ccd8' },
+    moto_ceifadora_r: { nome: 'Ceifadora Infernal', moto: 'lamina', vel: 2.6, def: 15, preco: 6000, desc: 'Montaria: +160% de velocidade e +15% de defesa. Braços-lâmina abrem parada e fecham acelerando.', sela: 0.22, c1: '#2a2a32', c2: '#8a1414', neon: '#ff5a1a', metal: '#b8bcc8' },
     tigre_dourado: { nome: 'Tigre Dourado', base: 'lobo', esc: 2.0, vel: 2.1, preco: 2500, topo: 0.92, desc: 'Montaria: +110% de velocidade.', cores: { '#a8b0c0': '#e8902a', '#eef2f8': '#fff0d8', '#ffd23c': '#3aff8a' } } };
   AR.monts = AR.monts || []; var montado = false, montT = 0, MONT3D = {};
   function motoModelo(M) { const g = grp(world), b = grp(g), al = [], rodas = [], fogo = []; const C = M.c1, C2 = M.c2, N = M.neon, MT = M.metal;
@@ -3264,6 +3273,43 @@ ${_}`}class A extends Error{constructor({message:e,code:t,cause:r,name:s}){var n
       const mot = part(b, CYL, MT, 0, 0.18, -1.05, 0.22, 0.25, 0.22); mot.rotation.x = Math.PI / 2; part(b, CYL, N, 0, 0.18, -1.18, 0.16, 0.02, 0.16, 0, true).rotation.x = Math.PI / 2;
       fogo.push(glowSpr(b, 0, 0.18, -1.3, 0.8, N, 0.9)); const sob = glowSpr(g, 0, 0.08, 0, 2.6, N, 0.45); fogo.push(sob);
       part(b, CYL, '#1a1a22', 0, 0.55, 0.78, 0.015, 0.25, 0.015).rotation.z = Math.PI / 2; [-1, 1].forEach(sd => part(b, SPH, '#1a1a22', sd * 0.14, 0.55, 0.78, 0.035, 0.035, 0.06)); }
+    else if (M.moto === 'lamina') { // CEIFADORA: carenagem bico de lâmina, motor V exposto, braços-lâmina atrás
+      const lado = (pts, d, cor, x, y, z, glow) => { const sh = new T3.Shape(); pts.forEach(([a, c], i) => i ? sh.lineTo(a, c) : sh.moveTo(a, c)); const geo = new T3.ExtrudeGeometry(sh, { depth: d, bevelEnabled: true, bevelThickness: 0.015, bevelSize: 0.015, bevelSegments: 1 }); geo.translate(0, 0, -d / 2); const m = part(b, geo, cor, x, y, z, 1, 1, 1, 0, glow); m.rotation.y = -Math.PI / 2; return m; };
+      const roda = (z, r, lg) => { const w = grp(b, 0, r, z); part(w, TOR, '#18181c', 0, 0, 0, r, r, r * lg).rotation.y = Math.PI / 2; part(w, CYL, MT, 0, 0, 0, r * 0.7, lg * 0.32, r * 0.7).rotation.z = Math.PI / 2;
+        part(w, CYL, '#22222a', 0, 0, 0, r * 0.5, lg * 0.36, r * 0.5).rotation.z = Math.PI / 2; [-1, 1].forEach(sd => { for (let k = 0; k < 6; k++) { const a = k * Math.PI / 3; part(w, SPH, MT, sd * lg * 0.18, Math.sin(a) * r * 0.36, Math.cos(a) * r * 0.36, 0.03, 0.03, 0.03); } part(w, CYL, N, sd * lg * 0.19, 0, 0, r * 0.18, 0.01, r * 0.18, 0, true).rotation.z = Math.PI / 2; }); rodas.push(w); return w; };
+      roda(-1.05, 0.44, 2.0); roda(1.32, 0.34, 1.2);
+      // garfo longo
+      [-1, 1].forEach(sd => { const f = part(b, CYL, MT, sd * 0.12, 0.78, 1.15, 0.035, 0.95, 0.035); f.rotation.x = -0.42; });
+      // carenagem frontal (bico de lâmina), em 3 camadas
+      lado([[1.95, 0.32], [1.4, 0.55], [0.85, 1.05], [0.55, 1.25], [0.25, 1.0], [0.45, 0.62], [0.8, 0.4], [1.3, 0.22]], 0.5, C, 0, 0, 0);
+      lado([[2.05, 0.25], [1.55, 0.5], [1.0, 0.98], [0.75, 1.12], [0.7, 0.9], [1.1, 0.55], [1.5, 0.32]], 0.62, C2, 0, 0, 0);
+      [-1, 1].forEach(sd => { // lâminas laterais da carenagem
+        lado([[1.9, 0.3], [1.2, 0.62], [0.6, 0.9], [0.95, 0.62], [1.3, 0.4]], 0.04, MT, sd * 0.34, 0, 0).rotation.z = sd * 0.12;
+        lado([[1.7, 0.42], [1.25, 0.78], [0.8, 1.05], [1.05, 0.78]], 0.03, N, sd * 0.37, 0.02, 0, true).rotation.z = sd * 0.12;
+        lado([[0.95, 0.5], [0.45, 0.62], [0.1, 0.95], [0.4, 0.55]], 0.03, C, sd * 0.4, -0.02, 0).rotation.z = sd * 0.3; // aleta lateral
+        // trilho-lâmina de baixo com engrenagem
+        lado([[2.25, 0.2], [1.6, 0.26], [-0.6, 0.24], [-1.15, 0.3], [-1.6, 0.42], [-1.2, 0.2], [-0.4, 0.14], [1.6, 0.14]], 0.05, C2, sd * 0.42, 0, 0);
+        tb(b, sd * 0.45, 0.2, 0.5, 0.012, 0.02, 2.0, N, true); const eg = part(b, CYL, MT, sd * 0.46, 0.22, -0.35, 0.13, 0.06, 0.13); eg.rotation.z = Math.PI / 2; for (let k = 0; k < 8; k++) { const t = tb(b, sd * 0.46, 0.22, -0.35, 0.05, 0.3, 0.05, MT); t.rotation.x = k * Math.PI / 8; }
+        part(b, CYL, N, sd * 0.495, 0.22, -0.35, 0.05, 0.01, 0.05, 0, true).rotation.z = Math.PI / 2;
+        const g2 = part(b, CYL, MT, sd * 0.46, 0.2, 1.75, 0.09, 0.05, 0.09); g2.rotation.z = Math.PI / 2; });
+      part(b, SPH, '#ffffff', 0, 0.48, 1.88, 0.07, 0.05, 0.05, 0, true); glowSpr(b, 0, 0.5, 2.0, 1.0, N, 0.9); [-1, 1].forEach(sd => part(b, SPH, N, sd * 0.16, 0.66, 1.6, 0.05, 0.025, 0.06, 0, true));
+      part(b, SPH, '#18202a', 0, 1.06, 0.7, 0.14, 0.05, 0.22); // vidro
+      // guidão
+      part(b, CYL, '#1a1a22', 0, 1.12, 0.62, 0.02, 0.85, 0.02).rotation.z = Math.PI / 2; [-1, 1].forEach(sd => part(b, SPH, '#1a1a22', sd * 0.42, 1.12, 0.6, 0.035, 0.035, 0.1));
+      // motor V exposto
+      tb(b, 0, 0.52, 0.05, 0.3, 0.3, 0.55, '#2a2a32'); [-1, 1].forEach(v => { const c = grp(b, 0, 0.62, 0.08 + v * 0.12); c.rotation.x = v * 0.5; for (let k = 0; k < 5; k++) part(c, CYL, MT, 0, k * 0.07, 0, 0.13 - k * 0.006, 0.03, 0.13 - k * 0.006); part(c, CYL, '#3a3a44', 0, 0.36, 0, 0.09, 0.06, 0.09); });
+      [-1, 1].forEach(sd => { const tu = part(b, CYL, MT, sd * 0.2, 0.42, -0.5, 0.04, 0.9, 0.04); tu.rotation.x = Math.PI / 2 - 0.25; fogo.push(glowSpr(b, sd * 0.2, 0.5, -0.98, 0.5, N, 0)); });
+      // banco e rabeta
+      part(b, SPH, '#1a1a20', 0, 0.86, -0.3, 0.2, 0.08, 0.42); lado([[-0.2, 0.82], [-0.75, 0.9], [-1.25, 1.02], [-1.4, 0.9], [-1.0, 0.72], [-0.4, 0.7]], 0.36, C, 0, 0, 0);
+      tb(b, 0, 0.86, -1.33, 0.22, 0.04, 0.04, '#ff2a3a', true);
+      // BRAÇOS-LÂMINA de trás (as aletas: abrem parada, fecham acelerando)
+      [-1, 1].forEach(sd => { const pv = grp(b, sd * 0.24, 0.95, -0.95); const arm = grp(pv, 0, 0, 0);
+        part(arm, CYL, C2, 0, 0.32, 0, 0.07, 0.64, 0.07); part(arm, SPH, C, 0, 0.7, 0, 0.11, 0.11, 0.11);
+        const hub = part(arm, CYL, C, 0, 0.82, 0, 0.2, 0.08, 0.2); hub.rotation.z = Math.PI / 2; part(arm, CYL, N, sd * 0.045, 0.82, 0, 0.12, 0.01, 0.12, 0, true).rotation.z = Math.PI / 2;
+        for (let k = 0; k < 8; k++) { const a = k * Math.PI / 4; part(arm, SPH, MT, sd * 0.05, 0.82 + Math.sin(a) * 0.15, Math.cos(a) * 0.15, 0.022, 0.022, 0.022); }
+        const bl = new T3.Shape(); [[0, 0.06], [0.5, 0.1], [1.25, 0.04], [1.5, 0.0], [1.2, -0.05], [0.5, -0.08], [0, -0.05]].forEach(([a, c], i) => i ? bl.lineTo(a, c) : bl.moveTo(a, c)); const bg = new T3.ExtrudeGeometry(bl, { depth: 0.03, bevelEnabled: true, bevelThickness: 0.01, bevelSize: 0.01, bevelSegments: 1 });
+        const lb = part(arm, bg, C, 0, 0.82, -0.05, 1, 1, 1); lb.rotation.y = Math.PI / 2; lb.rotation.z = -0.0; const lb2 = part(arm, bg, N, sd * 0.02, 0.84, -0.06, 0.9, 0.35, 1, 0, true); lb2.rotation.y = Math.PI / 2;
+        al.push({ pv, sd, i: 0, lamina: true }); }); }
     else { // chopper
       const roda = (z, r) => { const w = grp(b, 0, r, z); part(w, TOR, '#1a1a1e', 0, 0, 0, r, r, r * 1.2).rotation.y = Math.PI / 2; const ar = part(w, TOR, MT, 0, 0, 0, r * 0.72, r * 0.72, r * 0.5); ar.rotation.y = Math.PI / 2;
         for (let k = 0; k < 8; k++) { const ra = tb(w, 0, 0, 0, 0.015, r * 1.4, 0.015, MT); ra.rotation.x = k * Math.PI / 8; } part(w, CYL, MT, 0, 0, 0, 0.08, 0.16, 0.08).rotation.z = Math.PI / 2; rodas.push(w); };
@@ -3292,7 +3338,7 @@ ${_}`}class A extends Error{constructor({message:e,code:t,cause:r,name:s}){var n
       e.g.position.set(p.x, Math.max(0, p.y - MONT[k].sela), p.z); e.g.rotation.y = facing; if (e.moto) { motoAnima(e, dt); return; } const a = vel > 0.4 ? Math.min(0.75, vel * 0.09) : 0; e.L.forEach((l, i) => { l.rotation.x = Math.sin(montT + (i % 2 ? Math.PI : 0) + (i > 1 ? 0.6 : 0)) * a; }); e.b.position.y = vel > 0.4 ? Math.abs(Math.sin(montT)) * 0.06 : Math.sin(gT * 2) * 0.01; if (e.head) e.head.rotation.x = Math.sin(montT) * a * 0.15; }); }
   Object.keys(MONT).forEach(k => { if (!MONT[k].moto) MONT[k].sela = MONT[k].topo * MONT[k].esc - 0.62; });
   function motoAnima(e, dt) { const rapido = vel > 1.2, k = clamp(vel / 9); e.abre = (e.abre == null ? 1 : e.abre) + ((rapido ? 0 : 1) - (e.abre == null ? 1 : e.abre)) * Math.min(1, dt * 5);
-    e.al.forEach(a => { const ab = e.abre; a.pv.rotation.x = -1.25 + ab * 1.0 + a.i * 0.12; a.pv.rotation.z = -a.sd * (0.15 + ab * (0.55 + a.i * 0.3)); });
+    e.al.forEach(a => { const ab = e.abre; if (a.lamina) { a.pv.rotation.x = -1.15 + ab * 0.85; a.pv.rotation.z = -a.sd * (0.05 + ab * 0.45); return; } a.pv.rotation.x = -1.25 + ab * 1.0 + a.i * 0.12; a.pv.rotation.z = -a.sd * (0.15 + ab * (0.55 + a.i * 0.3)); });
     if (e.moto === 'astral') { e.b.position.y = 0.42 + Math.sin(gT * 3) * 0.05; e.b.rotation.x = -k * 0.08; e.fogo[0].scale.setScalar(0.6 + k * 1.6 + Math.random() * 0.15); e.fogo[1].material.opacity = 0.3 + Math.sin(gT * 5) * 0.1 + k * 0.15; }
     else { e.rodas.forEach(w => { w.rotation.x += vel * dt / 0.37; }); e.b.position.y = rapido ? Math.sin(gT * 30) * 0.008 : 0; e.fogo.forEach(f => { f.material.opacity = rapido ? 0.6 + Math.random() * 0.4 : 0; f.scale.setScalar(0.3 + k * 0.6 + Math.random() * 0.2); }); } }
   function montPose() { if (montado && MONT[AR.mont] && MONT[AR.mont].moto) { pose(heroi, gT, { mood: 'smile', arms: { shL: [-1.25, 0, -0.22], shR: [-1.25, 0, 0.22], elL: [-0.25, 0, 0], elR: [-0.25, 0, 0] }, legs: { thL: -1.25, knL: 1.0, thR: -1.25, knR: 1.0 } }); const P = heroi.userData.P; P.thL.rotation.z = -0.28; P.thR.rotation.z = 0.28; P.spine.rotation.x = 0.35; return true; } if (!montado) return false; const b = Math.sin(montT) * 0.04; pose(heroi, gT, { mood: 'smile', arms: { shL: [-0.7, 0, -0.25], shR: [-0.7, 0, 0.25], elL: [-0.9, 0, 0], elR: [-0.9, 0, 0] }, legs: { thL: -1.45 + b, knL: 1.5, thR: -1.45 - b, knR: 1.5 } }); const P = heroi.userData.P; P.thL.rotation.z = -0.35; P.thR.rotation.z = 0.35; return true; }
@@ -3401,8 +3447,8 @@ ${_}`}class A extends Error{constructor({message:e,code:t,cause:r,name:s}){var n
     cristal: [['arma', 'esp_dragao_real', 4], ['arma', 'gl_prata', 4], ['arma', 'gl_abismo', 3], ['fant', 'mago_arcano', 3], ['cosm', 'asa_quantum', 3], ['mont', 'moto_astral', 3]],
     trolls: [['arma', 'esp_dragao_real', 6], ['arma', 'esp_executora', 3], ['arma', 'gl_eclipse', 3], ['cosm', 'asa_titan', 3], ['mont', 'tigre_dourado', 3]],
     sombras: [['arma', 'esp_executora', 5], ['arma', 'gl_eclipse', 5], ['fant', 'mago_divino', 3], ['cosm', 'asa_galaxy', 3], ['mont', 'moto_sombra', 4]],
-    trono: [['arma', 'dragao', 8], ['arma', 'esp_executora', 7], ['arma', 'gl_eclipse', 6], ['pet', 'dragao', 5], ['cosm', 'asa_galaxy', 5], ['mont', 'tigre_dourado', 5]],
-    vazio: [['arma', 'esp_executora', 12], ['arma', 'dragao', 10], ['arma', 'gl_eclipse', 10], ['pet', 'dragao', 8], ['fant', 'mago_divino', 8], ['cosm', 'asa_galaxy', 8], ['mont', 'moto_sombra', 8]] };
+    trono: [['arma', 'dragao', 8], ['arma', 'esp_executora', 7], ['arma', 'gl_eclipse', 6], ['pet', 'dragao', 5], ['cosm', 'asa_galaxy', 5], ['mont', 'tigre_dourado', 5], ['mont', 'moto_ceifadora', 4]],
+    vazio: [['arma', 'esp_executora', 12], ['arma', 'dragao', 10], ['arma', 'gl_eclipse', 10], ['pet', 'dragao', 8], ['fant', 'mago_divino', 8], ['cosm', 'asa_galaxy', 8], ['mont', 'moto_sombra', 8], ['mont', 'moto_ceifadora_r', 6]] };
   const BAUG = grp(CALG, 0, 0, 0); BAUG.visible = false; let BAU = null;
   { const ouro = '#ffd23c', mad = '#7a4a22', madE = '#5a3214'; part(BAUG, BOX, mad, 0, 0.45, 0, 1.6, 0.9, 1.0); part(BAUG, BOX, madE, 0, 0.05, 0, 1.7, 0.1, 1.1);
     [-0.6, 0, 0.6].forEach(x => part(BAUG, BOX, ouro, x, 0.45, 0, 0.1, 0.94, 1.04, 0.2)); part(BAUG, BOX, ouro, 0, 0.88, 0, 1.64, 0.08, 1.04, 0.2);
@@ -3601,7 +3647,7 @@ ${_}`}class A extends Error{constructor({message:e,code:t,cause:r,name:s}){var n
     const n = { c: orin, nome: 'Orin · Mago Teleportador', x, z, ry: Math.PI, ry0: Math.PI, acao: () => falar({ nome: 'Orin', falas: [{ n: 'Orin', t: 'Saudações, aventureiro! Com minha magia eu te levo a qualquer lugar do reino num piscar de olhos.' }], escolhas: () => [{ t: '🗺️ <b>Abrir o mapa</b><small>Escolha o lugar no mapa</small>', fn: () => setTimeout(mapaMundi, 50) }, ...lugaresMapa().filter(L => !L.trava && L.id !== 'vila').slice(0, 6).map(L => ({ t: L.ic + ' <b>' + L.nome + '</b>' + (L.sub ? '<small>' + L.sub + '</small>' : ''), fn: () => vaiPara(L) })), { t: 'Agora não', fn: null }] }) };
     NPCS.push(n); COL.push({ t: 'c', x, z, r: 0.45, npc: n }); n.marca = new T3.Sprite(new T3.SpriteMaterial({ map: marcaT('✦', '#5ae8ff'), transparent: true, depthWrite: false, toneMapped: false })); n.marca.scale.set(0.45, 0.6, 1); n.marca.position.set(x, 2.8, z); world.add(n.marca); }
 
-  window.__dbg = { dano, CAL, DGS, calEntra, MIS, abreMural, get PRACA() { return PRACA; }, staffArmas, equipaArma, MONT3D, PET3D, get MONT() { return MONT; }, montar, petChama, MQ, set GMB(v) { GMB = v; gmHud(); }, gmPct, ASAT, COSM, vesteCosm, CB_LISTA, abrirLivros, trocaPag, get mana() { return mana; }, set mana(v) { mana = v; }, ARMAG, T3, vesteCosm, voa, get voando() { return voando; }, input, mpRecebe, entraMasmorra, saiMasmorra, MM, mmFaseAtual, mmMorte, setaFrame, equipaArma, abrirGuilda, arthurNPC, vestePeca, atualizaPecas, PECAS, BLOCOS, modoBatalha, bmLiga, bmDesliga, BMS, ORB, get BM() { return BM; }, get hora() { return hora; }, set hora(v) { hora = v; }, usarHab2: id => classePoder2(id), BUFF, abrirCriar, aplicaClasse, CLASSES, get desp() { return desp; }, set desp(v) { desp = v; }, usarHab: id => classePoder(id), renderer, scene, world, ganhaXp, vesteFantasia, abrirPerfil, fazRetrato, irValdren, Q, heroi, ativo, AR, FERAS, golem, atacar, get vida() { return vida; }, set vida(v) { vida = v; }, abrirLoja, usarPoder: id => usarPoder(PW[id]), acao: () => acao(), get alvo() { return alvo; } };
+  window.__dbg = { falar, dano, CAL, DGS, calEntra, MIS, abreMural, get PRACA() { return PRACA; }, staffArmas, equipaArma, MONT3D, PET3D, get MONT() { return MONT; }, montar, petChama, MQ, set GMB(v) { GMB = v; gmHud(); }, gmPct, ASAT, COSM, vesteCosm, CB_LISTA, abrirLivros, trocaPag, get mana() { return mana; }, set mana(v) { mana = v; }, ARMAG, T3, vesteCosm, voa, get voando() { return voando; }, input, mpRecebe, entraMasmorra, saiMasmorra, MM, mmFaseAtual, mmMorte, setaFrame, equipaArma, abrirGuilda, arthurNPC, vestePeca, atualizaPecas, PECAS, BLOCOS, modoBatalha, bmLiga, bmDesliga, BMS, ORB, get BM() { return BM; }, get hora() { return hora; }, set hora(v) { hora = v; }, usarHab2: id => classePoder2(id), BUFF, abrirCriar, aplicaClasse, CLASSES, get desp() { return desp; }, set desp(v) { desp = v; }, usarHab: id => classePoder(id), renderer, scene, world, ganhaXp, vesteFantasia, abrirPerfil, fazRetrato, irValdren, Q, heroi, ativo, AR, FERAS, golem, atacar, get vida() { return vida; }, set vida(v) { vida = v; }, abrirLoja, usarPoder: id => usarPoder(PW[id]), acao: () => acao(), get alvo() { return alvo; } };
   // ---------- laço do jogo ----------
   let vy = 0, noChao = true, facing = 0, vel = 0, gT = 0, last = performance.now();
   const ANDAR = 3.0, CORRER = 6.5, GRAV = 22, PULO = 7.6; const tmp = new T3.Vector3();
