@@ -127,6 +127,7 @@
     el.innerHTML = `<b>${CAL.torre ? '🗼 TORRE · ANDAR ' + CAL.torre : '🏰 ' + CAL.d.nome.toUpperCase() + ' · NV ' + CAL.d.nv}</b>${CAL.fim ? '✅ Vencido! Vá até o portal.' : 'Onda ' + Math.max(1, CAL.onda) + '/' + CAL.ondas.length + ' · inimigos: ' + vivos}`; }
   setInterval(() => { if (CAL.on) calHud(); }, 700);
   // ---------- títulos novos ----------
+  setTimeout(() => ['dg_vazio', 'torre100', 'grau_s'].forEach(k => { if (TITULOS[k]) TITULOS[k].r = 'mitico'; }), 0);
   DGS.forEach(d => { TITULOS['dg_' + d.id] = { nome: 'Conquistador: ' + d.nome.replace(' (secreto)', ''), r: d.nv >= 90 ? 'lendario' : d.nv >= 45 ? 'epico' : 'raro', como: 'Vencer o calabouço ' + d.nome }; });
   Object.assign(TITULOS, { torre50: { nome: 'Escalador da Torre', r: 'epico', como: 'Chegar ao andar 50 da Torre dos Monstros' }, torre100: { nome: 'Senhor da Torre', r: 'lendario', como: 'Vencer o andar 100 da Torre' }, colosso: { nome: 'Matador de Colossos', r: 'lendario', como: 'Derrotar o Colosso, chefe de mundo' }, grau_s: { nome: 'Aventureiro Grau S', r: 'lendario', como: 'Chegar ao Grau S no Mural de Missões' } });
   // ---------- PRAÇA DOS AVENTUREIROS (fora do portão leste) ----------

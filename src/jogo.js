@@ -1119,8 +1119,8 @@
   function attrBadge() { const b = $('attr-badge'); if (!b) return; b.hidden = !(AR.attrPts > 0); b.textContent = '+' + AR.attrPts; }
   function attrAdd(k, n) { n = Math.min(n, AR.attrPts || 0); if (n <= 0) return; AR.attr[k] += n; AR.attrPts -= n; som('clique', 0.6, 1.3); aplicaNivel(); salvaAR(); attrBadge(); desenhaPerfil(); }
   function attrReset() { const t = Object.values(AR.attr).reduce((a, b) => a + b, 0); if (!t) return; if (AR.inv.moedas < 500) { aviso('Precisa de 500 moedas pra redistribuir.', '#ff6a6a'); return; } AR.inv.moedas -= 500; AR.attrPts += t; Object.keys(AR.attr).forEach(k => AR.attr[k] = 0); aplicaNivel(); salvaAR(); atualizaInv(); attrBadge(); desenhaPerfil(); aviso('↺ Pontos devolvidos: ' + AR.attrPts + '. Distribua de novo!', '#ffd23c'); }
-  function aplicaNivel() { const c = CLASSES && CLASSES[AR.classe]; VIDA_MAX = (c ? c.vida : 100) + attrV('vit') * 2 + cbPas('vida'); MANA_MAX = (c ? c.mana : 100) + attrV('int') * 2 + cbPas('mana') + ((FANT[AR.fantasia] && FANT[AR.fantasia].mana) || 0); }
-  function ganhaXp(n, motivo) { if (AR.nv >= NV_MAX) return; if (GMB && GMB.length) n = Math.round(n * (1 + gmPct('xp') * 2)); AR.xp += n; let subiu = false; while (AR.nv < NV_MAX && AR.xp >= xpPara(AR.nv)) { AR.xp -= xpPara(AR.nv); AR.nv++; subiu = true; AR.pts++; AR.attrPts = (AR.attrPts || 0) + ATTR_NV; }
+  function aplicaNivel() { const c = CLASSES && CLASSES[AR.classe]; VIDA_MAX = Math.round(((c ? c.vida : 100) + attrV('vit') * 2 + cbPas('vida')) * (1 + titB('vida'))); MANA_MAX = (c ? c.mana : 100) + attrV('int') * 2 + cbPas('mana') + ((FANT[AR.fantasia] && FANT[AR.fantasia].mana) || 0); }
+  function ganhaXp(n, motivo) { if (AR.nv >= NV_MAX) return; if (GMB && GMB.length) n = Math.round(n * (1 + gmPct('xp') * 2)); n = Math.round(n * (1 + titB('xp'))); AR.xp += n; let subiu = false; while (AR.nv < NV_MAX && AR.xp >= xpPara(AR.nv)) { AR.xp -= xpPara(AR.nv); AR.nv++; subiu = true; AR.pts++; AR.attrPts = (AR.attrPts || 0) + ATTR_NV; }
     if (AR.nv >= NV_MAX) AR.xp = 0; salvaAR(); atualizaNivel();
     if (subiu) { attrBadge(); som('nivel', 1, 1); aplicaNivel(); vida = VIDA_MAX; mana = MANA_MAX; atualizaPts(); fx('luz', [heroi.position.x, 0, heroi.position.z], 1.2); fx('cura', [heroi.position.x, 0, heroi.position.z], 1.6); flash('rgba(255,230,120,.45)');
       const el = $('lvup'); el.innerHTML = `<small>SUBIU DE NÍVEL!</small>Nível ${AR.nv}<em>+${ATTR_NV} pontos de atributo · +1 ponto de habilidade</em>`; el.classList.remove('on'); void el.offsetWidth; el.classList.add('on'); setTimeout(fazRetrato, 300); }
@@ -1426,10 +1426,15 @@
     if (abaPerfil === 'fant') { let g = sec('🎭 Fantasias · só visual (não mudam a defesa)');
       Object.keys(COSM).forEach(k => { const F = COSM[k], tem = AR.cosms.includes(k), on = AR.cosm === k; cel(g, tem ? F.icone : '🔒', F.nome, tem ? (on ? 'Toque pra tirar' : F.desc) : F.loja ? 'Compre na loja da Elysia' : 'Derrote o Morcego Gigante', on, tem ? () => { vesteCosm(on ? null : k); desenhaPerfil(); } : null, on ? 'VESTIDA' : ''); });
       if (AR.cosms.some(c => COSM[c])) C.insertAdjacentHTML('beforeend', '<p class="dica">🪽 Com asas vestidas aparece o botão VOAR. Mais asas na loja da Elysia.</p>'); return; }
-    if (abaPerfil === 'tit') { const T0 = tituloAtual(); C.insertAdjacentHTML('beforeend', `<div class="tit-atual">Título equipado<b style="color:${TIT_COR[T0.r]}">${T0.nome}</b><small>${AR.titulos.length} de ${Object.keys(TITULOS).filter(k => k !== 'admin' || souAdmin()).length} títulos</small></div>`);
-      const g = sec('🏷️ Toque num título pra equipar'); Object.keys(TITULOS).forEach(k => { if (k === 'admin' && !souAdmin()) return; const T = TITULOS[k], tem = AR.titulos.includes(k), on = AR.titulo === k;
-        const b = document.createElement('button'); b.className = 'cel tit' + (on ? ' on' : '') + (tem ? '' : ' fixa'); b.style.setProperty('--tc', { comum: '#5a5470', raro: '#2a6ac8', epico: '#8a3ad8', lendario: '#b87800', admin: '#d82a2a' }[T.r]); b.innerHTML = `<span class="ic">${tem ? '🏷️' : '🔒'}</span><b>${tem ? T.nome : '???'}</b><small>${T.como}</small><em>${on ? 'EQUIPADO' : TIT_NOME[T.r]}</em>`;
-        if (tem) tapBtn(b, () => { AR.titulo = k; salvaAR(); aviso('🏷️ Título equipado: ' + T.nome, TIT_COR[T.r]); desenhaPerfil(); }); g.appendChild(b); }); return; }
+    if (abaPerfil === 'tit') { const T0 = tituloAtual(), todos = Object.keys(TITULOS).filter(k => k !== 'admin' || souAdmin()), tenho = todos.filter(k => AR.titulos.includes(k)).length;
+      C.insertAdjacentHTML('beforeend', `<div class="tit-topo"><small>TÍTULO EQUIPADO</small>${titBadge(T0.nome, T0.r, 'grande')}<p>${titBonusTxt(T0.r) ? '🎁 Bônus: <b>' + titBonusTxt(T0.r) + '</b>' : 'Títulos Raros, Épicos, Lendários e Míticos dão bônus quando equipados!'}</p><div class="tit-col"><i style="width:${Math.round(tenho / todos.length * 100)}%"></i><span>Coleção: ${tenho} / ${todos.length}</span></div></div>`);
+      const ords = (souAdmin() ? ['admin'] : []).concat(TIT_ORD);
+      ords.forEach(r => { const ks = todos.filter(k => TITULOS[k].r === r); if (!ks.length) return; const n = ks.filter(k => AR.titulos.includes(k)).length;
+        const h = document.createElement('div'); h.className = 'tit-sec ts-' + r; h.innerHTML = `<b>${TIT_DECO[r] || '•'} ${TIT_NOME[r]}</b><span>${n} / ${ks.length}</span>${titBonusTxt(r) ? `<em>${titBonusTxt(r)}</em>` : ''}`; C.appendChild(h);
+        const g = document.createElement('div'); g.className = 'tit-grade'; C.appendChild(g);
+        ks.sort((a, b) => AR.titulos.includes(b) - AR.titulos.includes(a)).forEach(k => { const T = TITULOS[k], tem = AR.titulos.includes(k), on = AR.titulo === k; const b = document.createElement('div'); b.className = 'tit-card tc-' + r + (tem ? '' : ' trava') + (on ? ' on' : '');
+          b.innerHTML = (tem ? titBadge(T.nome, r) : `<span class="tb tb-trava"><span>🔒 ???</span></span>`) + `<small>${tem ? '✔ ' : '🎯 '}${T.como}</small>` + (tem ? `<button>${on ? '✔ Equipado' : 'Equipar'}</button>` : '');
+          const bt = b.querySelector('button'); if (bt && !on) tapBtn(bt, () => { AR.titulo = k; aplicaNivel(); salvaAR(); aviso('🏷️ Título equipado: ' + T.nome + (titBonusTxt(r) ? ' · ' + titBonusTxt(r) : ''), TIT_COR[r]); desenhaPerfil(); }); g.appendChild(b); }); }); return; }
     let g = sec('⚔️ Armas · toque pra equipar ou desequipar');
     Object.keys(ARMAS).forEach(k => { const W = ARMAS[k], tem = AR.armas.includes(k); if (W.oculta || ((W.classe || W.staff) && !tem)) return; const on = AR.arma === k; cel(g, tem ? W.icone : '🔒', W.nome, tem ? (on ? 'Toque pra desequipar' : 'Dano ' + W.dano) : 'Na Forja', on, tem ? () => { equipaArma(on ? null : k); desenhaPerfil(); } : null, on ? 'EQUIPADA' : ''); });
     g = sec('👕 Armaduras');
@@ -1465,12 +1470,19 @@
     furia: { nome: 'Fúria Desperta', r: 'epico', como: 'Usar o Modo de Batalha III' },
     colecionador: { nome: 'Colecionador', r: 'epico', como: 'Ter 8 armaduras' },
     dragao: { nome: 'Portador da Chama', r: 'lendario', como: 'Pegar a Espada do Dragão de Fogo' } };
-  const TIT_COR = { comum: '#e8e8f0', raro: '#6ab8ff', epico: '#c88aff', lendario: '#ffc83a', admin: '#ff4a4a' };
-  const TIT_NOME = { comum: 'Comum', raro: 'Raro', epico: 'Épico', lendario: 'Lendário', admin: 'ADMIN' };
+  const TIT_COR = { comum: '#e8e8f0', raro: '#6ab8ff', epico: '#c88aff', lendario: '#ffc83a', mitico: '#ff6a3a', admin: '#ff4a4a' };
+  // bônus por raridade do título EQUIPADO (motivo pra conquistar os difíceis)
+  const TIT_BONUS = { comum: {}, raro: { xp: 3 }, epico: { atk: 3, xp: 3 }, lendario: { atk: 5, vida: 5, xp: 5 }, mitico: { atk: 8, vida: 8, xp: 8 }, admin: {} };
+  const TIT_DECO = { comum: '', raro: '◆', epico: '✧', lendario: '✦', mitico: '✹', admin: '♛' };
+  const TIT_ORD = ['mitico', 'lendario', 'epico', 'raro', 'comum'];
+  function titBonusTxt(r) { const B = TIT_BONUS[r] || {}, L = []; if (B.atk) L.push('+' + B.atk + '% ataque'); if (B.vida) L.push('+' + B.vida + '% vida'); if (B.xp) L.push('+' + B.xp + '% XP'); return L.join(' · '); }
+  function titB(k) { try { const T = tituloAtual(); return ((TIT_BONUS[T.r] || {})[k] || 0) / 100; } catch (e) { return 0; } }
+  function titBadge(nome, r, cls) { const d = TIT_DECO[r] || '', e = String(nome).replace(/</g, ''); return `<span class="tb tb-${r}${cls ? ' ' + cls : ''}">${d ? `<i>${d}</i>` : ''}<span>${e}</span>${d ? `<i>${d}</i>` : ''}</span>`; }
+  const TIT_NOME = { comum: 'Comum', raro: 'Raro', epico: 'Épico', lendario: 'Lendário', mitico: 'Mítico', admin: 'ADMIN' };
   AR.titulos = AR.titulos || ['iniciante']; if (!AR.titulos.includes('iniciante')) AR.titulos.unshift('iniciante'); AR.titulo = AR.titulo || 'iniciante'; AR.feitos = AR.feitos || {};
   function souAdmin() { const n = ((AR.visual && AR.visual.nome) || '').toLowerCase(), em = ((window.CONTA && CONTA.usuario && CONTA.usuario.email) || '').toLowerCase(); return n === 'lorddark-adm' || em === 'geansdp2@gmail.com'; }
   function ganhaTitulo(k, quieto) { if (!TITULOS[k] || AR.titulos.includes(k)) return; AR.titulos.push(k); salvaAR(); if (quieto) return; const T = TITULOS[k];
-    som('ponto', 1, 1); const el = $('lvup'); el.innerHTML = `<small>🏷️ NOVO TÍTULO</small><span style="color:${TIT_COR[T.r]}">${T.nome}</span><em>Equipe no seu retrato › 🏷️ Títulos</em>`; el.style.color = ''; el.classList.remove('on'); void el.offsetWidth; el.classList.add('on');
+    som('ponto', 1, 1); const el = $('lvup'); el.innerHTML = `<small>🏆 NOVO TÍTULO ${TIT_NOME[T.r].toUpperCase()}!</small>${titBadge(T.nome, T.r, 'grande')}<em>${titBonusTxt(T.r) ? 'Bônus equipado: ' + titBonusTxt(T.r) + ' · ' : ''}Equipe no retrato › Títulos</em>`; if (T.r === 'lendario' || T.r === 'mitico') { flash('rgba(255,200,80,.4)'); fx('luz', [heroi.position.x, 0, heroi.position.z], 1.4); } el.style.color = ''; el.classList.remove('on'); void el.offsetWidth; el.classList.add('on');
     aviso('🏷️ Você ganhou o título "' + T.nome + '"! Equipe no menu do retrato › Títulos.', TIT_COR[T.r]); }
   function feito(k) { if (AR.feitos[k]) return; AR.feitos[k] = true; salvaAR(); checaTitulos(); }
   let titPrim = true;
@@ -1479,7 +1491,7 @@
       gelo: (ab.golem || 0) >= 1, noite: (ab.morcego || 0) >= 1, aranhas: (ab.aranha || 0) >= 20, ossos: (ab.esqueleto || 0) >= 20, fantasmas: (ab.espectro || 0) >= 10, profundezas: (ab.dragao || 0) >= 1 || (AR.mm && AR.mm.vezes > 0) || f.profundezas,
       fugitivo: f.fugitivo, nocaute: f.nocaute, asas: f.asas, rico: (AR.inv.moedas || 0) >= 10000, comerciante: f.troca, furia: f.furia, colecionador: AR.fantasias.filter(x => x !== 'comum').length + new Set((AR.sobs || []).map(x => x.split(':')[0])).size >= 8, dragao: AR.armas.includes('dragao') };
     Object.keys(R).forEach(k => { if (R[k]) ganhaTitulo(k, k === 'admin' || titPrim); }); if (titPrim && AR.titulos.length > n0 + 1) aviso('🏷️ Você já tem ' + AR.titulos.length + ' títulos! Veja no retrato › Títulos.', '#ffd23c'); titPrim = false; if (souAdmin() && AR.titulo === 'iniciante' && !AR.feitos.adminEq) { AR.feitos.adminEq = true; AR.titulo = 'admin'; salvaAR(); } }
-  const tituloAtual = () => TITULOS[AR.titulo] && AR.titulos.includes(AR.titulo) ? TITULOS[AR.titulo] : TITULOS.iniciante;
+  function tituloAtual() { return TITULOS[AR.titulo] && AR.titulos.includes(AR.titulo) ? TITULOS[AR.titulo] : TITULOS.iniciante; }
   setInterval(checaTitulos, 2000);
   let fugaT = 0;
   function tituloFrame(dt) { fugaT -= dt; const p = heroi.position; FERAS.forEach(e => { if (!e.T.chefe || e.morto) { e._caca = false; return; } const caca = e.estado === 'caca' || e.estado === 'ataque';
@@ -1802,7 +1814,7 @@
 
   // ---- aplicar classe ----
   function CLA() { return CLASSES[AR.classe] || null; }
-  function atkMult() { const c = CLA(); return (1 + attrV('for') * 0.006) * (c ? c.atk : 1) * potAtual * (BM && BM.atk ? BM.atk : 1) * (BUFF.furia > 0 ? 1.4 : 1) * (BUFF.pacto > 0 ? 1.5 : 1) * (1 + cbPas('atk')) * (BUFF.cb_atk > 0 ? 1.25 : 1) * (BUFF.cb_tudo > 0 ? 1.15 : 1) * asaB('dano') * (1 + gmPct('forca')) * (1 + aprimNv(AR.arma) * APRIM_PCT); }
+  function atkMult() { const c = CLA(); return (1 + attrV('for') * 0.006) * (c ? c.atk : 1) * potAtual * (BM && BM.atk ? BM.atk : 1) * (BUFF.furia > 0 ? 1.4 : 1) * (BUFF.pacto > 0 ? 1.5 : 1) * (1 + cbPas('atk')) * (BUFF.cb_atk > 0 ? 1.25 : 1) * (BUFF.cb_tudo > 0 ? 1.15 : 1) * asaB('dano') * (1 + gmPct('forca')) * (1 + aprimNv(AR.arma) * APRIM_PCT) * (1 + titB('atk')); }
   function critico() { const c = CLA(); return Math.random() < (c ? c.crit : 0.05) + attrV('agi') * 0.0008 + (BM && BM.crit ? BM.crit : 0) + cbPas('crit') + (BUFF.cb_crit > 0 ? 0.15 : 0) + (BUFF.cb_tudo > 0 ? 0.05 : 0) + (ARMAS[AR.arma] && ARMAS[AR.arma].esp === 'sup' ? 0.15 : 0); }
   function aplicaClasse(id) { if (typeof bmDesliga === 'function') bmDesliga(); const c = CLASSES[id]; AR.classe = id; if (!AR.armas.includes(c.arma)) AR.armas.push(c.arma); AR.arma = c.arma;
     const v = AR.barra[2]; if (v && !(PW[v] && PW[v].classe)) { const k = AR.barra.indexOf(null, 3); if (k >= 3 && !AR.barra.slice(3).includes(v)) AR.barra[k] = v; }
@@ -2189,7 +2201,7 @@
   const arthur=makeChar({skin:'#c88a5e',hairStyle:'short',hairC:'#3a2214',top:'#3a7a64',top2:'#e2c27a',pants:'#3a3030',shoe:'#2a1a10',iris:'#2a8a4a',book:true,ph:2.7});
   const arthurNPC={c:arthur,nome:'Arthur · Gerente de guilda',x:SALAO[0]+Math.sin(SALAO[2])*8.6,z:SALAO[1]+Math.cos(SALAO[2])*8.6,ry:SALAO[2],ry0:SALAO[2],acao:()=>{tocaVoz('art01');abrirGuilda();}};arthur.position.set(arthurNPC.x,0,arthurNPC.z);NPCS.push(arthurNPC);COL.push({t:'c',x:arthurNPC.x,z:arthurNPC.z,r:.45,npc:arthurNPC});
   function guildPosition(el,obj,height){const pos=obj.position.clone();pos.y+=height;pos.project(cam);const visible=pos.z<1&&pos.z>-1&&Math.abs(pos.x)<1&&Math.abs(pos.y)<1&&obj.visible;el.hidden=!visible;if(visible){el.style.left=((pos.x+1)*innerWidth/2)+'px';el.style.top=((1-pos.y)*innerHeight/2)+'px';}}
-  function guildFrame(){guildPosition(guildLabel,heroi,2.05);{const T=tituloAtual();let e=guildLabel.querySelector('em');if(!e){e=document.createElement('em');guildLabel.prepend(e);}if(e.textContent!==T.nome){e.textContent=T.nome;e.style.color=TIT_COR[T.r];e.className='tit-'+T.r;}}guildLabel.querySelector('b').textContent=AR.visual?.nome||'Leonardo';guildPosition(guildArthurLabel,arthur,2.25);}
+  function guildFrame(){guildPosition(guildLabel,heroi,2.05);{const T=tituloAtual();let e=guildLabel.querySelector('em');if(!e){e=document.createElement('em');guildLabel.prepend(e);}if(e.dataset.k!==T.nome+T.r){e.dataset.k=T.nome+T.r;e.innerHTML=titBadge(T.nome,T.r);e.style.color='';e.className='tit-'+T.r;}}guildLabel.querySelector('b').textContent=AR.visual?.nome||'Leonardo';guildPosition(guildArthurLabel,arthur,2.25);}
   // ---------- ONLINE: ver outros jogadores na mesma zona (Supabase Realtime) ----------
   const MP = { id: (() => { try { let i = sessionStorage.getItem('aetherion-mp-id'); if (!i) { i = Math.random().toString(36).slice(2, 10); sessionStorage.setItem('aetherion-mp-id', i); } return i; } catch (e) { return Math.random().toString(36).slice(2, 10); } })(), ch: null, ok: false, outros: {}, envT: 0, ult: '' };
   const mpTags = document.createElement('div'); mpTags.id = 'mp-tags'; document.body.appendChild(mpTags);
@@ -2203,7 +2215,7 @@
     return { c, tag, ph: (h % 100) / 10, x: d.x, z: d.zz, y: d.y || 0, r: d.r || 0, tx: d.x, tz: d.zz, ty: d.y || 0, tr: d.r || 0, a: d.a, t: performance.now(), d }; }
   function mpRecebe(d) { if (!d || d.id === MP.id) return; let o = MP.outros[d.id]; if (!o) o = MP.outros[d.id] = mpCria(d.id, d);
     o.tx = d.x; o.tz = d.zz; o.ty = d.y || 0; o.tr = d.r || 0; o.a = d.a; o.d = d; o.t = performance.now();
-    o.tag.innerHTML = (d.t ? `<em style="color:${TIT_COR[d.tr] || '#fff'}">${String(d.t).replace(/</g, '').slice(0, 26)}</em>` : '') + `<b>${String(d.n || 'Jogador').replace(/</g, '').slice(0, 20)}${d.lv ? ` <i>Nv ${d.lv | 0}</i>` : ''}</b>${d.g ? `<small>${String(d.ge || '🛡️').slice(0, 4)} ${String(d.g).replace(/</g, '').slice(0, 24)}</small>` : ''}`; }
+    o.tag.innerHTML = (d.t ? `<em>${titBadge(String(d.t).slice(0, 26), TIT_COR[d.tr] ? d.tr : 'comum')}</em>` : '') + `<b>${String(d.n || 'Jogador').replace(/</g, '').slice(0, 20)}${d.lv ? ` <i>Nv ${d.lv | 0}</i>` : ''}</b>${d.g ? `<small>${String(d.ge || '🛡️').slice(0, 4)} ${String(d.g).replace(/</g, '').slice(0, 24)}</small>` : ''}`; }
   function mpLiga() { if (MP.ch || typeof guildClient === 'undefined') return; try { MP.ch = guildClient.channel('aetherion-mundo', { config: { broadcast: { self: false, ack: false } } });
       MP.ch.on('broadcast', { event: 'p' }, m => mpRecebe(m.payload)).on('broadcast', { event: 'sai' }, m => { const o = m.payload && MP.outros[m.payload.id]; if (o) o.t = 0; })
         .subscribe(st => { MP.ok = st === 'SUBSCRIBED'; }); } catch (e) { MP.ch = null; } }
