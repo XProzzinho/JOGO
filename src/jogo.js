@@ -656,6 +656,8 @@
     esp_dragao_real: { nome: 'Lâmina do Dragão Real', icone: '⚔️', dano: 64, alc: 2.6, cd: 0.34, preco: 1300, fogo: true, esp: 'drag', desc: 'Especial: queima e o 3º golpe explode em fogo na frente.' },
     esp_executora: { nome: 'Executora Dupla', icone: '⚔️', dano: 78, alc: 2.7, cd: 0.34, preco: 2000, esp: 'exec', desc: 'Especial: dano x2,5 em inimigos com pouca vida e o 3º golpe dispara uma lâmina de energia.' },
     esp_adm: { nome: 'Lâmina Suprema ADM', icone: '⚔️', dano: 999, alc: 3.2, cd: 0.28, staff: 'adm', esp: 'staff', defMax: true, desc: 'Só do Administrador. Dano e defesa no máximo. Botão BUFF manda buffs pros jogadores.' },
+    placa_adm: { nome: 'Placa Suprema ADM', icone: '⚔️', dano: 999, alc: 3.6, cd: 0.3, staff: 'adm', placa: true, esp: 'staff', defMax: true, desc: 'Placa gigante do Administrador. Dano e defesa no máximo. Botão BUFF manda buffs pros jogadores. Só ADM usa.' },
+    placa_gm: { nome: 'Placa Suprema GM', icone: '⚔️', dano: 999, alc: 3.6, cd: 0.3, staff: 'gm', placa: true, esp: 'staff', defMax: true, desc: 'Placa gigante de Game Master. Dano e defesa no máximo. Botão BUFF manda buffs pros jogadores. Só GM/ADM usa.' },
     esp_gm: { nome: 'Executora GM', icone: '⚔️', dano: 999, alc: 3.2, cd: 0.28, staff: 'gm', esp: 'staff', defMax: true, desc: 'Só de GM. Dano e defesa no máximo. Botão BUFF manda buffs pros jogadores.' },
     gl_eclipse: { nome: 'Eclipse Negro GL', icone: '🌙', dano: 62, alc: 2.8, cd: 0.32, giro: true, braco: true, soClasse: 'gladiador', preco: 800, esp: 'sup', desc: 'Só Gladiador. Acerta tudo em volta. Especial: +15% de crítico e o 3º golpe solta uma onda de choque.' },
     gl_abismo: { nome: 'Abismo Azul GL', icone: '🌙', dano: 68, alc: 2.8, cd: 0.32, giro: true, braco: true, soClasse: 'gladiador', preco: 1200, gelo: true, desc: 'Só Gladiador. Acerta tudo em volta. Especial: às vezes congela os inimigos.' },
@@ -1539,7 +1541,7 @@
     if (ARMAE.runica) ARMAE.runica.visible = false; }
   //@@ESPADAS@@
   function armaVisivel() { return Object.keys(ARMAG).find(k => ARMAG[k].visible) || null; }
-  function equipaArma(k) { if (k && typeof podeArma === 'function' && !podeArma(k)) { aviso('🔒 ' + ARMAS[k].nome + ': só ' + CLASSES[ARMAS[k].soClasse].nome + ' pode usar.', '#ff6a6a'); k = null; } AR.arma = k && AR.armas.includes(k) ? k : 'punho'; salvaAR(); mostraArma(); armaNasCostas = null; setTimeout(fazRetrato, 60);
+  function equipaArma(k) { if (k && typeof podeArma === 'function' && !podeArma(k)) { aviso('🔒 ' + ARMAS[k].nome + ': só ' + (ARMAS[k].soClasse ? CLASSES[ARMAS[k].soClasse].nome : ARMAS[k].staff === 'adm' ? 'ADM' : 'GM') + ' pode usar.', '#ff6a6a'); k = null; } AR.arma = k && AR.armas.includes(k) ? k : 'punho'; salvaAR(); mostraArma(); armaNasCostas = null; setTimeout(fazRetrato, 60);
     const A = ARMAS[AR.arma]; aviso(AR.arma === 'punho' ? '👊 Arma guardada na mochila' : 'Equipou: ' + A.icone + ' ' + A.nome, '#ffd23c'); }
 
   // ---- fantasias de enfeite (só visual) ----
@@ -2012,7 +2014,7 @@
     g = EXTRA.coroa = grp(P.head, 0, 0.27, 0); B(g, TOR2, 0, 0, 0, 0.13, 0.13, 0.4, Math.PI / 2, 0, 0); for (let k = 0; k < 5; k++) { const a = k / 5 * Math.PI * 2; B(g, CONE2, Math.cos(a) * 0.12, 0.06, Math.sin(a) * 0.12, 0.022, 0.1, 0.022); }
     g = EXTRA.espinhos = grp(heroi); ['shL', 'shR'].forEach((k, i) => { const s = i ? 1 : -1; const gg = grp(P[k]); for (let j = 0; j < 3; j++) B(gg, CONE2, s * (0.08 + j * 0.05), 0.12 + j * 0.02, -0.05 + j * 0.05, 0.03, 0.22 + j * 0.06, 0.03, 0.2, 0, -s * (0.5 + j * 0.25)); EXTRA['esp' + k] = gg; });
     Object.keys(EXTRA).forEach(k => { EXTRA[k].visible = false; }); }
-  const armaGlowS = glowSpr(maoG, 0, 0, 0.6, 1.6, '#ffffff', 0); let duploG = null;
+  const armaGlowS = glowSpr(maoG, 0, 0, 0.6, 1.6, '#ffffff', 0); var duploG = null;
   const ORB = grp(world); ORB.visible = false; let orbT = 0;
   function montaOrbes(o, cor) { while (ORB.children.length) ORB.remove(ORB.children[0]); if (!o) return; for (let k = 0; k < o.n; k++) { const g = grp(ORB); const M = bmMatCor(cor);
       if (o.tipo === 'lamina') { const m = new T3.Mesh(BOX, M); m.scale.set(0.05, 0.02, 0.7); g.add(m); }

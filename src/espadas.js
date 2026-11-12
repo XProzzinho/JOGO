@@ -39,6 +39,20 @@
   const ESP_DEF = { esp_suprema: [1, '#ff3a2a', 'rgba(255,90,60,.45)', ''], esp_corrompida: [2, '#3aff7a', 'rgba(60,255,120,.45)', ''], esp_celestial: [3, '#ffe08a', 'rgba(255,230,150,.5)', ''], esp_dragao_real: [4, '#ff8a1a', 'rgba(255,140,40,.5)', ''], esp_executora: [5, '#b45aff', 'rgba(180,90,255,.5)', ''],
     esp_adm: [1, '#ff2a3a', 'rgba(255,60,60,.55)', 'ADM'], esp_gm: [5, '#2ad8ff', 'rgba(60,200,255,.55)', 'GM'] };
   Object.keys(ESP_DEF).forEach(k => { const [n, c, c2, sig] = ESP_DEF[k]; const G = grp(maoG); const inner = ESP_MOD[n](sig, c, c2); inner.position.y = 0.32; G.add(inner); G.rotation.x = Math.PI / 2; G.scale.setScalar(0.55); G.visible = false; G.traverse(o => { if (o.isMesh) o.castShadow = true; }); ARMAG[k] = G; });
+  // ---- PLACAS DE ADM / GM (arma grande; o Painel ADM manda pros ADM/GM) ----
+  function fazPlaca(k, cor, brilho) { const T = T3, g = new T.Group(), env = { envMap: ENV, envMapIntensity: 1.2 };
+    const ouro = new T.MeshStandardMaterial(Object.assign({ color: '#ffc83a', metalness: 0.5, roughness: 0.3, emissive: '#3a2400' }, env)), esc = new T.MeshStandardMaterial({ color: '#2b2340', metalness: 0.4, roughness: 0.45 }), cm = new T.MeshStandardMaterial({ color: cor, metalness: 0.3, roughness: 0.3, emissive: cor, emissiveIntensity: 0.35 });
+    const m = (geo, mat, x, y, z) => { const o = new T.Mesh(geo, mat); o.position.set(x || 0, y || 0, z || 0); g.add(o); return o; };
+    m(new T.CylinderGeometry(0.045, 0.05, 1.25, 12), esc, 0, 0.25, 0); for (let i = 0; i < 6; i++) m(new T.TorusGeometry(0.052, 0.012, 6, 16), ouro, 0, -0.2 + i * 0.09, 0).rotation.x = Math.PI / 2;
+    m(new T.OctahedronGeometry(0.1), cm, 0, -0.42, 0).scale.y = 1.4; m(new T.BoxGeometry(0.42, 0.08, 0.12), ouro, 0, 0.36, 0); [-1, 1].forEach(s => m(new T.SphereGeometry(0.06, 12, 10), cm, s * 0.23, 0.36, 0));
+    const W = 2.7, H = W * 300 / 520, pl = new T.Group(); pl.position.y = 0.86 + H * 0.35; g.add(pl); const sh = new T.Shape(), hx = x => (x - 260) / 520 * W, hy = y => -(y - 150) / 300 * H;
+    [[110, 92], [410, 92], [428, 150], [410, 208], [110, 208], [92, 150]].forEach(([x, y], i) => i ? sh.lineTo(hx(x), hy(y)) : sh.moveTo(hx(x), hy(y)));
+    const core = new T.Mesh(new T.ExtrudeGeometry(sh, { depth: 0.12, bevelEnabled: true, bevelThickness: 0.03, bevelSize: 0.02, bevelSegments: 2 }), ouro); core.position.z = -0.06; pl.add(core);
+    const tx = new T.TextureLoader().load('icones/placa_' + k + '.png'); tx.colorSpace = T.SRGBColorSpace; tx.anisotropy = 4;
+    [1, -1].forEach(s => { const f = new T.Mesh(new T.PlaneGeometry(W, H), new T.MeshStandardMaterial({ map: tx, transparent: true, alphaTest: 0.05, metalness: 0.2, roughness: 0.4, emissive: '#ffffff', emissiveMap: tx, emissiveIntensity: 0.35 })); f.position.z = s * 0.096; if (s < 0) f.rotation.y = Math.PI; pl.add(f); });
+    [-1, 1].forEach(s => { const c = new T.Mesh(new T.ConeGeometry(0.06, 0.32, 4), ouro); c.position.set(s * (W / 2 + 0.02), 0, 0); c.rotation.z = -s * Math.PI / 2; pl.add(c); });
+    const tp = new T.Mesh(new T.ConeGeometry(0.07, 0.4, 6), cm); tp.position.y = H / 2 + 0.2; pl.add(tp); glowSpr(pl, 0, 0, 0, 4.2, brilho, 0.45); return g; }
+  [['placa_adm', '#c81e1e', '#ff3a2a'], ['placa_gm', '#1e6ad8', '#3aa8ff']].forEach(([k, c, b]) => { const G = grp(maoG); G.rotation.x = Math.PI / 2; G.rotateZ(Math.PI); G.add(fazPlaca(k.slice(6), c, b)); G.scale.setScalar(0.63); G.visible = false; G.traverse(o => { if (o.isMesh) o.castShadow = true; }); ARMAG[k] = G; ESP_DEF[k] = [0, b, '', '']; });
   // ---- efeitos especiais das espadas ----
   function espHit(A, e) { const p = heroi.position;
     if (A.esp === 'corr') { e.vuln = Math.max(e.vuln, 4); if (Math.random() < 0.2) { e.stun = Math.max(e.stun, 0.8); numero(e.g.position, 'GLITCH', '#3aff7a', e.T.alt + 0.4); } }
@@ -51,10 +65,11 @@
     if (A.esp === 'cel') { fx('cura', [p.x, 0, p.z], 0.8); }
     if (A.esp === 'exec') { proj(p.x, p.y + 1.2, p.z, facing, c, A.dano * 0.7 * M, 28, 16, { fura: true, tam: 1.1 }); } }
   // ---- ADM / GM ----
-  var souGM = false;
+  var souGM = false, souADMc = false, staffPronto = false;
   function staffArmas() { const adm = souAdmin(); const quer = { esp_adm: adm, esp_gm: adm || souGM };
+    if (staffPronto) ['placa_adm', 'placa_gm'].forEach(k => { if (AR.armas.includes(k) && !podeArma(k)) { AR.armas = AR.armas.filter(x => x !== k); if (AR.arma === k) equipaArma(null); } });
     Object.keys(quer).forEach(k => { const tem = AR.armas.includes(k); if (quer[k] && !tem) { AR.armas.push(k); aviso('Você recebeu: ' + ARMAS[k].icone + ' ' + ARMAS[k].nome + '!', '#ff5aa8'); } if (!quer[k] && tem) { AR.armas = AR.armas.filter(x => x !== k); if (AR.arma === k) equipaArma(null); } }); }
-  setTimeout(() => { try { if (window.CONTA && CONTA.db && CONTA.usuario) CONTA.db.collection('staff').doc(CONTA.usuario.uid).get().then(d => { souGM = d.exists && (d.data().cargo === 'gm' || d.data().cargo === 'adm'); staffArmas(); salvaAR(); }).catch(() => staffArmas()); else staffArmas(); } catch (e) { staffArmas(); } }, 7000);
+  setTimeout(() => { try { if (window.CONTA && CONTA.db && CONTA.usuario) CONTA.db.collection('staff').doc(CONTA.usuario.uid).get().then(d => { souGM = d.exists && (d.data().cargo === 'gm' || d.data().cargo === 'adm'); souADMc = d.exists && d.data().cargo === 'adm'; staffPronto = true; staffArmas(); salvaAR(); }).catch(() => staffArmas()); else { staffPronto = true; staffArmas(); } } catch (e) { staffArmas(); } }, 7000);
   // botão BUFF (aparece com a espada de ADM/GM) e janela pra mandar buff pros jogadores perto
   var buffBtn = document.createElement('button'); buffBtn.className = 'btn'; buffBtn.id = 'buff-btn'; buffBtn.hidden = true; buffBtn.innerHTML = '<img class="ico" src="icones/gm_divino.svg" alt=""> BUFF'; document.body.appendChild(buffBtn);
   var buffP = document.createElement('div'); buffP.id = 'buffp'; buffP.hidden = true; document.body.appendChild(buffP);
@@ -115,4 +130,4 @@
  const G={};P.forEach((c,i)=>G[i+1]=()=>fazer(c));return G;}
   const GAR_MOD = fazGarras(T3); const GL_K = ['gl_eclipse', 'gl_abismo', 'gl_ceifador', 'gl_sangrenta', 'gl_prata'];
   GL_K.forEach((k, i) => { [[maoG, ARMAG, 1], [maoE, ARMAE, -1]].forEach(([mao, LST, sx]) => { const G = grp(mao); const m = GAR_MOD[i + 1](); m.position.set(0, 0.33, -0.05); m.scale.setScalar(0.8); m.scale.x *= sx; G.add(m); G.visible = false; G.traverse(o => { if (o.isMesh) o.castShadow = true; }); LST[k] = G; }); });
-  function podeArma(k) { const A = ARMAS[k]; return !A || !A.soClasse || AR.classe === A.soClasse; }
+  function podeArma(k) { const A = ARMAS[k]; if (!A) return true; if (A.placa && staffPronto && !(souAdmin() || (A.staff === 'adm' ? souADMc : souGM))) return false; return !A.soClasse || AR.classe === A.soClasse; }
