@@ -1097,12 +1097,20 @@
 
   // ===================== NÍVEL, PERFIL, INVENTÁRIO E FANTASIAS =====================
   AR.nv = AR.nv || 1; AR.xp = AR.xp || 0; AR.fantasias = AR.fantasias || ['comum', 'celeste']; AR.fantasia = AR.fantasia || 'comum'; AR.pecas = AR.pecas || {};
-  const NV_MAX = 100; const xpPara = n => 60 + n * 30;
-  function aplicaNivel() { const c = CLASSES && CLASSES[AR.classe]; VIDA_MAX = (c ? c.vida : 100) + (AR.nv - 1) * 5 + cbPas('vida'); MANA_MAX = (c ? c.mana : 100) + (AR.nv - 1) * 3 + cbPas('mana') + ((FANT[AR.fantasia] && FANT[AR.fantasia].mana) || 0); }
-  function ganhaXp(n, motivo) { if (AR.nv >= NV_MAX) return; if (GMB && GMB.length) n = Math.round(n * (1 + gmPct('xp') * 2)); AR.xp += n; let subiu = false; while (AR.nv < NV_MAX && AR.xp >= xpPara(AR.nv)) { AR.xp -= xpPara(AR.nv); AR.nv++; subiu = true; AR.pts++; }
+  const NV_MAX = 100; const xpPara = n => Math.round(80 + n * 40 + Math.pow(n, 1.7) * 1.5);
+  // ---------- ATRIBUTOS: 3 pontos por nível pra distribuir ----------
+  const ATTR = { for: ['💪', 'Força', '+0,7% de ataque', 0.7, '%'], vit: ['❤️', 'Vitalidade', '+2 de vida', 2, ''], int: ['🔷', 'Inteligência', '+2 de mana', 2, ''], def: ['🛡️', 'Defesa', '+0,15% de defesa', 0.15, '%'], agi: ['⚡', 'Agilidade', '+0,12% de crítico', 0.12, '%'] };
+  const ATTR_NV = 3;
+  if (!AR.attr) { AR.attr = { for: 0, vit: 0, int: 0, def: 0, agi: 0 }; AR.attrPts = Math.max(0, ((AR.nv || 1) - 1) * ATTR_NV); AR.attrNovo = AR.attrPts > 0; }
+  const attrV = k => (AR.attr && AR.attr[k]) || 0;
+  function attrBadge() { const b = $('attr-badge'); if (!b) return; b.hidden = !(AR.attrPts > 0); b.textContent = '+' + AR.attrPts; }
+  function attrAdd(k, n) { n = Math.min(n, AR.attrPts || 0); if (n <= 0) return; AR.attr[k] += n; AR.attrPts -= n; som('clique', 0.6, 1.3); aplicaNivel(); salvaAR(); attrBadge(); desenhaPerfil(); }
+  function attrReset() { const t = Object.values(AR.attr).reduce((a, b) => a + b, 0); if (!t) return; if (AR.inv.moedas < 500) { aviso('Precisa de 500 moedas pra redistribuir.', '#ff6a6a'); return; } AR.inv.moedas -= 500; AR.attrPts += t; Object.keys(AR.attr).forEach(k => AR.attr[k] = 0); aplicaNivel(); salvaAR(); atualizaInv(); attrBadge(); desenhaPerfil(); aviso('↺ Pontos devolvidos: ' + AR.attrPts + '. Distribua de novo!', '#ffd23c'); }
+  function aplicaNivel() { const c = CLASSES && CLASSES[AR.classe]; VIDA_MAX = (c ? c.vida : 100) + attrV('vit') * 2 + cbPas('vida'); MANA_MAX = (c ? c.mana : 100) + attrV('int') * 2 + cbPas('mana') + ((FANT[AR.fantasia] && FANT[AR.fantasia].mana) || 0); }
+  function ganhaXp(n, motivo) { if (AR.nv >= NV_MAX) return; if (GMB && GMB.length) n = Math.round(n * (1 + gmPct('xp') * 2)); AR.xp += n; let subiu = false; while (AR.nv < NV_MAX && AR.xp >= xpPara(AR.nv)) { AR.xp -= xpPara(AR.nv); AR.nv++; subiu = true; AR.pts++; AR.attrPts = (AR.attrPts || 0) + ATTR_NV; }
     if (AR.nv >= NV_MAX) AR.xp = 0; salvaAR(); atualizaNivel();
-    if (subiu) { som('nivel', 1, 1); aplicaNivel(); vida = VIDA_MAX; mana = MANA_MAX; atualizaPts(); fx('luz', [heroi.position.x, 0, heroi.position.z], 1.2); fx('cura', [heroi.position.x, 0, heroi.position.z], 1.6); flash('rgba(255,230,120,.45)');
-      const el = $('lvup'); el.innerHTML = `<small>SUBIU DE NÍVEL!</small>Nível ${AR.nv}<em>+5 vida · +3 mana · +1 ponto de habilidade</em>`; el.classList.remove('on'); void el.offsetWidth; el.classList.add('on'); setTimeout(fazRetrato, 300); }
+    if (subiu) { attrBadge(); som('nivel', 1, 1); aplicaNivel(); vida = VIDA_MAX; mana = MANA_MAX; atualizaPts(); fx('luz', [heroi.position.x, 0, heroi.position.z], 1.2); fx('cura', [heroi.position.x, 0, heroi.position.z], 1.6); flash('rgba(255,230,120,.45)');
+      const el = $('lvup'); el.innerHTML = `<small>SUBIU DE NÍVEL!</small>Nível ${AR.nv}<em>+${ATTR_NV} pontos de atributo · +1 ponto de habilidade</em>`; el.classList.remove('on'); void el.offsetWidth; el.classList.add('on'); setTimeout(fazRetrato, 300); }
     else if (motivo) numero(heroi.position, '+' + n + ' XP', '#c8a8ff', 2.6); }
   function atualizaNivel() { $('nv').textContent = 'Nv ' + AR.nv; $('xp-fill').style.width = (AR.nv >= NV_MAX ? 100 : AR.xp / xpPara(AR.nv) * 100) + '%'; }
   const XP_TIPO = { aranha: 40, esqueleto: 55, cogumelo: 60, gosma: 55, troll: 160, espectro: 90, dragao: 1200, goblin: 18, lobo: 15, javali: 25, rato: 8, golem: 300, morcego: 150 };
@@ -1166,7 +1174,7 @@
       const ft = P['ft' + s]; A(ft, SPH2, MALHA, 0, 0.005, 0.05, 0.075, 0.062, 0.142); for (let k = 0; k < 3; k++) A(ft, SPH2, k % 2 ? AZ2 : PR, 0, 0.02 - k * 0.004, 0.1 + k * 0.04, 0.072 - k * 0.006, 0.05, 0.05); A(ft, BOX, COU, 0, -0.048, 0.05, 0.125, 0.02, 0.27); });
     armadura.forEach(m => m.visible = false); }
   function vesteFantasia(k) { if (!FANT[k]) k = 'comum'; AR.fantasia = k; if (k !== 'comum') AR.pecas = {}; salvaAR(); escondeTrajes(); if (k === 'celeste') armadura.forEach(m => m.visible = true); if (CAS[k]) CAS[k].m.forEach(m => m.visible = true); aplicaNivel(); mana = Math.min(mana, MANA_MAX); atualizaPecas(); setTimeout(fazRetrato, 60); }
-  function defesa() { const c = CLASSES && CLASSES[AR.classe]; return ARMAS[AR.arma] && ARMAS[AR.arma].defMax ? 95 : Math.min(85, asaB('def') * ((FANT[AR.fantasia].def || 0) + pecaDef() + (c ? c.def : 0) + (BM && BM.def ? BM.def : 0) + (typeof BUFF !== 'undefined' ? (BUFF.provocar > 0 ? 20 : 0) + (BUFF.fortaleza > 0 ? 30 : 0) + (BUFF.pele > 0 ? 40 : 0) + (BUFF.cb_def > 0 ? 20 : 0) + (BUFF.cb_tudo > 0 ? 10 : 0) : 0) + cbPas('def') + (montado && montaria() && montaria().def || 0))); }
+  function defesa() { const c = CLASSES && CLASSES[AR.classe]; return ARMAS[AR.arma] && ARMAS[AR.arma].defMax ? 95 : Math.min(85, asaB('def') * ((FANT[AR.fantasia].def || 0) + attrV('def') * 0.15 + pecaDef() + (c ? c.def : 0) + (BM && BM.def ? BM.def : 0) + (typeof BUFF !== 'undefined' ? (BUFF.provocar > 0 ? 20 : 0) + (BUFF.fortaleza > 0 ? 30 : 0) + (BUFF.pele > 0 ? 40 : 0) + (BUFF.cb_def > 0 ? 20 : 0) + (BUFF.cb_tudo > 0 ? 10 : 0) : 0) + cbPas('def') + (montado && montaria() && montaria().def || 0))); }
   function armaduraFrame() { casacoFrame(); if (!tabardo || AR.fantasia !== 'celeste') return; const P = heroi.userData.P; const f = Math.min(P.thL.rotation.x, P.thR.rotation.x), b = Math.max(P.thL.rotation.x, P.thR.rotation.x); tabardo.rotation.x = Math.min(0, f) * 0.95; tabardo.userData.costas.rotation.x = Math.max(0, b) * 0.95; }
 
 
@@ -1396,7 +1404,9 @@
     if (abaPerfil === 'status') { const ab = AR.abates; const tot = Object.values(ab).reduce((s, v) => s + v, 0);
       const L = [['❤️', 'Vida', `${Math.ceil(vida)} / ${VIDA_MAX}`], ['🔷', 'Mana', `${Math.round(mana)} / ${MANA_MAX}`], ['⚔️', 'Ataque', `${Math.round(A.dano * atkMult())} (${A.icone} ${A.nome})`], ['🎯', 'Crítico / Esquiva', `${Math.round(((CLA() || {}).crit || 0.05) * 100)}% / ${Math.round(((CLA() || {}).esq || 0) * 100)}%`], ['🛡️', 'Defesa', `${defesa()}% (${FANT[AR.fantasia].nome})`],
         ['⚡', 'Modos de batalha', `I${AR.nv >= BM_NV[1] ? ' · II' : ''}${AR.nv >= BM_NV[2] ? ' · III' : ''}${AR.nv < BM_NV[2] ? ' (III no nv ' + BM_NV[2] + ')' : ''}`], ['🌳', 'Pontos de habilidade', AR.pts], ['🐺', 'Bichos derrotados', `${tot}${ab.golem ? ' · Golem ✔' : ''}`], ['🏆', 'Finais', `${finais.length} / 6`], ['💰', 'Moedas', AR.inv.moedas]];
-      C.innerHTML = '<div class="stats">' + L.map(([i, n, v]) => `<div class="st"><span>${i}</span><small>${n}</small><b>${v}</b></div>`).join('') + '</div><p class="dica">Cada nível dá +5 de vida, +3 de mana, +2% de ataque e 1 ponto de habilidade. Ganhe XP derrotando bichos, falando com as pessoas e fazendo as missões.</p>'; return; }
+      C.innerHTML = `<div class="attr"><div class="ah"><b>Atributos</b><span class="${AR.attrPts > 0 ? 'tem' : ''}">${AR.attrPts || 0} ponto(s) pra distribuir</span><button class="ar">↺ Redistribuir · 500 💰</button></div>` + Object.keys(ATTR).map(k => `<div class="ai"><span class="ic">${ATTR[k][0]}</span><div class="tx"><b>${ATTR[k][1]} <em>${attrV(k)}</em></b><small>Cada ponto: ${ATTR[k][2]} · total +${(Math.round(attrV(k) * ATTR[k][3] * 100) / 100).toLocaleString('pt-BR')}${ATTR[k][4]}</small></div><button data-k="${k}" data-n="1" ${AR.attrPts > 0 ? '' : 'disabled'}>+1</button><button data-k="${k}" data-n="5" ${AR.attrPts >= 5 ? '' : 'disabled'}>+5</button></div>`).join('') + '</div>'
+        + '<div class="stats">' + L.map(([i, n, v]) => `<div class="st"><span>${i}</span><small>${n}</small><b>${v}</b></div>`).join('') + `</div><p class="dica">Cada nível dá ${ATTR_NV} pontos de atributo pra você distribuir e 1 ponto de habilidade. Ganhe XP derrotando bichos, nos calabouços, na torre e nas missões.</p>`;
+      C.querySelectorAll('.ai button').forEach(b => tapBtn(b, () => attrAdd(b.dataset.k, +b.dataset.n))); tapBtn(C.querySelector('.ar'), attrReset); return; }
     C.innerHTML = '';
     const sec = (t) => { const h = document.createElement('div'); h.className = 'sec'; h.innerHTML = limpaIco(t); C.appendChild(h); const g = document.createElement('div'); g.className = 'grade'; C.appendChild(g); return g; };
     const cel = (g, ic, nome, sub, on, fn, tag) => { const b = document.createElement('button'); b.className = 'cel' + (on ? ' on' : '') + (fn ? '' : ' fixa'); b.innerHTML = `<span class="ic">${ic}</span><b>${nome}</b><small>${sub}</small>${tag ? `<em>${tag}</em>` : ''}`; if (fn) tapBtn(b, fn); g.appendChild(b); };
@@ -1464,7 +1474,7 @@
   document.querySelectorAll('#perfil .aba').forEach(b => tapBtn(b, () => { abaPerfil = b.dataset.a; desenhaPerfil(); }));
   tapBtn($('perfil-btn'), abrirPerfil); tapBtn($('pf-fecha'), () => { $('perfil').hidden = true; });
   let previaT = 0; function perfilFrame(dt) { if ($('perfil').hidden || !$('previa')) return; previaT += dt; if (previaT > 0.06) { fazPrevia(previaT); previaT = 0; } }
-  aplicaNivel(); atualizaNivel(); vesteFantasia(AR.fantasia); setTimeout(fazRetrato, 700);
+  aplicaNivel(); atualizaNivel(); vesteFantasia(AR.fantasia); setTimeout(fazRetrato, 700); attrBadge(); if (AR.attrNovo) { AR.attrNovo = false; salvaAR(); setTimeout(() => aviso('✨ Novo sistema de ATRIBUTOS! Você tem ' + AR.attrPts + ' pontos. Toque no seu retrato › Status pra distribuir.', '#ffd23c'), 5000); }
   // ===================== CLASSES E CRIAÇÃO DO PERSONAGEM =====================
   CLASSES = {
     guerreiro: { nome: 'Guerreiro', icone: '⚔️', papel: 'Força bruta', cor: '#e04a32', roupa: '#7a2a22', vida: 140, mana: 80, atk: 1.25, def: 15, vel: 1.0, crit: 0.05, esq: 0, arma: 'espadao', hab: 'sismico', desc: 'Muita vida, defesa alta e o maior ataque do jogo. Usa um espadão de duas mãos. Ótimo pra começar.' },
@@ -1779,8 +1789,8 @@
 
   // ---- aplicar classe ----
   function CLA() { return CLASSES[AR.classe] || null; }
-  function atkMult() { const c = CLA(); return (1 + (AR.nv - 1) * 0.02) * (c ? c.atk : 1) * potAtual * (BM && BM.atk ? BM.atk : 1) * (BUFF.furia > 0 ? 1.4 : 1) * (BUFF.pacto > 0 ? 1.5 : 1) * (1 + cbPas('atk')) * (BUFF.cb_atk > 0 ? 1.25 : 1) * (BUFF.cb_tudo > 0 ? 1.15 : 1) * asaB('dano') * (1 + gmPct('forca')) * (1 + aprimNv(AR.arma) * APRIM_PCT); }
-  function critico() { const c = CLA(); return Math.random() < (c ? c.crit : 0.05) + (BM && BM.crit ? BM.crit : 0) + cbPas('crit') + (BUFF.cb_crit > 0 ? 0.15 : 0) + (BUFF.cb_tudo > 0 ? 0.05 : 0) + (ARMAS[AR.arma] && ARMAS[AR.arma].esp === 'sup' ? 0.15 : 0); }
+  function atkMult() { const c = CLA(); return (1 + attrV('for') * 0.007) * (c ? c.atk : 1) * potAtual * (BM && BM.atk ? BM.atk : 1) * (BUFF.furia > 0 ? 1.4 : 1) * (BUFF.pacto > 0 ? 1.5 : 1) * (1 + cbPas('atk')) * (BUFF.cb_atk > 0 ? 1.25 : 1) * (BUFF.cb_tudo > 0 ? 1.15 : 1) * asaB('dano') * (1 + gmPct('forca')) * (1 + aprimNv(AR.arma) * APRIM_PCT); }
+  function critico() { const c = CLA(); return Math.random() < (c ? c.crit : 0.05) + attrV('agi') * 0.0012 + (BM && BM.crit ? BM.crit : 0) + cbPas('crit') + (BUFF.cb_crit > 0 ? 0.15 : 0) + (BUFF.cb_tudo > 0 ? 0.05 : 0) + (ARMAS[AR.arma] && ARMAS[AR.arma].esp === 'sup' ? 0.15 : 0); }
   function aplicaClasse(id) { if (typeof bmDesliga === 'function') bmDesliga(); const c = CLASSES[id]; AR.classe = id; if (!AR.armas.includes(c.arma)) AR.armas.push(c.arma); AR.arma = c.arma;
     const v = AR.barra[2]; if (v && !(PW[v] && PW[v].classe)) { const k = AR.barra.indexOf(null, 3); if (k >= 3 && !AR.barra.slice(3).includes(v)) AR.barra[k] = v; }
     AR.barra[2] = c.hab; if (!AR.tem.includes(c.hab)) AR.tem.push(c.hab); HABS.forEach(h => { const i = AR.barra.indexOf(h.id); if (i > 2) AR.barra[i] = null; });
