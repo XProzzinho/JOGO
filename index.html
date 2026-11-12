@@ -315,6 +315,19 @@
 .guild-box .cb.pri{background:#4ab870;color:#fff}.guild-box .cb.perigo{background:#a83a3a;color:#fff}
 #montar,#voar{font-size:12px;border-radius:12px;opacity:.92;z-index:7}
 #arma{display:none!important}
+/* botões de ação estilizados */
+#atacar,#pular,#correr{border:3px solid var(--tinta)!important;color:#fff!important;text-shadow:0 2px 0 rgba(30,16,40,.85),0 0 6px rgba(0,0,0,.35);letter-spacing:1px;overflow:visible;
+ box-shadow:0 6px 0 var(--tinta),0 0 0 5px rgba(255,255,255,.55),0 0 0 7px rgba(43,35,64,.55),inset 0 -8px 0 rgba(0,0,0,.2),inset 0 5px 0 rgba(255,255,255,.35)!important;flex-direction:column;gap:2px}
+#atacar{background:radial-gradient(circle at 35% 28%,#ffb49a 0,#ff6a4a 42%,#c8321e 100%)!important}
+#pular{background:radial-gradient(circle at 35% 28%,#b8f5a0 0,#4ec84a 45%,#1f8a2e 100%)!important}
+#correr{background:radial-gradient(circle at 35% 28%,#c8ecff 0,#4ab0ef 45%,#1a62b0 100%)!important}
+#atacar::after,#pular::after,#correr::after{content:"";position:absolute;left:18%;top:7%;width:64%;height:30%;border-radius:50%;background:linear-gradient(rgba(255,255,255,.75),rgba(255,255,255,0));pointer-events:none}
+#pular::before,#correr::before{content:"";width:34%;height:34%;background:center/contain no-repeat;filter:drop-shadow(0 2px 0 rgba(30,16,40,.6))}
+#pular::before{background-image:url(icones/ui_pular.svg)}#correr::before{background-image:url(icones/ui_correr.svg)}
+#atacar small{color:#fff;font-weight:900}#atacar span{filter:drop-shadow(0 2px 0 rgba(30,16,40,.6))}
+#atacar:active,#pular:active,#correr:active{transform:translateY(4px) scale(.96);box-shadow:0 2px 0 var(--tinta),0 0 0 5px rgba(255,255,255,.7),0 0 0 7px rgba(43,35,64,.55),inset 0 -4px 0 rgba(0,0,0,.2),inset 0 3px 0 rgba(255,255,255,.35)!important;filter:brightness(1.12)}
+#correr.on{background:radial-gradient(circle at 35% 28%,#fff6b0 0,#ffc83a 45%,#d07a10 100%)!important;animation:corrOn 1s ease-in-out infinite}@keyframes corrOn{50%{box-shadow:0 6px 0 var(--tinta),0 0 0 5px #fff3a0,0 0 18px 8px rgba(255,200,60,.7),inset 0 -8px 0 rgba(0,0,0,.2)}}
+#correr{right:calc(122px + env(safe-area-inset-right,0px))!important;bottom:calc(22px + env(safe-area-inset-bottom,0px))!important;font-size:10px!important;width:64px!important;height:64px!important}#atacar{right:calc(134px + env(safe-area-inset-right,0px))!important;bottom:calc(122px + env(safe-area-inset-bottom,0px))!important}
 </style>
 </head>
 <body>
