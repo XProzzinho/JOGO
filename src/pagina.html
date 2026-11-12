@@ -335,6 +335,15 @@
 #buffp .tp{display:grid;grid-template-columns:repeat(6,1fr);gap:4px;margin:8px 0}#buffp .tp button{background:#ffffff10;border:2px solid #ffffff22;border-radius:10px;color:#fff;padding:4px 2px;display:flex;flex-direction:column;align-items:center}#buffp .tp button.on{border-color:var(--c);box-shadow:0 0 8px var(--c)}#buffp .tp .ico{width:34px;height:34px}#buffp .tp small{font-size:8px;line-height:1.1}
 #buffp .op{display:flex;gap:4px;margin:4px 0}#buffp .op button{flex:1;background:#2a2440;color:#fff;border:1px solid #4a4068;border-radius:8px;padding:5px;font-weight:800}#buffp .op button.on{background:#ff5aa8}
 #buffp .jg{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px dashed #ffffff22}#buffp .jg i{color:#aaa;font-style:normal;font-size:11px}#buffp .jg button{background:#4ab870;color:#fff;border:0;border-radius:8px;padding:6px 12px;font-weight:900}#buffp p{font-size:12px;opacity:.7}
+#cal-hud{position:fixed;left:44%;top:calc(64px + env(safe-area-inset-top,0px));transform:translateX(-50%);padding:5px 14px;border-radius:14px;background:#1a1028ee;border:2px solid #ffb030;color:#fff;font-size:13px;font-weight:800;text-align:center;z-index:6;pointer-events:none;white-space:nowrap}#cal-hud b{display:block;color:#ffd23c;font-size:10px;letter-spacing:1px}
+#mis-hud{position:fixed;right:calc(150px + env(safe-area-inset-right,0px));top:calc(64px + env(safe-area-inset-top,0px));z-index:5;pointer-events:none;display:flex;flex-direction:column;gap:3px;max-width:240px}#mis-hud p{margin:0;background:#ffffffe8;border:2px solid #2b2340;border-radius:10px;padding:3px 7px;font-size:11px;font-weight:800;color:#2b2340;display:flex;gap:5px;align-items:center}#mis-hud p.ok{background:#d8ffd8}#mis-hud i{font-style:normal;color:#fff;border-radius:5px;padding:0 5px;font-weight:900}#mis-hud b{margin-left:auto}
+#muralp{position:fixed;inset:0;z-index:60;display:flex;align-items:center;justify-content:center;background:rgba(6,4,16,.6)}#muralp[hidden]{display:none}
+#muralp .box{width:min(680px,96vw);max-height:94vh;display:flex;flex-direction:column;background:linear-gradient(#f4ecd8,#e8dcc0);border:3px solid #6a4424;border-radius:14px;padding:10px;color:#2b2340;box-sizing:border-box}
+#muralp .hd{display:flex;justify-content:space-between;align-items:center;font-size:17px}#muralp .x{background:#a83a2a;color:#fff;border:0;border-radius:8px;padding:6px 12px;font-weight:900}
+#muralp .gr{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:6px 0}#muralp .gb{color:#fff;font-weight:900;border-radius:8px;padding:3px 9px;font-style:normal;text-shadow:0 1px 0 #0006}#muralp .gbar{flex:1;min-width:120px;height:10px;background:#0002;border-radius:6px;overflow:hidden}#muralp .gbar i{display:block;height:100%;background:linear-gradient(90deg,#ffb030,#ffd23c)}#muralp .gr small{width:100%;font-size:11px;font-weight:700}
+#muralp .fl{display:flex;gap:4px;margin-bottom:6px;flex-wrap:wrap}#muralp .fl button{background:#fff;border:2px solid #6a4424;border-radius:8px;padding:3px 9px;font-weight:900;color:var(--c,#2b2340)}#muralp .fl button.on{background:#6a4424;color:#fff}
+#muralp .ls{overflow:auto;display:flex;flex-direction:column;gap:5px}#muralp .ms{display:flex;gap:8px;align-items:center;background:#fffaf0;border:1px solid #c8b088;border-radius:10px;padding:6px}#muralp .ms.at{border:2px solid #4ab870;background:#f0fff0}#muralp .ms .tx{flex:1;display:flex;flex-direction:column}#muralp .ms small{font-size:11px;font-weight:600}#muralp .ms .pg{color:#2a8a3a;font-weight:900}
+#muralp .ms button{background:#4ab870;color:#fff;border:0;border-radius:8px;padding:7px 10px;font-weight:900;min-width:86px}#muralp .ms button:disabled{background:#a8a0b0}#muralp .vz{text-align:center;opacity:.7}
 </style>
 </head>
 <body>
@@ -365,7 +374,7 @@
 <div id="dica">Arraste do lado <b>esquerdo</b> pra andar · do <b>direito</b> pra girar a câmera · chegue perto das pessoas pra conversar</div>
 <div id="lugar"></div>
 <div id="obj" hidden><b>OBJETIVO</b><span id="obj-txt"></span></div>
-<div id="missao-g" hidden></div><div id="gm-buffs" hidden></div>
+<div id="missao-g" hidden></div><div id="gm-buffs" hidden></div><div id="cal-hud" hidden></div>
 <div id="mm-hud" hidden></div>
 <div id="fala" hidden><div id="fala-nome"></div><div id="fala-txt"></div><div id="fala-esc" hidden></div><div id="fala-mais"></div></div>
 <div id="joy"><div id="knob"></div></div>
