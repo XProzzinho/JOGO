@@ -2,7 +2,7 @@
 """Monta o jogo: index.html (usa three.min.js local) e jogo-unico.html (Three.js por CDN)."""
 from pathlib import Path
 R = Path(__file__).parent
-js = (R / 'src/base.js').read_text() + (R / 'src/personagens.js').read_text() + (R / 'src/jogo.js').read_text().replace('  //@@HABILIDADES@@', (R / 'src/habilidades.js').read_text()).replace('  //@@GM@@', (R / 'src/gm.js').read_text()).replace('  //@@MUNDO@@', (R / 'src/mundo.js').read_text()).replace('  //@@GUILDA@@', (R / 'src/guilda.js').read_text())
+js = (R / 'src/base.js').read_text() + (R / 'src/personagens.js').read_text() + (R / 'src/jogo.js').read_text().replace('  //@@HABILIDADES@@', (R / 'src/habilidades.js').read_text()).replace('  //@@GM@@', (R / 'src/gm.js').read_text()).replace('  //@@MUNDO@@', (R / 'src/mundo.js').read_text()).replace('  //@@GUILDA@@', (R / 'src/guilda.js').read_text()).replace('  //@@ESPADAS@@', (R / 'src/espadas.js').read_text())
 pg = (R / 'src/pagina.html').read_text()
 conta = (R / 'src/firebase-config.js').read_text() + '\n' + (R / 'src/conta.js').read_text()
 FB = ['firebase-app-compat.js', 'firebase-auth-compat.js', 'firebase-firestore-compat.js']

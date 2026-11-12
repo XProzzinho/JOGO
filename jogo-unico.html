@@ -328,6 +328,13 @@
 #atacar:active,#pular:active,#correr:active{transform:translateY(4px) scale(.96);box-shadow:0 2px 0 var(--tinta),0 0 0 5px rgba(255,255,255,.7),0 0 0 7px rgba(43,35,64,.55),inset 0 -4px 0 rgba(0,0,0,.2),inset 0 3px 0 rgba(255,255,255,.35)!important;filter:brightness(1.12)}
 #correr.on{background:radial-gradient(circle at 35% 28%,#fff6b0 0,#ffc83a 45%,#d07a10 100%)!important;animation:corrOn 1s ease-in-out infinite}@keyframes corrOn{50%{box-shadow:0 6px 0 var(--tinta),0 0 0 5px #fff3a0,0 0 18px 8px rgba(255,200,60,.7),inset 0 -8px 0 rgba(0,0,0,.2)}}
 #correr{right:calc(122px + env(safe-area-inset-right,0px))!important;bottom:calc(22px + env(safe-area-inset-bottom,0px))!important;font-size:10px!important;width:64px!important;height:64px!important}#atacar{right:calc(134px + env(safe-area-inset-right,0px))!important;bottom:calc(122px + env(safe-area-inset-bottom,0px))!important}
+#buff-btn{left:calc(198px + env(safe-area-inset-left,0px));top:calc(172px + env(safe-area-inset-top,0px));width:84px;height:38px;font-size:12px;border-radius:12px;background:linear-gradient(#ff5aa8,#a01a5a);color:#fff;z-index:7}
+#buffp{position:fixed;inset:0;z-index:58;display:flex;align-items:center;justify-content:center;background:rgba(6,4,16,.55)}#buffp[hidden]{display:none}
+#buffp .box{width:min(560px,94vw);max-height:92vh;overflow:auto;background:linear-gradient(#1c1830,#0e0c1a);border:2px solid #ff5aa8;border-radius:14px;padding:10px;color:#fff}
+#buffp .hd{display:flex;justify-content:space-between;align-items:center;font-size:16px}#buffp .x{background:#ff6a5a;color:#fff;border:0;border-radius:8px;padding:5px 10px;font-weight:900}
+#buffp .tp{display:grid;grid-template-columns:repeat(6,1fr);gap:4px;margin:8px 0}#buffp .tp button{background:#ffffff10;border:2px solid #ffffff22;border-radius:10px;color:#fff;padding:4px 2px;display:flex;flex-direction:column;align-items:center}#buffp .tp button.on{border-color:var(--c);box-shadow:0 0 8px var(--c)}#buffp .tp .ico{width:34px;height:34px}#buffp .tp small{font-size:8px;line-height:1.1}
+#buffp .op{display:flex;gap:4px;margin:4px 0}#buffp .op button{flex:1;background:#2a2440;color:#fff;border:1px solid #4a4068;border-radius:8px;padding:5px;font-weight:800}#buffp .op button.on{background:#ff5aa8}
+#buffp .jg{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px dashed #ffffff22}#buffp .jg i{color:#aaa;font-style:normal;font-size:11px}#buffp .jg button{background:#4ab870;color:#fff;border:0;border-radius:8px;padding:6px 12px;font-weight:900}#buffp p{font-size:12px;opacity:.7}
 </style>
 </head>
 <body>
@@ -1176,6 +1183,13 @@ ${_}`}class A extends Error{constructor({message:e,code:t,cause:r,name:s}){var n
     besta: { nome: 'Besta', icone: '🏹', dano: 30, alc: 18, cd: 0.8, longe: true, preco: 40, desc: 'Alavanca + corda tensionada: atira virotes de longe.' },
     glacial: { nome: 'Espada Glacial', icone: '❄️', dano: 38, alc: 2.5, cd: 0.34, gelo: true, preco: 30, precisa: 'coracao', desc: 'Forjada com o Coração de Gelo do Golem. Às vezes congela o inimigo.' },
     dragao: { nome: 'Espada do Dragão de Fogo', icone: '🐉', dano: 72, alc: 2.6, cd: 0.32, fogo: true, drop: true, desc: 'Caiu do Dragão das Profundezas. Cada golpe queima o inimigo.' },
+    esp_suprema: { nome: 'Lâmina Suprema', icone: '⚔️', dano: 48, alc: 2.6, cd: 0.33, preco: 400, esp: 'sup', desc: 'Especial: +15% de crítico e o 3º golpe solta uma onda de choque.' },
+    esp_corrompida: { nome: 'Lâmina Corrompida', icone: '⚔️', dano: 52, alc: 2.5, cd: 0.3, preco: 650, esp: 'corr', desc: 'Especial: GLITCH. Inimigos levam mais dano e às vezes travam.' },
+    esp_celestial: { nome: 'Lâmina Celestial', icone: '⚔️', dano: 56, alc: 2.6, cd: 0.33, preco: 900, esp: 'cel', desc: 'Especial: cada golpe recupera 3% da sua vida.' },
+    esp_dragao_real: { nome: 'Lâmina do Dragão Real', icone: '⚔️', dano: 64, alc: 2.6, cd: 0.34, preco: 1300, fogo: true, esp: 'drag', desc: 'Especial: queima e o 3º golpe explode em fogo na frente.' },
+    esp_executora: { nome: 'Executora Dupla', icone: '⚔️', dano: 78, alc: 2.7, cd: 0.34, preco: 2000, esp: 'exec', desc: 'Especial: dano x2,5 em inimigos com pouca vida e o 3º golpe dispara uma lâmina de energia.' },
+    esp_adm: { nome: 'Lâmina Suprema ADM', icone: '⚔️', dano: 999, alc: 3.2, cd: 0.28, staff: 'adm', esp: 'staff', defMax: true, desc: 'Só do Administrador. Dano e defesa no máximo. Botão BUFF manda buffs pros jogadores.' },
+    esp_gm: { nome: 'Executora GM', icone: '⚔️', dano: 999, alc: 3.2, cd: 0.28, staff: 'gm', esp: 'staff', defMax: true, desc: 'Só de GM. Dano e defesa no máximo. Botão BUFF manda buffs pros jogadores.' },
     punho: { nome: 'Mãos vazias', icone: '👊', dano: 6, alc: 1.6, cd: 0.38, oculta: true, desc: 'Sem arma equipada: soco.' },
   };
   const ITENS = { moedas: '💰', pele: '🐺', carne: '🍖', coracao: '💎', asas: '🦇', espdragao: '🐉' };
@@ -1439,7 +1453,7 @@ ${_}`}class A extends Error{constructor({message:e,code:t,cause:r,name:s}){var n
   SABER.push({ x: FX0, y: 2.6, z: FZ0, t: 'Aço = ferro + um pouco de carbono. Mais duro que ferro puro.' });
 
   function abrirLoja() { if (conversa || cenaQ) return; som('forja', 0.8); const L = $('loja-lista'); L.innerHTML = ''; $('loja-m').textContent = AR.inv.moedas;
-    Object.keys(ARMAS).forEach(k => { const A = ARMAS[k], tem = AR.armas.includes(k); if (A.classe || A.oculta || (A.drop && !AR.armas.includes(k))) return; const b = document.createElement('div'); b.className = 'item';
+    Object.keys(ARMAS).forEach(k => { const A = ARMAS[k], tem = AR.armas.includes(k); if (A.classe || A.oculta || A.staff || (A.drop && !AR.armas.includes(k))) return; const b = document.createElement('div'); b.className = 'item';
       const preco = A.preco ? `${A.preco} 💰${A.precisa ? ' + 💎 Coração de Gelo' : ''}` : 'Presente do seu pai';
       b.innerHTML = `<span class="ic">${A.icone}</span><div class="tx"><b>${A.nome}</b><small>${A.longe ? 'De longe' : 'Corpo a corpo'} · dano ${A.dano}</small><small>${A.desc}</small></div>`;
       const bt = document.createElement('button'); bt.className = 'cb';
@@ -1475,8 +1489,8 @@ ${_}`}class A extends Error{constructor({message:e,code:t,cause:r,name:s}){var n
     const mult = [1, 1, 1.15, 1.8][atkN]; let acertou = false; const alcX = BM && BM.ataque === 'area' ? 1.2 : 0; if (BM && BM.ataque === 'proj') proj(p.x, p.y + 1.2, p.z, facing, BM.cor, A.dano * atkMult() * 0.8, 26, 14, { fura: true });
     FERAS.forEach(e => { if (!feraAtiva(e)) return; const dx = e.g.position.x - p.x, dz = e.g.position.z - p.z, d = Math.hypot(dx, dz); if (d > A.alc + e.T.raio + alcX) return;
       let da = Math.atan2(dx, dz) - facing; while (da > Math.PI) da -= Math.PI * 2; while (da < -Math.PI) da += Math.PI * 2; if (atkN !== 3 && !A.giro && !(BM && BM.ataque === 'area') && Math.abs(da) > 1.25 && d > e.T.raio + 0.4) return;
-      acertou = true; const cr = critico(); dano(e, A.dano * mult * atkMult() * (cr ? 2 : 1), A.gelo ? 'gelo' : null, cr); if (BUFF.veneno > 0 || A.fogo) e.queima = 3; if (A.fogo) fx('chama', [e.g.position.x, 0.6, e.g.position.z], 0.5, facing); if (BM && BM.ataque === 'marca') e.vuln = Math.max(e.vuln, 4); if (BM && BM.ataque === 'empurra') { e.stun = Math.max(e.stun, 0.5); empurra(e, dx / (d || 1), dz / (d || 1), 1.5); } if (A.gelo && Math.random() < 0.25) congelar(e, 1.5); empurra(e, dx / (d || 1), dz / (d || 1), atkN === 3 ? 1.6 : 0.6); });
-    if (acertou) tremor = Math.max(tremor, atkN === 3 ? 0.25 : 0.1); }
+      acertou = true; const cr = critico(); dano(e, A.dano * mult * atkMult() * (cr ? 2 : 1) * (A.esp === 'exec' && e.vida < e.max * 0.3 ? 2.5 : 1), A.gelo ? 'gelo' : null, cr); if (A.esp) espHit(A, e); if (BUFF.veneno > 0 || A.fogo) e.queima = 3; if (A.fogo) fx('chama', [e.g.position.x, 0.6, e.g.position.z], 0.5, facing); if (BM && BM.ataque === 'marca') e.vuln = Math.max(e.vuln, 4); if (BM && BM.ataque === 'empurra') { e.stun = Math.max(e.stun, 0.5); empurra(e, dx / (d || 1), dz / (d || 1), 1.5); } if (A.gelo && Math.random() < 0.25) congelar(e, 1.5); empurra(e, dx / (d || 1), dz / (d || 1), atkN === 3 ? 1.6 : 0.6); });
+    if (acertou) { tremor = Math.max(tremor, atkN === 3 ? 0.25 : 0.1); if (A.esp) espGolpe(A); } }
   function empurra(e, nx, nz, f) { if (e.T.chefe) return; e.g.position.x += nx * f; e.g.position.z += nz * f; }
   function armaPose() { const P = heroi.userData.P, A = ARMAS[AR.arma] || ARMAS.bastao;
     if (atkT < 0.34) { const u = eOut(clamp(atkT / 0.3));
@@ -1658,7 +1672,7 @@ ${_}`}class A extends Error{constructor({message:e,code:t,cause:r,name:s}){var n
       const ft = P['ft' + s]; A(ft, SPH2, MALHA, 0, 0.005, 0.05, 0.075, 0.062, 0.142); for (let k = 0; k < 3; k++) A(ft, SPH2, k % 2 ? AZ2 : PR, 0, 0.02 - k * 0.004, 0.1 + k * 0.04, 0.072 - k * 0.006, 0.05, 0.05); A(ft, BOX, COU, 0, -0.048, 0.05, 0.125, 0.02, 0.27); });
     armadura.forEach(m => m.visible = false); }
   function vesteFantasia(k) { if (!FANT[k]) k = 'comum'; AR.fantasia = k; if (k !== 'comum') AR.pecas = {}; salvaAR(); escondeTrajes(); if (k === 'celeste') armadura.forEach(m => m.visible = true); if (CAS[k]) CAS[k].m.forEach(m => m.visible = true); aplicaNivel(); mana = Math.min(mana, MANA_MAX); atualizaPecas(); setTimeout(fazRetrato, 60); }
-  function defesa() { const c = CLASSES && CLASSES[AR.classe]; return Math.min(85, asaB('def') * ((FANT[AR.fantasia].def || 0) + pecaDef() + (c ? c.def : 0) + (BM && BM.def ? BM.def : 0) + (typeof BUFF !== 'undefined' ? (BUFF.provocar > 0 ? 20 : 0) + (BUFF.fortaleza > 0 ? 30 : 0) + (BUFF.pele > 0 ? 40 : 0) + (BUFF.cb_def > 0 ? 20 : 0) + (BUFF.cb_tudo > 0 ? 10 : 0) : 0) + cbPas('def') + (montado && montaria() && montaria().def || 0))); }
+  function defesa() { const c = CLASSES && CLASSES[AR.classe]; return ARMAS[AR.arma] && ARMAS[AR.arma].defMax ? 95 : Math.min(85, asaB('def') * ((FANT[AR.fantasia].def || 0) + pecaDef() + (c ? c.def : 0) + (BM && BM.def ? BM.def : 0) + (typeof BUFF !== 'undefined' ? (BUFF.provocar > 0 ? 20 : 0) + (BUFF.fortaleza > 0 ? 30 : 0) + (BUFF.pele > 0 ? 40 : 0) + (BUFF.cb_def > 0 ? 20 : 0) + (BUFF.cb_tudo > 0 ? 10 : 0) : 0) + cbPas('def') + (montado && montaria() && montaria().def || 0))); }
   function armaduraFrame() { casacoFrame(); if (!tabardo || AR.fantasia !== 'celeste') return; const P = heroi.userData.P; const f = Math.min(P.thL.rotation.x, P.thR.rotation.x), b = Math.max(P.thL.rotation.x, P.thR.rotation.x); tabardo.rotation.x = Math.min(0, f) * 0.95; tabardo.userData.costas.rotation.x = Math.max(0, b) * 0.95; }
 
 
@@ -1900,7 +1914,7 @@ ${_}`}class A extends Error{constructor({message:e,code:t,cause:r,name:s}){var n
         const b = document.createElement('button'); b.className = 'cel tit' + (on ? ' on' : '') + (tem ? '' : ' fixa'); b.style.setProperty('--tc', { comum: '#5a5470', raro: '#2a6ac8', epico: '#8a3ad8', lendario: '#b87800', admin: '#d82a2a' }[T.r]); b.innerHTML = `<span class="ic">${tem ? '🏷️' : '🔒'}</span><b>${tem ? T.nome : '???'}</b><small>${T.como}</small><em>${on ? 'EQUIPADO' : TIT_NOME[T.r]}</em>`;
         if (tem) tapBtn(b, () => { AR.titulo = k; salvaAR(); aviso('🏷️ Título equipado: ' + T.nome, TIT_COR[T.r]); desenhaPerfil(); }); g.appendChild(b); }); return; }
     let g = sec('⚔️ Armas · toque pra equipar ou desequipar');
-    Object.keys(ARMAS).forEach(k => { const W = ARMAS[k], tem = AR.armas.includes(k); if (W.oculta || (W.classe && !tem)) return; const on = AR.arma === k; cel(g, tem ? W.icone : '🔒', W.nome, tem ? (on ? 'Toque pra desequipar' : 'Dano ' + W.dano) : 'Na Forja', on, tem ? () => { equipaArma(on ? null : k); desenhaPerfil(); } : null, on ? 'EQUIPADA' : ''); });
+    Object.keys(ARMAS).forEach(k => { const W = ARMAS[k], tem = AR.armas.includes(k); if (W.oculta || ((W.classe || W.staff) && !tem)) return; const on = AR.arma === k; cel(g, tem ? W.icone : '🔒', W.nome, tem ? (on ? 'Toque pra desequipar' : 'Dano ' + W.dano) : 'Na Forja', on, tem ? () => { equipaArma(on ? null : k); desenhaPerfil(); } : null, on ? 'EQUIPADA' : ''); });
     g = sec('👕 Armaduras');
     Object.keys(FANT).forEach(k => { const F = FANT[k], tem = AR.fantasias.includes(k); cel(g, F.icone, F.nome, tem ? (F.def ? 'Defesa +' + F.def + '%' : 'Sem defesa') : '🔒', AR.fantasia === k, tem && AR.fantasia !== k ? () => { vesteFantasia(k); aviso('Vestiu: ' + F.icone + ' ' + F.nome, '#7ac8ff'); desenhaPerfil(); } : null, AR.fantasia === k ? 'VESTIDO' : ''); });
     g = sec('🧊 Armadura Glacial · peças (+5% cada, conjunto completo +10%)');
@@ -2051,6 +2065,83 @@ ${_}`}class A extends Error{constructor({message:e,code:t,cause:r,name:s}){var n
     ps(maoG, ARMA_EIXO_Y[k] ? POSE_COSTAS.vara : POSE_COSTAS.lamina);
     if (k === 'escudo') ps(maoE, POSE_COSTAS.escudo); else ps(maoE, POSE_COSTAS.lamina2);
     if (ARMAE.runica) ARMAE.runica.visible = false; }
+  // ===================== ESPADAS NOVAS + ESPADAS DE ADM/GM (atacam e mandam buff) =====================
+  function fazEspadas(T){
+ const ext=(sh,d,bv)=>{const g=new T.ExtrudeGeometry(sh,{depth:d,bevelEnabled:true,bevelThickness:bv||.02,bevelSize:bv||.02,bevelSegments:2});g.translate(0,0,-d/2);return g};
+ const mt=(c,m,r,e)=>new T.MeshStandardMaterial({envMap:ENV,envMapIntensity:1.2,color:c,metalness:(m==null?.85:m)*.55,roughness:Math.max(.3,r==null?.25:r),emissive:e||'#000',emissiveIntensity:e?1:0});
+ const neon=c=>new T.MeshBasicMaterial({color:c,toneMapped:false});
+ const spr=(c,s)=>{const cv=document.createElement('canvas');cv.width=cv.height=64;const x=cv.getContext('2d');const g=x.createRadialGradient(32,32,0,32,32,32);g.addColorStop(0,c);g.addColorStop(1,'rgba(0,0,0,0)');x.fillStyle=g;x.fillRect(0,0,64,64);const m=new T.Sprite(new T.SpriteMaterial({map:new T.CanvasTexture(cv),transparent:true,depthWrite:false,blending:T.AdditiveBlending,toneMapped:false}));m.scale.set(s,s,1);return m};
+ const txt=(t,cor,fundo)=>{const cv=document.createElement('canvas');cv.width=256;cv.height=64;const x=cv.getContext('2d');if(fundo){x.fillStyle=fundo;x.fillRect(0,0,256,64)}x.font='900 46px Arial Black,Arial';x.textAlign='center';x.textBaseline='middle';x.shadowColor=cor;x.shadowBlur=14;x.fillStyle=cor;x.fillText(t,128,34);x.fillText(t,128,34);const m=new T.Mesh(new T.PlaneGeometry(.5,.125),new T.MeshBasicMaterial({map:new T.CanvasTexture(cv),transparent:true,toneMapped:false,side:T.DoubleSide}));return m};
+ const lamina=(L,W,ponta)=>{const s=new T.Shape();s.moveTo(-W/2,0);s.lineTo(W/2,0);s.lineTo(W/2*.9,L*.8);s.lineTo(0,L+ponta);s.lineTo(-W/2*.9,L*.8);s.lineTo(-W/2,0);return s};
+ const add=(p,geo,mat,x,y,z,rx,ry,rz,sx,sy,sz)=>{const m=new T.Mesh(geo,mat);m.position.set(x||0,y||0,z||0);m.rotation.set(rx||0,ry||0,rz||0);if(sx)m.scale.set(sx,sy,sz);p.add(m);return m};
+ const SPH=new T.SphereGeometry(1,24,16),CYL=new T.CylinderGeometry(1,1,1,20),TOR=new T.TorusGeometry(1,.12,10,48),OCT=new T.OctahedronGeometry(1,0),CON=new T.ConeGeometry(1,1,16);
+ const cabo=(g,cor,ouro,gema)=>{add(g,CYL,mt(cor,.2,.7),0,-.32,0,0,0,0,.045,.5,.045);for(let i=0;i<6;i++)add(g,TOR,mt(ouro),0,-.12-i*.08,0,Math.PI/2,0,0,.05,.05,.05);add(g,OCT,mt(ouro),0,-.62,0,0,0,0,.07,.1,.07);add(g,OCT,neon(gema),0,-.62,0,0,0,0,.045,.065,.075)};
+ const E={};
+ // 1) LÂMINA SUPREMA: espadão vermelho e dourado com coroa na guarda
+ E[1]=(sig,cor,c2)=>{const g=new T.Group();add(g,ext(lamina(1.7,.26,.25),.04),mt('#e8ecf4',.95,.12),0,0,0);add(g,ext(lamina(1.5,.07,.2),.12,.01),neon(cor),0,.08,0);
+  add(g,ext((()=>{const s=new T.Shape();s.moveTo(-.42,-.02);s.quadraticCurveTo(-.3,.14,-.12,.06);s.lineTo(0,.16);s.lineTo(.12,.06);s.quadraticCurveTo(.3,.14,.42,-.02);s.lineTo(0,-.08);s.lineTo(-.42,-.02);return s})(),.08),mt('#ffc83a',.95,.2),0,0,0);
+  [-1,0,1].forEach(i=>add(g,CON,mt('#ffc83a'),i*.09,.22+(i?0:.04),0,0,0,0,.035,.12,.035));add(g,OCT,neon(cor),0,.03,.05,0,0,0,.06,.08,.03);
+  cabo(g,'#3a0a0a','#ffc83a',cor);const t=txt(sig,'#fff');t.position.set(0,.85,.075);t.rotation.z=Math.PI/2;g.add(t);(()=>{const q=spr(c2,1.6);q.position.set(0,.9,0);g.add(q)})();return g};
+ // 2) CORROMPIDA DIGITAL: lâmina preta com circuitos neon
+ E[2]=(sig,cor,c2)=>{const g=new T.Group();const s=new T.Shape();s.moveTo(-.12,0);s.lineTo(.14,0);s.lineTo(.16,.6);s.lineTo(.1,.7);s.lineTo(.13,1.3);s.lineTo(0,1.75);s.lineTo(-.1,1.25);s.lineTo(-.14,.9);s.lineTo(-.1,.8);s.lineTo(-.12,0);add(g,ext(s,.05),mt('#2a2a36',.6,.35),0,0,0);
+  for(let i=0;i<9;i++){const y=.12+i*.16;add(g,new T.BoxGeometry(1,1,1),neon(cor),(i%2?.04:-.04),y,.05,0,0,0,.12-(i%3)*.02,.012,.005);add(g,new T.BoxGeometry(1,1,1),neon(cor),(i%2?.09:-.09),y+.05,.05,0,0,0,.012,.1,.005)}
+  add(g,new T.BoxGeometry(1,1,1),mt('#22222a',.7,.3),0,0,0,0,0,0,.6,.07,.12);[-1,1].forEach(s=>{add(g,new T.BoxGeometry(1,1,1),neon(cor),s*.31,0,0,0,0,0,.06,.1,.14);add(g,new T.BoxGeometry(1,1,1),mt('#22222a'),s*.36,.08,0,0,0,s*.6,.05,.2,.08)});
+  cabo(g,'#101014','#5a5a6a',cor);const t=txt(sig,cor);t.position.set(0,1.0,.075);t.rotation.z=Math.PI/2;g.add(t);(()=>{const q=spr(c2,1.4);q.position.set(0,.9,0);g.add(q)})();
+  for(let i=0;i<5;i++)add(g,new T.BoxGeometry(1,1,1),neon(cor),(Math.random()-.5)*.6,.3+Math.random()*1.4,0,0,0,0,.04,.04,.04);return g};
+ // 3) CELESTIAL: lâmina de cristal com asas na guarda e auréola
+ E[3]=(sig,cor,c2)=>{const g=new T.Group();add(g,ext(lamina(1.6,.2,.3),.05),new T.MeshPhysicalMaterial({color:c2,metalness:0,roughness:.05,transmission:.6,thickness:.2,emissive:cor,emissiveIntensity:.35,transparent:true,opacity:.9}),0,0,0);add(g,ext(lamina(1.4,.05,.25),.12,.01),neon('#ffffff'),0,.1,0);
+  [-1,1].forEach(s=>{const w=new T.Shape();w.moveTo(0,0);w.quadraticCurveTo(.25,.05,.45,.28);w.lineTo(.38,.16);w.lineTo(.42,.12);w.lineTo(.3,.06);w.lineTo(.32,.0);w.lineTo(.18,-.02);w.lineTo(0,-.06);const m=add(g,ext(w,.03,.01),mt('#f4f0ff',.9,.2),s*.05,.02,0);m.scale.x=s});
+  add(g,TOR,neon(cor),0,1.95,0,Math.PI/2.4,0,0,.18,.18,.18);cabo(g,'#e8e8f4','#ffd86a',cor);const t=txt(sig,cor);t.position.set(0,.8,.075);t.rotation.z=Math.PI/2;g.add(t);(()=>{const q=spr(c2,1.8);q.position.set(0,.95,0);g.add(q)})();return g};
+ // 4) DRAGÃO REAL: lâmina serrilhada com chamas e boca de dragão na guarda
+ E[4]=(sig,cor,c2)=>{const g=new T.Group();const s=new T.Shape();s.moveTo(-.13,0);for(let i=0;i<7;i++){s.lineTo(-.14,i*.22+.11);s.lineTo(-.19,i*.22+.18)}s.lineTo(0,1.85);for(let i=6;i>=0;i--){s.lineTo(.19,i*.22+.18);s.lineTo(.14,i*.22+.11)}s.lineTo(.13,0);add(g,ext(s,.05),mt('#5a5a66',.9,.25),0,0,0);
+  add(g,ext(lamina(1.5,.08,.2),.12,.01),neon(cor),0,.1,0);add(g,SPH,mt('#8a1a1a',.6,.3),0,0,.0,0,0,0,.2,.12,.12);[-1,1].forEach(s2=>{add(g,CON,mt('#f4ecd8',.2,.4),s2*.14,.1,-.05,-.4,0,s2*-.5,.04,.25,.04);add(g,SPH,neon('#ffe24a'),s2*.08,.06,.1,0,0,0,.03,.025,.02)});
+  cabo(g,'#2a0a0a','#c8902a',cor);const t=txt(sig,'#fff2c0');t.position.set(0,.85,.075);t.rotation.z=Math.PI/2;g.add(t);for(let i=0;i<4;i++){const q=spr(c2,.6+i*.25);q.position.set((i%2-.5)*.2,.4+i*.4,0);g.add(q)}return g};
+ // 5) EXECUTORA DUPLA: lâmina dupla paralela com núcleo de energia
+ E[5]=(sig,cor,c2)=>{const g=new T.Group();[-1,1].forEach(s=>{const b=add(g,ext(lamina(1.55,.12,.3),.04),mt('#dfe4ee',.95,.15),s*.11,.05,0);b.rotation.z=-s*.02});
+  for(let i=0;i<10;i++)(()=>{const q=spr(cor,.16);q.position.set(0,.15+i*.15,0);g.add(q)})();add(g,CYL,neon(cor),0,.8,0,0,0,0,.025,1.4,.025);
+  add(g,TOR,mt('#ffc83a'),0,.0,0,0,0,0,.24,.24,.6);add(g,SPH,neon(cor),0,0,0,0,0,0,.09,.09,.09);(()=>{const q=spr(c2,.9);q.position.set(0,0,0);g.add(q)})();
+  cabo(g,'#1a1a2a','#ffc83a',cor);const t=txt(sig,cor,'rgba(10,10,20,.85)');t.scale.set(.5,.5,.5);t.position.set(0,1.3,.075);t.rotation.z=Math.PI/2;g.add(t);(()=>{const q=spr(c2,1.5);q.position.set(0,.9,0);g.add(q)})();return g};
+ return E;}
+  const ESP_MOD = fazEspadas(T3);
+  const ESP_DEF = { esp_suprema: [1, '#ff3a2a', 'rgba(255,90,60,.45)', ''], esp_corrompida: [2, '#3aff7a', 'rgba(60,255,120,.45)', ''], esp_celestial: [3, '#ffe08a', 'rgba(255,230,150,.5)', ''], esp_dragao_real: [4, '#ff8a1a', 'rgba(255,140,40,.5)', ''], esp_executora: [5, '#b45aff', 'rgba(180,90,255,.5)', ''],
+    esp_adm: [1, '#ff2a3a', 'rgba(255,60,60,.55)', 'ADM'], esp_gm: [5, '#2ad8ff', 'rgba(60,200,255,.55)', 'GM'] };
+  Object.keys(ESP_DEF).forEach(k => { const [n, c, c2, sig] = ESP_DEF[k]; const G = grp(maoG); const inner = ESP_MOD[n](sig, c, c2); inner.position.y = 0.32; G.add(inner); G.rotation.x = Math.PI / 2; G.scale.setScalar(0.55); G.visible = false; G.traverse(o => { if (o.isMesh) o.castShadow = true; }); ARMAG[k] = G; });
+  // ---- efeitos especiais das espadas ----
+  function espHit(A, e) { const p = heroi.position;
+    if (A.esp === 'corr') { e.vuln = Math.max(e.vuln, 4); if (Math.random() < 0.2) { e.stun = Math.max(e.stun, 0.8); numero(e.g.position, 'GLITCH', '#3aff7a', e.T.alt + 0.4); } }
+    if (A.esp === 'cel') { const v = Math.max(1, Math.round(VIDA_MAX * 0.03)); vida = Math.min(VIDA_MAX, vida + v); }
+    if (A.esp === 'drag') e.queima = 4;
+    if (A.esp === 'staff') { e.queima = 4; e.vuln = 6; } }
+  function espGolpe(A) { if (atkN !== 3) return; const p = heroi.position, M = atkMult(), c = (ESP_DEF[AR.arma] || [])[1] || '#fff';
+    if (A.esp === 'sup' || A.esp === 'staff') { area(p.x, p.z, 4, e => dano(e, A.dano * 0.6 * M)); fx('luz', [p.x, 0, p.z], 0.7); tremor = Math.max(tremor, 0.35); flash('rgba(255,220,160,.2)'); }
+    if (A.esp === 'drag') { const x = p.x + Math.sin(facing) * 2.2, z = p.z + Math.cos(facing) * 2.2; area(x, z, 2.8, e => { dano(e, A.dano * 0.8 * M, 'fogo'); e.queima = 4; }); fx('chama', [x, 0.5, z], 1, facing); fx('fumo', [x, 0, z], 0.8); }
+    if (A.esp === 'cel') { fx('cura', [p.x, 0, p.z], 0.8); }
+    if (A.esp === 'exec') { proj(p.x, p.y + 1.2, p.z, facing, c, A.dano * 0.7 * M, 28, 16, { fura: true, tam: 1.1 }); } }
+  // ---- ADM / GM ----
+  var souGM = false;
+  function staffArmas() { const adm = souAdmin(); const quer = { esp_adm: adm, esp_gm: adm || souGM };
+    Object.keys(quer).forEach(k => { const tem = AR.armas.includes(k); if (quer[k] && !tem) { AR.armas.push(k); aviso('Você recebeu: ' + ARMAS[k].icone + ' ' + ARMAS[k].nome + '!', '#ff5aa8'); } if (!quer[k] && tem) { AR.armas = AR.armas.filter(x => x !== k); if (AR.arma === k) equipaArma(null); } }); }
+  setTimeout(() => { try { if (window.CONTA && CONTA.db && CONTA.usuario) CONTA.db.collection('staff').doc(CONTA.usuario.uid).get().then(d => { souGM = d.exists && (d.data().cargo === 'gm' || d.data().cargo === 'adm'); staffArmas(); salvaAR(); }).catch(() => staffArmas()); else staffArmas(); } catch (e) { staffArmas(); } }, 7000);
+  // botão BUFF (aparece com a espada de ADM/GM) e janela pra mandar buff pros jogadores perto
+  var buffBtn = document.createElement('button'); buffBtn.className = 'btn'; buffBtn.id = 'buff-btn'; buffBtn.hidden = true; buffBtn.innerHTML = '<img class="ico" src="icones/gm_divino.svg" alt=""> BUFF'; document.body.appendChild(buffBtn);
+  var buffP = document.createElement('div'); buffP.id = 'buffp'; buffP.hidden = true; document.body.appendChild(buffP);
+  var bfTipo = 'forca', bfMin = 30, bfPct = 50;
+  function bfDesenha() { const p = heroi.position, perto = [{ uid: CONTA.usuario && CONTA.usuario.uid, n: trNome() + ' (você)', d: 0 }];
+    Object.values(MP.outros || {}).forEach(o => { if (!o.d || !o.d.u) return; const d = Math.hypot(o.x - p.x, o.z - p.z); if (d < 25) perto.push({ uid: o.d.u, n: String(o.d.n || 'Jogador').replace(/</g, ''), d }); });
+    perto.sort((a, b) => a.d - b.d);
+    buffP.innerHTML = `<div class="box"><div class="hd"><b>${ARMAS[AR.arma].icone} Mandar buff</b><button class="x">✕</button></div><div class="tp">${Object.keys(GMB_INFO).map(k => `<button data-t="${k}" class="${k === bfTipo ? 'on' : ''}" style="--c:${GMB_INFO[k][1]}">${IC('gm_' + k)}<small>${GMB_INFO[k][0]}</small></button>`).join('')}</div>
+      <div class="op">${[[5, '5 min'], [30, '30 min'], [60, '1 h'], [1440, '24 h'], [0, '∞']].map(([m, t]) => `<button data-m="${m}" class="${m === bfMin ? 'on' : ''}">${t}</button>`).join('')}</div><div class="op">${[25, 50, 75, 100].map(v => `<button data-p="${v}" class="${v === bfPct ? 'on' : ''}">${v}%</button>`).join('')}</div>
+      <div class="ls">${perto.map(j => `<div class="jg"><span>${j.n}${j.d ? ` <i>${j.d.toFixed(0)} m</i>` : ''}</span><button data-u="${j.uid}">Dar</button></div>`).join('')}${perto.length < 2 ? '<p>Nenhum jogador perto (até 25 m). Dá pra mandar pra você mesmo.</p>' : ''}</div></div>`;
+    buffP.querySelector('.x').onclick = () => { buffP.hidden = true; };
+    buffP.querySelectorAll('[data-t]').forEach(b => b.onclick = () => { bfTipo = b.dataset.t; bfDesenha(); }); buffP.querySelectorAll('[data-m]').forEach(b => b.onclick = () => { bfMin = +b.dataset.m; bfDesenha(); }); buffP.querySelectorAll('[data-p]').forEach(b => b.onclick = () => { bfPct = +b.dataset.p; bfDesenha(); });
+    buffP.querySelectorAll('[data-u]').forEach(b => b.onclick = async () => { const uid = b.dataset.u, nome = b.parentNode.querySelector('span').textContent.replace(/\s\d+ m$/, ''); if (!uid || !CONTA.db) { aviso('Precisa estar logado.', '#ff6a6a'); return; } b.disabled = true;
+      const item = { id: Math.random().toString(36).slice(2, 10), tipo: bfTipo, pct: bfPct, ate: bfMin ? Date.now() + bfMin * 60000 : 0, imune: false, por: CONTA.usuario.uid, porNome: trNome(), criado: Date.now() };
+      try { const ref = CONTA.db.collection('buffs').doc(uid); await CONTA.db.runTransaction(async t => { const d = await t.get(ref); const L = ((d.exists && d.data().lista) || []).filter(x => x.tipo !== item.tipo && (!x.ate || x.ate > Date.now())); L.push(item); t.set(ref, { lista: L, nome, mudou: Date.now() }, { merge: true }); });
+        CONTA.db.collection('buffLog').add({ acao: 'aplicar', alvo: uid, alvoNome: nome, por: CONTA.usuario.uid, porNome: trNome(), cargo: souAdmin() ? 'adm' : 'gm', tipo: item.tipo, pct: bfPct, min: bfMin, criado: Date.now() }).catch(() => {});
+        aviso(IC('gm_' + bfTipo) + ' ' + GMB_INFO[bfTipo][0] + ' enviado pra ' + nome + '!', GMB_INFO[bfTipo][1]); fx('luz', [heroi.position.x, 0, heroi.position.z], 0.6); som('magia', 0.7); } catch (e) { aviso('Não deu: ' + (e.code || e.message), '#ff6a6a'); } b.disabled = false; }); }
+  tapBtn(buffBtn, () => { if (buffP.hidden) { bfDesenha(); buffP.hidden = false; } else buffP.hidden = true; });
+  function espFrame() { const A = ARMAS[AR.arma]; buffBtn.hidden = !(A && A.staff) || !!conversa; if (buffBtn.hidden) buffP.hidden = true; }
+
   function armaVisivel() { return Object.keys(ARMAG).find(k => ARMAG[k].visible) || null; }
   function equipaArma(k) { AR.arma = k && AR.armas.includes(k) ? k : 'punho'; salvaAR(); mostraArma(); armaNasCostas = null; setTimeout(fazRetrato, 60);
     const A = ARMAS[AR.arma]; aviso(AR.arma === 'punho' ? '👊 Arma guardada na mochila' : 'Equipou: ' + A.icone + ' ' + A.nome, '#ffd23c'); }
@@ -2270,7 +2361,7 @@ ${_}`}class A extends Error{constructor({message:e,code:t,cause:r,name:s}){var n
   // ---- aplicar classe ----
   function CLA() { return CLASSES[AR.classe] || null; }
   function atkMult() { const c = CLA(); return (1 + (AR.nv - 1) * 0.02) * (c ? c.atk : 1) * potAtual * (BM && BM.atk ? BM.atk : 1) * (BUFF.furia > 0 ? 1.4 : 1) * (BUFF.pacto > 0 ? 1.5 : 1) * (1 + cbPas('atk')) * (BUFF.cb_atk > 0 ? 1.25 : 1) * (BUFF.cb_tudo > 0 ? 1.15 : 1) * asaB('dano') * (1 + gmPct('forca')); }
-  function critico() { const c = CLA(); return Math.random() < (c ? c.crit : 0.05) + (BM && BM.crit ? BM.crit : 0) + cbPas('crit') + (BUFF.cb_crit > 0 ? 0.15 : 0) + (BUFF.cb_tudo > 0 ? 0.05 : 0); }
+  function critico() { const c = CLA(); return Math.random() < (c ? c.crit : 0.05) + (BM && BM.crit ? BM.crit : 0) + cbPas('crit') + (BUFF.cb_crit > 0 ? 0.15 : 0) + (BUFF.cb_tudo > 0 ? 0.05 : 0) + (ARMAS[AR.arma] && ARMAS[AR.arma].esp === 'sup' ? 0.15 : 0); }
   function aplicaClasse(id) { if (typeof bmDesliga === 'function') bmDesliga(); const c = CLASSES[id]; AR.classe = id; if (!AR.armas.includes(c.arma)) AR.armas.push(c.arma); AR.arma = c.arma;
     const v = AR.barra[2]; if (v && !(PW[v] && PW[v].classe)) { const k = AR.barra.indexOf(null, 3); if (k >= 3 && !AR.barra.slice(3).includes(v)) AR.barra[k] = v; }
     AR.barra[2] = c.hab; if (!AR.tem.includes(c.hab)) AR.tem.push(c.hab); HABS.forEach(h => { const i = AR.barra.indexOf(h.id); if (i > 2) AR.barra[i] = null; });
@@ -2394,7 +2485,7 @@ ${_}`}class A extends Error{constructor({message:e,code:t,cause:r,name:s}){var n
       case 'pacto': { const custo = Math.round(VIDA_MAX * 0.2); vida = Math.max(1, vida - custo); mana = Math.min(MANA_MAX, mana + 60); buff('pacto', 8); numero(p, '-' + custo + ' ❤️  +60 🔷', '#c890ff'); flash('rgba(120,40,180,.35)'); break; }
     } }
   function aterrissa() { const p = heroi.position; som('tremor'); fx('fumo', [p.x, 0, p.z], 1.1); fx('luz', [p.x, 0, p.z], 0.5); tremor = 0.5; area(p.x, p.z, 3.8, e => { dano(e, 40 * atkMult(), null, critico()); e.stun = Math.max(e.stun, 1.5); }); }
-  function habsFrame(dt) { cbFrame(dt); gmFrame(dt); mundoFrame(dt); Object.keys(BUFF).forEach(k => { if (BUFF[k] > 0) BUFF[k] -= dt; }); if (BUFF.regen > 0) vida = Math.min(VIDA_MAX, vida + 8 * dt); if (BUFF.fortaleza > 0) vida = Math.min(VIDA_MAX, vida + 5 * dt);
+  function habsFrame(dt) { espFrame(); cbFrame(dt); gmFrame(dt); mundoFrame(dt); Object.keys(BUFF).forEach(k => { if (BUFF[k] > 0) BUFF[k] -= dt; }); if (BUFF.regen > 0) vida = Math.min(VIDA_MAX, vida + 8 * dt); if (BUFF.fortaleza > 0) vida = Math.min(VIDA_MAX, vida + 5 * dt);
     for (let i = LOB.length - 1; i >= 0; i--) { const l = LOB[i]; l.t += dt; const u = Math.min(1, l.t / l.dur); l.s.position.set(lerp(l.a[0], l.b[0], u), lerp(l.a[1], 0.3, u) + Math.sin(u * Math.PI) * 3.5, lerp(l.a[2], l.b[1], u)); if (u >= 1) { world.remove(l.s); LOB.splice(i, 1); l.fn(); } } }
   // ===================== MODOS DE BATALHA (3 por classe, mudam o corpo e a arma) =====================
   // atk/def/vel/atkVel/crit/esq/roubo = bônus · escala = tamanho do corpo · flutua = levita · armaEsc = tamanho da arma
@@ -2770,7 +2861,7 @@ ${_}`}class A extends Error{constructor({message:e,code:t,cause:r,name:s}){var n
       MP.ch.on('broadcast', { event: 'p' }, m => mpRecebe(m.payload)).on('broadcast', { event: 'sai' }, m => { const o = m.payload && MP.outros[m.payload.id]; if (o) o.t = 0; })
         .subscribe(st => { MP.ok = st === 'SUBSCRIBED'; }); } catch (e) { MP.ch = null; } }
   window.addEventListener('pagehide', () => { try { MP.ch && MP.ch.send({ type: 'broadcast', event: 'sai', payload: { id: MP.id } }); } catch (e) {} });
-  function mpEstado(p) { const G = typeof guildState !== 'undefined' && guildState && guildState.guild; const TT = tituloAtual(); return { id: MP.id, n: (AR.visual && AR.visual.nome) || 'Leonardo', t: TT.nome, tr: TT.r, lv: AR.nv, g: G ? G.name : '', ge: G && typeof emblemIcon === 'function' ? emblemIcon(G.emblem) : '', z: zona, dn: dentro ? 1 : 0, x: +p.x.toFixed(2), y: +p.y.toFixed(2), zz: +p.z.toFixed(2), r: +facing.toFixed(2), a: voando ? (voPitch > 0.6 ? 'voa' : 'paira') : !noChao ? 'pulo' : atkT < 0.3 ? 'atk' : vel > 4.2 ? 'corre' : vel > 0.4 ? 'anda' : 'para', w: AR.arma }; }
+  function mpEstado(p) { const G = typeof guildState !== 'undefined' && guildState && guildState.guild; const TT = tituloAtual(); return { id: MP.id, u: window.CONTA && CONTA.usuario ? CONTA.usuario.uid : '', n: (AR.visual && AR.visual.nome) || 'Leonardo', t: TT.nome, tr: TT.r, lv: AR.nv, g: G ? G.name : '', ge: G && typeof emblemIcon === 'function' ? emblemIcon(G.emblem) : '', z: zona, dn: dentro ? 1 : 0, x: +p.x.toFixed(2), y: +p.y.toFixed(2), zz: +p.z.toFixed(2), r: +facing.toFixed(2), a: voando ? (voPitch > 0.6 ? 'voa' : 'paira') : !noChao ? 'pulo' : atkT < 0.3 ? 'atk' : vel > 4.2 ? 'corre' : vel > 0.4 ? 'anda' : 'para', w: AR.arma }; }
   function mpFrame(dt, p) { mpLiga(); MP.envT -= dt;
     if (MP.ok && MP.envT <= 0) { const e = mpEstado(p); const s = JSON.stringify(e); if (s !== MP.ult || MP.envT < -2) { MP.ult = s; MP.envT = 0.15; try { MP.ch.send({ type: 'broadcast', event: 'p', payload: e }); } catch (er) {} } else MP.envT = 0.15; }
     const agora = performance.now(); let n = 0;
@@ -3137,7 +3228,7 @@ ${_}`}class A extends Error{constructor({message:e,code:t,cause:r,name:s}){var n
   SLOTS_EQ.push(['montaria', IC('slot_montaria'), 'Montaria']);
   mqAtualiza();
 
-  window.__dbg = { MONT3D, PET3D, get MONT() { return MONT; }, montar, petChama, MQ, set GMB(v) { GMB = v; gmHud(); }, gmPct, ASAT, COSM, vesteCosm, CB_LISTA, abrirLivros, trocaPag, get mana() { return mana; }, set mana(v) { mana = v; }, ARMAG, T3, vesteCosm, voa, get voando() { return voando; }, input, mpRecebe, entraMasmorra, saiMasmorra, MM, mmFaseAtual, mmMorte, setaFrame, equipaArma, abrirGuilda, arthurNPC, vestePeca, atualizaPecas, PECAS, BLOCOS, modoBatalha, bmLiga, bmDesliga, BMS, ORB, get BM() { return BM; }, get hora() { return hora; }, set hora(v) { hora = v; }, usarHab2: id => classePoder2(id), BUFF, abrirCriar, aplicaClasse, CLASSES, get desp() { return desp; }, set desp(v) { desp = v; }, usarHab: id => classePoder(id), renderer, scene, world, ganhaXp, vesteFantasia, abrirPerfil, fazRetrato, irValdren, Q, heroi, ativo, AR, FERAS, golem, atacar, get vida() { return vida; }, set vida(v) { vida = v; }, abrirLoja, usarPoder: id => usarPoder(PW[id]), acao: () => acao(), get alvo() { return alvo; } };
+  window.__dbg = { staffArmas, equipaArma,  PET3D, get MONT() { return MONT; }, montar, petChama, MQ, set GMB(v) { GMB = v; gmHud(); }, gmPct, ASAT, COSM, vesteCosm, CB_LISTA, abrirLivros, trocaPag, get mana() { return mana; }, set mana(v) { mana = v; }, ARMAG, T3, vesteCosm, voa, get voando() { return voando; }, input, mpRecebe, entraMasmorra, saiMasmorra, MM, mmFaseAtual, mmMorte, setaFrame, equipaArma, abrirGuilda, arthurNPC, vestePeca, atualizaPecas, PECAS, BLOCOS, modoBatalha, bmLiga, bmDesliga, BMS, ORB, get BM() { return BM; }, get hora() { return hora; }, set hora(v) { hora = v; }, usarHab2: id => classePoder2(id), BUFF, abrirCriar, aplicaClasse, CLASSES, get desp() { return desp; }, set desp(v) { desp = v; }, usarHab: id => classePoder(id), renderer, scene, world, ganhaXp, vesteFantasia, abrirPerfil, fazRetrato, irValdren, Q, heroi, ativo, AR, FERAS, golem, atacar, get vida() { return vida; }, set vida(v) { vida = v; }, abrirLoja, usarPoder: id => usarPoder(PW[id]), acao: () => acao(), get alvo() { return alvo; } };
   // ---------- laço do jogo ----------
   let vy = 0, noChao = true, facing = 0, vel = 0, gT = 0, last = performance.now();
   const ANDAR = 3.0, CORRER = 6.5, GRAV = 22, PULO = 7.6; const tmp = new T3.Vector3();
