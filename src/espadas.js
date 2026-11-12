@@ -106,7 +106,47 @@
   function brFrame() { brAtualiza(); [ARMAG[AR.arma], typeof ARMAE !== 'undefined' ? ARMAE[AR.arma] : null].forEach(o => { const g = o && o.userData.br; if (!g) return; const ti = g.userData.tier, pu = 0.75 + Math.sin(gT * (2 + ti)) * 0.25;
       g.userData.sp.forEach(m => { m.material.opacity = m.userData.op * pu; }); g.userData.st.forEach(m => { const v = Math.max(0, Math.sin(gT * 4 + m.userData.ph)); m.material.opacity = v; m.scale.setScalar(m.userData.sc * (0.5 + v * 0.7)); m.scale.z = 1; });
       g.userData.an.forEach(a => a.rotateOnAxis(new T3.Vector3(0, 0, 1), a.userData.v * 0.016)); }); }
-  function espFrame() { brFrame(); if (!podeArma(AR.arma)) equipaArma(null); const A = ARMAS[AR.arma]; buffBtn.hidden = !(A && A.staff) || !!conversa; if (buffBtn.hidden) buffP.hidden = true; }
+  // ===================== ANEL LENDÁRIO (costas do ADM): gira, e no ataque os 2 elos voam girando, atacam e voltam =====================
+  const HALO = (() => { const T = T3, cv = (n, f) => { const c = document.createElement('canvas'); c.width = c.height = n; f(c.getContext('2d'), n); const t = new T.CanvasTexture(c); t.colorSpace = T.SRGBColorSpace; return t; };
+    const ouro = (x, r0, r1) => { const g = x.createRadialGradient(0, 0, r0, 0, 0, r1); g.addColorStop(0, '#ffe9a0'); g.addColorStop(0.35, '#e8a830'); g.addColorStop(0.7, '#a8600a'); g.addColorStop(1, '#5a2a04'); return g; };
+    const texA = cv(512, (x, n) => { const c = n / 2; x.translate(c, c); const N = 22; x.lineWidth = 1.6; x.strokeStyle = '#5a2a04';
+      for (let i = 0; i < N; i++) { x.save(); x.rotate(i / N * Math.PI * 2); const L = (i % 2 ? 0.86 : 0.98) * c, w = c * 0.07; x.beginPath(); x.moveTo(-w, c * 0.5); x.bezierCurveTo(-w * 1.6, c * 0.7, w * 0.6, c * 0.78, -w * 0.3, L); x.bezierCurveTo(w * 1.8, c * 0.8, w * 1.5, c * 0.65, w, c * 0.5); x.closePath();
+        const g = x.createLinearGradient(0, c * 0.5, 0, L); g.addColorStop(0, '#7a3a04'); g.addColorStop(0.45, '#d8901a'); g.addColorStop(0.8, '#ffd86a'); g.addColorStop(1, '#fff2c0'); x.fillStyle = g; x.fill(); x.stroke();
+        x.beginPath(); x.moveTo(w * 0.6, c * 0.62); x.quadraticCurveTo(w * 3, c * 0.66, w * 2.6, c * 0.74); x.quadraticCurveTo(w * 1.8, c * 0.68, w * 0.8, c * 0.68); x.closePath(); x.fillStyle = '#c8801a'; x.fill(); x.stroke(); x.restore(); }
+      x.beginPath(); x.arc(0, 0, c * 0.54, 0, 7); x.arc(0, 0, c * 0.46, 0, 7, true); x.fillStyle = ouro(x, c * 0.46, c * 0.54); x.fill('evenodd'); x.lineWidth = 2; x.beginPath(); x.arc(0, 0, c * 0.54, 0, 7); x.stroke(); x.beginPath(); x.arc(0, 0, c * 0.46, 0, 7); x.stroke();
+      for (let i = 0; i < 44; i++) { x.save(); x.rotate(i / 44 * Math.PI * 2); x.fillStyle = '#5a2a04'; x.fillRect(-1.5, c * 0.47, 3, c * 0.06); x.restore(); } });
+    const texB = cv(512, (x, n) => { const c = n / 2; x.translate(c, c); x.beginPath(); x.arc(0, 0, c * 0.78, 0, 7); x.arc(0, 0, c * 0.6, 0, 7, true); x.fillStyle = ouro(x, c * 0.6, c * 0.78); x.fill('evenodd'); x.lineWidth = 2.5; x.strokeStyle = '#5a2a04'; x.beginPath(); x.arc(0, 0, c * 0.78, 0, 7); x.stroke(); x.beginPath(); x.arc(0, 0, c * 0.6, 0, 7); x.stroke();
+      x.strokeStyle = '#6a1a04'; x.lineWidth = 2.5; x.lineCap = 'round'; let sd = 7; const rnd = () => { sd = (sd * 9301 + 49297) % 233280; return sd / 233280; };
+      for (let i = 0; i < 28; i++) { x.save(); x.rotate(i / 28 * Math.PI * 2); x.beginPath(); const r = c * 0.69; for (let k = 0; k < 3; k++) { const a = (rnd() - 0.5) * c * 0.05, b = (rnd() - 0.5) * c * 0.07; k ? x.lineTo(a, r + b) : x.moveTo(a, r + b); } x.stroke(); x.restore(); }
+      for (let i = 0; i < 8; i++) { x.save(); x.rotate(i / 8 * Math.PI * 2 + 0.2); x.beginPath(); x.moveTo(-c * 0.05, c * 0.78); x.quadraticCurveTo(c * 0.02, c * 0.98, c * 0.14, c * 0.95); x.quadraticCurveTo(c * 0.05, c * 0.9, c * 0.06, c * 0.78); x.closePath(); x.fillStyle = '#ffd86a'; x.fill(); x.lineWidth = 2; x.strokeStyle = '#5a2a04'; x.stroke();
+        x.beginPath(); x.moveTo(-c * 0.04, c * 0.6); x.quadraticCurveTo(0, c * 0.42, c * 0.1, c * 0.4); x.quadraticCurveTo(c * 0.03, c * 0.48, c * 0.05, c * 0.6); x.closePath(); x.fill(); x.stroke(); x.restore(); }
+      x.beginPath(); x.arc(0, 0, c * 0.22, 0, 7); x.lineWidth = 5; x.strokeStyle = '#ffd86a'; x.stroke(); x.lineWidth = 1.5; x.strokeStyle = '#5a2a04'; x.stroke(); });
+    const texF = cv(256, (x, n) => { const c = n / 2; x.translate(c, c); for (let i = 0; i < 9; i++) { x.save(); x.rotate(i / 9 * Math.PI * 2); const g = x.createLinearGradient(0, 0, c, 0); g.addColorStop(0, 'rgba(255,40,20,0)'); g.addColorStop(0.5, 'rgba(230,20,10,.95)'); g.addColorStop(0.8, 'rgba(255,160,40,.95)'); g.addColorStop(1, 'rgba(255,240,180,0)'); x.fillStyle = g; x.beginPath(); x.moveTo(c * 0.35, 0); x.bezierCurveTo(c * 0.6, -c * 0.25, c * 0.85, -c * 0.05, c * 0.98, -c * 0.22); x.bezierCurveTo(c * 0.8, c * 0.02, c * 0.6, c * 0.06, c * 0.35, 0); x.fill(); x.restore(); } });
+    const glow = cv(128, (x) => { const g = x.createRadialGradient(64, 64, 0, 64, 64, 64); g.addColorStop(0, 'rgba(255,220,120,.9)'); g.addColorStop(0.5, 'rgba(255,150,40,.35)'); g.addColorStop(1, 'rgba(255,100,0,0)'); x.fillStyle = g; x.fillRect(0, 0, 128, 128); });
+    const pl = (t, sz) => new T.Mesh(new T.PlaneGeometry(sz, sz), new T.MeshBasicMaterial({ map: t, transparent: true, side: T.DoubleSide, depthWrite: false, toneMapped: false }));
+    const H = new T.Group(); heroi.userData.P.spine.add(H); H.position.set(0, 0.62, -0.62); H.visible = false;
+    const G = new T.Sprite(new T.SpriteMaterial({ map: glow, transparent: true, depthWrite: false, blending: T.AdditiveBlending, toneMapped: false, opacity: 0.4 })); G.scale.set(2.8, 2.8, 1); G.position.z = -0.06; H.add(G);
+    const A = pl(texA, 2.3); A.position.z = -0.03; H.add(A); const B = pl(texB, 1.55); H.add(B); const F = pl(texF, 1.9); F.position.z = 0.02; H.add(F);
+    const anc = m => ({ p: m.position.clone(), q: m.quaternion.clone(), s: m.scale.clone() });
+    return { H, A, B, F, G, ancA: anc(A), ancB: anc(B), elos: [], cd: 0 }; })();
+  function haloAtk() { const W = ARMAS[AR.arma]; if (!W || !W.halo || HALO.elos.length || HALO.cd > 0 || !HALO.H.visible) return; const alvo = maisPerto(24); if (!alvo) return;
+    HALO.cd = 3.2; som('magia', 0.8, 0.8); fx('luz', [heroi.position.x, 1.5, heroi.position.z], 0.6);
+    [[HALO.A, 1, HALO.ancA], [HALO.B, -1, HALO.ancB]].forEach(([m, sd, anc]) => { world.attach(m); HALO.elos.push({ m, sd, anc, alvo, fase: 'ida', t: 0, hit: 0, ang: sd > 0 ? 0 : Math.PI, spin: 0, s0: m.scale.x }); }); }
+  function haloFrame(dt) { const quer = !!(ARMAS[AR.arma] && ARMAS[AR.arma].halo) && !dentro; HALO.H.visible = quer || HALO.elos.length > 0; if (HALO.cd > 0) HALO.cd -= dt;
+    if (!HALO.H.visible) return; HALO.F.rotation.z += dt * 2.1; HALO.G.material.opacity = 0.32 + Math.sin(gT * 3) * 0.1;
+    if (!HALO.elos.length) { HALO.A.rotation.z += dt * 0.55; HALO.B.rotation.z -= dt * 1.5; return; }
+    const W = ARMAS[AR.arma] || ARMAS.punho, tmpV = new T3.Vector3();
+    for (let i = HALO.elos.length - 1; i >= 0; i--) { const o = HALO.elos[i], m = o.m; o.t += dt; o.spin += dt * (o.sd > 0 ? 14 : -18);
+      if (o.fase === 'ida' || o.fase === 'gira') { const e0 = o.alvo; if (!e0 || !feraAtiva(e0)) { const n = maisPerto(16); if (n && o.hit < 11) { o.alvo = n; } else { o.fase = 'volta'; } } }
+      const e = o.alvo;
+      if (o.fase === 'ida') { const tx = e.g.position.x, tz = e.g.position.z, ty = e.T.alt * 0.55; tmpV.set(tx, ty, tz).sub(m.position); const d = tmpV.length(); m.position.addScaledVector(tmpV.normalize(), Math.min(d, dt * 22)); if (d < (e.T.raio + 1.3)) { o.fase = 'gira'; o.t = 0; } }
+      else if (o.fase === 'gira') { o.ang += dt * 7 * o.sd; const r = e.T.raio + 1.1; m.position.set(e.g.position.x + Math.sin(o.ang) * r, e.T.alt * 0.55 + Math.sin(o.ang * 2) * 0.3, e.g.position.z + Math.cos(o.ang) * r);
+        o.hitT = (o.hitT || 0) - dt; if (o.hitT <= 0) { o.hitT = 0.22; o.hit++; area(m.position.x, m.position.z, 1.6, f => dano(f, W.dano * 0.35 * atkMult(), null, critico())); fx('luz', [m.position.x, m.position.y - 0.4, m.position.z], 0.35); som('espada', 0.35, 1.4 + Math.random() * 0.3, 0.05); }
+        if (o.t > 2.4 || o.hit >= 11) { o.fase = 'volta'; } }
+      else { HALO.H.updateMatrixWorld(true); const alvoW = new T3.Vector3(); HALO.H.localToWorld(alvoW.copy(o.anc.p)); tmpV.copy(alvoW).sub(m.position); const d = tmpV.length(); m.position.addScaledVector(tmpV.normalize(), Math.min(d, dt * 20));
+        if (d < 0.25) { HALO.H.add(m); m.position.copy(o.anc.p); m.quaternion.copy(o.anc.q); m.scale.copy(o.anc.s); HALO.elos.splice(i, 1); fx('luz', [heroi.position.x, 1.6, heroi.position.z], 0.4); continue; } }
+      m.lookAt(cam.position); m.rotateZ(o.spin); const k = o.fase === 'volta' ? 1 : 1.15; m.scale.setScalar(o.s0 * k); } }
+  function espFrame(dt) { brFrame(); haloFrame(dt || 1 / 60); if (!podeArma(AR.arma)) equipaArma(null); const A = ARMAS[AR.arma]; buffBtn.hidden = !(A && A.staff) || !!conversa; if (buffBtn.hidden) buffP.hidden = true; }
   // ---- lâminas GL do Gladiador (manopla + meia-lua em cada braço) ----
   function fazGarras(T){
  const mt=(c,m,r,e,ei)=>new T.MeshStandardMaterial({envMap:ENV,envMapIntensity:1.1,color:c,metalness:m==null?.6:m,roughness:r==null?.32:r,emissive:e||'#000',emissiveIntensity:e?(ei||.6):0,side:T.DoubleSide});
