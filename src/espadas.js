@@ -129,13 +129,14 @@
     const A = pl(texA, 2.3); A.position.z = -0.03; H.add(A); const B = pl(texB, 1.55); H.add(B); const F = pl(texF, 1.9); F.position.z = 0.02; H.add(F);
     const anc = m => ({ p: m.position.clone(), q: m.quaternion.clone(), s: m.scale.clone() });
     return { H, A, B, F, G, ancA: anc(A), ancB: anc(B), elos: [], cd: 0 }; })();
-  function haloAtk() { const W = ARMAS[AR.arma]; if (!W || !W.halo || HALO.elos.length || HALO.cd > 0 || !HALO.H.visible) return; const alvo = maisPerto(24); if (!alvo) return;
+  function haloOn() { const W = ARMAS[AR.arma]; return !!(W && W.halo) || BUFF.mandala > 0; }
+  function haloAtk(forca) { if (!haloOn() || HALO.elos.length || (HALO.cd > 0 && !forca)) return; HALO.H.visible = true; const alvo = maisPerto(24); if (!alvo) return;
     HALO.cd = 3.2; som('magia', 0.8, 0.8); fx('luz', [heroi.position.x, 1.5, heroi.position.z], 0.6);
     [[HALO.A, 1, HALO.ancA], [HALO.B, -1, HALO.ancB]].forEach(([m, sd, anc]) => { world.attach(m); HALO.elos.push({ m, sd, anc, alvo, fase: 'ida', t: 0, hit: 0, ang: sd > 0 ? 0 : Math.PI, spin: 0, s0: m.scale.x }); }); }
-  function haloFrame(dt) { const quer = !!(ARMAS[AR.arma] && ARMAS[AR.arma].halo) && !dentro; HALO.H.visible = quer || HALO.elos.length > 0; if (HALO.cd > 0) HALO.cd -= dt;
+  function haloFrame(dt) { const quer = haloOn() && !dentro; HALO.H.visible = quer || HALO.elos.length > 0; if (HALO.cd > 0) HALO.cd -= dt;
     if (!HALO.H.visible) return; HALO.F.rotation.z += dt * 2.1; HALO.G.material.opacity = 0.32 + Math.sin(gT * 3) * 0.1;
     if (!HALO.elos.length) { HALO.A.rotation.z += dt * 0.55; HALO.B.rotation.z -= dt * 1.5; return; }
-    const W = ARMAS[AR.arma] || ARMAS.punho, tmpV = new T3.Vector3();
+    const W0 = ARMAS[AR.arma] || ARMAS.punho, W = { dano: Math.max(W0.dano || 10, 30) }, tmpV = new T3.Vector3();
     for (let i = HALO.elos.length - 1; i >= 0; i--) { const o = HALO.elos[i], m = o.m; o.t += dt; o.spin += dt * (o.sd > 0 ? 14 : -18);
       if (o.fase === 'ida' || o.fase === 'gira') { const e0 = o.alvo; if (!e0 || !feraAtiva(e0)) { const n = maisPerto(16); if (n && o.hit < 11) { o.alvo = n; } else { o.fase = 'volta'; } } }
       const e = o.alvo;
