@@ -368,6 +368,12 @@
 #pf-cont .attr .ar{font:800 11px var(--fonte);border:2px solid var(--tinta);border-radius:10px;background:#eee;padding:3px 8px}
 #pf-cont .ai{display:flex;align-items:center;gap:8px;padding:4px 0;border-top:1px dashed #0002}#pf-cont .ai .ic{font-size:22px;width:28px;text-align:center}#pf-cont .ai .tx{flex:1;min-width:0}#pf-cont .ai .tx b{display:block;font-size:14px}#pf-cont .ai .tx em{font-style:normal;color:#c86a00}#pf-cont .ai small{font-size:11px;opacity:.75}
 #pf-cont .ai button{font:900 13px var(--fonte);border:3px solid var(--tinta);border-radius:10px;background:#7ae87a;padding:4px 9px;color:var(--tinta)}#pf-cont .ai button:disabled{background:#ddd;opacity:.5}
+#cfg-btn{right:calc(260px + env(safe-area-inset-right,0px));top:calc(14px + env(safe-area-inset-top,0px));width:50px;height:50px;border-radius:16px;background:#e8ecf4}
+#cfg{position:fixed;inset:0;background:rgba(20,14,40,.6);z-index:61;display:flex;align-items:center;justify-content:center}#cfg[hidden]{display:none}
+#cfg .box{background:#fff8ec;border:4px solid var(--tinta);border-radius:20px;width:min(520px,92vw);max-height:90vh;overflow:auto;padding:12px 16px;font-family:var(--fonte);color:var(--tinta)}
+#cfg .hd{display:flex;align-items:center;gap:8px}#cfg .hd h3{flex:1;margin:4px 0}#cfg .hd button,#cfg-mudo{font-family:var(--fonte);font-weight:900;border:3px solid var(--tinta);border-radius:12px;padding:6px 12px;background:#ffd23c;color:var(--tinta)}
+#cfg .cfg-l{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px dashed #0002}#cfg .cfg-l .ic{font-size:24px;width:30px;text-align:center}#cfg .cfg-l .tx{flex:1}#cfg .cfg-l b{font-size:13px;display:block}#cfg .cfg-l em{font-style:normal;font-weight:900;width:44px;text-align:right}
+#cfg input[type=range]{width:100%;height:28px;accent-color:#5ab8ff}#cfg-mudo{width:100%;margin-top:10px;background:#e8ecf4}#cfg-mudo.on{background:#ff6a6a;color:#fff}
 </style>
 </head>
 <body>
@@ -410,6 +416,8 @@
 <canvas id="mini" width="232" height="232"></canvas>
 <button class="btn" id="casa" title="Voltar pra casa"><img class="ico big" src="icones/ui_casa.svg" alt=""></button>
 <button class="btn" id="bolsa-btn" title="Inventário"><img class="ico big" src="icones/ui_bolsa.svg" alt=""></button>
+<button class="btn" id="cfg-btn" title="Configurações"><img class="ico big" src="icones/ui_config.svg" alt=""></button>
+<div id="cfg" hidden><div class="box"><div class="hd"><h3>⚙️ Configurações · Som</h3><button id="cfg-fecha">Fechar</button></div><div id="cfg-lista"></div></div></div>
 <button class="btn" id="correio-btn" title="Mensagens"><img class="ico big" src="icones/ui_correio.svg" alt=""><span id="correio-n" hidden>0</span></button>
 <div id="correio" hidden><div class="box"><div class="hd"><h3>📩 Caixa de Mensagens</h3><button id="correio-tudo" hidden>Resgatar tudo</button><button id="correio-fecha">Fechar</button></div><div id="correio-lista"></div></div></div>
 <button class="btn" id="arv-btn" title="Árvore de habilidades"><img class="ico big" src="icones/ui_arvore.svg" alt=""><span id="arv-pts" hidden>0</span></button>

@@ -368,6 +368,12 @@
 #pf-cont .attr .ar{font:800 11px var(--fonte);border:2px solid var(--tinta);border-radius:10px;background:#eee;padding:3px 8px}
 #pf-cont .ai{display:flex;align-items:center;gap:8px;padding:4px 0;border-top:1px dashed #0002}#pf-cont .ai .ic{font-size:22px;width:28px;text-align:center}#pf-cont .ai .tx{flex:1;min-width:0}#pf-cont .ai .tx b{display:block;font-size:14px}#pf-cont .ai .tx em{font-style:normal;color:#c86a00}#pf-cont .ai small{font-size:11px;opacity:.75}
 #pf-cont .ai button{font:900 13px var(--fonte);border:3px solid var(--tinta);border-radius:10px;background:#7ae87a;padding:4px 9px;color:var(--tinta)}#pf-cont .ai button:disabled{background:#ddd;opacity:.5}
+#cfg-btn{right:calc(260px + env(safe-area-inset-right,0px));top:calc(14px + env(safe-area-inset-top,0px));width:50px;height:50px;border-radius:16px;background:#e8ecf4}
+#cfg{position:fixed;inset:0;background:rgba(20,14,40,.6);z-index:61;display:flex;align-items:center;justify-content:center}#cfg[hidden]{display:none}
+#cfg .box{background:#fff8ec;border:4px solid var(--tinta);border-radius:20px;width:min(520px,92vw);max-height:90vh;overflow:auto;padding:12px 16px;font-family:var(--fonte);color:var(--tinta)}
+#cfg .hd{display:flex;align-items:center;gap:8px}#cfg .hd h3{flex:1;margin:4px 0}#cfg .hd button,#cfg-mudo{font-family:var(--fonte);font-weight:900;border:3px solid var(--tinta);border-radius:12px;padding:6px 12px;background:#ffd23c;color:var(--tinta)}
+#cfg .cfg-l{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px dashed #0002}#cfg .cfg-l .ic{font-size:24px;width:30px;text-align:center}#cfg .cfg-l .tx{flex:1}#cfg .cfg-l b{font-size:13px;display:block}#cfg .cfg-l em{font-style:normal;font-weight:900;width:44px;text-align:right}
+#cfg input[type=range]{width:100%;height:28px;accent-color:#5ab8ff}#cfg-mudo{width:100%;margin-top:10px;background:#e8ecf4}#cfg-mudo.on{background:#ff6a6a;color:#fff}
 </style>
 </head>
 <body>
@@ -410,6 +416,8 @@
 <canvas id="mini" width="232" height="232"></canvas>
 <button class="btn" id="casa" title="Voltar pra casa"><img class="ico big" src="icones/ui_casa.svg" alt=""></button>
 <button class="btn" id="bolsa-btn" title="Inventário"><img class="ico big" src="icones/ui_bolsa.svg" alt=""></button>
+<button class="btn" id="cfg-btn" title="Configurações"><img class="ico big" src="icones/ui_config.svg" alt=""></button>
+<div id="cfg" hidden><div class="box"><div class="hd"><h3>⚙️ Configurações · Som</h3><button id="cfg-fecha">Fechar</button></div><div id="cfg-lista"></div></div></div>
 <button class="btn" id="correio-btn" title="Mensagens"><img class="ico big" src="icones/ui_correio.svg" alt=""><span id="correio-n" hidden>0</span></button>
 <div id="correio" hidden><div class="box"><div class="hd"><h3>📩 Caixa de Mensagens</h3><button id="correio-tudo" hidden>Resgatar tudo</button><button id="correio-fecha">Fechar</button></div><div id="correio-lista"></div></div></div>
 <button class="btn" id="arv-btn" title="Árvore de habilidades"><img class="ico big" src="icones/ui_arvore.svg" alt=""><span id="arv-pts" hidden>0</span></button>
@@ -805,18 +813,22 @@ ${_}`}class A extends Error{constructor({message:e,code:t,cause:r,name:s}){var n
     falar(alvo); }
 
   // ---------- SONS: efeitos e ambiente (ElevenLabs) ----------
-  let AC = null; const SFX = {}, SFX_T = {}; const SFX_VOL = 0.75;
+  let AC = null; const SFX = {}, SFX_T = {}; const SFX_VOL0 = 0.75; let SFX_VOL = SFX_VOL0;
+  // ---------- CONFIGURAÇÃO DE VOLUME ----------
+  const VOL = Object.assign({ geral: 1, efeitos: 1, amb: 1, voz: 1, mudo: false }, (() => { try { return JSON.parse(localStorage.getItem('aetherion-vol') || '{}'); } catch (e) { return {}; } })());
+  const volEf = () => VOL.mudo ? 0 : VOL.geral * VOL.efeitos, volAmb = () => VOL.mudo ? 0 : VOL.geral * VOL.amb, volVoz = () => VOL.mudo ? 0 : VOL.geral * VOL.voz;
+  function volSalva() { try { localStorage.setItem('aetherion-vol', JSON.stringify(VOL)); } catch (e) {} if (voz) voz.volume = Math.min(1, volVoz()); }
   function acAudio() { if (AC === null) { try { AC = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { AC = false; } } if (AC && AC.state === 'suspended') AC.resume(); return AC; }
   function carregaSom(n) { if (!SFX[n]) { const a = acAudio(); SFX[n] = !a ? Promise.resolve(null) : fetch('sons/' + n + '.mp3').then(r => r.ok ? r.arrayBuffer() : null).then(b => b ? new Promise((ok, no) => a.decodeAudioData(b, ok, no)) : null).catch(() => null); } return SFX[n]; }
   function som(n, vol, tom, gap) { if (!n) return; const a = acAudio(); if (!a) return; const t = a.currentTime; if (SFX_T[n] != null && t - SFX_T[n] < (gap == null ? 0.06 : gap)) return; SFX_T[n] = t;
-    carregaSom(n).then(buf => { if (!buf) return; const s = a.createBufferSource(); s.buffer = buf; s.playbackRate.value = tom || (0.94 + Math.random() * 0.12); const g = a.createGain(); g.gain.value = (vol == null ? 1 : vol) * SFX_VOL; s.connect(g); g.connect(a.destination); s.start(); }); }
+    carregaSom(n).then(buf => { if (!buf) return; const s = a.createBufferSource(); s.buffer = buf; s.playbackRate.value = tom || (0.94 + Math.random() * 0.12); const g = a.createGain(); g.gain.value = (vol == null ? 1 : vol) * SFX_VOL * volEf(); s.connect(g); g.connect(a.destination); s.start(); }); }
   function somEm(n, pos, vol, gap) { const d = Math.hypot(pos.x - heroi.position.x, pos.z - heroi.position.z); if (d > 30) return; som(n, (vol == null ? 1 : vol) * Math.max(0.15, 1 - d / 30), null, gap); }
   const AMB = { amb_caverna: null, amb_vila: null, amb_floresta: null, amb_cidade: null, amb_noite: null, amb_fogo: null }; let ambOk = false;
   function ambienteLiga() { const a = acAudio(); if (!a || ambOk) return; ambOk = true; Object.keys(AMB).forEach(n => carregaSom(n).then(buf => { if (!buf) return; const s = a.createBufferSource(); s.buffer = buf; s.loop = true; const g = a.createGain(); g.gain.value = 0; s.connect(g); g.connect(a.destination); s.start(); AMB[n] = g; })); }
   ['touchstart', 'mousedown', 'keydown'].forEach(ev => window.addEventListener(ev, () => { acAudio(); ambienteLiga(); }, { passive: true }));
   function ambienteFrame(dt, p) { const fora = !dentro, vila = zona === 'vila' && fora, df = typeof GBX !== 'undefined' ? Math.hypot(p.x - GBX, p.z - GBZ) : 99, nt = typeof noiteF !== 'undefined' ? noiteF : 0;
     const alvoV = { amb_caverna: zona === 'masmorra' || zona === 'calab' ? 0.6 : 0, amb_vila: vila ? 0.35 * clamp((df - 20) / 10) * (1 - nt * 0.7) : 0, amb_floresta: vila ? 0.5 * clamp((32 - df) / 12) : 0, amb_cidade: zona === 'valdren' && fora ? 0.4 * (1 - nt * 0.6) : 0, amb_noite: fora && zona !== 'masmorra' ? 0.4 * nt : 0, amb_fogo: dentro ? 0.5 : vila ? 0.6 * clamp((9 - df) / 6) : 0 };
-    Object.keys(AMB).forEach(n => { const g = AMB[n]; if (!g) return; g.gain.value += (alvoV[n] * SFX_VOL - g.gain.value) * clamp(dt * 1.5); }); }
+    Object.keys(AMB).forEach(n => { const g = AMB[n]; if (!g) return; g.gain.value += (alvoV[n] * SFX_VOL * volAmb() - g.gain.value) * clamp(dt * 1.5); }); }
   const SOM_PODER = { sabao: 'bolhas', salto: 'impulso', ferver: 'vapor', remedio: 'cura', polvora: 'explosao', dardo: 'dardo', clarao: 'luz', impulso: 'impulso', chama: 'chama', gelo: 'gelo', ima: 'ima', raio: 'raio',
     sismico: 'tremor', danca: 'espada', meteoro: 'explosao', rajada: 'dardo', muralha: 'escudo', runa: 'espada', tufao: 'vento', carregado: 'raio', drenar: 'magia', furia: 'modo', investida: 'impulso', grito: 'tremor', passo: 'impulso', veneno: 'bolhas', tempestade: 'raio', nova: 'luz', orbe: 'magia', teleporte: 'magia', chuva: 'dardo', congelante: 'gelo', floresta: 'cura', provocar: 'tremor', escudada: 'acerto', fortaleza: 'escudo', marca: 'magia', espiral: 'vento', espelho: 'escudo', bumerangue: 'golpe', esmagar: 'tremor', pele: 'escudo', granada: 'explosao', tripla: 'tiro', recuo: 'impulso', maldicao: 'magia', lanca: 'dardo', pacto: 'magia',
     escudo: 'escudo', vento: 'vento', planar: 'vento', luz: 'luz', memoria: 'magia' };
@@ -824,7 +836,14 @@ ${_}`}class A extends Error{constructor({message:e,code:t,cause:r,name:s}){var n
   const SOM_ATQ = { aranha: 'aranha', esqueleto: 'espada', cogumelo: 'bolhas', gosma: 'gosma', troll: 'golem_soco', espectro: 'espectro', dragao: 'chama', lobo: 'lobo', javali: 'javali', goblin: 'goblin_ataque', rato: 'rato', golem: 'golem_soco', morcego: 'morcego', bandido: 'espada' };
   const SOM_MORTE = { aranha: 'aranha', esqueleto: 'esqueleto', cogumelo: 'gosma', gosma: 'gosma', troll: 'troll', espectro: 'espectro', dragao: 'dragao_morte', lobo: 'lobo_morte', javali: 'javali_morte', goblin: 'goblin_morte', rato: 'rato', golem: 'golem_morte', morcego: 'morcego_morte', bandido: 'goblin_morte' };
   let voz = null; function calaVoz() { if (voz) { voz.pause(); voz = null; } }
-  function tocaVoz(id) { calaVoz(); if (!id) return; voz = new Audio('vozes/' + id + '.mp3'); voz.play().catch(() => {}); }
+  function configDesenha() { const L = [['geral', '🔊', 'Volume geral'], ['efeitos', '⚔️', 'Efeitos (golpes, magias, botões)'], ['amb', '🌳', 'Som ambiente (passarinhos, vento)'], ['voz', '🗣️', 'Vozes dos personagens']];
+    $('cfg-lista').innerHTML = L.map(([k, ic, t]) => `<div class="cfg-l"><span class="ic">${ic}</span><div class="tx"><b>${t}</b><input type="range" min="0" max="100" step="5" value="${Math.round(VOL[k] * 100)}" data-k="${k}"></div><em>${Math.round(VOL[k] * 100)}%</em></div>`).join('')
+      + `<button id="cfg-mudo" class="${VOL.mudo ? 'on' : ''}">${VOL.mudo ? '🔇 Som desligado (toque pra ligar)' : '🔈 Desligar todo o som'}</button>`;
+    $('cfg-lista').querySelectorAll('input[type=range]').forEach(r => { ['touchstart', 'touchmove', 'mousedown'].forEach(ev => r.addEventListener(ev, e => e.stopPropagation(), { passive: true }));
+      r.oninput = () => { VOL[r.dataset.k] = +r.value / 100; r.parentNode.parentNode.querySelector('em').textContent = r.value + '%'; volSalva(); }; r.onchange = () => som('clique', 1, 1); });
+    tapBtn($('cfg-mudo'), () => { VOL.mudo = !VOL.mudo; volSalva(); configDesenha(); }); }
+  tapBtn($('cfg-btn'), () => { if (conversa || cenaQ) return; $('cfg').hidden = false; configDesenha(); }); tapBtn($('cfg-fecha'), () => { $('cfg').hidden = true; });
+  function tocaVoz(id) { calaVoz(); if (!id) return; voz = new Audio('vozes/' + id + '.mp3'); voz.volume = Math.min(1, volVoz()); if (volVoz() > 0) voz.play().catch(() => {}); }
   function falaAtual() { const q = conversa.quem, f = q.falas[conversa.i]; return typeof f === 'string' ? { t: f, n: q.nome, v: q.vozes && q.vozes[conversa.i] } : { t: f.t, n: f.n || q.nome, v: f.v }; }
   function mostrarFala() { const q = conversa.quem, f = falaAtual(); tocaVoz(f.v); $('fala-nome').textContent = f.n; $('fala-txt').textContent = f.t; $('fala').hidden = false; const ult = conversa.i >= q.falas.length - 1; const esc = ult && q.escolhas && q.escolhas();
     const box = $('fala-esc'); box.innerHTML = ''; box.hidden = !esc; $('fala-mais').textContent = esc ? 'escolha:' : ult ? 'toque pra fechar ✕' : 'toque pra continuar ▸';
