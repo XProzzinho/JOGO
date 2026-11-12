@@ -84,6 +84,38 @@ service cloud.firestore {
       allow write: if souAdm();
     }
 
+    // ===== Guildas (conta do jogo) =====
+    match /guildas/{g} {
+      function membro() { return request.auth.uid in resource.data.membros; }
+      function chefe() { return membro() && resource.data.membros[request.auth.uid].cargo in ['lider', 'vice']; }
+      function mudou() { return request.resource.data.diff(resource.data).affectedKeys(); }
+      allow read: if logado();
+      allow create: if logado() && request.resource.data.lider == request.auth.uid
+        && request.resource.data.membros.keys().hasOnly([request.auth.uid]) && request.resource.data.moedas == 0;
+      allow delete: if logado() && resource.data.lider == request.auth.uid && resource.data.membros.keys().size() <= 1;
+      allow update: if logado() && (
+        // líder e vice (o vice não pode virar líder sozinho)
+        (chefe() && (resource.data.lider == request.auth.uid || request.resource.data.lider == resource.data.lider))
+        // membro: doar moedas e escrever no registro
+        || (membro() && mudou().hasOnly(['moedas', 'doacoes', 'log']) && request.resource.data.moedas >= resource.data.moedas)
+        // membro: sair da guilda
+        || (membro() && mudou().hasOnly(['membros', 'log']) && !(request.auth.uid in request.resource.data.membros)
+            && request.resource.data.membros.keys().size() == resource.data.membros.keys().size() - 1)
+        // convidado: aceitar (entra como membro) ou recusar
+        || (!membro() && request.auth.uid in resource.data.convidados && mudou().hasOnly(['membros', 'convidados'])
+            && request.resource.data.membros[request.auth.uid].cargo == 'membro'
+            && request.resource.data.membros.keys().size() == resource.data.membros.keys().size() + 1)
+        || (!membro() && request.auth.uid in resource.data.convidados && mudou().hasOnly(['convidados'])));
+    }
+    // Armazém: todo membro guarda; só líder e vice tiram
+    match /guildas/{g}/armazem/{item} {
+      function G() { return get(/databases/$(database)/documents/guildas/$(g)).data; }
+      allow read: if logado() && request.auth.uid in G().membros;
+      allow create, update: if logado() && request.auth.uid in G().membros
+        && (request.resource.data.n >= (resource == null ? 0 : resource.data.n) || G().membros[request.auth.uid].cargo in ['lider', 'vice']);
+      allow delete: if false;
+    }
+
     // Qualquer outra coisa fica bloqueada
     match /{document=**} {
       allow read, write: if false;

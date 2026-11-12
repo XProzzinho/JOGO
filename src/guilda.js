@@ -1,0 +1,95 @@
+  // ===================== GUILDA (usa a conta do próprio jogo, no Firebase) =====================
+  // guildas/{id}: nome, emblema, lider, criado, moedas (banco), cargos [nomes], membros {uid: {nome, cargo: 'lider'|'vice'|'membro', titulo, entrou}}, convidados [uids], log [...]
+  // guildas/{id}/armazem/{item}: { n }   ·   perfis/{uid}.guilda = id
+  let guildState = null, gAba = 'info', gUnsub = null, gArm = {}, gOn = {};
+  const EMB_IDS = ['shield', 'wolf', 'dragon', 'sword', 'crown', 'ice', 'skull', 'bolt', 'leaf', 'orb', 'wings', 'target'];
+  const embImg = (id, big) => `<img class="ico${big ? ' emb-g' : ''}" src="icones/emb_${EMB_IDS.includes(id) ? id : 'shield'}.svg" alt="">`;
+  const gEsc = t => String(t == null ? '' : t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const gDb = () => window.CONTA && CONTA.db, gEu = () => window.CONTA && CONTA.usuario;
+  const gMsg = (t, erro) => { const e = $('guild-message'); e.textContent = t || ''; e.classList.toggle('error', !!erro); };
+  const gCargoNome = c => c === 'lider' ? 'Líder' : c === 'vice' ? 'Vice-líder' : c === 'membro' || !c ? 'Membro' : c;
+  const gPode = () => { const G = guildState && guildState.g, me = G && G.membros[gEu().uid]; return !!me && (me.cargo === 'lider' || me.cargo === 'vice'); };
+  const gSouLider = () => { const G = guildState && guildState.g; return !!G && G.lider === gEu().uid; };
+  function gRef(id) { return gDb().collection('guildas').doc(id || guildState.id); }
+  async function gRun(fn, ok) { try { gMsg('Aguarde…'); await fn(); gMsg(ok || ''); $('guild-content').querySelectorAll('input[id]').forEach(i => { i.value = ''; }); } catch (e) { gMsg(e.message === 'cheio' ? 'A guilda está cheia (50).' : e.message && e.message.length < 90 ? e.message : 'Não deu: ' + (e.code || e.message), true); } gRender(); }
+  async function gLog(txt) { try { await gRef().update({ log: firebase.firestore.FieldValue.arrayUnion({ t: txt, q: Date.now(), r: Math.random().toString(36).slice(2, 6) }) }); } catch (e) {} }
+  // ---- escuta a guilda em tempo real ----
+  function gOuve(id) { if (gUnsub) { gUnsub(); gUnsub = null; } if (!id) { guildState = null; gRender(); gHud(); return; }
+    const u1 = gRef(id).onSnapshot(d => { if (!d.exists || !d.data().membros[gEu().uid]) { guildState = null; gDb().collection('perfis').doc(gEu().uid).set({ guilda: null }, { merge: true }).catch(() => {}); gOuve(null); return; } guildState = { id, g: d.data(), guild: { name: d.data().nome, emblem: d.data().emblema } }; gHud(); gOnline(); gRender(); });
+    const u2 = gRef(id).collection('armazem').onSnapshot(q => { gArm = {}; q.forEach(d => { if (d.data().n > 0) gArm[d.id] = d.data().n; }); gRender(); });
+    gUnsub = () => { u1(); u2(); }; }
+  async function gOnline() { if (!guildState) return; const ids = Object.keys(guildState.g.membros); const L = await Promise.all(ids.map(u => gDb().collection('perfis').doc(u).get().catch(() => null)));
+    gOn = {}; L.forEach((d, i) => { if (d && d.exists) gOn[ids[i]] = d.data(); }); gRender(); }
+  async function gInicia() { if (!gDb() || !gEu()) return; try { const p = await gDb().collection('perfis').doc(gEu().uid).get(); gOuve(p.exists && p.data().guilda || null); } catch (e) {} }
+  function gHud() { const G = guildState && guildState.g; guildHud.innerHTML = G ? embImg(G.emblema) + ' ' + gEsc(G.nome) : ''; guildLabel.querySelector('small').innerHTML = guildHud.innerHTML; }
+  // ---- ações ----
+  async function gCriar(nome, emb) { nome = nome.trim(); if (nome.length < 3) throw new Error('O nome precisa de 3 letras ou mais.'); if (AR.inv.moedas < 100 && !souAdmin()) throw new Error('Criar guilda custa 100 moedas.');
+    const q = await gDb().collection('guildas').where('nomeBusca', '==', nome.toLowerCase()).limit(1).get(); if (!q.empty) throw new Error('Já existe uma guilda com esse nome.');
+    const ref = gDb().collection('guildas').doc(); const eu = gEu().uid;
+    await ref.set({ nome, nomeBusca: nome.toLowerCase(), emblema: emb, lider: eu, criado: Date.now(), moedas: 0, cargos: ['Recruta', 'Guerreiro', 'Veterano'], convidados: [], log: [{ t: trNome() + ' fundou a guilda', q: Date.now(), r: 'f' }], membros: { [eu]: { nome: trNome(), cargo: 'lider', entrou: Date.now() } } });
+    await gDb().collection('perfis').doc(eu).set({ guilda: ref.id }, { merge: true }); if (!souAdmin()) { AR.inv.moedas -= 100; atualizaInv(); salvaAR(); } gOuve(ref.id); som('missao_ok', 0.8, 1); }
+  async function gConvidar(cod) { cod = cod.trim().toUpperCase(); const q = await gDb().collection('perfis').where('codigo', '==', cod).limit(1).get(); if (q.empty) throw new Error('Nenhum jogador com esse código.');
+    const d = q.docs[0]; if (guildState.g.membros[d.id]) throw new Error('Essa pessoa já está na guilda.'); if (d.data().guilda) throw new Error((d.data().nome || 'Ele') + ' já está em outra guilda.');
+    await gRef().update({ convidados: firebase.firestore.FieldValue.arrayUnion(d.id) }); gLog(trNome() + ' convidou ' + (d.data().nome || cod)); return d.data().nome || cod; }
+  async function gAceitar(id) { const eu = gEu().uid; await gDb().runTransaction(async t => { const r = gRef(id), d = await t.get(r); if (!d.exists) throw new Error('Essa guilda não existe mais.'); const G = d.data(); if (!(G.convidados || []).includes(eu)) throw new Error('O convite expirou.'); if (Object.keys(G.membros).length >= 50) throw new Error('cheio');
+      t.update(r, { ['membros.' + eu]: { nome: trNome(), cargo: 'membro', entrou: Date.now() }, convidados: firebase.firestore.FieldValue.arrayRemove(eu) }); });
+    await gDb().collection('perfis').doc(eu).set({ guilda: id }, { merge: true }); gOuve(id); gLog(trNome() + ' entrou na guilda'); som('missao_ok', 0.8, 1); }
+  async function gRecusar(id) { await gRef(id).update({ convidados: firebase.firestore.FieldValue.arrayRemove(gEu().uid) }); }
+  async function gSair() { const eu = gEu().uid, G = guildState.g, ids = Object.keys(G.membros).filter(u => u !== eu);
+    if (G.lider === eu && ids.length) { const novo = ids.find(u => G.membros[u].cargo === 'vice') || ids.sort((a, b) => G.membros[a].entrou - G.membros[b].entrou)[0]; await gRef().update({ lider: novo, ['membros.' + novo + '.cargo']: 'lider', ['membros.' + eu]: firebase.firestore.FieldValue.delete() }); gLog(trNome() + ' saiu. Novo líder: ' + G.membros[novo].nome); }
+    else if (!ids.length) await gRef().delete(); else { await gRef().update({ ['membros.' + eu]: firebase.firestore.FieldValue.delete() }); gLog(trNome() + ' saiu da guilda'); }
+    await gDb().collection('perfis').doc(eu).set({ guilda: null }, { merge: true }); gOuve(null); }
+  async function gDoarMoedas(n) { n = Math.floor(n); if (!(n > 0)) throw new Error('Digite quantas moedas.'); if (n > AR.inv.moedas) throw new Error('Você não tem tudo isso.');
+    await gRef().update({ moedas: firebase.firestore.FieldValue.increment(n), ['doacoes.' + gEu().uid]: firebase.firestore.FieldValue.increment(n) }); AR.inv.moedas -= n; atualizaInv(); salvaAR(); gLog(trNome() + ' doou ' + n + ' moedas'); som('moeda', 0.8); }
+  async function gTirarMoedas(n) { n = Math.floor(n); if (!gPode()) throw new Error('Só o líder e o vice-líder.'); await gDb().runTransaction(async t => { const d = await t.get(gRef()); if ((d.data().moedas || 0) < n) throw new Error('O banco não tem tudo isso.'); t.update(gRef(), { moedas: d.data().moedas - n }); });
+    AR.inv.moedas += n; atualizaInv(); salvaAR(); gLog(trNome() + ' tirou ' + n + ' moedas do banco'); }
+  async function gGuardar(item, n) { if ((AR.inv[item] || 0) < n) throw new Error('Você não tem.'); await gRef().collection('armazem').doc(item).set({ n: firebase.firestore.FieldValue.increment(n) }, { merge: true }); AR.inv[item] -= n; atualizaInv(); salvaAR(); gLog(trNome() + ' guardou ' + n + 'x ' + (ITEM_INFO[item] ? ITEM_INFO[item][1] : item)); }
+  async function gPegar(item, n) { if (!gPode()) throw new Error('Só o líder e o vice-líder pegam do armazém.'); const r = gRef().collection('armazem').doc(item);
+    await gDb().runTransaction(async t => { const d = await t.get(r); const tem = d.exists ? d.data().n : 0; if (tem < n) throw new Error('Não tem tudo isso no armazém.'); t.set(r, { n: tem - n }); });
+    AR.inv[item] = (AR.inv[item] || 0) + n; atualizaInv(); salvaAR(); gLog(trNome() + ' pegou ' + n + 'x ' + (ITEM_INFO[item] ? ITEM_INFO[item][1] : item) + ' do armazém'); }
+  async function gMudaCargo(uid, c) { if (!gPode()) throw new Error('Sem permissão.'); if (c === 'vice' && !gSouLider()) throw new Error('Só o líder escolhe o vice.'); if (guildState.g.membros[uid].cargo === 'vice' && !gSouLider()) throw new Error('Só o líder mexe no vice.');
+    if (c === 'lider') { if (!gSouLider()) throw new Error('Só o líder passa a liderança.'); await gRef().update({ lider: uid, ['membros.' + uid + '.cargo']: 'lider', ['membros.' + gEu().uid + '.cargo']: 'vice' }); }
+    else await gRef().update({ ['membros.' + uid + '.cargo']: c }); gLog(trNome() + ' mudou o cargo de ' + guildState.g.membros[uid].nome + ' para ' + gCargoNome(c)); }
+  async function gExpulsa(uid) { if (!gPode() || uid === guildState.g.lider) throw new Error('Sem permissão.'); const n = guildState.g.membros[uid].nome; await gRef().update({ ['membros.' + uid]: firebase.firestore.FieldValue.delete() }); gLog(trNome() + ' expulsou ' + n); }
+  // ---- tela ----
+  function gEl(html) { const d = document.createElement('div'); d.innerHTML = html; return d.firstElementChild; }
+  function gBtn(par, txt, fn, cls) { const b = document.createElement('button'); b.type = 'button'; b.className = 'cb' + (cls ? ' ' + cls : ''); b.innerHTML = txt; b.addEventListener('click', e => { e.preventDefault(); fn(); }); par.appendChild(b); return b; }
+  function gRender() { const C = $('guild-content'); if (!C || guildPanel.hidden) return; const salvo = {}, foco = document.activeElement && document.activeElement.id; C.querySelectorAll('input[id]').forEach(i => { salvo[i.id] = i.value; });
+    gDesenha(C); C.querySelectorAll('input[id]').forEach(i => { if (salvo[i.id] != null) i.value = salvo[i.id]; if (i.id === foco) i.focus(); }); }
+  function gDesenha(C) { C.replaceChildren();
+    if (!gDb() || !gEu()) { C.append(gEl('<div><h3>Entre com sua conta</h3><p>A guilda usa a sua conta do jogo. Saia do modo convidado e entre com e-mail e senha pra criar ou entrar numa guilda.</p></div>')); return; }
+    if (!guildState) { // sem guilda: criar + convites
+      const f = gEl(`<div class="g-card"><h3>Criar guilda</h3><p class="g-sub">Custa 100 moedas. Você vira o líder.</p><label>Nome da guilda<input id="g-nome" maxlength="20" placeholder="Ex.: Lobos de Brumafria"></label><p class="g-sub">Emblema</p><div class="g-embs"></div></div>`); C.append(f);
+      let emb = 'shield'; const E = f.querySelector('.g-embs'); EMB_IDS.forEach(id => { const b = gBtn(E, embImg(id, 1), () => { emb = id; E.querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b)); }); if (id === emb) b.classList.add('on'); });
+      gBtn(f, '🛡️ Fundar guilda', () => gRun(() => gCriar(f.querySelector('#g-nome').value, emb), 'Guilda criada! Você é o líder.'), 'pri');
+      const cv = gEl('<div class="g-card"><h3>Convites</h3><div class="g-lista"><p class="g-sub">Carregando…</p></div></div>'); C.append(cv);
+      gDb().collection('guildas').where('convidados', 'array-contains', gEu().uid).limit(10).get().then(q => { const L = cv.querySelector('.g-lista'); L.innerHTML = q.empty ? '<p class="g-sub">Nenhum convite. Peça pra um líder te convidar com o seu código: <b>' + trCodigo(gEu().uid) + '</b></p>' : '';
+        q.forEach(d => { const G = d.data(); const r = gEl(`<div class="g-mem">${embImg(G.emblema, 1)}<div><b>${gEsc(G.nome)}</b><small>${Object.keys(G.membros).length} membros</small></div><span></span></div>`); const s = r.querySelector('span'); gBtn(s, 'Entrar', () => gRun(() => gAceitar(d.id), 'Bem-vindo à guilda!'), 'pri'); gBtn(s, 'Recusar', () => gRun(() => gRecusar(d.id))); L.append(r); }); }).catch(() => {});
+      return; }
+    const G = guildState.g, eu = gEu().uid, me = G.membros[eu], ids = Object.keys(G.membros), on = u => gOn[u] && gOn[u].visto && Date.now() - gOn[u].visto < 3 * 60000;
+    const nOn = ids.filter(on).length;
+    C.append(gEl(`<div class="g-topo">${embImg(G.emblema, 1)}<div><h3>${gEsc(G.nome)}</h3><small>${ids.length}/50 membros · <i class="g-on">● ${nOn} online</i> · ${ids.length - nOn} offline · Você: <b>${gCargoNome(me.cargo)}</b></small></div></div>`));
+    const T = gEl('<div class="g-abas"></div>'); C.append(T); [['info', 'Guilda'], ['mem', 'Membros'], ['arm', 'Armazém'], ['car', 'Cargos']].forEach(([k, t]) => gBtn(T, t, () => { gAba = k; gRender(); }, gAba === k ? 'on' : ''));
+    const B = gEl('<div class="g-card"></div>'); C.append(B);
+    if (gAba === 'info') { B.innerHTML = `<h3>💰 Banco da guilda: ${(G.moedas || 0).toLocaleString('pt-BR')} moedas</h3><p class="g-sub">Qualquer membro pode doar. Só o líder e o vice tiram.</p><div class="g-linha"><input id="g-doa" type="number" min="1" placeholder="Moedas"></div>`;
+      const L = B.querySelector('.g-linha'); gBtn(L, 'Doar', () => gRun(() => gDoarMoedas(+B.querySelector('#g-doa').value), 'Obrigado pela doação!'), 'pri'); if (gPode()) gBtn(L, 'Tirar', () => gRun(() => gTirarMoedas(+B.querySelector('#g-doa').value), 'Moedas retiradas.'));
+      const top = Object.entries(G.doacoes || {}).sort((a, b) => b[1] - a[1]).slice(0, 5); if (top.length) B.append(gEl('<div><h3>Quem mais doou</h3>' + top.map(([u, n], i) => `<p class="g-sub">${i + 1}. ${gEsc(G.membros[u] ? G.membros[u].nome : '(saiu)')} · ${n.toLocaleString('pt-BR')} moedas</p>`).join('') + '</div>'));
+      if (gPode()) { const ed = gEl('<div><h3>Emblema</h3><div class="g-embs"></div></div>'); EMB_IDS.forEach(id => { const b = gBtn(ed.querySelector('.g-embs'), embImg(id, 1), () => gRun(async () => { await gRef().update({ emblema: id }); gLog(trNome() + ' trocou o emblema'); }, 'Emblema trocado.')); if (id === G.emblema) b.classList.add('on'); }); B.append(ed); }
+      B.append(gEl('<div><h3>Registro</h3>' + (G.log || []).slice(-12).reverse().map(l => `<p class="g-sub">${new Date(l.q).toLocaleDateString('pt-BR').slice(0, 5)} · ${gEsc(l.t)}</p>`).join('') + '</div>'));
+      gBtn(B, me.cargo === 'lider' ? 'Sair da guilda (a liderança passa pro vice)' : 'Sair da guilda', () => { if (confirm('Sair da guilda ' + G.nome + '?')) gRun(gSair, 'Você saiu da guilda.'); }, 'perigo'); }
+    if (gAba === 'mem') { if (gPode()) { const cv = gEl('<div class="g-linha"><input id="g-cod" maxlength="6" placeholder="Código do jogador (6 letras)"></div>'); gBtn(cv, 'Convidar', () => gRun(async () => { const n = await gConvidar(cv.querySelector('#g-cod').value); gMsg('Convite enviado pra ' + n + '. Ele aceita falando com o Arthur.'); }), 'pri'); B.append(cv); }
+      const ord = { lider: 0, vice: 1 }; ids.sort((a, b) => (on(b) - on(a)) || ((ord[G.membros[a].cargo] ?? 2) - (ord[G.membros[b].cargo] ?? 2)));
+      ids.forEach(u => { const M = G.membros[u], P = gOn[u] || {}; const r = gEl(`<div class="g-mem"><i class="g-dot ${on(u) ? 'on' : ''}"></i><div><b>${gEsc(M.nome)}${u === eu ? ' (você)' : ''}</b><small>${gCargoNome(M.cargo)} · Nv ${P.nv || '?'}${P.classe ? ' · ' + gEsc(P.classe) : ''} · ${on(u) ? 'online' : P.visto ? 'visto ' + new Date(P.visto).toLocaleDateString('pt-BR').slice(0, 5) : 'offline'}</small></div><span></span></div>`);
+        const s = r.querySelector('span'); if (gPode() && u !== eu && M.cargo !== 'lider' && (gSouLider() || M.cargo !== 'vice')) { const sel = document.createElement('select'); [...(gSouLider() ? ['lider', 'vice'] : []), 'membro', ...(G.cargos || [])].forEach(c => { const o = document.createElement('option'); o.value = c; o.textContent = c === 'lider' ? 'Passar liderança' : gCargoNome(c); if (c === M.cargo) o.selected = true; sel.append(o); });
+          sel.onchange = () => { if (sel.value === 'lider' && !confirm('Passar a liderança pra ' + M.nome + '? Você vira vice.')) { gRender(); return; } gRun(() => gMudaCargo(u, sel.value), 'Cargo atualizado.'); }; s.append(sel); gBtn(s, '✕', () => { if (confirm('Expulsar ' + M.nome + '?')) gRun(() => gExpulsa(u), 'Membro expulso.'); }, 'perigo'); }
+        B.append(r); }); }
+    if (gAba === 'arm') { B.innerHTML = `<h3>📦 Armazém da guilda</h3><p class="g-sub">Todo mundo pode guardar. ${gPode() ? 'Você pode pegar (líder/vice).' : 'Só o líder e o vice-líder pegam.'}</p>`;
+      const itens = Object.keys(ITEM_INFO).filter(k => k !== 'moedas'); const ks = [...new Set([...itens.filter(k => gArm[k] || AR.inv[k]), ...Object.keys(gArm)])];
+      if (!ks.length) B.append(gEl('<p class="g-sub">Vazio. Cace bichos pra conseguir carne, pele e outros itens.</p>'));
+      ks.forEach(k => { const I = ITEM_INFO[k] || ['📦', k]; const r = gEl(`<div class="g-mem"><span class="g-it">${I[0]}</span><div><b>${gEsc(I[1])}</b><small>No armazém: <b>${gArm[k] || 0}</b> · Com você: ${AR.inv[k] || 0}</small></div><span></span></div>`); const s = r.querySelector('span:last-child');
+        gBtn(s, 'Guardar 1', () => gRun(() => gGuardar(k, 1), 'Guardado.')); if ((AR.inv[k] || 0) > 1) gBtn(s, 'Tudo', () => gRun(() => gGuardar(k, AR.inv[k]), 'Guardado.')); if (gPode() && gArm[k]) gBtn(s, 'Pegar 1', () => gRun(() => gPegar(k, 1), 'Peguei.'), 'pri'); B.append(r); }); }
+    if (gAba === 'car') { B.innerHTML = `<h3>🎖️ Cargos</h3><p class="g-sub">Líder e Vice-líder são fixos (só eles pegam do armazém e tiram moedas). Os outros cargos são títulos que aparecem na lista de membros.</p>`;
+      (G.cargos || []).forEach(c => { const r = gEl(`<div class="g-mem"><span class="g-it">🎖️</span><div><b>${gEsc(c)}</b><small>${ids.filter(u => G.membros[u].cargo === c).length} membro(s)</small></div><span></span></div>`); if (gPode()) gBtn(r.querySelector('span:last-child'), 'Apagar', () => gRun(async () => { const up = { cargos: firebase.firestore.FieldValue.arrayRemove(c) }; ids.forEach(u => { if (G.membros[u].cargo === c) up['membros.' + u + '.cargo'] = 'membro'; }); await gRef().update(up); }, 'Cargo apagado.'), 'perigo'); B.append(r); });
+      if (gPode()) { const n = gEl('<div class="g-linha"><input id="g-car" maxlength="16" placeholder="Nome do cargo novo"></div>'); gBtn(n, 'Criar cargo', () => gRun(async () => { const v = n.querySelector('#g-car').value.trim(); if (v.length < 2) throw new Error('Nome muito curto.'); if (['lider', 'vice', 'membro'].includes(v.toLowerCase()) || (G.cargos || []).includes(v)) throw new Error('Esse cargo já existe.'); if ((G.cargos || []).length >= 10) throw new Error('Máximo de 10 cargos.'); await gRef().update({ cargos: firebase.firestore.FieldValue.arrayUnion(v) }); gLog(trNome() + ' criou o cargo ' + v); }, 'Cargo criado.'), 'pri'); B.append(n); } } }
+  async function abrirGuilda() { guildPanel.hidden = false; input.x = input.y = 0; Object.keys(keys).forEach(k => delete keys[k]); gMsg(''); if (!guildState) await gInicia(); else gOnline(); gRender(); }
+  setTimeout(gInicia, 6000); setInterval(() => { if (!guildState && gDb() && gEu() && !gUnsub) gInicia(); }, 30000);
