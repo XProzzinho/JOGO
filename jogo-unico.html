@@ -1274,6 +1274,8 @@ ${_}`}class A extends Error{constructor({message:e,code:t,cause:r,name:s}){var n
     bandido: { nome: 'Bandido da Estrada', vida: 95, dano: 14, vel: 3.9, aggro: 11, alc: 1.5, cd: 1.1, raio: 0.5, alt: 1.8, moedas: [6, 12], itens: [['carne', 0.2]], zona: 'vila', volta: 30 },
     morcego: { nome: 'Morcego Gigante', vida: 300, dano: 18, vel: 3.2, aggro: 12, alc: 2.8, cd: 2.0, raio: 1.2, alt: 3.6, moedas: [25, 30], itens: [['asas', 1]], zona: 'vila', chefe: true, voa: true, volta: 60, barra: '🦇 MORCEGO GIGANTE' },
   };
+  // BALANCEAMENTO (atributos + aprimoramento deixaram os heróis mais fortes): todos os bichos mais resistentes e mais fortes
+  Object.values(TIPOS).forEach(t => { t.vida = Math.round(t.vida * (t.chefe ? 1.6 : 1.4)); t.dano = Math.round(t.dano * 1.25); });
   const geloMat = new T3.MeshBasicMaterial({ color: '#bfefff', transparent: true, opacity: 0.45, depthWrite: false, toneMapped: false });
   function fera(tipo) { const g = grp(world); const b = grp(g); const L = []; let head = null, arms = [];
     const leg = (x, z, h, w, c) => { const l = grp(b, x, h, z); part(l, CYL, c, 0, -h / 2, 0, w, h, w); L.push(l); };
@@ -1502,7 +1504,7 @@ ${_}`}class A extends Error{constructor({message:e,code:t,cause:r,name:s}){var n
   SABER.push({ x: FX0, y: 2.6, z: FZ0, t: 'Aço = ferro + um pouco de carbono. Mais duro que ferro puro.' });
 
   // ---------- APRIMORAMENTO com cristais ----------
-  const APRIM_PCT = 0.06, APRIM_MAX = 15;
+  const APRIM_PCT = 0.05, APRIM_MAX = 15;
   function aprimNv(k) { return (AR.aprim && AR.aprim[k]) || 0; }
   function aprimReq(n) { if (n >= APRIM_MAX) return null; if (n < 5) return { c: 'cristal_baixo', m: 60 + n * 40, ch: [100, 95, 85, 75, 65][n] }; if (n < 10) return { c: 'cristal_alto', m: 400 + (n - 5) * 120, ch: [60, 55, 50, 45, 40][n - 5] }; return { c: 'cristal_altissimo', m: 1200 + (n - 10) * 300, ch: [35, 30, 25, 20, 15][n - 10] }; }
   function aprimora(k) { const n = aprimNv(k), R = aprimReq(n); if (!R || !(AR.inv[R.c] > 0) || AR.inv.moedas < R.m) return; AR.inv[R.c]--; AR.inv.moedas -= R.m; AR.aprim = AR.aprim || {};
@@ -1667,7 +1669,7 @@ ${_}`}class A extends Error{constructor({message:e,code:t,cause:r,name:s}){var n
   AR.nv = AR.nv || 1; AR.xp = AR.xp || 0; AR.fantasias = AR.fantasias || ['comum', 'celeste']; AR.fantasia = AR.fantasia || 'comum'; AR.pecas = AR.pecas || {};
   const NV_MAX = 100; const xpPara = n => Math.round(80 + n * 40 + Math.pow(n, 1.7) * 1.5);
   // ---------- ATRIBUTOS: 3 pontos por nível pra distribuir ----------
-  const ATTR = { for: ['💪', 'Força', '+0,7% de ataque', 0.7, '%'], vit: ['❤️', 'Vitalidade', '+2 de vida', 2, ''], int: ['🔷', 'Inteligência', '+2 de mana', 2, ''], def: ['🛡️', 'Defesa', '+0,15% de defesa', 0.15, '%'], agi: ['⚡', 'Agilidade', '+0,12% de crítico', 0.12, '%'] };
+  const ATTR = { for: ['💪', 'Força', '+0,6% de ataque', 0.6, '%'], vit: ['❤️', 'Vitalidade', '+2 de vida', 2, ''], int: ['🔷', 'Inteligência', '+2 de mana', 2, ''], def: ['🛡️', 'Defesa', '+0,08% de defesa', 0.08, '%'], agi: ['⚡', 'Agilidade', '+0,08% de crítico', 0.08, '%'] };
   const ATTR_NV = 3;
   if (!AR.attr) { AR.attr = { for: 0, vit: 0, int: 0, def: 0, agi: 0 }; AR.attrPts = Math.max(0, ((AR.nv || 1) - 1) * ATTR_NV); AR.attrNovo = AR.attrPts > 0; }
   const attrV = k => (AR.attr && AR.attr[k]) || 0;
@@ -1742,7 +1744,7 @@ ${_}`}class A extends Error{constructor({message:e,code:t,cause:r,name:s}){var n
       const ft = P['ft' + s]; A(ft, SPH2, MALHA, 0, 0.005, 0.05, 0.075, 0.062, 0.142); for (let k = 0; k < 3; k++) A(ft, SPH2, k % 2 ? AZ2 : PR, 0, 0.02 - k * 0.004, 0.1 + k * 0.04, 0.072 - k * 0.006, 0.05, 0.05); A(ft, BOX, COU, 0, -0.048, 0.05, 0.125, 0.02, 0.27); });
     armadura.forEach(m => m.visible = false); }
   function vesteFantasia(k) { if (!FANT[k]) k = 'comum'; AR.fantasia = k; if (k !== 'comum') AR.pecas = {}; salvaAR(); escondeTrajes(); if (k === 'celeste') armadura.forEach(m => m.visible = true); if (CAS[k]) CAS[k].m.forEach(m => m.visible = true); aplicaNivel(); mana = Math.min(mana, MANA_MAX); atualizaPecas(); setTimeout(fazRetrato, 60); }
-  function defesa() { const c = CLASSES && CLASSES[AR.classe]; return ARMAS[AR.arma] && ARMAS[AR.arma].defMax ? 95 : Math.min(85, asaB('def') * ((FANT[AR.fantasia].def || 0) + attrV('def') * 0.15 + pecaDef() + (c ? c.def : 0) + (BM && BM.def ? BM.def : 0) + (typeof BUFF !== 'undefined' ? (BUFF.provocar > 0 ? 20 : 0) + (BUFF.fortaleza > 0 ? 30 : 0) + (BUFF.pele > 0 ? 40 : 0) + (BUFF.cb_def > 0 ? 20 : 0) + (BUFF.cb_tudo > 0 ? 10 : 0) : 0) + cbPas('def') + (montado && montaria() && montaria().def || 0))); }
+  function defesa() { const c = CLASSES && CLASSES[AR.classe]; return ARMAS[AR.arma] && ARMAS[AR.arma].defMax ? 95 : Math.min(85, asaB('def') * ((FANT[AR.fantasia].def || 0) + attrV('def') * 0.08 + pecaDef() + (c ? c.def : 0) + (BM && BM.def ? BM.def : 0) + (typeof BUFF !== 'undefined' ? (BUFF.provocar > 0 ? 20 : 0) + (BUFF.fortaleza > 0 ? 30 : 0) + (BUFF.pele > 0 ? 40 : 0) + (BUFF.cb_def > 0 ? 20 : 0) + (BUFF.cb_tudo > 0 ? 10 : 0) : 0) + cbPas('def') + (montado && montaria() && montaria().def || 0))); }
   function armaduraFrame() { casacoFrame(); if (!tabardo || AR.fantasia !== 'celeste') return; const P = heroi.userData.P; const f = Math.min(P.thL.rotation.x, P.thR.rotation.x), b = Math.max(P.thL.rotation.x, P.thR.rotation.x); tabardo.rotation.x = Math.min(0, f) * 0.95; tabardo.userData.costas.rotation.x = Math.max(0, b) * 0.95; }
 
 
@@ -2508,8 +2510,8 @@ ${_}`}class A extends Error{constructor({message:e,code:t,cause:r,name:s}){var n
 
   // ---- aplicar classe ----
   function CLA() { return CLASSES[AR.classe] || null; }
-  function atkMult() { const c = CLA(); return (1 + attrV('for') * 0.007) * (c ? c.atk : 1) * potAtual * (BM && BM.atk ? BM.atk : 1) * (BUFF.furia > 0 ? 1.4 : 1) * (BUFF.pacto > 0 ? 1.5 : 1) * (1 + cbPas('atk')) * (BUFF.cb_atk > 0 ? 1.25 : 1) * (BUFF.cb_tudo > 0 ? 1.15 : 1) * asaB('dano') * (1 + gmPct('forca')) * (1 + aprimNv(AR.arma) * APRIM_PCT); }
-  function critico() { const c = CLA(); return Math.random() < (c ? c.crit : 0.05) + attrV('agi') * 0.0012 + (BM && BM.crit ? BM.crit : 0) + cbPas('crit') + (BUFF.cb_crit > 0 ? 0.15 : 0) + (BUFF.cb_tudo > 0 ? 0.05 : 0) + (ARMAS[AR.arma] && ARMAS[AR.arma].esp === 'sup' ? 0.15 : 0); }
+  function atkMult() { const c = CLA(); return (1 + attrV('for') * 0.006) * (c ? c.atk : 1) * potAtual * (BM && BM.atk ? BM.atk : 1) * (BUFF.furia > 0 ? 1.4 : 1) * (BUFF.pacto > 0 ? 1.5 : 1) * (1 + cbPas('atk')) * (BUFF.cb_atk > 0 ? 1.25 : 1) * (BUFF.cb_tudo > 0 ? 1.15 : 1) * asaB('dano') * (1 + gmPct('forca')) * (1 + aprimNv(AR.arma) * APRIM_PCT); }
+  function critico() { const c = CLA(); return Math.random() < (c ? c.crit : 0.05) + attrV('agi') * 0.0008 + (BM && BM.crit ? BM.crit : 0) + cbPas('crit') + (BUFF.cb_crit > 0 ? 0.15 : 0) + (BUFF.cb_tudo > 0 ? 0.05 : 0) + (ARMAS[AR.arma] && ARMAS[AR.arma].esp === 'sup' ? 0.15 : 0); }
   function aplicaClasse(id) { if (typeof bmDesliga === 'function') bmDesliga(); const c = CLASSES[id]; AR.classe = id; if (!AR.armas.includes(c.arma)) AR.armas.push(c.arma); AR.arma = c.arma;
     const v = AR.barra[2]; if (v && !(PW[v] && PW[v].classe)) { const k = AR.barra.indexOf(null, 3); if (k >= 3 && !AR.barra.slice(3).includes(v)) AR.barra[k] = v; }
     AR.barra[2] = c.hab; if (!AR.tem.includes(c.hab)) AR.tem.push(c.hab); HABS.forEach(h => { const i = AR.barra.indexOf(h.id); if (i > 2) AR.barra[i] = null; });
@@ -3448,7 +3450,7 @@ ${_}`}class A extends Error{constructor({message:e,code:t,cause:r,name:s}){var n
   function calModo(d) { return { sky: [d.fog, d.cor], hemi: 1.15, sun: 1.0, sunC: d.luz, fog: d.fog, fogN: 22, fogF: 95, ground: d.cor, rim: d.luz }; }
   // ---------- monstros ----------
   function calMob(base, nv, cls, x, z, nome) { const B = TIPOS[base]; if (!B) return null; const K = CAL_K[cls], e = fera(base); const sz = K[2] * (CAL_SZ[base] && cls !== 'trash' && cls !== 'minion' ? CAL_SZ[base] * 1.4 : CAL_SZ[base] || 1);
-    const fv = 1 + nv * 0.14, fd = 1 + nv * 0.07, chefe = ['raro', 'mini', 'boss', 'super'].includes(cls);
+    const fv = (1 + nv * 0.14) * (1 + nv * 0.012), fd = (1 + nv * 0.07) * (1 + nv * 0.006), chefe = ['raro', 'mini', 'boss', 'super'].includes(cls);
     e.T = Object.assign({}, B, { nome: nome || (cls === 'elite' ? B.nome + ' Elite' : cls === 'minion' ? 'Lacaio' : B.nome), vida: Math.round(B.vida * 0.6 * fv * K[0]), dano: Math.round(B.dano * 0.7 * fd * K[1]), zona: 'calab', volta: 99999, aggro: 70, perto: 0,
       raio: B.raio * sz, alt: B.alt * sz, alc: B.alc * Math.max(1, sz * 0.85), vel: B.vel * (cls === 'trash' ? 1.1 : cls === 'boss' || cls === 'super' ? 0.85 : 1), moedas: [Math.round(K[3] * (1 + nv * 0.3)), Math.round(K[3] * (1 + nv * 0.4))], itens: [], chefe, voa: false,
       barra: chefe ? (cls === 'super' ? '☠️ ' : cls === 'boss' ? '👑 ' : cls === 'raro' ? '✨ ' : '⚔️ ') + (nome || B.nome).toUpperCase() + ' · NV ' + nv : null });

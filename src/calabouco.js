@@ -31,7 +31,7 @@
   function calModo(d) { return { sky: [d.fog, d.cor], hemi: 1.15, sun: 1.0, sunC: d.luz, fog: d.fog, fogN: 22, fogF: 95, ground: d.cor, rim: d.luz }; }
   // ---------- monstros ----------
   function calMob(base, nv, cls, x, z, nome) { const B = TIPOS[base]; if (!B) return null; const K = CAL_K[cls], e = fera(base); const sz = K[2] * (CAL_SZ[base] && cls !== 'trash' && cls !== 'minion' ? CAL_SZ[base] * 1.4 : CAL_SZ[base] || 1);
-    const fv = 1 + nv * 0.14, fd = 1 + nv * 0.07, chefe = ['raro', 'mini', 'boss', 'super'].includes(cls);
+    const fv = (1 + nv * 0.14) * (1 + nv * 0.012), fd = (1 + nv * 0.07) * (1 + nv * 0.006), chefe = ['raro', 'mini', 'boss', 'super'].includes(cls);
     e.T = Object.assign({}, B, { nome: nome || (cls === 'elite' ? B.nome + ' Elite' : cls === 'minion' ? 'Lacaio' : B.nome), vida: Math.round(B.vida * 0.6 * fv * K[0]), dano: Math.round(B.dano * 0.7 * fd * K[1]), zona: 'calab', volta: 99999, aggro: 70, perto: 0,
       raio: B.raio * sz, alt: B.alt * sz, alc: B.alc * Math.max(1, sz * 0.85), vel: B.vel * (cls === 'trash' ? 1.1 : cls === 'boss' || cls === 'super' ? 0.85 : 1), moedas: [Math.round(K[3] * (1 + nv * 0.3)), Math.round(K[3] * (1 + nv * 0.4))], itens: [], chefe, voa: false,
       barra: chefe ? (cls === 'super' ? '☠️ ' : cls === 'boss' ? '👑 ' : cls === 'raro' ? '✨ ' : '⚔️ ') + (nome || B.nome).toUpperCase() + ' · NV ' + nv : null });
