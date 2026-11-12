@@ -70,9 +70,37 @@
   // ---------- MONTARIAS (slot próprio) ----------
   var MONT = { lobo_neve: { nome: 'Lobo Gigante das Neves', base: 'lobo', esc: 1.9, vel: 1.9, preco: 1500, topo: 0.92, desc: 'Montaria: +90% de velocidade.' },
     javali_guerra: { nome: 'Javali de Guerra', base: 'javali', esc: 1.6, vel: 1.6, def: 15, preco: 2000, topo: 1.08, desc: 'Montaria: +60% de velocidade e +15% de defesa.', armadura: true },
+    moto_astral: { nome: 'Moto Astral Azul', moto: 'astral', vel: 2.3, preco: 3000, desc: 'Montaria: +130% de velocidade. Flutua com energia azul.', sela: 0.3, c1: '#1c2c8a', c2: '#3a5ad8', neon: '#3ad8ff', metal: '#c8d4ec' },
+    moto_sombra: { nome: 'Moto Astral Sombra', moto: 'astral', vel: 2.4, preco: 3500, desc: 'Montaria: +140% de velocidade. Preta com energia dourada.', sela: 0.3, c1: '#121218', c2: '#2a2a34', neon: '#ffc23a', metal: '#3a3a48' },
+    moto_rubra: { nome: 'Chopper Rubra', moto: 'chopper', vel: 2.2, def: 10, preco: 4000, desc: 'Montaria: +120% de velocidade e +10% de defesa. Escapamento solta fogo.', sela: 0.16, c1: '#b81a1a', c2: '#1a1a1e', neon: '#ff6a2a', metal: '#dfe4ee' },
     tigre_dourado: { nome: 'Tigre Dourado', base: 'lobo', esc: 2.0, vel: 2.1, preco: 2500, topo: 0.92, desc: 'Montaria: +110% de velocidade.', cores: { '#a8b0c0': '#e8902a', '#eef2f8': '#fff0d8', '#ffd23c': '#3aff8a' } } };
   AR.monts = AR.monts || []; var montado = false, montT = 0, MONT3D = {};
-  Object.keys(MONT).forEach(k => { const M = MONT[k]; const e = fera(M.base); e.hp.remove(); const g = e.g; g.scale.setScalar(M.esc); g.visible = false;
+  function motoModelo(M) { const g = grp(world), b = grp(g), al = [], rodas = [], fogo = []; const C = M.c1, C2 = M.c2, N = M.neon, MT = M.metal;
+    if (M.moto === 'astral') { b.position.y = 0.42;
+      part(b, SPH, C, 0, 0.18, 0.1, 0.42, 0.28, 1.25, 0.03); part(b, SPH, C2, 0, 0.3, -0.25, 0.3, 0.22, 0.7, 0.03); part(b, SPH, '#141420', 0, 0.36, 0.55, 0.22, 0.12, 0.38);
+      const nz = part(b, CONE, C, 0, 0.16, 1.45, 0.3, 0.9, 0.18, 0.03); nz.rotation.x = Math.PI / 2;
+      [-1, 1].forEach(sd => { // lâminas da frente
+        const l = part(b, CONE, C2, sd * 0.42, 0.05, 1.25, 0.08, 1.6, 0.03, 0.03); l.rotation.x = Math.PI / 2; l.rotation.y = -sd * 0.08; const l2 = part(b, CONE, MT, sd * 0.5, 0.32, 1.0, 0.05, 1.3, 0.025); l2.rotation.x = Math.PI / 2 + 0.12; l2.rotation.y = -sd * 0.12;
+        tb(b, sd * 0.43, 0.06, 0.9, 0.02, 0.03, 1.3, N, true); tb(b, sd * 0.3, 0.26, 0.2, 0.02, 0.03, 1.4, N, true); part(b, SPH, N, sd * 0.22, 0.22, 1.25, 0.06, 0.04, 0.06, 0, true); glowSpr(b, sd * 0.22, 0.22, 1.3, 0.5, N, 0.9);
+        tb(b, sd * 0.36, -0.12, -0.1, 0.12, 0.08, 1.4, MT); tb(b, sd * 0.36, -0.17, -0.1, 0.03, 0.02, 1.3, N, true); // esquis
+        // ALETAS de trás (abrem parada, fecham acelerando)
+        for (let i = 0; i < 2; i++) { const pv = grp(b, sd * (0.18 + i * 0.12), 0.3 + i * 0.08, -0.8); const a = part(pv, CONE, i ? MT : C2, 0, 0.55, 0, 0.07, 1.1, 0.025, 0.03); tb(pv, 0, 0.55, 0.015, 0.012, 0.9, 0.012, N, true); part(pv, SPH, N, 0, 1.08, 0, 0.03, 0.03, 0.03, 0, true); al.push({ pv, sd, i }); } });
+      const mot = part(b, CYL, MT, 0, 0.18, -1.05, 0.22, 0.25, 0.22); mot.rotation.x = Math.PI / 2; part(b, CYL, N, 0, 0.18, -1.18, 0.16, 0.02, 0.16, 0, true).rotation.x = Math.PI / 2;
+      fogo.push(glowSpr(b, 0, 0.18, -1.3, 0.8, N, 0.9)); const sob = glowSpr(g, 0, 0.08, 0, 2.6, N, 0.45); fogo.push(sob);
+      part(b, CYL, '#1a1a22', 0, 0.55, 0.78, 0.015, 0.25, 0.015).rotation.z = Math.PI / 2; [-1, 1].forEach(sd => part(b, SPH, '#1a1a22', sd * 0.14, 0.55, 0.78, 0.035, 0.035, 0.06)); }
+    else { // chopper
+      const roda = (z, r) => { const w = grp(b, 0, r, z); part(w, TOR, '#1a1a1e', 0, 0, 0, r, r, r * 1.2).rotation.y = Math.PI / 2; const ar = part(w, TOR, MT, 0, 0, 0, r * 0.72, r * 0.72, r * 0.5); ar.rotation.y = Math.PI / 2;
+        for (let k = 0; k < 8; k++) { const ra = tb(w, 0, 0, 0, 0.015, r * 1.4, 0.015, MT); ra.rotation.x = k * Math.PI / 8; } part(w, CYL, MT, 0, 0, 0, 0.08, 0.16, 0.08).rotation.z = Math.PI / 2; rodas.push(w); };
+      roda(1.05, 0.36); roda(-0.85, 0.38);
+      const fork = tb(b, 0, 0.75, 0.85, 0.05, 0.9, 0.05, MT); fork.rotation.x = -0.45; [-1, 1].forEach(sd => { const f = part(b, CYL, MT, sd * 0.1, 0.72, 0.86, 0.03, 0.85, 0.03); f.rotation.x = -0.45; });
+      part(b, CYL, MT, 0, 1.12, 0.66, 0.02, 0.8, 0.02).rotation.z = Math.PI / 2; [-1, 1].forEach(sd => { part(b, SPH, '#1a1a1e', sd * 0.38, 1.14, 0.62, 0.035, 0.035, 0.09); });
+      part(b, SPH, C, 0, 0.82, 0.38, 0.22, 0.16, 0.38, 0.03); tb(b, 0, 0.88, 0.38, 0.03, 0.02, 0.5, '#ffe08a', true); // tanque com faixa
+      part(b, SPH, '#ffe8a0', 0, 0.98, 0.98, 0.1, 0.1, 0.06, 0, true); glowSpr(b, 0, 0.98, 1.05, 0.9, '#fff0b0', 0.8);
+      tb(b, 0, 0.55, 0.05, 0.36, 0.34, 0.6, '#3a3a44'); part(b, CYL, MT, 0, 0.5, 0.05, 0.16, 0.36, 0.16).rotation.z = Math.PI / 2; [-1, 1].forEach(sd => part(b, CYL, MT, sd * 0.2, 0.62, 0.1, 0.1, 0.22, 0.1).rotation.x = 0.4);
+      tb(b, 0, 0.72, -0.35, 0.34, 0.1, 0.7, C2); part(b, SPH, C, 0, 0.62, -0.85, 0.24, 0.12, 0.45, 0.03); tb(b, 0, 0.92, -0.62, 0.3, 0.32, 0.06, C2);
+      [-1, 1].forEach(sd => { const ex = part(b, CYL, MT, sd * 0.24, 0.32, -0.55, 0.05, 1.1, 0.05); ex.rotation.x = Math.PI / 2 - 0.12; fogo.push(glowSpr(b, sd * 0.24, 0.38, -1.15, 0.5, N, 0)); part(b, SPH, '#ff3a2a', sd * 0.16, 0.62, -1.24, 0.04, 0.03, 0.02, 0, true); }); }
+    g.traverse(o => { if (o.isMesh) o.castShadow = true; }); g.visible = false; return { g, b, L: [], head: null, al, rodas, fogo, moto: M.moto }; }
+  Object.keys(MONT).forEach(k => { const M = MONT[k]; if (M.moto) { MONT3D[k] = motoModelo(M); M.icone = IC('mont_' + k, 'png'); return; } const e = fera(M.base); e.hp.remove(); const g = e.g; g.scale.setScalar(M.esc); g.visible = false;
     if (M.cores) g.traverse(o => { if (o.isMesh && o.material && o.material.color && !o.material.isMeshBasicMaterial) { const h = '#' + o.material.color.getHexString(); if (M.cores[h]) o.material = tm(M.cores[h]); } });
     const sela = grp(e.b, 0, M.topo, 0.02); tb(sela, 0, 0.02, 0, 0.42, 0.08, 0.5, '#8a2a2a'); tb(sela, 0, 0.07, -0.2, 0.36, 0.12, 0.08, '#6a1a1a'); [-1, 1].forEach(s => { tb(sela, s * 0.22, -0.15, 0, 0.03, 0.3, 0.12, '#e2c27a'); tb(sela, s * 0.24, -0.32, 0.02, 0.06, 0.03, 0.1, '#e2c27a'); });
     if (M.armadura) { tb(e.b, 0, 0.7, 0.62, 0.5, 0.25, 0.1, '#9aa4b8'); [-1, 1].forEach(s => tb(e.b, s * 0.42, 0.66, 0, 0.06, 0.4, 0.9, '#9aa4b8')); }
@@ -85,9 +113,13 @@
   function montFrame(dt) { const M = montaria(), p = heroi.position; if (montado && (!M || voando || dentro || zona === 'masmorra' || desmaiado)) { montado = false; p.y = 0; }
     montBtn.hidden = !M || dentro || zona === 'masmorra' || voando || !!conversa; if (!montBtn.hidden) { const t = montado ? '⤓ DESCER' : '🐾 MONTAR'; if (montBtn.textContent !== t) montBtn.textContent = t; }
     Object.keys(MONT3D).forEach(k => { const e = MONT3D[k], on = montado && AR.mont === k; e.g.visible = on; if (!on) return; montT += dt * (2 + vel * 1.6);
-      e.g.position.set(p.x, Math.max(0, p.y - MONT[k].sela), p.z); e.g.rotation.y = facing; const a = vel > 0.4 ? Math.min(0.75, vel * 0.09) : 0; e.L.forEach((l, i) => { l.rotation.x = Math.sin(montT + (i % 2 ? Math.PI : 0) + (i > 1 ? 0.6 : 0)) * a; }); e.b.position.y = vel > 0.4 ? Math.abs(Math.sin(montT)) * 0.06 : Math.sin(gT * 2) * 0.01; if (e.head) e.head.rotation.x = Math.sin(montT) * a * 0.15; }); }
-  Object.keys(MONT).forEach(k => { MONT[k].sela = MONT[k].topo * MONT[k].esc - 0.62; });
-  function montPose() { if (!montado) return false; const b = Math.sin(montT) * 0.04; pose(heroi, gT, { mood: 'smile', arms: { shL: [-0.7, 0, -0.25], shR: [-0.7, 0, 0.25], elL: [-0.9, 0, 0], elR: [-0.9, 0, 0] }, legs: { thL: -1.45 + b, knL: 1.5, thR: -1.45 - b, knR: 1.5 } }); const P = heroi.userData.P; P.thL.rotation.z = -0.35; P.thR.rotation.z = 0.35; return true; }
+      e.g.position.set(p.x, Math.max(0, p.y - MONT[k].sela), p.z); e.g.rotation.y = facing; if (e.moto) { motoAnima(e, dt); return; } const a = vel > 0.4 ? Math.min(0.75, vel * 0.09) : 0; e.L.forEach((l, i) => { l.rotation.x = Math.sin(montT + (i % 2 ? Math.PI : 0) + (i > 1 ? 0.6 : 0)) * a; }); e.b.position.y = vel > 0.4 ? Math.abs(Math.sin(montT)) * 0.06 : Math.sin(gT * 2) * 0.01; if (e.head) e.head.rotation.x = Math.sin(montT) * a * 0.15; }); }
+  Object.keys(MONT).forEach(k => { if (!MONT[k].moto) MONT[k].sela = MONT[k].topo * MONT[k].esc - 0.62; });
+  function motoAnima(e, dt) { const rapido = vel > 1.2, k = clamp(vel / 9); e.abre = (e.abre == null ? 1 : e.abre) + ((rapido ? 0 : 1) - (e.abre == null ? 1 : e.abre)) * Math.min(1, dt * 5);
+    e.al.forEach(a => { const ab = e.abre; a.pv.rotation.x = -1.25 + ab * 1.0 + a.i * 0.12; a.pv.rotation.z = -a.sd * (0.15 + ab * (0.55 + a.i * 0.3)); });
+    if (e.moto === 'astral') { e.b.position.y = 0.42 + Math.sin(gT * 3) * 0.05; e.b.rotation.x = -k * 0.08; e.fogo[0].scale.setScalar(0.6 + k * 1.6 + Math.random() * 0.15); e.fogo[1].material.opacity = 0.3 + Math.sin(gT * 5) * 0.1 + k * 0.15; }
+    else { e.rodas.forEach(w => { w.rotation.x += vel * dt / 0.37; }); e.b.position.y = rapido ? Math.sin(gT * 30) * 0.008 : 0; e.fogo.forEach(f => { f.material.opacity = rapido ? 0.6 + Math.random() * 0.4 : 0; f.scale.setScalar(0.3 + k * 0.6 + Math.random() * 0.2); }); } }
+  function montPose() { if (montado && MONT[AR.mont] && MONT[AR.mont].moto) { pose(heroi, gT, { mood: 'smile', arms: { shL: [-1.25, 0, -0.22], shR: [-1.25, 0, 0.22], elL: [-0.25, 0, 0], elR: [-0.25, 0, 0] }, legs: { thL: -1.25, knL: 1.0, thR: -1.25, knR: 1.0 } }); const P = heroi.userData.P; P.thL.rotation.z = -0.28; P.thR.rotation.z = 0.28; P.spine.rotation.x = 0.35; return true; } if (!montado) return false; const b = Math.sin(montT) * 0.04; pose(heroi, gT, { mood: 'smile', arms: { shL: [-0.7, 0, -0.25], shR: [-0.7, 0, 0.25], elL: [-0.9, 0, 0], elR: [-0.9, 0, 0] }, legs: { thL: -1.45 + b, knL: 1.5, thR: -1.45 - b, knR: 1.5 } }); const P = heroi.userData.P; P.thL.rotation.z = -0.35; P.thR.rotation.z = 0.35; return true; }
   // ---------- PET DRAGÃO ----------
   var PETS = { dragao: { nome: 'Dragãozinho de Fogo', preco: 3000, desc: 'Pet: voa do seu lado e cospe bolas de fogo nos bichos.' } }; AR.pets = AR.pets || [];
   var PET3D = grp(world); PET3D.visible = false; var petAsas = []; { const c = '#d83a2a', c2 = '#ffb03a', B = grp(PET3D);
