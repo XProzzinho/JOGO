@@ -3297,12 +3297,16 @@ ${_}`}class A extends Error{constructor({message:e,code:t,cause:r,name:s}){var n
     if ((s.t === 'impulso' || s.t === 'teleg') && !voando) { aviso(s.nome + ': só funciona voando.', '#ff6a6a'); return false; }
     if (s.cls && AR.classe !== s.cls) { aviso(s.icone + ' ' + s.nome + ': só ' + CLASSES[s.cls].nome + ' pode usar.', '#ff6a6a'); return false; }
     if (s.passiva) { aviso(s.icone + ' ' + s.nome + ' é passiva: já está sempre ativa.', '#ffd23c'); return false; }
+    if (s.divino) { const at = divAtiva(); if (at && at[0] !== s.id) { aviso('⛔ ' + CB_PW[at[0]].nome + ' está ativa (' + Math.ceil(at[1]) + ' s). Só uma habilidade divina por vez!', '#ffb040'); return false; } }
     if ((s.t === 'gm' || s.t === 'gm_mal') && !souAdmin()) { aviso('Só o Administrador pode usar ' + s.nome + '.', '#ff6a6a'); return false; }
     const f = (CB_CD[s.id] || 0) - performance.now(); if (f > 0) { aviso(s.nome + ': recarregando (' + Math.ceil(f / 1000) + ' s)', '#8a9aba'); return false; } return true; }
   function cbEl(e, el) { if (el === 'gelo') congelar(e, 1.5); else if (el === 'raio' || el === 'terra') e.stun = Math.max(e.stun, el === 'raio' ? 0.6 : 0.8); else if (el === 'fogo') e.queima = 3;
     else if (el === 'veneno') { e.queima = 5; e.vuln = Math.max(e.vuln, 3); } else if (el === 'agua' || el === 'sombra') e.vuln = Math.max(e.vuln, 4);
     else if (el === 'vento') { const dx = e.g.position.x - heroi.position.x, dz = e.g.position.z - heroi.position.z, d = Math.hypot(dx, dz) || 1; empurra(e, dx / d, dz / d, 1.2); }
     else if (el === 'sangue') vida = Math.min(VIDA_MAX, vida + 2); }
+  // qual habilidade divina está ativa agora (só uma por vez)
+  function divAtiva() { if (BUFF.mandala > 0) return ['cb_mandala', BUFF.mandala]; if (BUFF.mandef > 0) return ['cb_mandala_def', BUFF.mandef]; if (BUFF.sete > 0) return ['cb_mandala_sete', BUFF.sete];
+    const sl = typeof SELOS !== 'undefined' && SELOS.find(x => x.principal && x.f.selo > 0); if (sl) return ['cb_mandala_selo', sl.f.selo]; return null; }
   function cabalPoder(pw) { if (!pw || !pw.cabal) return; const s = pw, p = heroi.position, M = atkMult() * (1 + (s.r - 1) * 0.22), c = CB_COR[s.e] || '#ffffff', tp = s.e === 'gelo' || s.e === 'fogo' ? s.e : null;
     CB_CD[s.id] = performance.now() + s.cdS * 1000;
     const mira = r => { const e = maisPerto(r); if (e) facing = Math.atan2(e.g.position.x - p.x, e.g.position.z - p.z); return e; };
@@ -3335,8 +3339,8 @@ ${_}`}class A extends Error{constructor({message:e,code:t,cause:r,name:s}){var n
       case 'grito': area(p.x, p.z, 7, e => { e.stun = Math.max(e.stun, 2); e.vuln = 6; hit(e, 15); }); fx('vento', [p.x, 0, p.z], 0.9); flash('rgba(255,120,80,.2)'); som('grito', 0.7); break;
       case 'mandala': buffA('mandala', s.dur, 'os elos dourados te protegem por ' + s.dur + ' s!'); flash('rgba(255,200,80,.45)'); som('missao_ok', 0.8, 0.8); setTimeout(() => haloAtk(true), 350); break;
       case 'selo': if (!seloAplica()) { mana += s.custo; CB_CD[s.id] = 0; } break;
-      case 'sete': buffA('sete', 30, 'os Sete Sóis giram em volta de você por 30 s!'); BUFF.mandala = 0; flash('rgba(255,170,60,.4)'); break;
-      case 'mandef': buffA('mandef', 30, 'defesa total por 30 s!'); BUFF.mandala = 0; flash('rgba(255,220,120,.5)'); som('portal', 0.9, 1.2); tremor = Math.max(tremor, 0.25); break;
+      case 'sete': buffA('sete', 30, 'os Sete Sóis giram em volta de você por 30 s!'); flash('rgba(255,170,60,.4)'); break;
+      case 'mandef': buffA('mandef', 30, 'defesa total por 30 s!'); flash('rgba(255,220,120,.5)'); som('portal', 0.9, 1.2); tremor = Math.max(tremor, 0.25); break;
       case 'voo': voa(!voando); break;
       case 'impulso': { const a0 = facing; caminho(p.x, p.z, a0, 9, 1.1, e => { hit(e, 36); e.stun = Math.max(e.stun, 1.2); }); linhaLuz({ x: p.x, y: p.y + 1, z: p.z }, { x: p.x + Math.sin(a0) * 9, y: p.y + 1, z: p.z + Math.cos(a0) * 9 }, c, 12); arranca(a0, 9, 0.22); flash('rgba(120,220,255,.3)'); som('raio', 0.7); break; }
       case 'teleg': fx('luz', [p.x, p.y, p.z], 0.5); p.x += Math.sin(facing) * 9; p.z += Math.cos(facing) * 9; fx('luz', [p.x, p.y, p.z], 0.5); flash('rgba(160,90,255,.3)'); break;
