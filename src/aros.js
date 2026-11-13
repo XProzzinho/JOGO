@@ -37,8 +37,12 @@
   function arosTem() { return AROS.map((A, i) => AR.nv >= A.nv ? i : -1).filter(i => i >= 0); }
   function aroMostra(seg) { const T = arosTem(); if (!T.length) return; ARO.lutaAte = Math.max(ARO.lutaAte, gT + (seg || 10)); if (!ARO.G.visible) { ARO.G.visible = true; ARO.t = 0; } }
   // entrar em luta: dano causado ou recebido depois de um tempo parado
-  function aroLuta() { if (gT - ARO.ultLuta > 12 && ARO.lutaAte < gT) aroMostra(10); ARO.ultLuta = gT; }
-  function aroNovo(nv) { const A = AROS.find(a => a.nv === nv); if (!A) return; aroMostra(10); aviso('💫 Novo aro conquistado: ' + A.nome + ' (Nv ' + nv + ')! Ele aparece nos seus pés quando você entra em luta.', A.glow); }
+  // antes aparecia sozinho ao entrar em luta; agora é só pelo botão (fica 5 s)
+  function aroLuta() {}
+  const aroBtn = document.createElement('button'); aroBtn.id = 'aro-btn'; aroBtn.className = 'btn'; aroBtn.innerHTML = '💫 AROS'; aroBtn.hidden = true; document.body.appendChild(aroBtn);
+  tapBtn(aroBtn, () => { if (!arosTem().length) { aviso('💫 Você ganha o primeiro aro no nível 10.', '#c8a8ff'); return; } if (ARO.G.visible && ARO.lutaAte > gT) { ARO.lutaAte = gT; return; } ARO.G.visible = false; aroMostra(5); som('magia', 0.5, 1.4); });
+  setInterval(() => { aroBtn.hidden = !arosTem().length || typeof cenaQ === 'undefined' || !!cenaQ; aroBtn.classList.toggle('on', ARO.G.visible && ARO.lutaAte > gT); }, 500);
+  function aroNovo(nv) { const A = AROS.find(a => a.nv === nv); if (!A) return; aroMostra(5); aviso('💫 Novo aro conquistado: ' + A.nome + ' (Nv ' + nv + ')! Toque em 💫 AROS pra mostrar.', A.glow); }
   function aroFrame(dt) { if (!ARO.G.visible) return; ARO.t += dt; const T = arosTem(), resta = ARO.lutaAte - gT;
     if (resta <= -0.8 || !T.length) { ARO.G.visible = false; return; } const sai = resta < 0 ? 1 + resta / 0.8 : 1;
     ARO.L.forEach((o, i) => { const tem = T.includes(i); o.g.visible = tem; if (!tem) return; const ord = T.indexOf(i), ent = clamp((ARO.t - ord * 0.12) / 0.5), e = 1 - Math.pow(1 - ent, 3);

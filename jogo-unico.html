@@ -532,7 +532,7 @@
 .dslot{width:28px!important;height:28px!important;opacity:.85}.dslot.vazio{opacity:.3}
 
 /* ===== HUD minimalista: cantos brancos (colchetes) ===== */
-#perfil-btn,#inv>*,#mp-on,#montar,#correio-btn,#casa,#ciclo,#poderes .slot,#pag-btn,.dslot{border:1px solid rgba(255,255,255,.14)!important;border-radius:4px!important;box-shadow:none!important;background:linear-gradient(rgba(255,255,255,.95),rgba(255,255,255,.95)) 0 0/10px 2px no-repeat,linear-gradient(rgba(255,255,255,.95),rgba(255,255,255,.95)) 0 0/2px 10px no-repeat,linear-gradient(rgba(255,255,255,.95),rgba(255,255,255,.95)) 100% 0/10px 2px no-repeat,linear-gradient(rgba(255,255,255,.95),rgba(255,255,255,.95)) 100% 0/2px 10px no-repeat,linear-gradient(rgba(255,255,255,.95),rgba(255,255,255,.95)) 0 100%/10px 2px no-repeat,linear-gradient(rgba(255,255,255,.95),rgba(255,255,255,.95)) 0 100%/2px 10px no-repeat,linear-gradient(rgba(255,255,255,.95),rgba(255,255,255,.95)) 100% 100%/10px 2px no-repeat,linear-gradient(rgba(255,255,255,.95),rgba(255,255,255,.95)) 100% 100%/2px 10px no-repeat,rgba(12,12,20,.62)!important;color:#fff!important;filter:drop-shadow(0 2px 5px rgba(0,0,0,.35))}
+#perfil-btn,#inv>*,#mp-on,#montar,#aro-btn,#correio-btn,#casa,#ciclo,#poderes .slot,#pag-btn,.dslot{border:1px solid rgba(255,255,255,.14)!important;border-radius:4px!important;box-shadow:none!important;background:linear-gradient(rgba(255,255,255,.95),rgba(255,255,255,.95)) 0 0/10px 2px no-repeat,linear-gradient(rgba(255,255,255,.95),rgba(255,255,255,.95)) 0 0/2px 10px no-repeat,linear-gradient(rgba(255,255,255,.95),rgba(255,255,255,.95)) 100% 0/10px 2px no-repeat,linear-gradient(rgba(255,255,255,.95),rgba(255,255,255,.95)) 100% 0/2px 10px no-repeat,linear-gradient(rgba(255,255,255,.95),rgba(255,255,255,.95)) 0 100%/10px 2px no-repeat,linear-gradient(rgba(255,255,255,.95),rgba(255,255,255,.95)) 0 100%/2px 10px no-repeat,linear-gradient(rgba(255,255,255,.95),rgba(255,255,255,.95)) 100% 100%/10px 2px no-repeat,linear-gradient(rgba(255,255,255,.95),rgba(255,255,255,.95)) 100% 100%/2px 10px no-repeat,rgba(12,12,20,.62)!important;color:#fff!important;filter:drop-shadow(0 2px 5px rgba(0,0,0,.35))}
 #perfil-btn{border-radius:6px!important;opacity:1!important}#pn-nome,#perfil-btn .pn{color:#fff!important}#nv{color:#e8e8f0!important}
 #perfil-btn #vida,#perfil-btn #mana{border:1px solid rgba(255,255,255,.35)!important;background:rgba(255,255,255,.1)!important;border-radius:3px!important}
 #inv>*{opacity:1}#inv{opacity:1!important}#mp-on{color:#fff!important;opacity:.9!important}#montar{opacity:.9!important}
@@ -546,6 +546,8 @@
 #xpbar{background:rgba(12,12,20,.55)!important;border:1px solid rgba(255,255,255,.55)!important;box-shadow:none!important;border-radius:2px!important}#xpbar i{background:#fff!important}
 .dslot.vazio{opacity:.35!important}
 #joy{background:rgba(12,12,20,.18)!important;border:2px solid rgba(255,255,255,.55)!important;box-shadow:none!important}
+#aro-btn{position:fixed;left:calc(14px + env(safe-area-inset-left,0px));top:calc(170px + env(safe-area-inset-top,0px));height:30px;padding:0 10px;font:900 11px var(--fonte);letter-spacing:.5px;transform:scale(.85);transform-origin:0 0;opacity:.9;z-index:7;display:flex;align-items:center;gap:4px}
+#aro-btn.on{box-shadow:0 0 12px rgba(255,216,106,.7)!important}
 </style>
 </head>
 <body>
@@ -7562,8 +7564,12 @@ const glowA = cv(128, (x) => { const g = x.createRadialGradient(64, 64, 0, 64, 6
   function arosTem() { return AROS.map((A, i) => AR.nv >= A.nv ? i : -1).filter(i => i >= 0); }
   function aroMostra(seg) { const T = arosTem(); if (!T.length) return; ARO.lutaAte = Math.max(ARO.lutaAte, gT + (seg || 10)); if (!ARO.G.visible) { ARO.G.visible = true; ARO.t = 0; } }
   // entrar em luta: dano causado ou recebido depois de um tempo parado
-  function aroLuta() { if (gT - ARO.ultLuta > 12 && ARO.lutaAte < gT) aroMostra(10); ARO.ultLuta = gT; }
-  function aroNovo(nv) { const A = AROS.find(a => a.nv === nv); if (!A) return; aroMostra(10); aviso('💫 Novo aro conquistado: ' + A.nome + ' (Nv ' + nv + ')! Ele aparece nos seus pés quando você entra em luta.', A.glow); }
+  // antes aparecia sozinho ao entrar em luta; agora é só pelo botão (fica 5 s)
+  function aroLuta() {}
+  const aroBtn = document.createElement('button'); aroBtn.id = 'aro-btn'; aroBtn.className = 'btn'; aroBtn.innerHTML = '💫 AROS'; aroBtn.hidden = true; document.body.appendChild(aroBtn);
+  tapBtn(aroBtn, () => { if (!arosTem().length) { aviso('💫 Você ganha o primeiro aro no nível 10.', '#c8a8ff'); return; } if (ARO.G.visible && ARO.lutaAte > gT) { ARO.lutaAte = gT; return; } ARO.G.visible = false; aroMostra(5); som('magia', 0.5, 1.4); });
+  setInterval(() => { aroBtn.hidden = !arosTem().length || typeof cenaQ === 'undefined' || !!cenaQ; aroBtn.classList.toggle('on', ARO.G.visible && ARO.lutaAte > gT); }, 500);
+  function aroNovo(nv) { const A = AROS.find(a => a.nv === nv); if (!A) return; aroMostra(5); aviso('💫 Novo aro conquistado: ' + A.nome + ' (Nv ' + nv + ')! Toque em 💫 AROS pra mostrar.', A.glow); }
   function aroFrame(dt) { if (!ARO.G.visible) return; ARO.t += dt; const T = arosTem(), resta = ARO.lutaAte - gT;
     if (resta <= -0.8 || !T.length) { ARO.G.visible = false; return; } const sai = resta < 0 ? 1 + resta / 0.8 : 1;
     ARO.L.forEach((o, i) => { const tem = T.includes(i); o.g.visible = tem; if (!tem) return; const ord = T.indexOf(i), ent = clamp((ARO.t - ord * 0.12) / 0.5), e = 1 - Math.pow(1 - ent, 3);
