@@ -171,7 +171,24 @@
     if (t > T2 && t - dt <= T2) { som('magia', 0.7, 1.6); fx('luz', frente, 0.8); }
     SETE.hitT -= dt; if (SETE.hitT <= 0 && t >= T3_) { SETE.hitT = 0.25; const W0 = ARMAS[AR.arma] || ARMAS.punho, dn = Math.max(W0.dano || 10, 30) * 0.22 * atkMult(); let bateu = false;
       SETE.h.forEach(o => area(o.h.position.x, o.h.position.z, 0.75, f => { dano(f, dn, null, critico()); bateu = true; })); if (bateu) { som('espada', 0.3, 1.5 + Math.random() * 0.3, 0.05); fx('luz', [hp.x + (Math.random() - 0.5) * 2, 0.9, hp.z + (Math.random() - 0.5) * 2], 0.3); } } }
-  function haloFrame(dt) { seteFrame(dt); const quer = haloVis() && !dentro; haloDefFrame(dt); HALO.H.visible = quer || HALO.elos.length > 0; if (HALO.cd > 0) HALO.cd -= dt;
+  // ---- SELO DO JUÍZO: elo grande embaixo do pé do inimigo, elo pequeno em cima da cabeça, -25% de defesa ----
+  const SELOS = [];
+  function seloCria(f) { const pl = (m, s, cor, add) => { const o = new T3.Mesh(new T3.PlaneGeometry(s, s), new T3.MeshBasicMaterial({ map: m, color: cor || '#ffffff', transparent: true, side: T3.DoubleSide, depthWrite: false, toneMapped: false, blending: add ? T3.AdditiveBlending : T3.NormalBlending })); o.rotation.x = -Math.PI / 2; return o; };
+    const r = Math.max(0.9, f.T.raio || 0.8), alt = f.T.alt || 1.4, g = new T3.Group(); world.add(g);
+    const chao = new T3.Group(); g.add(chao); const big = r * 3.2; const gl = pl(HALO.G.material.map, big * 1.5, '#ffb040', true); gl.position.y = 0.02; chao.add(gl); const A = pl(HALO.A.material.map, big); A.position.y = 0.04; chao.add(A); const Ab = pl(HALO.A.material.map, big, '#ffd070', true); Ab.position.y = 0.045; chao.add(Ab);
+    const cima = new T3.Group(); g.add(cima); cima.position.y = alt + 0.55; const sm = Math.max(0.9, r * 1.4); const B = pl(HALO.B.material.map, sm); cima.add(B); const Bb = pl(HALO.B.material.map, sm, '#ffe8a0', true); Bb.position.y = 0.005; cima.add(Bb); const gs = new T3.Sprite(new T3.SpriteMaterial({ map: HALO.G.material.map, transparent: true, depthWrite: false, blending: T3.AdditiveBlending, toneMapped: false, opacity: 0.5 })); gs.scale.set(sm * 1.6, sm * 1.6, 1); cima.add(gs);
+    const raio = new T3.Mesh(new T3.CylinderGeometry(r * 0.35, r * 0.6, alt + 0.55, 16, 1, true), new T3.MeshBasicMaterial({ color: '#ffc050', transparent: true, opacity: 0.12, blending: T3.AdditiveBlending, depthWrite: false, toneMapped: false, side: T3.DoubleSide })); raio.position.y = (alt + 0.55) / 2; g.add(raio);
+    return { f, g, A, Ab, B, Bb, gl, gs, raio, t: 0, big, sm }; }
+  function seloAplica() { const alvo = maisPerto(22); if (!alvo) { aviso('Nenhum inimigo perto pra selar.', '#c8b48a'); return false; }
+    const lista = [alvo]; FERAS.concat(typeof CAL !== 'undefined' && CAL.feras ? CAL.feras : []).forEach(f => { if (lista.length < 5 && f !== alvo && feraAtiva(f) && Math.hypot(f.g.position.x - alvo.g.position.x, f.g.position.z - alvo.g.position.z) < 5) lista.push(f); });
+    lista.forEach(f => { f.selo = 15; let s = SELOS.find(x => x.f === f); if (!s) { s = seloCria(f); SELOS.push(s); } s.t = 0; numero(f.g.position, '🔻 -25% DEF', '#ffb040', (f.T.alt || 1.4) + 1.2); });
+    fx('luz', [alvo.g.position.x, 0.5, alvo.g.position.z], 1.2); som('portal', 0.8, 0.7); flash('rgba(255,180,60,.3)'); return true; }
+  function seloFrame(dt) { for (let i = SELOS.length - 1; i >= 0; i--) { const s = SELOS[i], f = s.f; s.t += dt; if (f.selo > 0) f.selo -= dt;
+      if (!feraAtiva(f) || !(f.selo > 0)) { world.remove(s.g); SELOS.splice(i, 1); continue; }
+      const ex = Math.min(1, s.t / 0.4), fim = Math.min(1, f.selo / 0.5), k = ex * fim; s.g.position.set(f.g.position.x, 0, f.g.position.z); s.g.children[0].scale.setScalar(0.2 + k * 0.8); s.g.children[1].scale.setScalar(0.2 + k * 0.8);
+      s.A.rotation.z += dt * 1.6; s.Ab.rotation.z = s.A.rotation.z; s.B.rotation.z -= dt * 3.2; s.Bb.rotation.z = s.B.rotation.z; s.g.children[1].position.y = (f.T.alt || 1.4) + 0.55 + Math.sin(gT * 2.5) * 0.08;
+      const pu = 0.45 + Math.sin(gT * 4) * 0.25; s.Ab.material.opacity = pu * k; s.Bb.material.opacity = pu * k; s.gl.material.opacity = (0.35 + Math.sin(gT * 3) * 0.15) * k; s.gs.material.opacity = 0.45 * k; s.raio.material.opacity = (0.1 + Math.sin(gT * 6) * 0.05) * k; s.A.material.opacity = k; s.B.material.opacity = k; } }
+  function haloFrame(dt) { seteFrame(dt); seloFrame(dt); const quer = haloVis() && !dentro; haloDefFrame(dt); HALO.H.visible = quer || HALO.elos.length > 0; if (HALO.cd > 0) HALO.cd -= dt;
     if (!HALO.H.visible) return; HALO.F.rotation.z += dt * 2.1; HALO.G.material.opacity = 0.5 + Math.sin(gT * 3) * 0.15; { const pu = 0.5 + Math.sin(gT * 3.4) * 0.25; HALO.brA.material.opacity = pu; HALO.brB.material.opacity = 0.45 + Math.sin(gT * 4.1 + 1) * 0.25; HALO.brA2.material.opacity = 0.15 + Math.sin(gT * 2.2) * 0.12; }
     if (HALO.def) { HALO.A.rotation.z += dt * 6; HALO.B.rotation.z -= dt * 9; HALO.F.rotation.z += dt * 4; return; }
     if (!HALO.elos.length) { HALO.A.rotation.z += dt * 0.55; HALO.B.rotation.z -= dt * 1.5; return; }
