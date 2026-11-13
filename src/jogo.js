@@ -2307,7 +2307,7 @@
   heroi.position.set(0, 0, 4.2); heroi.rotation.y = Math.PI; facing = Math.PI;
   function loop(now) {
     // o 1º quadro pode vir com horário ANTES do 'last' (dt negativo): isso jogava o herói pra trás e mexia na vida
-    const dt = Math.max(0, Math.min(0.05, ((now || performance.now()) - last) / 1000)); last = Math.max(last, now || performance.now()); gT += dt;
+    const dt = Math.max(0, Math.min(0.05, ((now || performance.now()) - last) / 1000)) * (window.__lento || 1); last = Math.max(last, now || performance.now()); gT += dt;
     ceu(dt); const noite = modo === 'noite';
     let ix = input.x, iy = input.y; if (keys.KeyA || keys.ArrowLeft) ix -= 1; if (keys.KeyD || keys.ArrowRight) ix += 1; if (keys.KeyW || keys.ArrowUp) iy -= 1; if (keys.KeyS || keys.ArrowDown) iy += 1;
     if (!guildPanel.hidden || conversa || cenaQ || !$('fim').hidden || Q.naCarroca || desmaiado) { ix = 0; iy = 0; }

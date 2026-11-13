@@ -394,9 +394,9 @@ const glowA = cv(128, (x) => { const g = x.createRadialGradient(64, 64, 0, 64, 6
     ARC.voo.push({ m: d.m, alvo: al, p0, p1, t: 0, dur: 0.5 + Math.random() * 0.2, prev: p0.clone() }); som('tiro', 0.5, 1.4, 0.05); adagasHud(); }
   function adagasFim() { const S = ARC.st; if (!S) return; S.lista.forEach(d => d.m.parent && d.m.parent.remove(d.m)); ARC.voo.forEach(v => v.m.parent && v.m.parent.remove(v.m)); ARC.voo.length = 0; ARC.st = null; adagasHud(); }
   const _v = new T3.Vector3(), _q = new T3.Vector3();
-  function arcanoFrame(dt) { const on = arcanoOn(); ARC.C.visible = ARC.F.visible = on;
+  function arcanoFrame(dt) { laminaFrame(dt); const on = arcanoOn() || !!ARC.lam; ARC.C.visible = ARC.F.visible = on;
     if (AR.divino !== 'arcano' && ARC.st) adagasFim();
-    if (on) { ARC.C.rotation.y = 0; ARC.gira.forEach(o => { o.a += dt * o.v; o.m.rotation.z = o.m2.rotation.z = o.a; o.m2.material.opacity = 0.4 + Math.sin(gT * 3 + o.f) * 0.2; if (o.gl) o.gl.material.opacity = 0.2 + Math.sin(gT * 2 + o.f) * 0.08; }); }
+    if (on) { ARC.C.rotation.y = 0; ARC.gira.forEach(o => { o.a += dt * o.v * (ARC.velX || 1); o.m.rotation.z = o.m2.rotation.z = o.a; o.m2.material.opacity = 0.4 + Math.sin(gT * 3 + o.f) * 0.2; if (o.gl) o.gl.material.opacity = 0.2 + Math.sin(gT * 2 + o.f) * 0.08; }); }
     const S = ARC.st; let alvoK = S && S.fase !== 'desce' ? 1 : 0;
     ARC.lados.forEach(o => { o.k = o.k || 0; o.k += (alvoK - o.k) * Math.min(1, dt * 5); o.g.position.lerpVectors(o.base, o.sobe, o.k); const s = 1 + o.k * 0.15; o.g.scale.setScalar(s); });
     if (S) { S.t += dt;
@@ -413,6 +413,57 @@ const glowA = cv(128, (x) => { const g = x.createRadialGradient(64, 64, 0, 64, 6
       const a = 1 - u; _v.set(0, 0, 0).addScaledVector(v.p0, a * a).addScaledVector(v.p1, 2 * a * u).addScaledVector(v.p2, u * u);
       v.m.position.copy(_v); _q.subVectors(_v, v.prev); if (_q.lengthSq() > 1e-6) { _q.normalize(); v.m.quaternion.setFromUnitVectors(new T3.Vector3(0, 1, 0), _q); } v.prev.copy(_v);
       if (u >= 1) { if (vivo) { const W = ARMAS[AR.arma]; dano(e, ((W && W.dano) || 20) * 1.2 * atkMult(), 'magia', critico()); } fx('gelo', [_v.x, _v.y, _v.z], 0.35); v.m.parent && v.m.parent.remove(v.m); ARC.voo.splice(i, 1); adagasHud(); } } }
+  // ---- LÂMINA DO FIRMAMENTO: os círculos vão pra frente, encolhem, sobem pro céu e de lá cai uma espada gigante ----
+  const ESPG = (() => { const c = document.createElement('canvas'); c.width = 256; c.height = 1024; const x = c.getContext('2d');
+    const prata = (a, b) => { const g = x.createLinearGradient(a, 0, b, 0); g.addColorStop(0, '#5a5a76'); g.addColorStop(0.45, '#ffffff'); g.addColorStop(0.6, '#d8d8ec'); g.addColorStop(1, '#4a4a66'); return g; };
+    const lam = () => { x.beginPath(); x.moveTo(128, 6); x.lineTo(170, 90); x.lineTo(166, 700); x.lineTo(90, 700); x.lineTo(86, 90); x.closePath(); };
+    x.save(); x.shadowColor = '#b06aff'; x.shadowBlur = 30; lam(); const gl = x.createLinearGradient(86, 0, 170, 0); gl.addColorStop(0, '#1e0848'); gl.addColorStop(0.5, '#7a3ae8'); gl.addColorStop(1, '#1a063e'); x.fillStyle = gl; x.fill(); x.restore();
+    x.save(); lam(); x.clip(); for (let i = 0; i < 160; i++) { x.fillStyle = `rgba(255,255,255,${0.4 + Math.random() * 0.6})`; x.beginPath(); x.arc(88 + Math.random() * 80, 20 + Math.random() * 680, Math.random() < 0.12 ? 3 : 1.2, 0, 7); x.fill(); }
+      const nb = x.createRadialGradient(128, 380, 4, 128, 380, 120); nb.addColorStop(0, 'rgba(255,120,240,.5)'); nb.addColorStop(1, 'rgba(255,120,240,0)'); x.fillStyle = nb; x.fillRect(0, 0, 256, 720);
+      x.font = 'bold 30px serif'; x.textAlign = 'center'; x.fillStyle = 'rgba(240,220,255,.9)'; x.shadowColor = '#c08aff'; x.shadowBlur = 10; 'ᚠᚱᚲᛉᛟᛞᚨᛊᛏᛗ'.split('').forEach((r, i) => x.fillText(r, 128, 150 + i * 52)); x.restore();
+    x.strokeStyle = '#efe0ff'; x.lineWidth = 4; lam(); x.stroke();
+    // guarda: lua crescente grande
+    x.fillStyle = prata(0, 256); x.beginPath(); x.moveTo(128, 744); x.quadraticCurveTo(30, 748, 4, 640); x.quadraticCurveTo(50, 712, 128, 704); x.quadraticCurveTo(206, 712, 252, 640); x.quadraticCurveTo(226, 748, 128, 744); x.closePath(); x.fill(); x.strokeStyle = '#2a2a42'; x.lineWidth = 2; x.stroke();
+    x.save(); x.shadowColor = '#d07aff'; x.shadowBlur = 24; const gm = x.createRadialGradient(118, 712, 3, 128, 724, 30); gm.addColorStop(0, '#ffe0ff'); gm.addColorStop(0.35, '#c05aff'); gm.addColorStop(1, '#3a0a6a'); x.fillStyle = gm; x.beginPath(); x.arc(128, 724, 28, 0, 7); x.fill(); x.restore(); x.strokeStyle = prata(96, 160); x.lineWidth = 5; x.beginPath(); x.arc(128, 724, 28, 0, 7); x.stroke();
+    x.fillStyle = '#1e1430'; x.fillRect(114, 752, 28, 200); x.strokeStyle = '#8a7ab0'; x.lineWidth = 3; for (let y = 758; y < 948; y += 16) { x.beginPath(); x.moveTo(114, y); x.lineTo(142, y + 9); x.stroke(); }
+    x.fillStyle = prata(70, 186); x.beginPath(); x.arc(128, 990, 46, Math.PI * 0.1, Math.PI * 0.9, false); x.arc(128, 958, 40, Math.PI * 0.82, Math.PI * 0.18, true); x.closePath(); x.fill();
+    x.save(); x.shadowColor = '#d07aff'; x.shadowBlur = 14; x.fillStyle = '#c87aff'; x.beginPath(); x.arc(128, 950, 10, 0, 7); x.fill(); x.restore();
+    const t = new T3.CanvasTexture(c); t.colorSpace = T3.SRGBColorSpace;
+    const g = new T3.Group(), geo = new T3.PlaneGeometry(1.6, 6.4); geo.translate(0, -3.2 + 0.05, 0); // ponta pra baixo, origem no pomo
+    const mt = new T3.MeshBasicMaterial({ map: t, transparent: true, side: T3.DoubleSide, depthWrite: false, toneMapped: false });
+    const a = new T3.Mesh(geo, mt); a.rotation.z = Math.PI; a.position.y = 0; const b = a.clone(); b.rotation.y = Math.PI / 2; g.add(a, b);
+    const ab = new T3.Mesh(geo, new T3.MeshBasicMaterial({ map: t, transparent: true, side: T3.DoubleSide, depthWrite: false, toneMapped: false, blending: T3.AdditiveBlending, opacity: 0.45, color: '#b08aff' })); ab.rotation.z = Math.PI; g.add(ab);
+    const h = new T3.Sprite(new T3.SpriteMaterial({ map: ARC.TX.glowA, transparent: true, depthWrite: false, blending: T3.AdditiveBlending, toneMapped: false, opacity: 0.6 })); h.scale.set(4, 4, 1); h.position.y = 3; g.add(h);
+    const imp = new T3.Mesh(new T3.PlaneGeometry(1, 1), new T3.MeshBasicMaterial({ map: ARC.TX.texChaoFora, transparent: true, depthWrite: false, toneMapped: false, blending: T3.AdditiveBlending, color: '#c8a8ff' })); imp.rotation.x = -Math.PI / 2; imp.visible = false; world.add(imp);
+    g.visible = false; world.add(g); return { g, ab, h, imp, mats: [mt, ab.material, h.material] }; })();
+  // geo invertida: a lâmina aponta pra baixo e o pomo fica em cima (origem do grupo = ponta)
+  function ferasTodas() { const s = new Set(FERAS); if (typeof CAL !== 'undefined' && CAL.feras) CAL.feras.forEach(e => s.add(e)); return [...s].filter(e => feraAtiva(e)); }
+  function laminaAtiva() { if (AR.divino !== 'arcano') { aviso('Equipe o Grimório dos Círculos Arcanos.', '#c8a8ff'); return false; }
+    if (ARC.lam) return false; if (ARC.st) { aviso('🗡️ Lance as adagas primeiro (' + adagasN() + ' restantes).', '#c8a8ff'); return false; }
+    const alvo = maisPerto(26); if (!alvo) { aviso('Nenhum inimigo perto pra Lâmina do Firmamento.', '#c8b48a'); return false; }
+    ARC.lam = { t: 0, alvo, fase: 0, P: new T3.Vector3(alvo.g.position.x, 0, alvo.g.position.z) }; som('magia', 1, 0.6); flash('rgba(150,90,255,.35)'); aviso('⚔️ Lâmina do Firmamento!', '#d0a8ff'); return true; }
+  const _lp = new T3.Vector3(), _lw = new T3.Vector3();
+  function laminaFrame(dt) { const L = ARC.lam, C = ARC.C; if (!L) return; L.t += dt; const t = L.t;
+    if (L.alvo && !L.alvo.morto) L.P.set(L.alvo.g.position.x, 0, L.alvo.g.position.z);
+    const casa = new T3.Vector3(0, 1.55, -0.62), frente = new T3.Vector3(0, 1.9, 1.8);
+    _lw.set(L.P.x, 6.8, L.P.z); heroi.updateMatrixWorld(); const ceu = heroi.worldToLocal(_lw.clone());
+    const ease = u => u < 0.5 ? 2 * u * u : 1 - Math.pow(-2 * u + 2, 2) / 2;
+    let rx = 0, sc = 1, vel = 1;
+    if (t < 0.6) { const u = ease(t / 0.6); C.position.lerpVectors(casa, frente, u); sc = 1 - u * 0.3; vel = 1 + u * 2; }
+    else if (t < 1.4) { const u = ease((t - 0.6) / 0.8); C.position.lerpVectors(frente, ceu, u); sc = 0.7 - u * 0.1; rx = -u * 0.9; vel = 3 + u * 3; }
+    else if (t < 3.0) { C.position.copy(ceu); sc = 0.6; rx = -0.9; vel = 6; }
+    else if (t < 3.9) { const u = ease((t - 3.0) / 0.9); C.position.lerpVectors(ceu, casa, u); sc = 0.6 + u * 0.4; rx = -0.9 * (1 - u); vel = 6 - u * 5; }
+    else { C.position.copy(casa); C.rotation.x = 0; C.scale.setScalar(1); ESPG.g.visible = ESPG.imp.visible = false; ARC.lam = null; ARC.velX = 1; return; }
+    C.scale.setScalar(sc); C.rotation.x = rx; ARC.velX = vel;
+    // espada: surge do portal (1.4–1.9), cai (1.9–2.15), crava e some (2.15–3.4)
+    const G = ESPG.g; const topo = 6.8, SS = 1.25;
+    if (t >= 1.4 && t < 1.9) { const u = (t - 1.4) / 0.5; G.visible = true; G.position.set(L.P.x, topo - u * 1.6, L.P.z); G.scale.setScalar((0.3 + u * 0.7) * SS); G.rotation.y += dt * 3; ESPG.mats.forEach(m => m.opacity = m === ESPG.mats[1] ? 0.45 : 1); }
+    else if (t >= 1.9 && t < 2.15) { const u = (t - 1.9) / 0.25; G.visible = true; G.scale.setScalar(SS); G.position.set(L.P.x, (topo - 1.6) * (1 - u * u) - 0.8 * u * u, L.P.z); }
+    else if (t >= 2.15) { if (!L.bateu) { L.bateu = true; G.position.set(L.P.x, -0.8, L.P.z);
+        const W = ARMAS[AR.arma], base = ((W && W.dano) || 20) * 6 * atkMult(); ferasTodas().forEach(e => { const d = Math.hypot(e.g.position.x - L.P.x, e.g.position.z - L.P.z) - e.T.raio; if (d < 4) { dano(e, d < 1.5 ? base : base * 0.6, 'magia', critico()); e.stun = Math.max(e.stun || 0, 1.2); } });
+        fx('luz', [L.P.x, 0.6, L.P.z], 0.8); fx('gelo', [L.P.x, 1, L.P.z], 0.6); fx('fumo', [L.P.x, 0.3, L.P.z], 0.9); som('explosao', 1, 0.7); flash('rgba(190,140,255,.5)'); ESPG.imp.visible = true; ESPG.imp.position.set(L.P.x, 0.05, L.P.z); }
+      const u = Math.min(1, (t - 2.15) / 1.25); ESPG.imp.scale.setScalar(1 + u * 8); ESPG.imp.material.opacity = 1 - u; ESPG.imp.rotation.z += dt * 2;
+      const f = t > 2.9 ? Math.max(0, 1 - (t - 2.9) / 0.5) : 1; ESPG.mats[0].opacity = f; ESPG.mats[1].opacity = 0.45 * f + Math.sin(t * 20) * 0.1 * f; ESPG.mats[2].opacity = 0.6 * f; G.visible = f > 0; } }
   function haloFrame(dt) { arcanoFrame(dt); rubraFrame(dt); seteFrame(dt); seloFrame(dt); arautoFrame(dt); const quer = haloVis() && !dentro; haloDefFrame(dt); HALO.H.visible = quer || HALO.elos.length > 0; if (HALO.cd > 0) HALO.cd -= dt;
     if (!HALO.H.visible) return; HALO.F.rotation.z += dt * 2.1; HALO.G.material.opacity = 0.5 + Math.sin(gT * 3) * 0.15; { const pu = 0.5 + Math.sin(gT * 3.4) * 0.25; HALO.brA.material.opacity = pu; HALO.brB.material.opacity = 0.45 + Math.sin(gT * 4.1 + 1) * 0.25; HALO.brA2.material.opacity = 0.15 + Math.sin(gT * 2.2) * 0.12; }
     if (HALO.def) { HALO.A.rotation.z += dt * 6; HALO.B.rotation.z -= dt * 9; HALO.F.rotation.z += dt * 4; return; }
