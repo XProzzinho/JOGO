@@ -189,7 +189,7 @@
   // ---------- interface ----------
   const $ = id => document.getElementById(id);
   const input = { x: 0, y: 0, run: false, jump: false }; const keys = {};
-  window.addEventListener('keydown', e => { keys[e.code] = true; if (e.code === 'Space') input.jump = true; if (e.code === 'KeyE') acao(); });
+  window.addEventListener('keydown', e => { keys[e.code] = true; if (e.code === 'Space' && !e.repeat) { if (!pulo2x() && !voando) input.jump = true; } if (e.code === 'KeyE') acao(); });
   window.addEventListener('keyup', e => { keys[e.code] = false; });
   const joy = $('joy'), knob = $('knob');
   let joyId = null, joyC = [0, 0], camId = null, camLast = [0, 0];
@@ -222,7 +222,9 @@
     $('voar').innerHTML = voando ? IC('ui_voar') + ' POUSAR' : IC('ui_voar') + ' VOAR'; $('pular').textContent = voando ? '⬆ SUBIR' : 'PULAR'; $('correr').textContent = voando ? '⬇ DESCER' : 'CORRER'; $('correr').classList.toggle('on', !voando && input.run); }
   const segura = (el, k) => { const on = e => { if (voando) { input[k] = true; e.preventDefault(); } }, off = () => { input[k] = false; }; el.addEventListener('touchstart', on, { passive: false }); el.addEventListener('mousedown', on); ['touchend', 'touchcancel', 'mouseup', 'mouseleave'].forEach(ev => el.addEventListener(ev, off)); };
   segura($('pular'), 'sobe'); segura($('correr'), 'desce');
-  tapBtn($('pular'), () => { if (!voando) input.jump = true; });
+  let pularT = 0; function pulo2x() { const n = performance.now(), dois = n - pularT < 380; pularT = dois ? 0 : n; if (!dois) return false;
+    if (voando) { voa(false); return true; } if (typeof ASAS !== 'undefined' && ASAS.visible && !dentro) { if (!temVoo()) { aviso('🔒 Voar só com permissão do Administrador.', '#c8a8ff'); return true; } voa(true); return true; } return false; }
+  tapBtn($('pular'), () => { if (pulo2x()) return; if (!voando) input.jump = true; });
   tapBtn($('voar'), () => voa(!voando));
   tapBtn($('correr'), () => { if (voando) return; input.run = !input.run; $('correr').classList.toggle('on', input.run); });
   tapBtn($('acao'), () => acao());
@@ -984,6 +986,12 @@
   // ---- ataque do Leonardo ----
   let atkT = 9, atkN = 1, atkHit = true, atkCd = 0, comboT = 0;
   function feraAtiva(e) { return !e.morto && e.T.zona === zona && !dentro && (!e.noite || modo === 'noite'); }
+  const vAc = new T3.Vector3();
+  function acaoPosiciona(al, p, btn) { let h = null; try { const o = al.c || al.g || al.m || null; if (o && o.userData && o.userData.P && o.userData.P.head) { o.userData.P.head.getWorldPosition(vAc); vAc.y += 0.95; h = 1; }
+      else if (o && o.position) { o.updateMatrixWorld && o.updateMatrixWorld(); o.getWorldPosition ? o.getWorldPosition(vAc) : vAc.copy(o.position); vAc.y += (al.T && al.T.alt ? al.T.alt + 0.6 : 2.4); h = 1; }
+      else if (typeof al.x === 'number' && typeof al.z === 'number') { vAc.set(al.x, (al.y || 0) + 1.9, al.z); h = 1; } } catch (e) {}
+    if (!h) { vAc.set(p.x, p.y + 2.9, p.z); } vAc.project(cam); if (vAc.z > 1 || Math.abs(vAc.x) > 1.1 || Math.abs(vAc.y) > 1.1) { vAc.set(p.x, p.y + 2.9, p.z).project(cam); }
+    btn.style.left = Math.round((vAc.x + 1) * innerWidth / 2) + 'px'; btn.style.top = Math.round(Math.max(40, (1 - vAc.y) * innerHeight / 2)) + 'px'; }
   function maisPerto(r) { let m = null, md = r; FERAS.forEach(e => { if (!feraAtiva(e)) return; const d = Math.hypot(e.g.position.x - heroi.position.x, e.g.position.z - heroi.position.z) - e.T.raio; if (d < md) { md = d; m = e; } }); return m; }
   function atacar() { if (!guildPanel.hidden || conversa || cenaQ || desmaiado || !$('fim').hidden) return; if (dentro) { aviso('Dentro de casa não! A mãe briga.', '#ffb04a'); return; } if (atkCd > 0) return; const A = ARMAS[AR.arma];
     const e = maisPerto(A.longe ? 18 : 4.5); if (e) facing = Math.atan2(e.g.position.x - heroi.position.x, e.g.position.z - heroi.position.z);
@@ -1497,7 +1505,14 @@
   function tituloFrame(dt) { fugaT -= dt; const p = heroi.position; FERAS.forEach(e => { if (!e.T.chefe || e.morto) { e._caca = false; return; } const caca = e.estado === 'caca' || e.estado === 'ataque';
       if (e._caca && !caca && vida > 0 && Math.hypot(p.x - e.g.position.x, p.z - e.g.position.z) > 16) feito('fugitivo'); e._caca = caca; }); }
   document.querySelectorAll('#perfil .aba').forEach(b => tapBtn(b, () => { abaPerfil = b.dataset.a; desenhaPerfil(); }));
-  tapBtn($('perfil-btn'), abrirPerfil); tapBtn($('pf-fecha'), () => { $('perfil').hidden = true; });
+  const menuR = document.createElement('div'); menuR.id = 'menu-r'; menuR.hidden = true; menuR.innerHTML = '<button data-m="perfil"><span>👤</span>Perfil e equipamento</button><button data-m="bolsa"><span>🎒</span>Inventário</button><button data-m="arv"><span>🌳</span>Árvore de habilidades<b id="menu-pts" hidden></b></button><button data-m="cfg"><span>⚙️</span>Configurações</button>'; document.body.appendChild(menuR);
+  const menuDot = document.createElement('span'); menuDot.id = 'menu-dot'; menuDot.hidden = true; $('perfil-btn').appendChild(menuDot);
+  function menuPts() { const a = $('arv-pts'), on = a && !a.hidden; menuDot.hidden = !on; const m = $('menu-pts'); m.hidden = !on; if (on) m.textContent = a.textContent; }
+  if ($('arv-pts')) new MutationObserver(menuPts).observe($('arv-pts'), { attributes: true, childList: true, characterData: true, subtree: true }); setTimeout(menuPts, 500);
+  menuR.querySelectorAll('button').forEach(b => tapBtn(b, () => { menuR.hidden = true; const k = b.dataset.m; if (conversa || cenaQ) return;
+    if (k === 'perfil') abrirPerfil(); else if (k === 'bolsa') abrirBolsa(); else if (k === 'arv') abrirArvore(); else if (k === 'cfg') { $('cfg').hidden = false; configDesenha(); } }));
+  window.addEventListener('pointerdown', e => { if (!menuR.hidden && !menuR.contains(e.target) && !$('perfil-btn').contains(e.target)) menuR.hidden = true; }, true);
+  tapBtn($('perfil-btn'), () => { if (conversa || cenaQ) return; menuR.hidden = !menuR.hidden; menuPts(); }); tapBtn($('pf-fecha'), () => { $('perfil').hidden = true; });
   let previaT = 0; function perfilFrame(dt) { if ($('perfil').hidden || !$('previa')) return; previaT += dt; if (previaT > 0.06) { fazPrevia(previaT); previaT = 0; } }
   aplicaNivel(); vida = VIDA_MAX; mana = MANA_MAX; atualizaNivel(); vesteFantasia(AR.fantasia); setTimeout(fazRetrato, 700); attrBadge(); if (AR.attrNovo) { AR.attrNovo = false; salvaAR(); setTimeout(() => aviso('✨ Novo sistema de ATRIBUTOS! Você tem ' + AR.attrPts + ' pontos. Toque no seu retrato › Status pra distribuir.', '#ffd23c'), 5000); }
   // ===================== CLASSES E CRIAÇÃO DO PERSONAGEM =====================
@@ -2300,7 +2315,7 @@
   //@@GM@@
   //@@MUNDO@@
   //@@CALAB@@
-  window.__dbg = { divVeste: k => divVeste(k), get ARC() { return ARC; }, get _in() { return [input.x, input.y, vel, facing, dashT, Object.keys(keys).join()]; }, danoHeroi, abrirLoja, aprimora, falar, dano, CAL, DGS, calEntra, MIS, abreMural, get PRACA() { return PRACA; }, staffArmas, equipaArma, MONT3D, PET3D, get MONT() { return MONT; }, montar, petChama, MQ, set GMB(v) { GMB = v; gmHud(); }, gmPct, ASAT, COSM, vesteCosm, CB_LISTA, abrirLivros, trocaPag, get mana() { return mana; }, set mana(v) { mana = v; }, ARMAG, T3, vesteCosm, voa, get voando() { return voando; }, input, mpRecebe, entraMasmorra, saiMasmorra, MM, mmFaseAtual, mmMorte, setaFrame, equipaArma, abrirGuilda, arthurNPC, vestePeca, atualizaPecas, PECAS, BLOCOS, modoBatalha, bmLiga, bmDesliga, BMS, ORB, get BM() { return BM; }, get hora() { return hora; }, set hora(v) { hora = v; }, usarHab2: id => classePoder2(id), BUFF, abrirCriar, aplicaClasse, CLASSES, get desp() { return desp; }, set desp(v) { desp = v; }, usarHab: id => classePoder(id), renderer, scene, world, ganhaXp, vesteFantasia, abrirPerfil, fazRetrato, irValdren, Q, heroi, ativo, AR, FERAS, golem, atacar, get vida() { return vida; }, set vida(v) { vida = v; }, abrirLoja, usarPoder: id => usarPoder(PW[id]), acao: () => acao(), get alvo() { return alvo; } };
+  window.__dbg = { get NPCS() { return NPCS; }, divVeste: k => divVeste(k), get ARC() { return ARC; }, get _in() { return [input.x, input.y, vel, facing, dashT, Object.keys(keys).join()]; }, danoHeroi, abrirLoja, aprimora, falar, dano, CAL, DGS, calEntra, MIS, abreMural, get PRACA() { return PRACA; }, staffArmas, equipaArma, MONT3D, PET3D, get MONT() { return MONT; }, montar, petChama, MQ, set GMB(v) { GMB = v; gmHud(); }, gmPct, ASAT, COSM, vesteCosm, CB_LISTA, abrirLivros, trocaPag, get mana() { return mana; }, set mana(v) { mana = v; }, ARMAG, T3, vesteCosm, voa, get voando() { return voando; }, input, mpRecebe, entraMasmorra, saiMasmorra, MM, mmFaseAtual, mmMorte, setaFrame, equipaArma, abrirGuilda, arthurNPC, vestePeca, atualizaPecas, PECAS, BLOCOS, modoBatalha, bmLiga, bmDesliga, BMS, ORB, get BM() { return BM; }, get hora() { return hora; }, set hora(v) { hora = v; }, usarHab2: id => classePoder2(id), BUFF, abrirCriar, aplicaClasse, CLASSES, get desp() { return desp; }, set desp(v) { desp = v; }, usarHab: id => classePoder(id), renderer, scene, world, ganhaXp, vesteFantasia, abrirPerfil, fazRetrato, irValdren, Q, heroi, ativo, AR, FERAS, golem, atacar, get vida() { return vida; }, set vida(v) { vida = v; }, abrirLoja, usarPoder: id => usarPoder(PW[id]), acao: () => acao(), get alvo() { return alvo; } };
   // ---------- laço do jogo ----------
   let vy = 0, noChao = true, facing = 0, vel = 0, gT = 0, last = performance.now();
   const ANDAR = 3.0, CORRER = 6.5, GRAV = 22, PULO = 7.6; const tmp = new T3.Vector3();
@@ -2345,7 +2360,7 @@
     else if (zona === 'vila') { const dp = casaFamilia.localToWorld(new T3.Vector3(casaFamilia.userData.door[0], 0, casaFamilia.userData.door[1] - 0.6)); if (Math.hypot(p.x - dp.x, p.z - dp.z) < 1.3) alvo = { tipo: 'entrar' }; }
     { const alM = mmFrame(dt, p); if (alM) alvo = alM; const alC = calFrame(dt, p); if (alC) alvo = alC; if (zona === 'vila' && !dentro && Math.hypot(p.x - (MM_ENT.x + 1.5), p.z - MM_ENT.z) < 3.2) alvo = { rot: 'ENTRAR', acao: entraMasmorra }; setaFrame(p); $('voar').hidden = !voando && !(ASAS.visible && !dentro && temVoo()); }
     if (!conversa) { const alC = combateAlvo(p); if (alC) alvo = alC; }
-    const btn = $('acao'); btn.hidden = !alvo || !!conversa || !!cenaQ; if (alvo) btn.textContent = alvo.rot || (alvo.tipo === 'entrar' ? 'ENTRAR' : alvo.tipo === 'sair' ? 'SAIR' : alvo.falas && !alvo.c ? 'VER' : 'FALAR');
+    const btn = $('acao'); btn.hidden = !alvo || !!conversa || !!cenaQ; if (alvo) { const tx = alvo.rot || (alvo.tipo === 'entrar' ? 'ENTRAR' : alvo.tipo === 'sair' ? 'SAIR' : alvo.falas && !alvo.c ? 'VER' : 'FALAR'); const ic = tx === 'FALAR' ? '💬 ' : tx === 'VER' ? '👁️ ' : tx === 'ENTRAR' ? '🚪 ' : tx === 'SAIR' ? '🚪 ' : '✋ '; if (btn.dataset.t !== tx) { btn.dataset.t = tx; btn.textContent = ic + tx.charAt(0) + tx.slice(1).toLowerCase(); } acaoPosiciona(alvo, p, btn); }
     // ambiente
     { const cx = zona === 'valdren' ? VX : 0, an = (hora - 6) / 12 * Math.PI; sunBall.position.set(cx + Math.cos(an) * 110, Math.sin(an) * 70 + 4, -100); moon.position.set(cx - Math.cos(an) * 110, -Math.sin(an) * 70 + 4, -100); sunBall.visible = !dentro && zona !== 'masmorra' && sunBall.position.y > -4; moon.visible = !dentro && zona !== 'masmorra' && moon.position.y > -4; WIN.forEach(w => w.material.opacity = 0.15 + noiteF * 0.65); { const cb = $('ciclo'), q = modo === 'dia' ? 'lua' : 'sol'; if (cb.dataset.q !== q) { cb.dataset.q = q; cb.innerHTML = '<img class="ico big" src="icones/ui_' + q + '.svg" alt="">'; } } }
     nuvens.forEach((c, i) => { c.visible = !dentro && zona !== 'masmorra'; c.position.x += dt * (0.5 + (i % 3) * 0.2); if (c.position.x > 140) c.position.x = -140; });

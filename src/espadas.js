@@ -375,13 +375,13 @@ const glowA = cv(128, (x) => { const g = x.createRadialGradient(64, 64, 0, 64, 6
     const geoA = new T3x.PlaneGeometry(0.16, 0.64); geoA.translate(0, 0.07, 0);
     function fazAdaga() { const g = new T3x.Group(); const a = new T3x.Mesh(geoA, mat(texAdaga)); const b = a.clone(); b.rotation.y = Math.PI / 2; g.add(a, b);
       const h = new T3x.Sprite(new T3x.SpriteMaterial({ map: TX.glowA, transparent: true, depthWrite: false, blending: T3x.AdditiveBlending, toneMapped: false, opacity: 0.55 })); h.scale.set(0.5, 0.5, 1); h.position.y = 0.2; g.add(h); g.userData.h = h; return g; }
-    const HUD = document.createElement('div'); HUD.id = 'adagasHud'; HUD.style.cssText = 'position:fixed;left:50%;bottom:172px;transform:translateX(-50%);z-index:30;padding:5px 14px;border-radius:14px;background:linear-gradient(180deg,rgba(40,14,80,.85),rgba(18,6,40,.85));border:1.5px solid #b48aff;color:#f0e6ff;font:700 15px system-ui;text-shadow:0 0 8px #a06aff;box-shadow:0 0 14px rgba(150,90,255,.6);pointer-events:none;display:none';
+    const HUD = document.createElement('div'); HUD.id = 'adagasHud'; HUD.style.cssText = 'position:fixed;right:calc(264px + env(safe-area-inset-right,0px));top:calc(20px + env(safe-area-inset-top,0px));z-index:30;padding:6px 12px;border-radius:14px;background:linear-gradient(180deg,rgba(40,14,80,.85),rgba(18,6,40,.85));border:1.5px solid #b48aff;color:#f0e6ff;font:700 15px system-ui;text-shadow:0 0 8px #a06aff;box-shadow:0 0 14px rgba(150,90,255,.6);pointer-events:none;display:none';
     document.body.appendChild(HUD);
     return { TX, C, F, gira, lados, fazAdaga, HUD, st: null, voo: [] };
   })();
   function arcanoOn() { return AR.divino === 'arcano' && !dentro; }
   function adagasN() { return ARC.st ? ARC.st.lista.length + ARC.voo.length : 0; }
-  function adagasHud() { const n = adagasN(); ARC.HUD.style.display = ARC.st ? 'block' : 'none'; ARC.HUD.textContent = '🗡️ Adagas Astrais: ' + n; }
+  function adagasHud() { const n = adagasN(); ARC.HUD.style.display = ARC.st ? 'block' : 'none'; ARC.HUD.textContent = '🗡️ ' + n; ARC.HUD.title = 'Adagas Astrais'; }
   function adagasAtiva() { if (AR.divino !== 'arcano') { aviso('Equipe o Grimório dos Círculos Arcanos.', '#c8a8ff'); return false; }
     if (ARC.st) { aviso('🗡️ Ainda restam ' + adagasN() + ' adagas. Ataque pra lançar!', '#c8a8ff'); return false; }
     ARC.st = { t: 0, lista: [], fase: 'sobe' }; som('magia', 0.9, 0.7); fx('luz', [heroi.position.x, 2, heroi.position.z], 0.6); aviso('🗡️ Adagas Astrais! Cada ataque lança uma adaga.', '#d0a8ff'); adagasHud(); return true; }
