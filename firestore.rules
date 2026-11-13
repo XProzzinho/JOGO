@@ -144,11 +144,16 @@ service cloud.firestore {
       allow read: if logado();
       allow create: if logado() && n().de == eu() && n().lider == null && n().lance == 0 && n().lances.size() == 0
         && n().entregue == false && n().recebeuVend == false && n().ini is int && n().ini >= 1
-        && n().fim is int && n().fim > agora() && n().fim <= agora() + 26 * 3600 * 1000
+        && n().fim is int && n().fim > agora() && n().fim <= agora() + 170 * 3600 * 1000
+        && n().get('tipo', 'leilao') in ['leilao', 'venda']
         && n().it.t in ['item', 'arma', 'fant', 'cosm', 'sob'];
-      allow update: if logado() && !mudou().hasAny(['de', 'nomeDe', 'it', 'ini', 'criado']) && (
+      allow update: if logado() && !mudou().hasAny(['de', 'nomeDe', 'it', 'ini', 'criado', 'tipo']) && (
+        // venda direta: paga o preço e leva na hora (a venda fecha)
+        (o().get('tipo', 'leilao') == 'venda' && eu() != o().de && o().lider == null && agora() < o().fim
+          && mudou().hasOnly(['lance', 'lider', 'liderNome', 'lances', 'fim']) && n().fim == 0
+          && n().lider == eu() && n().lance == o().ini && n().lances[eu()] == n().lance && soEuNosLances())
         // dar lance (maior que o atual, antes de acabar, não pode ser o vendedor)
-        (eu() != o().de && agora() < o().fim && mudou().hasOnly(['lance', 'lider', 'liderNome', 'lances'])
+        || (o().get('tipo', 'leilao') != 'venda' && eu() != o().de && agora() < o().fim && mudou().hasOnly(['lance', 'lider', 'liderNome', 'lances'])
           && n().lider == eu() && n().lance > o().lance && n().lance >= o().ini && n().lances[eu()] == n().lance && soEuNosLances())
         // pegar de volta o lance superado
         || (mudou().hasOnly(['lances']) && o().lider != eu() && n().lances[eu()] == 0 && soEuNosLances())
