@@ -1001,3 +1001,33 @@ const ArcanePillarAssets = (function () {
       if (PIL.tick <= 0) { PIL.tick = 1; const W = ARMAS[AR.arma]; L.forEach(e => { dano(e, ((W && W.dano) || 20) * 0.3 * atkMult(), 'magia'); fx('luz', [e.g.position.x, (e.T.alt || 1.2) * 0.6, e.g.position.z], 0.3); }); if (L.length) som('magia', 0.35, 1.5, 0.05); } }
     if (t > D + 0.8) { PIL.on = false; [PIL.L, PIL.R, PIL.chao, PIL.feixe].forEach(o => o.visible = false); } }
   setInterval(() => { try { const s = new Set(FERAS); if (typeof CAL !== 'undefined' && CAL.feras) CAL.feras.forEach(e => s.add(e)); s.forEach(e => { if (e.pilar > 0) e.pilar -= 0.1; }); } catch (er) {} }, 100);
+  // ---- habilidade: ADAGAS GUARDIÃS (2 adagas saem das costas, rondam o herói e atacam quem chegar a 6 m) ----
+  const GUA = { on: false, t: 0, dur: 10, ad: [] };
+  const _gv = new T3.Vector3(), _gd = new T3.Vector3(), _gu = new T3.Vector3(0, 1, 0);
+  function guardiasAtiva() { if (AR.divino !== 'arcano') { aviso('Equipe o Grimório dos Círculos Arcanos.', '#c8a8ff'); return false; } if (GUA.on) return false;
+    GUA.on = true; GUA.t = 0; const p = heroi.position;
+    GUA.ad = [0, 1].map(i => { const m = ARC.fazAdaga(); m.scale.setScalar(1.25); world.add(m); const s = i ? 1 : -1; const f = facing; m.position.set(p.x - Math.sin(f) * 0.45 + Math.cos(f) * 0.3 * s, p.y + 1.45, p.z - Math.cos(f) * 0.45 - Math.sin(f) * 0.3 * s);
+      return { m, i, fase: 'sai', t: 0, a: i * Math.PI + facing, va: (0.9 + Math.random() * 0.6) * (i ? -1 : 1), r: 1.3, h: 1.4, cd: 0.3 + i * 0.35, alvo: null, prev: m.position.clone(), p0: null, p1: null }; });
+    som('magia', 0.8, 1.2); fx('luz', [p.x, 1.4, p.z], 0.5); aviso('🗡️ Adagas Guardiãs! Elas atacam quem chegar perto (6 m) por 10 s.', '#d8a8ff'); return true; }
+  function guaAlvo(p) { let m = null, md = 6; const s = new Set(FERAS); if (typeof CAL !== 'undefined' && CAL.feras) CAL.feras.forEach(e => s.add(e)); s.forEach(e => { if (!feraAtiva(e)) return; const d = Math.hypot(e.g.position.x - p.x, e.g.position.z - p.z) - e.T.raio; if (d < md) { md = d; m = e; } }); return m; }
+  function guardiasFrame(dt) { if (!GUA.on) return; GUA.t += dt; const p = heroi.position, acabou = GUA.t >= GUA.dur || AR.divino !== 'arcano';
+    GUA.ad.forEach(d => { const m = d.m; d.cd -= dt; d.t += dt;
+      // ponto de ronda: gira em volta do herói com velocidade, raio e altura variando
+      d.a += dt * d.va; if (Math.random() < dt * 0.6) d.va = (0.8 + Math.random() * 1.4) * Math.sign(d.va || 1) * (Math.random() < 0.15 ? -1 : 1);
+      d.r += ((1.1 + Math.sin(gT * 0.7 + d.i * 2) * 0.45) - d.r) * Math.min(1, dt * 2); d.h = 1.25 + Math.sin(gT * 1.3 + d.i * 3) * 0.4;
+      const ox = p.x + Math.sin(d.a) * d.r, oy = p.y + d.h, oz = p.z + Math.cos(d.a) * d.r;
+      if (acabou && d.fase !== 'fim') { d.fase = 'fim'; d.t = 0; }
+      if (d.fase === 'sai') { _gv.set(ox, oy, oz); m.position.lerp(_gv, Math.min(1, dt * 5)); if (d.t > 0.5) d.fase = 'ronda'; }
+      else if (d.fase === 'ronda') { _gv.set(ox, oy, oz); m.position.lerp(_gv, Math.min(1, dt * 7));
+        if (d.cd <= 0) { const e = guaAlvo(p); if (e) { d.fase = 'ataca'; d.t = 0; d.alvo = e; d.p0 = m.position.clone(); const lado = Math.random() < 0.5 ? -1 : 1; d.p1 = d.p0.clone().add(new T3.Vector3(Math.cos(facing) * lado * 1.6, 1 + Math.random(), -Math.sin(facing) * lado * 1.6)); som('tiro', 0.4, 1.5, 0.05); } } }
+      else if (d.fase === 'ataca') { const e = d.alvo, vivo = e && !e.morto, u = Math.min(1, d.t / 0.32);
+        if (vivo) d.p2 = (d.p2 || new T3.Vector3()).set(e.g.position.x, e.g.position.y + (e.T.alt || 1.2) * 0.6, e.g.position.z); else if (!d.p2) d.p2 = d.p0.clone();
+        const a = 1 - u; m.position.set(0, 0, 0).addScaledVector(d.p0, a * a).addScaledVector(d.p1, 2 * a * u).addScaledVector(d.p2, u * u);
+        if (u >= 1) { if (vivo) { const W = ARMAS[AR.arma]; dano(e, ((W && W.dano) || 20) * 0.6 * atkMult(), 'magia', critico()); fx('gelo', [m.position.x, m.position.y, m.position.z], 0.3); } d.fase = 'volta'; d.t = 0; d.p2 = null; d.cd = 0.55; } }
+      else if (d.fase === 'volta') { _gv.set(ox, oy, oz); m.position.lerp(_gv, Math.min(1, dt * 9)); if (m.position.distanceTo(_gv) < 0.25 || d.t > 0.6) d.fase = 'ronda'; }
+      else if (d.fase === 'fim') { _gv.set(p.x - Math.sin(facing) * 0.4, p.y + 1.45, p.z - Math.cos(facing) * 0.4); m.position.lerp(_gv, Math.min(1, dt * 6)); m.scale.setScalar(Math.max(0.01, 1.25 * (1 - d.t / 0.5))); }
+      // aponta a ponta pra direção do movimento (na ronda, aponta pra frente da órbita)
+      _gd.subVectors(m.position, d.prev); if (d.fase === 'ronda' || _gd.lengthSq() < 1e-6) _gd.set(Math.cos(d.a) * d.va, 0.15, -Math.sin(d.a) * d.va);
+      if (_gd.lengthSq() > 1e-8) { _gd.normalize(); m.quaternion.slerp(new T3.Quaternion().setFromUnitVectors(_gu, _gd), Math.min(1, dt * 12)); } d.prev.copy(m.position);
+      if (m.userData.h) m.userData.h.material.opacity = 0.45 + Math.sin(gT * 6 + d.i) * 0.2; });
+    if (acabou && GUA.ad.every(d => d.fase === 'fim' && d.t > 0.5)) { GUA.ad.forEach(d => world.remove(d.m)); GUA.ad = []; GUA.on = false; } }
