@@ -7477,25 +7477,12 @@ const glowA = cv(128, (x) => { const g = x.createRadialGradient(64, 64, 0, 64, 6
     // gemas
     for (let i = 0; i < A.gemas; i++) { x.save(); x.rotate((i + 0.5) / A.gemas * Math.PI * 2); x.translate(0, -R * 0.93); x.rotate(Math.PI / 4); const s = 7 + A.forca * 5; x.fillStyle = '#ffffff'; x.fillRect(-s, -s, s * 2, s * 2); x.fillStyle = c2; x.fillRect(-s * 0.6, -s * 0.6, s * 1.2, s * 1.2); x.restore(); }
     const t = new T3.CanvasTexture(c); t.colorSpace = T3.SRGBColorSpace; return t; });
-  const ARO = (() => { const G = new T3.Group(); G.visible = false; heroi.add(G); const plano = new T3.PlaneGeometry(1, 1), GEM = new T3.OctahedronGeometry(0.06, 0), PON = new T3.ConeGeometry(0.03, 0.12, 6);
-    const ARCO = ['#ff5a8a', '#ffd23c', '#5aff9a', '#5ae8ff', '#a07aff', '#ff5ad8'];
-    const L = AROS.map((A, i) => { const g = new T3.Group(); g.position.y = 0.3 + i * 0.29; G.add(g); const t = new T3.Group(); g.add(t); const r = 0.78 + (i % 2) * 0.08 + A.forca * 0.1, dir = i % 2 ? -1 : 1;
-      t.rotation.set(0.12 * dir, 0, 0.1 * -dir);
-      const metal = new T3.MeshStandardMaterial({ color: A.c2, emissive: A.c2, emissiveIntensity: 0.35 + A.forca * 0.5, metalness: 0.75, roughness: 0.3, transparent: true, opacity: 0 });
-      const brilho = new T3.MeshBasicMaterial({ color: A.c1, transparent: true, opacity: 0, toneMapped: false });
-      const aro = new T3.Mesh(new T3.TorusGeometry(r, 0.03 + A.forca * 0.025, 10, 72), metal); aro.rotation.x = Math.PI / 2; t.add(aro);
-      const fio = new T3.Mesh(new T3.TorusGeometry(r * 0.9, 0.012, 6, 72), brilho); fio.rotation.x = Math.PI / 2; t.add(fio);
-      const fio2 = new T3.Mesh(new T3.TorusGeometry(r * 1.07, 0.008, 6, 72), brilho); fio2.rotation.x = Math.PI / 2; t.add(fio2);
-      // faixa de runas (a textura do aro) no plano do anel
-      const fx = new T3.Mesh(plano, new T3.MeshBasicMaterial({ map: ARO_TEX[i], transparent: true, depthWrite: false, side: T3.DoubleSide, toneMapped: false, opacity: 0 })); fx.rotation.x = -Math.PI / 2; fx.scale.setScalar(r * 2.3); t.add(fx);
-      const gl = new T3.Mesh(plano, new T3.MeshBasicMaterial({ map: ARO_TEX[i], transparent: true, depthWrite: false, side: T3.DoubleSide, toneMapped: false, opacity: 0, blending: T3.AdditiveBlending, color: A.glow })); gl.rotation.x = -Math.PI / 2; gl.scale.setScalar(r * 2.38); t.add(gl);
-      // gemas em cima do aro
-      const gemas = []; for (let k = 0; k < A.gemas; k++) { const q = k / A.gemas * Math.PI * 2; const m = new T3.Mesh(GEM, new T3.MeshBasicMaterial({ color: A.arco ? ARCO[k % 6] : A.c1, transparent: true, opacity: 0, toneMapped: false })); m.position.set(Math.cos(q) * r, 0, Math.sin(q) * r); m.scale.set(1, 1.5, 1).multiplyScalar(0.8 + A.forca * 0.6); t.add(m); gemas.push(m); }
-      // pontas pra fora
-      const pontas = []; for (let k = 0; k < A.pontas; k++) { const q = (k + 0.5) / A.pontas * Math.PI * 2; const m = new T3.Mesh(PON, metal); m.position.set(Math.cos(q) * (r + 0.07), 0, Math.sin(q) * (r + 0.07)); m.rotation.z = -Math.PI / 2; m.rotation.y = -q; m.scale.setScalar(k % 2 ? 0.7 : 1.1); t.add(m); pontas.push(m); }
-      // faíscas e chamas girando no aro
-      const fa = []; const nf = Math.round(3 + A.forca * 6 + A.chamas / 4); for (let k = 0; k < nf; k++) { const sp = glowSpr(t, 0, 0, 0, 0.16 + A.forca * 0.12, A.arco ? ARCO[k % 6] : A.glow, 0); fa.push({ sp, a: k / nf * Math.PI * 2, v: 0.6 + Math.random() * 0.8, y: Math.random() }); }
-      return { g, t, r, A, dir, mats: [metal, brilho, fx.material, gl.material], gemas, fa, f: Math.random() * 6 }; });
+  const ARO = (() => { const G = new T3.Group(); G.visible = false; heroi.add(G); const geo = new T3.PlaneGeometry(1, 1);
+    const L = AROS.map((A, i) => { const g = new T3.Group(); g.position.y = 0.035 + i * 0.07; G.add(g); const s = 1.9 + i * 0.62;
+      const m = new T3.Mesh(geo, new T3.MeshBasicMaterial({ map: ARO_TEX[i], transparent: true, depthWrite: false, side: T3.DoubleSide, toneMapped: false, opacity: 0 })); m.rotation.x = -Math.PI / 2; m.scale.setScalar(s); g.add(m);
+      const m2 = new T3.Mesh(geo, m.material.clone()); m2.material.blending = T3.AdditiveBlending; m2.material.color.set(A.glow); m2.rotation.x = -Math.PI / 2; m2.scale.setScalar(s * 1.04); m2.position.y = 0.005; g.add(m2);
+      const fa = []; const nf = Math.round(4 + A.forca * 10); for (let k = 0; k < nf; k++) { const sp = glowSpr(g, 0, 0, 0, 0.18, A.glow, 0); fa.push({ sp, a: Math.random() * 6, h: Math.random(), v: 0.5 + Math.random() }); }
+      return { g, m, m2, s, A, fa, dir: i % 2 ? -1 : 1 }; });
     return { G, L, t: 0, ultLuta: -99, lutaAte: 0 }; })();
   function arosTem() { return AROS.map((A, i) => AR.nv >= A.nv ? i : -1).filter(i => i >= 0); }
   function aroMostra(seg) { const T = arosTem(); if (!T.length) return; ARO.lutaAte = Math.max(ARO.lutaAte, gT + (seg || 10)); if (!ARO.G.visible) { ARO.G.visible = true; ARO.t = 0; } }
@@ -7504,13 +7491,10 @@ const glowA = cv(128, (x) => { const g = x.createRadialGradient(64, 64, 0, 64, 6
   function aroNovo(nv) { const A = AROS.find(a => a.nv === nv); if (!A) return; aroMostra(10); aviso('💫 Novo aro conquistado: ' + A.nome + ' (Nv ' + nv + ')! Ele aparece nos seus pés quando você entra em luta.', A.glow); }
   function aroFrame(dt) { if (!ARO.G.visible) return; ARO.t += dt; const T = arosTem(), resta = ARO.lutaAte - gT;
     if (resta <= -0.8 || !T.length) { ARO.G.visible = false; return; } const sai = resta < 0 ? 1 + resta / 0.8 : 1;
-    ARO.L.forEach((o, i) => { const tem = T.includes(i); o.g.visible = tem; if (!tem) return; const ord = T.indexOf(i), ent = clamp((ARO.t - ord * 0.14) / 0.6), e = 1 - Math.pow(1 - ent, 3), op = e * sai;
-      // sobe um em cima do outro e fica flutuando em volta do corpo
-      o.g.position.y = (0.3 + ord * 0.29) * (0.3 + 0.7 * e) + Math.sin(gT * 1.7 + o.f) * 0.05; const k = (0.3 + 0.7 * e) * (1 + Math.sin(gT * 2.2 + i) * 0.02); o.g.scale.setScalar(k);
-      o.t.rotation.y += dt * o.dir * (0.7 + i * 0.1); o.t.rotation.x = 0.12 * o.dir + Math.sin(gT * 0.9 + o.f) * 0.08; o.t.rotation.z = -0.1 * o.dir + Math.cos(gT * 0.8 + o.f) * 0.08;
-      o.mats[0].opacity = op; o.mats[1].opacity = op * 0.9; o.mats[2].opacity = op * (0.65 + o.A.forca * 0.3); o.mats[3].opacity = op * (0.15 + o.A.forca * 0.3) * (0.7 + Math.sin(gT * 4 + i) * 0.3);
-      o.gemas.forEach((g, n) => { g.material.opacity = op; g.rotation.y += dt * 3; });
-      o.fa.forEach(f => { f.a += dt * f.v * o.dir * 1.6; f.y += dt * 0.8; if (f.y > 1) f.y = 0; f.sp.position.set(Math.cos(f.a) * o.r, Math.sin(f.y * Math.PI * 2) * 0.05 + (o.A.chamas ? f.y * 0.25 : 0), Math.sin(f.a) * o.r); f.sp.material.opacity = op * (o.A.chamas ? (1 - f.y) : 0.8); }); }); }
+    ARO.L.forEach((o, i) => { const tem = T.includes(i); o.g.visible = tem; if (!tem) return; const ord = T.indexOf(i), ent = clamp((ARO.t - ord * 0.12) / 0.5), e = 1 - Math.pow(1 - ent, 3);
+      const k = e * (1 + Math.sin(gT * 2.4 + i) * 0.025) * (0.4 + 0.6 * sai); o.m.scale.setScalar(o.s * k); o.m2.scale.setScalar(o.s * 1.04 * k);
+      o.m.rotation.z += dt * o.dir * (0.6 + i * 0.12); o.m2.rotation.z = o.m.rotation.z; const op = e * sai; o.m.material.opacity = op * (0.75 + o.A.forca * 0.25); o.m2.material.opacity = op * (0.12 + o.A.forca * 0.28) * (0.7 + Math.sin(gT * 4 + i) * 0.3);
+      o.fa.forEach(f => { f.h += dt * f.v * 0.5; if (f.h > 1) { f.h = 0; f.a = Math.random() * 6; } const r = o.s * 0.45 * k; f.sp.position.set(Math.cos(f.a) * r, f.h * (0.6 + o.A.forca * 1.4), Math.sin(f.a) * r); f.sp.material.opacity = op * (1 - f.h) * 0.9; }); }); }
 
   window.__dbg = { aroMostra: s => aroMostra(s), get NPCS() { return NPCS; }, divVeste: k => divVeste(k), get ARC() { return ARC; }, get _in() { return [input.x, input.y, vel, facing, dashT, Object.keys(keys).join()]; }, danoHeroi, abrirLoja, aprimora, falar, dano, CAL, DGS, calEntra, MIS, abreMural, get PRACA() { return PRACA; }, staffArmas, equipaArma, MONT3D, PET3D, get MONT() { return MONT; }, montar, petChama, MQ, set GMB(v) { GMB = v; gmHud(); }, gmPct, ASAT, COSM, vesteCosm, CB_LISTA, abrirLivros, trocaPag, get mana() { return mana; }, set mana(v) { mana = v; }, ARMAG, T3, vesteCosm, voa, get voando() { return voando; }, input, mpRecebe, entraMasmorra, saiMasmorra, MM, mmFaseAtual, mmMorte, setaFrame, equipaArma, abrirGuilda, arthurNPC, vestePeca, atualizaPecas, PECAS, BLOCOS, modoBatalha, bmLiga, bmDesliga, BMS, ORB, get BM() { return BM; }, get hora() { return hora; }, set hora(v) { hora = v; }, usarHab2: id => classePoder2(id), BUFF, abrirCriar, aplicaClasse, CLASSES, get desp() { return desp; }, set desp(v) { desp = v; }, usarHab: id => classePoder(id), renderer, scene, world, ganhaXp, vesteFantasia, abrirPerfil, fazRetrato, irValdren, Q, heroi, ativo, AR, FERAS, golem, atacar, get vida() { return vida; }, set vida(v) { vida = v; }, abrirLoja, usarPoder: id => usarPoder(PW[id]), acao: () => acao(), get alvo() { return alvo; } };
   // ---------- laço do jogo ----------
