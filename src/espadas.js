@@ -133,7 +133,7 @@
     const anc = m => ({ p: m.position.clone(), q: m.quaternion.clone(), s: m.scale.clone() });
     return { H, A, B, F, G, brA, brB, brA2, ancA: anc(A), ancB: anc(B), elos: [], cd: 0 }; })();
   function haloOn() { const W = ARMAS[AR.arma]; return (!!(W && W.halo) || BUFF.mandala > 0) && !(BUFF.mandef > 0); }
-  function haloVis() { if (BUFF.sete > 0) return false; const W = ARMAS[AR.arma]; return !!(W && W.halo) || AR.divino === 'mandala' || BUFF.mandala > 0 || BUFF.mandef > 0; }
+  function haloVis() { if (BUFF.sete > 0 || seloVoando()) return false; const W = ARMAS[AR.arma]; return !!(W && W.halo) || AR.divino === 'mandala' || BUFF.mandala > 0 || BUFF.mandef > 0; }
   function haloAtk(forca) { if (!haloOn() || HALO.elos.length || (HALO.cd > 0 && !forca)) return; HALO.H.visible = true; const alvo = maisPerto(24); if (!alvo) return;
     HALO.cd = 3.2; som('magia', 0.8, 0.8); fx('luz', [heroi.position.x, 1.5, heroi.position.z], 0.6);
     [[HALO.A, 1, HALO.ancA], [HALO.B, -1, HALO.ancB]].forEach(([m, sd, anc]) => { world.attach(m); HALO.elos.push({ m, sd, anc, alvo, fase: 'ida', t: 0, hit: 0, ang: sd > 0 ? 0 : Math.PI, spin: 0, s0: m.scale.x }); }); }
@@ -181,12 +181,28 @@
     return { f, g, A, Ab, B, Bb, gl, gs, raio, t: 0, big, sm }; }
   function seloAplica() { const alvo = maisPerto(22); if (!alvo) { aviso('Nenhum inimigo perto pra selar.', '#c8b48a'); return false; }
     const lista = [alvo]; FERAS.concat(typeof CAL !== 'undefined' && CAL.feras ? CAL.feras : []).forEach(f => { if (lista.length < 5 && f !== alvo && feraAtiva(f) && Math.hypot(f.g.position.x - alvo.g.position.x, f.g.position.z - alvo.g.position.z) < 5) lista.push(f); });
-    lista.forEach(f => { f.selo = 15; let s = SELOS.find(x => x.f === f); if (!s) { s = seloCria(f); SELOS.push(s); } s.t = 0; numero(f.g.position, '🔻 -25% DEF', '#ffb040', (f.T.alt || 1.4) + 1.2); });
-    fx('luz', [alvo.g.position.x, 0.5, alvo.g.position.z], 1.2); som('portal', 0.8, 0.7); flash('rgba(255,180,60,.3)'); return true; }
+    // a Mandala sai das costas girando e voa até o inimigo principal; quando chega, se abre no selo
+    const hp = heroi.position, ry = heroi.rotation.y; const ini = [hp.x - Math.sin(ry) * 0.55, hp.y + 1.7, hp.z - Math.cos(ry) * 0.55];
+    lista.forEach((f, i) => { f.selo = 15 + (i === 0 ? 1.2 : 0); let s = SELOS.find(x => x.f === f); if (!s) { s = seloCria(f); SELOS.push(s); } s.t = 0; s.voo = i === 0 ? { t: 0, ini } : null; s.aplicado = i !== 0; f.seloOk = i !== 0; s.principal = i === 0;
+      if (i !== 0) numero(f.g.position, '🔻 -25% DEF', '#ffb040', (f.T.alt || 1.4) + 1.2); });
+    som('magia', 0.8, 1.1); fx('luz', ini, 0.7); return true; }
+  function seloVoando() { return SELOS.some(s => s.principal && s.f.selo > 0); }
+  function ry0(V, q) { return Math.atan2(cam.position.x - (V.ini[0]), cam.position.z - (V.ini[2])) * (1 - q); }
   function seloFrame(dt) { for (let i = SELOS.length - 1; i >= 0; i--) { const s = SELOS[i], f = s.f; s.t += dt; if (f.selo > 0) f.selo -= dt;
-      if (!feraAtiva(f) || !(f.selo > 0)) { world.remove(s.g); SELOS.splice(i, 1); continue; }
-      const ex = Math.min(1, s.t / 0.4), fim = Math.min(1, f.selo / 0.5), k = ex * fim; s.g.position.set(f.g.position.x, 0, f.g.position.z); s.g.children[0].scale.setScalar(0.2 + k * 0.8); s.g.children[1].scale.setScalar(0.2 + k * 0.8);
-      s.A.rotation.z += dt * 1.6; s.Ab.rotation.z = s.A.rotation.z; s.B.rotation.z -= dt * 3.2; s.Bb.rotation.z = s.B.rotation.z; s.g.children[1].position.y = (f.T.alt || 1.4) + 0.55 + Math.sin(gT * 2.5) * 0.08;
+      if (!feraAtiva(f) || !(f.selo > 0)) { world.remove(s.g); SELOS.splice(i, 1); if (s.principal) { fx('luz', [heroi.position.x, 1.6, heroi.position.z], 0.6); } continue; }
+      s.g.position.set(f.g.position.x, 0, f.g.position.z); const ch = s.g.children[0], cm = s.g.children[1], alt = (f.T.alt || 1.4);
+      if (s.voo) { const V = s.voo; V.t += dt; const TV = 0.85, TS = 0.45; const ease = q => q < 0.5 ? 2 * q * q : 1 - Math.pow(-2 * q + 2, 2) / 2;
+        const topo = [0, alt + 1.3, 0], ini = [V.ini[0] - f.g.position.x, V.ini[1], V.ini[2] - f.g.position.z];
+        s.A.rotation.z += dt * 10; s.Ab.rotation.z = s.A.rotation.z; s.B.rotation.z -= dt * 14; s.Bb.rotation.z = s.B.rotation.z; s.raio.material.opacity = 0;
+        if (V.t < TV) { const q = ease(V.t / TV), arco = Math.sin(q * Math.PI) * 1.4; const px = ini[0] + (topo[0] - ini[0]) * q, py = ini[1] + (topo[1] - ini[1]) * q + arco, pz = ini[2] + (topo[2] - ini[2]) * q;
+          [ch, cm].forEach(g => { g.position.set(px, py, pz); g.rotation.x = Math.PI / 2 * (1 - q); g.rotation.y = ry0(V, q); }); const sc = s.sm / s.big; ch.scale.setScalar(0.75); cm.scale.setScalar(0.75 / sc * 0.42);
+          s.A.material.opacity = s.B.material.opacity = 1; s.Ab.material.opacity = s.Bb.material.opacity = 0.6; s.gl.material.opacity = 0.4; s.gs.material.opacity = 0; continue; }
+        const q = ease(Math.min(1, (V.t - TV) / TS)); [ch, cm].forEach(g => { g.rotation.set(0, 0, 0); g.position.x = g.position.z = 0; });
+        ch.position.y = topo[1] * (1 - q); cm.position.y = topo[1] + (alt + 0.55 - topo[1]) * q; ch.scale.setScalar(0.75 + q * 0.25); cm.scale.setScalar((0.75 / (s.sm / s.big) * 0.42) * (1 - q) + q);
+        if (V.t >= TV + TS) { s.voo = null; s.aplicado = true; f.seloOk = true; s.t = 1; numero(f.g.position, '🔻 -25% DEF', '#ffb040', alt + 1.2); fx('luz', [f.g.position.x, 0.5, f.g.position.z], 1.2); som('portal', 0.8, 0.7); flash('rgba(255,180,60,.3)'); tremor = Math.max(tremor, 0.2); }
+        continue; }
+      const ex = Math.min(1, s.t / 0.4), fim = Math.min(1, f.selo / 0.5), k = (s.principal ? 1 : ex) * fim; ch.scale.setScalar(0.2 + k * 0.8); cm.scale.setScalar(0.2 + k * 0.8);
+      s.A.rotation.z += dt * 1.6; s.Ab.rotation.z = s.A.rotation.z; s.B.rotation.z -= dt * 3.2; s.Bb.rotation.z = s.B.rotation.z; cm.position.y = alt + 0.55 + Math.sin(gT * 2.5) * 0.08;
       const pu = 0.45 + Math.sin(gT * 4) * 0.25; s.Ab.material.opacity = pu * k; s.Bb.material.opacity = pu * k; s.gl.material.opacity = (0.35 + Math.sin(gT * 3) * 0.15) * k; s.gs.material.opacity = 0.45 * k; s.raio.material.opacity = (0.1 + Math.sin(gT * 6) * 0.05) * k; s.A.material.opacity = k; s.B.material.opacity = k; } }
   function haloFrame(dt) { seteFrame(dt); seloFrame(dt); const quer = haloVis() && !dentro; haloDefFrame(dt); HALO.H.visible = quer || HALO.elos.length > 0; if (HALO.cd > 0) HALO.cd -= dt;
     if (!HALO.H.visible) return; HALO.F.rotation.z += dt * 2.1; HALO.G.material.opacity = 0.5 + Math.sin(gT * 3) * 0.15; { const pu = 0.5 + Math.sin(gT * 3.4) * 0.25; HALO.brA.material.opacity = pu; HALO.brB.material.opacity = 0.45 + Math.sin(gT * 4.1 + 1) * 0.25; HALO.brA2.material.opacity = 0.15 + Math.sin(gT * 2.2) * 0.12; }

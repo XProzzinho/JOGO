@@ -1008,7 +1008,7 @@
     else if (A.longe && naMao) { P.shR.rotation.x = -0.7; P.elR.rotation.x = -0.9; } }
 
   // ---- dano nos bichos ----
-  function dano(e, n, tipo, crit) { if (e.morto) return; if (e.T.chefe && tipo === 'fogo') n *= 2; if (e.vuln > 0) n *= 1.5; if (e.selo > 0) n *= 1.25; n = Math.round(n); e.vida -= n; e.hitT = 0; som(crit ? 'critico' : 'acerto', crit ? 0.8 : 0.55, null, 0.05); enche(crit ? 5 : 3); if (BM && BM.roubo && n > 0) { const rb = Math.max(1, Math.round(n * BM.roubo)); if (vida < VIDA_MAX) { vida = Math.min(VIDA_MAX, vida + rb); if (Math.random() < 0.4) numero(heroi.position, '+' + rb + ' ❤️', '#c890ff', 2.3); } }
+  function dano(e, n, tipo, crit) { if (e.morto) return; if (e.T.chefe && tipo === 'fogo') n *= 2; if (e.vuln > 0) n *= 1.5; if (e.selo > 0 && e.seloOk !== false) n *= 1.25; n = Math.round(n); e.vida -= n; e.hitT = 0; som(crit ? 'critico' : 'acerto', crit ? 0.8 : 0.55, null, 0.05); enche(crit ? 5 : 3); if (BM && BM.roubo && n > 0) { const rb = Math.max(1, Math.round(n * BM.roubo)); if (vida < VIDA_MAX) { vida = Math.min(VIDA_MAX, vida + rb); if (Math.random() < 0.4) numero(heroi.position, '+' + rb + ' ❤️', '#c890ff', 2.3); } }
     numero(e.g.position, crit ? '💥' + n : String(n), crit ? '#ffd23c' : tipo === 'fogo' ? '#ff9a3a' : tipo === 'gelo' ? '#9ae6ff' : tipo === 'raio' ? '#fff27a' : '#ffffff', e.T.alt + 0.3);
     if (e.estado === 'anda' || e.estado === 'volta') { e.estado = 'caca'; }
     if (e.vida <= 0) morre(e); }
