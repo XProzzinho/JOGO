@@ -297,16 +297,18 @@
     BUFF.mandala = 0; BUFF.mandef = 0; salvaAR(); montaBarra(); if (typeof desenhaPerfil === 'function' && !$('perfil').hidden) desenhaPerfil(); }
   DIVINOS.manto = { nome: 'Manto do Abismo Espectral', icone: IC('div_manto'), preco: 18000, habs: [], desc: 'Armadura gótica com cristal de safira, asas de energia azul e capa roxa rasgada que queima em fogo espectral. Balança com o vento.' };
   DIVINOS.emblema = { nome: 'Emblema Ígneo do Sol', icone: IC('div_emblema'), preco: 22000, habs: [], desc: 'Emblema de ouro, obsidiana e magma nas costas, com chifres, garras de lava e um Sol vivo girando no centro.' };
+  DIVINOS.astrolabio = { nome: 'Astrolábio do Firmamento Eterno', icone: IC('div_astrolabio'), preco: 25000, habs: [], desc: 'Halo arcano nas costas: a coroa de ouro gira pra um lado e o anel de runas azuis pro outro, com anéis orbitais, estrela e cristal central pulsando e pingentes de cristal.' };
   // modelos 3D (criados só quando equipa, pra não pesar)
   const DIV3D = {};
   function div3dPega(k) { if (DIV3D[k] !== undefined) return DIV3D[k]; let o = null; const sp = heroi.userData.P.spine;
     try {
       if (k === 'manto') { const m = createSpectralCloak3D(T3); const g = new T3.Group(); g.add(m.group); m.group.scale.setScalar(0.42); m.group.position.set(0, -0.22, 0); const [arm, asas, capa] = m.group.children; arm.position.z = 0.42; arm.scale.setScalar(0.8); arm.position.y = 1.2; asas.position.z = -0.55; capa.position.z = -0.5; m.group.children[3].position.z = -0.6; sp.add(g); o = { g, up: t => m.update(t, { windSpeed: 1, windAmp: 1, energyIntensity: 0.38 }), base: m.group }; }
       if (k === 'emblema') { const e = createFieryCrestItem(T3); const g = new T3.Group(); g.add(e); e.scale.setScalar(0.33); e.rotation.y = Math.PI; g.position.set(0, 0.55, -0.45); sp.add(g); o = { g, up: t => e.userData.update(t), base: e }; }
+      if (k === 'astrolabio') { const a = createArcaneAstrolabe(T3); const g = new T3.Group(); g.add(a); a.scale.setScalar(0.2); a.rotation.y = Math.PI; g.position.set(0, 0.5, -0.62); a.traverse(x => { if (x.isPoints) x.material.size = 0.025; }); sp.add(g); let tl = 0; o = { g, up: t => { const dt = Math.min(0.1, Math.max(0, t - tl)); tl = t; a.userData.update(dt, t); }, base: a }; }
       if (o) o.g.traverse(x => { if (x.isMesh) { x.frustumCulled = false; } });
     } catch (err) { console.warn('div3d', k, err); o = null; }
     DIV3D[k] = o; return o; }
-  function div3dFrame() { ['manto', 'emblema'].forEach(k => { const quer = AR.divino === k && !dentro; if (!quer && !DIV3D[k]) return; const o = div3dPega(k); if (!o) return; o.g.visible = quer; if (!quer) return; o.up(gT);
-      o.base.position.y = (k === 'manto' ? -0.22 : 0) + Math.sin(gT * 2) * 0.02; }); }
+  function div3dFrame() { ['manto', 'emblema', 'astrolabio'].forEach(k => { const quer = AR.divino === k && !dentro; if (!quer && !DIV3D[k]) return; const o = div3dPega(k); if (!o) return; o.g.visible = quer; if (!quer) return; o.up(gT);
+      o.base.position.y = (k === 'manto' ? -0.22 : k === 'astrolabio' ? 0.07 : 0) + Math.sin(gT * 2) * 0.02; }); }
   SLOTS_EQ.push(['divino', IC('cb_mandala'), 'Divino']);
   if (AR.divino) setTimeout(() => divVeste(AR.divino), 500);

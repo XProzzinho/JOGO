@@ -1366,3 +1366,494 @@
 
             return rootGroup;
         }
+  // Astrolábio Arcano (feito pelo Geanderson em HTML)
+  function createArcaneAstrolabe(THREE) {
+        function createRunicRingTexture(repeatCount = 28, bgColor = '#071329', runeColor = '#00e5ff') {
+            const canvas = document.createElement('canvas');
+            canvas.width = 1024;
+            canvas.height = 128;
+            const ctx = canvas.getContext('2d');
+
+            // Fundo azul-escuro metálico
+            ctx.fillStyle = bgColor;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Bordas douradas finas
+            ctx.fillStyle = '#d4af37';
+            ctx.fillRect(0, 0, canvas.width, 10);
+            ctx.fillRect(0, canvas.height - 10, canvas.width, 10);
+
+            // Desenho procedural de runas místicas
+            ctx.strokeStyle = runeColor;
+            ctx.lineWidth = 4;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            ctx.shadowColor = '#0088ff';
+            ctx.shadowBlur = 8;
+
+            const step = canvas.width / repeatCount;
+            for (let i = 0; i < repeatCount; i++) {
+                const cx = i * step + step * 0.5;
+                const cy = canvas.height * 0.5;
+                const r = 24; 
+
+                ctx.save();
+                ctx.translate(cx, cy);
+                ctx.beginPath();
+
+                const type = i % 6;
+                if (type === 0) {
+                    // Runa estilo Ansuz / Othala
+                    ctx.moveTo(0, -r); ctx.lineTo(0, r);
+                    ctx.moveTo(0, -r * 0.6); ctx.lineTo(r * 0.6, -r * 0.1);
+                    ctx.moveTo(0, 0); ctx.lineTo(r * 0.6, r * 0.5);
+                } else if (type === 1) {
+                    // Runa estilo Algiz
+                    ctx.moveTo(0, -r); ctx.lineTo(0, r);
+                    ctx.moveTo(-r * 0.6, -r * 0.6); ctx.lineTo(0, 0); ctx.lineTo(r * 0.6, -r * 0.6);
+                } else if (type === 2) {
+                    // Runa estilo Dagaz / Ampulheta
+                    ctx.moveTo(-r * 0.5, -r * 0.7); ctx.lineTo(r * 0.5, r * 0.7);
+                    ctx.lineTo(r * 0.5, -r * 0.7); ctx.lineTo(-r * 0.5, r * 0.7);
+                    ctx.closePath();
+                } else if (type === 3) {
+                    // Runa estilo Gebo + círculo
+                    ctx.moveTo(-r * 0.5, -r * 0.6); ctx.lineTo(r * 0.5, r * 0.6);
+                    ctx.moveTo(r * 0.5, -r * 0.6); ctx.lineTo(-r * 0.5, r * 0.6);
+                    ctx.moveTo(r * 0.25, 0); ctx.arc(0, 0, r * 0.25, 0, Math.PI * 2);
+                } else if (type === 4) {
+                    // Runa estilo Berkano
+                    ctx.moveTo(-r * 0.3, -r); ctx.lineTo(-r * 0.3, r);
+                    ctx.lineTo(r * 0.4, r * 0.45); ctx.lineTo(-r * 0.3, 0);
+                    ctx.lineTo(r * 0.4, -r * 0.45); ctx.closePath();
+                } else {
+                    // Estrela arcana
+                    ctx.moveTo(0, -r); ctx.lineTo(0, r);
+                    ctx.moveTo(-r * 0.7, 0); ctx.lineTo(r * 0.7, 0);
+                    ctx.moveTo(-r * 0.4, -r * 0.4); ctx.lineTo(r * 0.4, r * 0.4);
+                }
+                ctx.stroke();
+
+                // Ponto divisor entre runas
+                ctx.beginPath();
+                ctx.arc(step * 0.5, 0, 3, 0, Math.PI * 2);
+                ctx.fillStyle = runeColor;
+                ctx.fill();
+
+                ctx.restore();
+            }
+
+            const texture = new THREE.CanvasTexture(canvas);
+            texture.wrapS = THREE.RepeatWrapping;
+            texture.wrapT = THREE.ClampToEdgeWrapping;
+            texture.colorSpace = THREE.SRGBColorSpace;
+            return texture;
+        }
+
+        // Gera textura de aura radial suave
+        function createGlowTexture() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 512;
+            canvas.height = 512;
+            const ctx = canvas.getContext('2d');
+            const grad = ctx.createRadialGradient(256, 256, 10, 256, 256, 250);
+            grad.addColorStop(0, 'rgba(0, 210, 255, 0.85)');
+            grad.addColorStop(0.35, 'rgba(0, 110, 255, 0.35)');
+            grad.addColorStop(0.7, 'rgba(10, 40, 140, 0.1)');
+            grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, 512, 512);
+            return new THREE.CanvasTexture(canvas);
+        }
+
+        const runicTexture = createRunicRingTexture(32);
+        const orbitalRunicTexture = createRunicRingTexture(40, '#091a3a', '#38bdf8');
+        const glowTexture = createGlowTexture();
+
+        // Materiais PBR
+        const goldMaterial = new THREE.MeshStandardMaterial({
+            color: 0xf4c44e,
+            metalness: 0.88,
+            roughness: 0.22,
+        });
+
+        const darkGoldMaterial = new THREE.MeshStandardMaterial({
+            color: 0xb88628,
+            metalness: 0.85,
+            roughness: 0.32,
+        });
+
+        const crystalMaterial = new THREE.MeshStandardMaterial({
+            color: 0x00bfff,
+            emissive: 0x0088ff,
+            emissiveIntensity: 2.2,
+            roughness: 0.1,
+            metalness: 0.1,
+        });
+
+        const coreCrystalMaterial = new THREE.MeshStandardMaterial({
+            color: 0x80e5ff,
+            emissive: 0x00aaff,
+            emissiveIntensity: 2.8,
+            roughness: 0.05,
+            metalness: 0.1,
+        });
+
+        const runicBandMaterial = new THREE.MeshStandardMaterial({
+            map: runicTexture,
+            emissiveMap: runicTexture,
+            emissive: new THREE.Color(0x00ccff),
+            emissiveIntensity: 1.6,
+            metalness: 0.5,
+            roughness: 0.3,
+            side: THREE.DoubleSide
+        });
+
+        const orbitalRunicMaterial = new THREE.MeshStandardMaterial({
+            map: orbitalRunicTexture,
+            emissiveMap: orbitalRunicTexture,
+            emissive: new THREE.Color(0x38bdf8),
+            emissiveIntensity: 1.5,
+            metalness: 0.6,
+            roughness: 0.25,
+            side: THREE.DoubleSide
+        });
+
+        function createDiamondCrystal(width, height, depth, material = crystalMaterial) {
+            const geom = new THREE.OctahedronGeometry(1, 0);
+            geom.scale(width, height, depth);
+            return new THREE.Mesh(geom, material);
+        }
+
+        // Cria um brasão pontiagudo dourado (estilo fleur-de-lis / ponta cardinal)
+        function createCardinalCrest(scale = 1) {
+            const group = new THREE.Group();
+
+            // Base losangular dourada extrudada
+            const shape = new THREE.Shape();
+            shape.moveTo(0, 1.35);
+            shape.quadraticCurveTo(0.22, 0.45, 0.65, 0);
+            shape.quadraticCurveTo(0.22, -0.35, 0, -0.85);
+            shape.quadraticCurveTo(-0.22, -0.35, -0.65, 0);
+            shape.quadraticCurveTo(-0.22, 0.45, 0, 1.35);
+
+            const extrudeSettings = {
+                depth: 0.16,
+                bevelEnabled: true,
+                bevelSegments: 3,
+                steps: 1,
+                bevelSize: 0.05,
+                bevelThickness: 0.05
+            };
+
+            const baseGeom = new THREE.ExtrudeGeometry(shape, extrudeSettings);
+            baseGeom.center();
+            const baseMesh = new THREE.Mesh(baseGeom, goldMaterial);
+            group.add(baseMesh);
+
+            // Moldura interna escura
+            const innerCrystal = createDiamondCrystal(0.24, 0.42, 0.16, crystalMaterial);
+            innerCrystal.position.z = 0.06;
+            group.add(innerCrystal);
+
+            // Asas laterais curvas
+            const wingGeom = new THREE.ConeGeometry(0.14, 0.75, 4);
+            const leftWing = new THREE.Mesh(wingGeom, darkGoldMaterial);
+            leftWing.position.set(-0.48, 0.15, 0);
+            leftWing.rotation.z = Math.PI * 0.32;
+            group.add(leftWing);
+
+            const rightWing = new THREE.Mesh(wingGeom, darkGoldMaterial);
+            rightWing.position.set(0.48, 0.15, 0);
+            rightWing.rotation.z = -Math.PI * 0.32;
+            group.add(rightWing);
+
+            group.scale.setScalar(scale);
+            return group;
+        }
+
+        // Cria uma corrente com cristal pingente
+        function createHangingPendant(chainLength = 1.0, crystalScale = 1.0) {
+            const pendantGroup = new THREE.Group();
+
+            // Elos da corrente dourada
+            const links = Math.max(2, Math.floor(chainLength / 0.18));
+            const linkGeom = new THREE.TorusGeometry(0.045, 0.014, 8, 16);
+            for (let i = 0; i < links; i++) {
+                const link = new THREE.Mesh(linkGeom, goldMaterial);
+                link.position.y = -i * 0.14;
+                link.rotation.y = (i % 2) * (Math.PI / 2);
+                pendantGroup.add(link);
+            }
+
+            const endY = -links * 0.14 - 0.08;
+
+            // Encaixe dourado do cristal
+            const capGeom = new THREE.ConeGeometry(0.14 * crystalScale, 0.25 * crystalScale, 4);
+            const cap = new THREE.Mesh(capGeom, goldMaterial);
+            cap.position.y = endY;
+            pendantGroup.add(cap);
+
+            // Pingente de cristal azul alongado
+            const dropGeom = new THREE.OctahedronGeometry(1, 0);
+            dropGeom.scale(0.14 * crystalScale, 0.45 * crystalScale, 0.14 * crystalScale);
+            const dropCrystal = new THREE.Mesh(dropGeom, crystalMaterial);
+            dropCrystal.position.y = endY - 0.35 * crystalScale;
+            pendantGroup.add(dropCrystal);
+
+            return pendantGroup;
+        }
+
+        const artifactRoot = new THREE.Group();
+        artifactRoot.position.y = 0.25;
+
+        // --- AURA DE FUNDO ---
+        const auraPlane = new THREE.Mesh(
+            new THREE.PlaneGeometry(10.5, 10.5),
+            new THREE.MeshBasicMaterial({
+                map: glowTexture,
+                transparent: true,
+                depthWrite: false,
+                blending: THREE.AdditiveBlending,
+                opacity: 0.85
+            })
+        );
+        auraPlane.position.z = -0.8;
+        artifactRoot.add(auraPlane);
+
+        // --- CAMADA 1: COROA EXTERNA ORNAMENTADA (GIRA NO SENTIDO HORÁRIO) ---
+        const outerCrownGroup = new THREE.Group();
+        artifactRoot.add(outerCrownGroup);
+
+        // Anéis estruturais dourados externos
+        const outerTorus1 = new THREE.Mesh(new THREE.TorusGeometry(2.85, 0.09, 16, 100), goldMaterial);
+        const outerTorus2 = new THREE.Mesh(new THREE.TorusGeometry(2.55, 0.06, 16, 100), darkGoldMaterial);
+        const blueEnergyRing = new THREE.Mesh(
+            new THREE.TorusGeometry(2.70, 0.035, 12, 100),
+            new THREE.MeshStandardMaterial({ color: 0x00d9ff, emissive: 0x0088ff, emissiveIntensity: 2.4 })
+        );
+        outerCrownGroup.add(outerTorus1, outerTorus2, blueEnergyRing);
+
+        // 4 Pontas Cardeais Principais (Norte, Sul, Leste, Oeste)
+        const cardinalAngles = [0, Math.PI / 2, Math.PI, -Math.PI / 2];
+        cardinalAngles.forEach((angle, idx) => {
+            const crest = createCardinalCrest(idx === 2 ? 1.15 : 1.0); // Ponta inferior ligeiramente maior
+            const radius = 2.85;
+            crest.position.set(Math.sin(angle) * radius, Math.cos(angle) * radius, 0.08);
+            crest.rotation.z = -angle;
+            outerCrownGroup.add(crest);
+        });
+
+        // 4 Ornamentos Diagonais com Cristais Azuis e Chifres Dourados
+        const diagAngles = [Math.PI / 4, (3 * Math.PI) / 4, -(3 * Math.PI) / 4, -Math.PI / 4];
+        diagAngles.forEach((angle) => {
+            const holder = new THREE.Group();
+            const r = 2.70;
+            holder.position.set(Math.sin(angle) * r, Math.cos(angle) * r, 0.05);
+            holder.rotation.z = -angle;
+
+            // Engaste circular dourado
+            const bezel = new THREE.Mesh(new THREE.TorusGeometry(0.24, 0.055, 12, 32), goldMaterial);
+            const gem = createDiamondCrystal(0.16, 0.16, 0.12, crystalMaterial);
+            holder.add(bezel, gem);
+
+            // Espigões curvos laterais (chifres arcanos)
+            const hornGeom = new THREE.ConeGeometry(0.11, 0.95, 6);
+            const hornL = new THREE.Mesh(hornGeom, goldMaterial);
+            hornL.position.set(-0.35, 0.45, 0);
+            hornL.rotation.z = 0.35;
+
+            const hornR = new THREE.Mesh(hornGeom, goldMaterial);
+            hornR.position.set(0.35, 0.45, 0);
+            hornR.rotation.z = -0.35;
+
+            holder.add(hornL, hornR);
+            outerCrownGroup.add(holder);
+        });
+
+        // Pequenos cristais flutuantes ao redor da coroa externa
+        const floatingShards = [];
+        for (let i = 0; i < 8; i++) {
+            const a = (i / 8) * Math.PI * 2 + 0.2;
+            const shard = createDiamondCrystal(0.09, 0.16, 0.09, darkGoldMaterial);
+            const dist = 3.55;
+            shard.position.set(Math.cos(a) * dist, Math.sin(a) * dist, (i % 2 === 0 ? 0.2 : -0.2));
+            shard.rotation.z = a - Math.PI / 2;
+            outerCrownGroup.add(shard);
+            floatingShards.push({ mesh: shard, baseDist: dist, angle: a, phase: i });
+        }
+
+        // --- CAMADA 2: COROA DE RUNAS INTERNA (GIRA NO SENTIDO ANTI-HORÁRIO!) ---
+        const innerRunicCrownGroup = new THREE.Group();
+        artifactRoot.add(innerRunicCrownGroup);
+
+        // Faixa cilíndrica/anelar com textura de runas brilhantes
+        const runicRingGeom = new THREE.RingGeometry(1.92, 2.42, 96, 1);
+        // Ajusta UVs para envolver o anel perfeitamente
+        const posAttr = runicRingGeom.attributes.position;
+        const uvAttr = runicRingGeom.attributes.uv;
+        for (let i = 0; i < posAttr.count; i++) {
+            const x = posAttr.getX(i);
+            const y = posAttr.getY(i);
+            const angle = Math.atan2(y, x); // -PI a PI
+            const radius = Math.sqrt(x * x + y * y);
+            const u = (angle + Math.PI) / (Math.PI * 2);
+            const v = (radius - 1.92) / (2.42 - 1.92);
+            uvAttr.setXY(i, u, v);
+        }
+        const runicRingMesh = new THREE.Mesh(runicRingGeom, runicBandMaterial);
+        innerRunicCrownGroup.add(runicRingMesh);
+
+        // Aro dourado interno da coroa de runas
+        const innerGoldRim = new THREE.Mesh(new THREE.TorusGeometry(1.90, 0.065, 16, 96), goldMaterial);
+        innerRunicCrownGroup.add(innerGoldRim);
+
+        // 8 Pinos/Garras douradas internas apontando para o centro
+        for (let i = 0; i < 8; i++) {
+            const angle = (i / 8) * Math.PI * 2;
+            const tooth = new THREE.Mesh(new THREE.ConeGeometry(0.09, 0.35, 4), goldMaterial);
+            const r = 1.72;
+            tooth.position.set(Math.cos(angle) * r, Math.sin(angle) * r, 0.04);
+            tooth.rotation.z = angle + Math.PI / 2;
+            innerRunicCrownGroup.add(tooth);
+        }
+
+        // --- CAMADA 3: ANÉIS ORBITAIS 3D INCLINADOS (ESFERA ARMILAR) ---
+        const orbitalGroup1 = new THREE.Group();
+        const orbitalGroup2 = new THREE.Group();
+        artifactRoot.add(orbitalGroup1, orbitalGroup2);
+
+        function buildOrbitalBand(radius) {
+            const group = new THREE.Group();
+            // Faixa cilíndrica fina com runas
+            const cylGeom = new THREE.CylinderGeometry(radius, radius, 0.24, 96, 1, true);
+            const cylMesh = new THREE.Mesh(cylGeom, orbitalRunicMaterial);
+            cylMesh.rotation.x = Math.PI / 2;
+            group.add(cylMesh);
+
+            // Bordas douradas superior e inferior da faixa
+            const rimTop = new THREE.Mesh(new THREE.TorusGeometry(radius, 0.035, 12, 96), goldMaterial);
+            rimTop.position.z = 0.12;
+            const rimBot = new THREE.Mesh(new THREE.TorusGeometry(radius, 0.035, 12, 96), goldMaterial);
+            rimBot.position.z = -0.12;
+            group.add(rimTop, rimBot);
+
+            return group;
+        }
+
+        const orbitBand1 = buildOrbitalBand(3.35);
+        orbitalGroup1.add(orbitBand1);
+        orbitalGroup1.rotation.set(1.18, 0.28, 0.15);
+
+        const orbitBand2 = buildOrbitalBand(3.35);
+        orbitalGroup2.add(orbitBand2);
+        orbitalGroup2.rotation.set(1.18, -0.28, -0.15);
+
+        // --- CAMADA 4: ESTRELA CENTRAL E NÚCLEO DE CRISTAL ---
+        const centerStarGroup = new THREE.Group();
+        centerStarGroup.position.z = 0.18;
+        artifactRoot.add(centerStarGroup);
+
+        // Anel fino ao redor da estrela central
+        const coreRing = new THREE.Mesh(new THREE.TorusGeometry(1.18, 0.045, 16, 80), goldMaterial);
+        const coreBlueHalo = new THREE.Mesh(
+            new THREE.TorusGeometry(1.26, 0.025, 12, 80),
+            new THREE.MeshStandardMaterial({ color: 0x00e5ff, emissive: 0x0099ff, emissiveIntensity: 2.2 })
+        );
+        centerStarGroup.add(coreRing, coreBlueHalo);
+
+        // Estrela dourada de 4 pontas alongadas
+        const starShape = new THREE.Shape();
+        starShape.moveTo(0, 1.55);
+        starShape.quadraticCurveTo(0.22, 0.35, 1.55, 0);
+        starShape.quadraticCurveTo(0.22, -0.35, 0, -1.55);
+        starShape.quadraticCurveTo(-0.22, -0.35, -1.55, 0);
+        starShape.quadraticCurveTo(-0.22, 0.35, 0, 1.55);
+
+        const starExtrude = new THREE.ExtrudeGeometry(starShape, {
+            depth: 0.18,
+            bevelEnabled: true,
+            bevelSegments: 3,
+            steps: 1,
+            bevelSize: 0.05,
+            bevelThickness: 0.06
+        });
+        starExtrude.center();
+        const starMesh = new THREE.Mesh(starExtrude, goldMaterial);
+        centerStarGroup.add(starMesh);
+
+        // Pontas secundárias diagonais da estrela
+        const subStar = starMesh.clone();
+        subStar.scale.set(0.45, 0.45, 0.8);
+        subStar.rotation.z = Math.PI / 4;
+        subStar.material = darkGoldMaterial;
+        centerStarGroup.add(subStar);
+
+        // Grande Cristal Azul Central (Núcleo de Energia)
+        const centralDiamond = createDiamondCrystal(0.42, 0.42, 0.28, coreCrystalMaterial);
+        centralDiamond.position.z = 0.12;
+        centerStarGroup.add(centralDiamond);
+
+        // --- CAMADA 5: PINGENTES DE CRISTAL SUSPENSOS ---
+        const pendantsData = [
+            { x: -2.45, y: -1.65, len: 0.55, scale: 0.85 },
+            { x: -1.85, y: -2.25, len: 0.95, scale: 1.15 },
+            { x: -1.10, y: -2.65, len: 0.65, scale: 0.75 },
+            { x: 1.10,  y: -2.65, len: 0.65, scale: 0.75 },
+            { x: 1.85,  y: -2.25, len: 0.95, scale: 1.15 },
+            { x: 2.45,  y: -1.65, len: 0.55, scale: 0.85 },
+        ];
+
+        const pendantMeshes = [];
+        pendantsData.forEach((p, index) => {
+            const pendant = createHangingPendant(p.len, p.scale);
+            pendant.position.set(p.x, p.y, 0.05);
+            artifactRoot.add(pendant);
+            pendantMeshes.push({ mesh: pendant, phase: index * 1.1 });
+        });
+
+        // --- CAMADA 6: PARTÍCULAS DE ENERGIA MÁGICA ---
+        const particleCount = 140;
+        const particleGeom = new THREE.BufferGeometry();
+        const particlePositions = new Float32Array(particleCount * 3);
+        const particleSpeeds = new Float32Array(particleCount);
+
+        for (let i = 0; i < particleCount; i++) {
+            const angle = Math.random() * Math.PI * 2;
+            const radius = 1.2 + Math.random() * 3.2;
+            particlePositions[i * 3] = Math.cos(angle) * radius;
+            particlePositions[i * 3 + 1] = Math.sin(angle) * radius - 0.5;
+            particlePositions[i * 3 + 2] = (Math.random() - 0.5) * 2.2;
+            particleSpeeds[i] = 0.008 + Math.random() * 0.018;
+        }
+
+        particleGeom.setAttribute('position', new THREE.BufferAttribute(particlePositions, 3));
+        const particleMat = new THREE.PointsMaterial({
+            color: 0x38bdf8,
+            size: 0.09,
+            transparent: true,
+            opacity: 0.85,
+            blending: THREE.AdditiveBlending,
+            depthWrite: false
+        });
+        const energyParticles = new THREE.Points(particleGeom, particleMat);
+        artifactRoot.add(energyParticles);
+
+
+        artifactRoot.userData.update = function (delta, elapsed) {
+            const speed = delta;
+            outerCrownGroup.rotation.z -= 0.35 * speed;
+            innerRunicCrownGroup.rotation.z += 0.55 * speed;
+            orbitBand1.rotation.z += 0.45 * speed;
+            orbitBand2.rotation.z -= 0.45 * speed;
+            const pulse = 1 + Math.sin(elapsed * 3.2) * 0.06;
+            centralDiamond.scale.setScalar(pulse);
+            coreCrystalMaterial.emissiveIntensity = 2.4 + Math.sin(elapsed * 3.2) * 0.7;
+            pendantMeshes.forEach((item) => { item.mesh.rotation.z = Math.sin(elapsed * 2.0 + item.phase) * 0.08; item.mesh.rotation.x = Math.cos(elapsed * 1.5 + item.phase) * 0.04; });
+            floatingShards.forEach((s) => { const r = s.baseDist + Math.sin(elapsed * 2.5 + s.phase) * 0.12; s.mesh.position.x = Math.cos(s.angle) * r; s.mesh.position.y = Math.sin(s.angle) * r; });
+            const positions = energyParticles.geometry.attributes.position.array;
+            for (let i = 0; i < particleCount; i++) { positions[i * 3 + 1] += particleSpeeds[i] * 60 * delta; if (positions[i * 3 + 1] > 3.6) { const angle = Math.random() * Math.PI * 2; const radius = 1.0 + Math.random() * 2.8; positions[i * 3] = Math.cos(angle) * radius; positions[i * 3 + 1] = -3.2; } }
+            energyParticles.geometry.attributes.position.needsUpdate = true;
+        };
+        return artifactRoot;
+  }
