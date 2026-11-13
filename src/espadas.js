@@ -394,7 +394,7 @@ const glowA = cv(128, (x) => { const g = x.createRadialGradient(64, 64, 0, 64, 6
     ARC.voo.push({ m: d.m, alvo: al, p0, p1, t: 0, dur: 0.5 + Math.random() * 0.2, prev: p0.clone() }); som('tiro', 0.5, 1.4, 0.05); adagasHud(); }
   function adagasFim() { const S = ARC.st; if (!S) return; S.lista.forEach(d => d.m.parent && d.m.parent.remove(d.m)); ARC.voo.forEach(v => v.m.parent && v.m.parent.remove(v.m)); ARC.voo.length = 0; ARC.st = null; adagasHud(); }
   const _v = new T3.Vector3(), _q = new T3.Vector3();
-  function arcanoFrame(dt) { laminaFrame(dt); const on = arcanoOn() || !!ARC.lam; ARC.C.visible = ARC.F.visible = on; surfFrame(dt); if (ARC.surf) ARC.F.visible = on && ARC.surf.fase === 'forma' && ARC.surf.t < 0.9;
+  function arcanoFrame(dt) { laminaFrame(dt); const on = arcanoOn() || !!ARC.lam; let habOn = !!(ARC.st || ARC.lam); try { habOn = habOn || PIL.on || GUA.on; } catch (e) {} ARC.C.visible = on; ARC.F.visible = on && habOn; surfFrame(dt); if (ARC.surf) ARC.F.visible = on && ARC.surf.fase === 'forma' && ARC.surf.t < 0.9;
     if (AR.divino !== 'arcano' && ARC.st) adagasFim();
     if (on) { ARC.C.rotation.y = 0; ARC.gira.forEach(o => { o.a += dt * o.v * (ARC.velX || 1); o.m.rotation.z = o.m2.rotation.z = o.a; o.m2.material.opacity = 0.4 + Math.sin(gT * 3 + o.f) * 0.2; if (o.gl) o.gl.material.opacity = 0.2 + Math.sin(gT * 2 + o.f) * 0.08; }); }
     const S = ARC.st; let alvoK = S && S.fase !== 'desce' ? 1 : 0;
