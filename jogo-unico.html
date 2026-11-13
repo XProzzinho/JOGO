@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<title>Jogo do Rafael</title>
+<title>Aetherion · A Coroa do Sol</title><link rel="icon" href="icones/app_icone.png">
 <meta name="theme-color" content="#7ec8f0">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
@@ -403,6 +403,7 @@
 #liv-lista .li.lend b{color:#ffd86a}#liv-lista .li.lend small{color:#f0d8b8}#liv-lista .li.lend .ic img{filter:drop-shadow(0 0 8px #ffb020)}
 .lendtag{font-style:normal;font-size:10px;font-weight:900;padding:1px 6px;border-radius:6px;background:linear-gradient(90deg,#ffe9a0,#e8a830);color:#4a2004;vertical-align:middle}
 .ico.mini{width:16px!important;height:16px!important;vertical-align:-3px}
+.lg-logo img{display:block;width:min(340px,80%);margin:-6px auto 2px;filter:drop-shadow(0 4px 10px #0006);animation:lgFlut 4s ease-in-out infinite}.lg-logo small{display:block;text-align:center}@keyframes lgFlut{50%{transform:translateY(-4px)}}
 </style>
 </head>
 <body>
@@ -414,7 +415,7 @@
 <div id="cr-p2" hidden><h3>Edite seu personagem</h3><label class="cnm">Nome<input id="cr-nome" maxlength="16"></label>
 <div class="crow"><small>Pele</small><div id="cr-pele"></div></div><div class="crow"><small>Cabelo</small><div id="cr-cab"></div></div><div class="crow"><small>Cor do cabelo</small><div id="cr-corcab"></div></div><div class="crow"><small>Olhos</small><div id="cr-olhos"></div></div><div class="crow"><small>Roupa</small><div id="cr-roupa"></div></div>
 <div class="cbts"><button id="cr-volta">‹ Classe</button><button id="cr-fim" class="pri">Começar aventura</button></div></div></div></div></div>
-<div id="login" hidden><div class="box"><div class="lg-tit"><small>O ÚLTIMO CONHECIMENTO</small>Jogo do Rafael</div><p class="lg-sub">Entre pra salvar seu progresso na nuvem e continuar em qualquer celular.</p>
+<div id="login" hidden><div class="box"><div class="lg-tit lg-logo"><img src="icones/logo_aetherion.png" alt="Aetherion · A Coroa do Sol"><small>O ÚLTIMO CONHECIMENTO</small></div><p class="lg-sub">Entre pra salvar seu progresso na nuvem e continuar em qualquer celular.</p>
 <form id="lg-form" autocomplete="on"><label id="lg-nomewrap" hidden>Nome de jogador<input id="lg-nome" maxlength="20" autocomplete="nickname"></label><label>E-mail<input id="lg-email" type="email" autocomplete="email" inputmode="email"></label><label>Senha<input id="lg-senha" type="password" autocomplete="current-password"></label>
 <div class="lg-bts"><button id="lg-entrar" class="pri">Entrar</button><button id="lg-criar">Criar conta</button></div><button id="lg-esqueci" class="lnk">Esqueci a senha</button></form>
 <div id="lg-msg"></div><button id="lg-convidado" class="lnk">Jogar sem conta ›</button></div></div>

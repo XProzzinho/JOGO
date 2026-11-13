@@ -2,7 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <application android:label="Jogo do Rafael" android:icon="@drawable/icone" android:hardwareAccelerated="true" android:theme="@style/Tela">
+    <application android:label="Aetherion" android:icon="@drawable/icone" android:hardwareAccelerated="true" android:theme="@style/Tela">
         <activity android:name=".MainActivity" android:exported="true" android:screenOrientation="sensorLandscape" android:configChanges="orientation|screenSize|keyboardHidden">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
