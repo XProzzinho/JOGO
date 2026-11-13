@@ -122,6 +122,16 @@ service cloud.firestore {
       allow write: if souStaff() || (logado() && request.auth.uid == uid && request.resource.data.lista.size() == 0);
     }
 
+    // Usuário (login) -> e-mail, pra entrar com o nome de usuário.
+    // Qualquer um pode consultar UM nome (sem listar todos); só o dono cria o dele.
+    match /usuarios/{nome} {
+      allow get: if true;
+      allow list: if false;
+      allow create: if request.auth != null && request.resource.data.uid == request.auth.uid
+        && nome == request.resource.data.nome.lower();
+      allow update, delete: if false;
+    }
+
     // Qualquer outra coisa fica bloqueada
     match /{document=**} {
       allow read, write: if false;

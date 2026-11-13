@@ -43,17 +43,44 @@
   #lvup{position:fixed;left:50%;top:30%;transform:translate(-50%,-50%) scale(.6);text-align:center;color:var(--sol);font-family:var(--fonte-titulo);font-size:46px;text-shadow:var(--contorno);opacity:0;pointer-events:none;z-index:14}
   #lvup small{display:block;font-size:16px;letter-spacing:3px;color:var(--branco)}#lvup em{display:block;font-style:normal;font-size:15px;color:var(--branco);margin-top:4px}
   #lvup.on{animation:lv 2.8s ease-out forwards}@keyframes lv{0%{opacity:0;transform:translate(-50%,-50%) scale(.6)}12%{opacity:1;transform:translate(-50%,-50%) scale(1.08)}20%{transform:translate(-50%,-50%) scale(1)}80%{opacity:1}100%{opacity:0;transform:translate(-50%,-60%) scale(1)}}
-  #login{position:fixed;inset:0;z-index:40;display:flex;align-items:center;justify-content:center;background:var(--fundo-ceu);padding:12px max(16px,env(safe-area-inset-right,0px)) 12px max(16px,env(safe-area-inset-left,0px));overflow:auto}
-  #login .box{width:min(560px,100%);max-height:100%;box-sizing:border-box;overflow:auto;padding:16px 20px;border-radius:22px;background:var(--papel);color:var(--tinta);border:4px solid var(--tinta);box-shadow:var(--sombra-g);display:flex;flex-direction:column;gap:8px}
-  .lg-tit{font-family:var(--fonte-titulo);font-size:30px;line-height:1.05;color:var(--tinta)}.lg-tit small{display:block;font-family:var(--fonte);font-weight:900;font-size:11px;letter-spacing:3px;color:var(--coral-forte)}
-  .lg-sub{margin:0;font-size:13px;font-weight:700;color:var(--tinta2)}
+  .cbts button:active,.ab:active,.cb:active{transform:translateY(3px);box-shadow:0 1px 0 var(--tinta)}
+  #login{position:fixed;inset:0;z-index:200;display:flex;flex-direction:row;background:#0c0a24;overflow:hidden;font-family:var(--fonte)}
+  #login .lg-hero{position:relative;flex:1.1;min-width:0;overflow:hidden}
+  #lg-arte{position:absolute;inset:0;width:100%;height:100%;display:block}
+  .lg-marca{position:absolute;left:7%;right:24%;top:50%;transform:translateY(-55%);display:flex;flex-direction:column;align-items:flex-start;gap:10px}
+  .lg-marca img{width:min(330px,82%);height:auto;filter:drop-shadow(0 8px 24px rgba(0,0,0,.55))}
+  .lg-marca p{margin:0;max-width:280px;font-size:15px;font-weight:600;line-height:1.4;color:#d6cdfa;text-shadow:0 2px 8px rgba(0,0,0,.6)}
+  .lg-marca .lg-tag{display:inline-flex;gap:6px;align-items:center;padding:5px 12px;border-radius:999px;background:rgba(255,206,90,.14);border:1px solid rgba(255,206,90,.45);color:#ffd86a;font-size:12px;font-weight:800;letter-spacing:1.5px}
+  #login .lg-folha{position:relative;width:min(440px,52%);box-sizing:border-box;background:#fffaf0;border-radius:30px 0 0 30px;padding:22px 26px max(18px,env(safe-area-inset-bottom,0px));overflow:auto;display:flex;flex-direction:column;box-shadow:-12px 0 40px rgba(0,0,0,.45)}
+  .lg-puxa{display:none;width:40px;height:5px;border-radius:3px;background:#e6dcc4;margin:0 auto 14px}
+  .lg-v{display:flex;flex-direction:column;gap:0}
+  .lg-v h2{margin:0;font-family:var(--fonte-titulo);font-weight:400;font-size:26px;letter-spacing:-.2px;color:#1e1838}
+  .lg-v .lg-s{margin:4px 0 16px;font-size:14px;color:#6a6280;font-weight:600}
+  .lg-rot{display:flex;align-items:center;margin:0 0 6px;font-size:13px;font-weight:800;color:#3a3358}.lg-rot a,.lg-rot button{margin-left:auto}
+  .lg-campo{position:relative;margin-bottom:14px}
+  .lg-campo input{width:100%;box-sizing:border-box;font:inherit;font-size:15px;font-weight:600;padding:14px 44px 14px 42px;border-radius:14px;border:1.5px solid #e6dcc4;background:#f6f0e2;color:#1e1838;outline:none}
+  .lg-campo input:focus{border-color:#6a3ae8;background:#fff;box-shadow:0 0 0 4px rgba(106,58,232,.12)}
+  .lg-campo input::placeholder{color:#a69cb8}
+  .lg-ic{position:absolute;left:13px;top:50%;transform:translateY(-50%);width:19px;height:19px;color:#7a7090;pointer-events:none}
+  .lg-olho{position:absolute;right:6px;top:50%;transform:translateY(-50%);width:36px;height:36px;border:0;background:none;color:#7a7090;padding:6px;cursor:pointer}
+  .lg-olho svg,.lg-ic svg{width:100%;height:100%;display:block}
+  .lg-pri{height:54px;margin-top:6px;border:0;border-radius:16px;background:linear-gradient(180deg,#7a4af0,#4b23b8);color:#fff;font-family:var(--fonte);font-size:16px;font-weight:800;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 6px 18px rgba(75,35,184,.35),inset 0 1px 0 rgba(255,255,255,.25);cursor:pointer}
+  .lg-pri:active{transform:translateY(2px)}
+  .lg-pri .lg-gira{width:22px;height:22px;border:2.5px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:50%;animation:lgGira .8s linear infinite}
+  @keyframes lgGira{to{transform:rotate(360deg)}}
+  .lg-lnk{background:none;border:0;padding:0;font:inherit;font-size:13px;font-weight:800;color:#6a3ae8;cursor:pointer}
+  .lg-rodape{display:flex;justify-content:center;gap:5px;margin-top:20px;font-size:14px;color:#6a6280;font-weight:600}.lg-rodape .lg-lnk{font-size:14px}
+  .lg-volta{align-self:flex-start;margin-bottom:10px}
+  #lg-msg{min-height:0;margin-top:12px;font-size:13px;font-weight:700;color:#4b23b8;text-align:center}#lg-msg.erro{color:#c0392b}#lg-msg:empty{display:none}
+  .lg-dica{margin:-8px 0 12px;font-size:12px;color:#8a82a0;font-weight:600}
+  .lg-ver{margin-top:auto;padding-top:18px;text-align:center;font-size:11px;color:#b0a6c4;font-weight:700;letter-spacing:.5px}
+  #login button:disabled,#login input:disabled{opacity:.6}
+  #lg-convidado{align-self:center;margin-top:10px}
+  @media (orientation:portrait){#login{flex-direction:column;overflow:auto}#login .lg-hero{flex:none;height:300px}.lg-marca{top:auto;bottom:34px;transform:none}#login .lg-folha{width:100%;flex:1;border-radius:30px 30px 0 0;margin-top:-26px;padding-top:14px;overflow:visible;box-shadow:0 -10px 30px rgba(0,0,0,.35)}.lg-puxa{display:block}}
+  @media (orientation:landscape) and (max-height:430px){#login .lg-folha{padding:12px 22px}.lg-v h2{font-size:21px}.lg-v .lg-s{margin:2px 0 8px;font-size:12.5px}.lg-campo{margin-bottom:8px}.lg-campo input{padding:10px 40px 10px 40px;font-size:14px}.lg-pri{height:44px;margin-top:2px}.lg-rodape{margin-top:10px}.lg-ver{padding-top:8px}.lg-rot{margin-bottom:3px}.lg-dica{margin:-4px 0 6px}}
   #lg-form{display:grid;grid-template-columns:1fr 1fr;gap:8px 10px}
   #lg-form label{display:flex;flex-direction:column;gap:3px;font-size:12px;font-weight:900;color:var(--tinta2)}#lg-nomewrap{grid-column:1/-1}
   #lg-form input{font:inherit;font-size:15px;font-weight:700;padding:9px 11px;border-radius:12px;border:var(--borda);background:var(--branco);color:var(--tinta)}#lg-form input:focus{outline:none;box-shadow:0 0 0 4px var(--ceu)}
-  .lg-bts{grid-column:1/-1;display:flex;gap:8px}.lg-bts button{flex:1;padding:11px;border-radius:16px;border:var(--borda);background:var(--branco);color:var(--tinta);font-family:var(--fonte-titulo);font-size:16px;box-shadow:var(--sombra)}.lg-bts .pri{background:var(--grama)}
-  .lg-bts button:active,.cbts button:active,.ab:active,.cb:active{transform:translateY(3px);box-shadow:0 1px 0 var(--tinta)}
-  #login .lnk{background:none;border:0;color:var(--azul);font-family:inherit;font-weight:900;font-size:13px;padding:4px;justify-self:start}
-  #login button:disabled{opacity:.6}
   #lg-msg{font-size:13px;font-weight:800;color:var(--grama-forte);min-height:16px}#lg-msg.erro{color:var(--coral-forte)}
   #lg-convidado{align-self:center}
   #conta-selo{font-size:11px;font-weight:900;color:var(--tinta2);text-align:center}
@@ -403,7 +430,6 @@
 #liv-lista .li.lend b{color:#ffd86a}#liv-lista .li.lend small{color:#f0d8b8}#liv-lista .li.lend .ic img{filter:drop-shadow(0 0 8px #ffb020)}
 .lendtag{font-style:normal;font-size:10px;font-weight:900;padding:1px 6px;border-radius:6px;background:linear-gradient(90deg,#ffe9a0,#e8a830);color:#4a2004;vertical-align:middle}
 .ico.mini{width:16px!important;height:16px!important;vertical-align:-3px}
-.lg-logo img{display:block;width:min(340px,80%);margin:-6px auto 2px;filter:drop-shadow(0 4px 10px #0006);animation:lgFlut 4s ease-in-out infinite}.lg-logo small{display:block;text-align:center}@keyframes lgFlut{50%{transform:translateY(-4px)}}
 </style>
 </head>
 <body>
@@ -415,10 +441,7 @@
 <div id="cr-p2" hidden><h3>Edite seu personagem</h3><label class="cnm">Nome<input id="cr-nome" maxlength="16"></label>
 <div class="crow"><small>Pele</small><div id="cr-pele"></div></div><div class="crow"><small>Cabelo</small><div id="cr-cab"></div></div><div class="crow"><small>Cor do cabelo</small><div id="cr-corcab"></div></div><div class="crow"><small>Olhos</small><div id="cr-olhos"></div></div><div class="crow"><small>Roupa</small><div id="cr-roupa"></div></div>
 <div class="cbts"><button id="cr-volta">‹ Classe</button><button id="cr-fim" class="pri">Começar aventura</button></div></div></div></div></div>
-<div id="login" hidden><div class="box"><div class="lg-tit lg-logo"><img src="icones/logo_aetherion.png" alt="Aetherion · A Coroa do Sol"><small>O ÚLTIMO CONHECIMENTO</small></div><p class="lg-sub">Entre pra salvar seu progresso na nuvem e continuar em qualquer celular.</p>
-<form id="lg-form" autocomplete="on"><label id="lg-nomewrap" hidden>Nome de jogador<input id="lg-nome" maxlength="20" autocomplete="nickname"></label><label>E-mail<input id="lg-email" type="email" autocomplete="email" inputmode="email"></label><label>Senha<input id="lg-senha" type="password" autocomplete="current-password"></label>
-<div class="lg-bts"><button id="lg-entrar" class="pri">Entrar</button><button id="lg-criar">Criar conta</button></div><button id="lg-esqueci" class="lnk">Esqueci a senha</button></form>
-<div id="lg-msg"></div><button id="lg-convidado" class="lnk">Jogar sem conta ›</button></div></div>
+<div id="login"><div class="lg-hero"><canvas id="lg-arte"></canvas><div class="lg-marca"><span class="lg-tag">✦ RPG DE FANTASIA ONLINE</span><img src="icones/logo_aetherion.png" alt="Aetherion · A Coroa do Sol"><p>Um reino inteiro te espera. Entre e continue a sua lenda.</p></div></div><div class="lg-folha"><div class="lg-puxa"></div><form id="lg-entrarv" class="lg-v" autocomplete="on" onsubmit="return false"><h2>Bem-vindo de volta</h2><p class="lg-s">Entre pra continuar sua jornada.</p><div class="lg-rot">Usuário ou e-mail</div><div class="lg-campo"><span class="lg-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg></span><input id="lg-id" type="text" placeholder="seu usuário ou e-mail" autocomplete="username" autocapitalize="off" spellcheck="false"></div><div class="lg-rot">Senha<button type="button" id="lg-esqueci" class="lg-lnk">Esqueci a senha</button></div><div class="lg-campo"><span class="lg-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.5"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/></svg></span><input id="lg-senha" type="password" placeholder="sua senha" autocomplete="current-password"><button type="button" class="lg-olho" data-alvo="lg-senha" aria-label="Mostrar senha"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></button></div><button type="submit" id="lg-entrar" class="lg-pri"><span>Entrar</span><span>→</span></button><div class="lg-rodape">Ainda não tem conta? <button type="button" id="lg-ircriar" class="lg-lnk">Cadastre-se</button></div></form><form id="lg-criarv" class="lg-v" autocomplete="on" onsubmit="return false" hidden><button type="button" id="lg-voltar" class="lg-lnk lg-volta">← Voltar</button><h2>Criar sua conta</h2><p class="lg-s">Escolha seu nome de herói. Ele aparece em cima do personagem.</p><div class="lg-rot">Usuário (login)</div><div class="lg-campo"><span class="lg-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg></span><input id="lg-usuario" type="text" placeholder="ex.: Leonardo_07" autocomplete="username" maxlength="16" autocapitalize="off" spellcheck="false"></div><p class="lg-dica">3 a 16 letras, números, _ ou ponto. Sem espaço.</p><div class="lg-rot">E-mail</div><div class="lg-campo"><span class="lg-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M3.5 6.5 12 13l8.5-6.5"/></svg></span><input id="lg-email" type="email" placeholder="voce@email.com" autocomplete="email" inputmode="email" autocapitalize="off"></div><div class="lg-rot">Senha</div><div class="lg-campo"><span class="lg-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.5"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/></svg></span><input id="lg-senha2" type="password" placeholder="mínimo 6 letras ou números" autocomplete="new-password"><button type="button" class="lg-olho" data-alvo="lg-senha2" aria-label="Mostrar senha"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></button></div><div class="lg-rot">Confirmar senha</div><div class="lg-campo"><span class="lg-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.5"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/></svg></span><input id="lg-senha3" type="password" placeholder="repita a senha" autocomplete="new-password"><button type="button" class="lg-olho" data-alvo="lg-senha3" aria-label="Mostrar senha"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></button></div><button type="submit" id="lg-criar" class="lg-pri"><span>Criar conta</span><span>✦</span></button><div class="lg-rodape">Já tem conta? <button type="button" id="lg-irentrar" class="lg-lnk">Entrar</button></div></form><div id="lg-msg"></div><button type="button" id="lg-convidado" class="lg-lnk" hidden>Jogar sem conta ›</button><div class="lg-ver">AETHERION · A COROA DO SOL</div></div></div>
 <div id="invp" hidden><div class="ip-box">
 <div class="ip-hd"><button id="ip-troca"><img class="ico" src="icones/ui_troca.svg" alt=""> Trocar</button><span>INVENTÁRIO</span><button id="ip-x">✕</button></div>
 <div class="ip-tabs"><button class="on" data-t="eq">Equipar</button><button data-t="pet">Pet</button></div>
@@ -848,8 +871,8 @@ ${_}`}class A extends Error{constructor({message:e,code:t,cause:r,name:s}){var n
   const VOL = Object.assign({ geral: 1, efeitos: 1, amb: 1, voz: 1, mudo: false }, (() => { try { return JSON.parse(localStorage.getItem('aetherion-vol') || '{}'); } catch (e) { return {}; } })());
   const volEf = () => VOL.mudo ? 0 : VOL.geral * VOL.efeitos, volAmb = () => VOL.mudo ? 0 : VOL.geral * VOL.amb, volVoz = () => VOL.mudo ? 0 : VOL.geral * VOL.voz;
   function volSalva() { try { localStorage.setItem('aetherion-vol', JSON.stringify(VOL)); } catch (e) {} if (voz) voz.volume = Math.min(1, volVoz()); }
-  function acAudio() { if (AC === null) { try { AC = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { AC = false; } } if (AC && AC.state === 'suspended') AC.resume(); return AC; }
-  function carregaSom(n) { if (!SFX[n]) { const a = acAudio(); SFX[n] = !a ? Promise.resolve(null) : fetch('sons/' + n + '.mp3').then(r => r.ok ? r.arrayBuffer() : null).then(b => b ? new Promise((ok, no) => a.decodeAudioData(b, ok, no)) : null).catch(() => null); } return SFX[n]; }
+  function acAudio() { if (window.__entrou === false) { if (AC && AC.state === 'running') AC.suspend(); return null; } if (AC === null) { try { AC = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { AC = false; } } if (AC && AC.state === 'suspended') AC.resume(); return AC; }
+  function carregaSom(n) { if (!SFX[n]) { const a = acAudio(); if (!a) return Promise.resolve(null); SFX[n] = !a ? Promise.resolve(null) : fetch('sons/' + n + '.mp3').then(r => r.ok ? r.arrayBuffer() : null).then(b => b ? new Promise((ok, no) => a.decodeAudioData(b, ok, no)) : null).catch(() => null); } return SFX[n]; }
   function som(n, vol, tom, gap) { if (!n) return; const a = acAudio(); if (!a) return; const t = a.currentTime; if (SFX_T[n] != null && t - SFX_T[n] < (gap == null ? 0.06 : gap)) return; SFX_T[n] = t;
     carregaSom(n).then(buf => { if (!buf) return; const s = a.createBufferSource(); s.buffer = buf; s.playbackRate.value = tom || (0.94 + Math.random() * 0.12); const g = a.createGain(); g.gain.value = (vol == null ? 1 : vol) * SFX_VOL * volEf(); s.connect(g); g.connect(a.destination); s.start(); }); }
   function somEm(n, pos, vol, gap) { const d = Math.hypot(pos.x - heroi.position.x, pos.z - heroi.position.z); if (d > 30) return; som(n, (vol == null ? 1 : vol) * Math.max(0.15, 1 - d / 30), null, gap); }
@@ -873,7 +896,7 @@ ${_}`}class A extends Error{constructor({message:e,code:t,cause:r,name:s}){var n
       r.oninput = () => { VOL[r.dataset.k] = +r.value / 100; r.parentNode.parentNode.querySelector('em').textContent = r.value + '%'; volSalva(); }; r.onchange = () => som('clique', 1, 1); });
     tapBtn($('cfg-mudo'), () => { VOL.mudo = !VOL.mudo; volSalva(); configDesenha(); }); }
   tapBtn($('cfg-btn'), () => { if (conversa || cenaQ) return; $('cfg').hidden = false; configDesenha(); }); tapBtn($('cfg-fecha'), () => { $('cfg').hidden = true; });
-  function tocaVoz(id) { calaVoz(); if (!id) return; voz = new Audio('vozes/' + id + '.mp3'); voz.volume = Math.min(1, volVoz()); if (volVoz() > 0) voz.play().catch(() => {}); }
+  function tocaVoz(id) { calaVoz(); if (!id || window.__entrou === false) return; voz = new Audio('vozes/' + id + '.mp3'); voz.volume = Math.min(1, volVoz()); if (volVoz() > 0) voz.play().catch(() => {}); }
   function falaAtual() { const q = conversa.quem, f = q.falas[conversa.i]; return typeof f === 'string' ? { t: f, n: q.nome, v: q.vozes && q.vozes[conversa.i] } : { t: f.t, n: f.n || q.nome, v: f.v }; }
   function mostrarFala() { const q = conversa.quem, f = falaAtual(); tocaVoz(f.v); $('fala-nome').textContent = f.n; $('fala-txt').textContent = f.t; $('fala').hidden = false; const ult = conversa.i >= q.falas.length - 1; const esc = ult && q.escolhas && q.escolhas();
     const box = $('fala-esc'); box.innerHTML = ''; box.hidden = !esc; $('fala-mais').textContent = esc ? 'escolha:' : ult ? 'toque pra fechar ✕' : 'toque pra continuar ▸';
@@ -2019,7 +2042,7 @@ ${_}`}class A extends Error{constructor({message:e,code:t,cause:r,name:s}){var n
   function abrirPerfil() { if (conversa || cenaQ) return; $('perfil').hidden = false; $('pf-escolha').hidden = true; desenhaPerfil(); }
   function desenhaPerfil() { desenhaSlots(); document.querySelectorAll('#perfil .aba').forEach(b => b.classList.toggle('on', b.dataset.a === abaPerfil)); const C = $('pf-cont'); const A = ARMAS[AR.arma] || ARMAS.bastao;
     const CLp = CLA(); $('pf-nome').innerHTML = `${(AR.visual.nome || 'Leonardo').replace(/</g, '')} <b>Nv ${AR.nv}</b><small>${CLp ? CLp.icone + ' ' + CLp.nome : ''}</small>`; const CU = window.CONTA && CONTA.usuario; $('pf-conta').innerHTML = CU ? `<span>👤 ${(CU.displayName || CU.email || '').replace(/</g, '')}</span><button id="pf-sair">Sair da conta</button>` : `<button id="pf-sair">Entrar / criar conta</button>`;
-    tapBtn($('pf-sair'), () => { if (CU) CONTA.sair(); else { try { sessionStorage.removeItem('aetherion-convidado'); } catch (e) {} $('perfil').hidden = true; $('login').hidden = false; } }); if (window.CONTA && CONTA.selo) CONTA.selo(); const ev = document.createElement('button'); ev.textContent = '✏️ Editar visual'; $('pf-conta').prepend(ev); tapBtn(ev, () => { $('perfil').hidden = true; abrirCriar(2, true); }); $('pf-xp').style.width = (AR.nv >= NV_MAX ? 100 : AR.xp / xpPara(AR.nv) * 100) + '%'; $('pf-xpt').textContent = AR.nv >= NV_MAX ? 'NÍVEL MÁXIMO' : `XP ${AR.xp} / ${xpPara(AR.nv)}`;
+    tapBtn($('pf-sair'), () => { if (CU) CONTA.sair(); else { try { sessionStorage.removeItem('aetherion-convidado'); } catch (e) {} $('perfil').hidden = true; window.__entrou = false; if (typeof acAudio === 'function') acAudio(); $('login').hidden = false; } }); if (window.CONTA && CONTA.selo) CONTA.selo(); const ev = document.createElement('button'); ev.textContent = '✏️ Editar visual'; $('pf-conta').prepend(ev); tapBtn(ev, () => { $('perfil').hidden = true; abrirCriar(2, true); }); $('pf-xp').style.width = (AR.nv >= NV_MAX ? 100 : AR.xp / xpPara(AR.nv) * 100) + '%'; $('pf-xpt').textContent = AR.nv >= NV_MAX ? 'NÍVEL MÁXIMO' : `XP ${AR.xp} / ${xpPara(AR.nv)}`;
     if (abaPerfil === 'status') { const ab = AR.abates; const tot = Object.values(ab).reduce((s, v) => s + v, 0);
       const L = [['❤️', 'Vida', `${Math.ceil(vida)} / ${VIDA_MAX}`], ['🔷', 'Mana', `${Math.round(mana)} / ${MANA_MAX}`], ['⚔️', 'Ataque', `${Math.round(A.dano * atkMult())} (${A.icone} ${A.nome})`], ['🎯', 'Crítico / Esquiva', `${Math.round(((CLA() || {}).crit || 0.05) * 100)}% / ${Math.round(((CLA() || {}).esq || 0) * 100)}%`], ['🛡️', 'Defesa', `${defesa()}% (${FANT[AR.fantasia].nome})`],
         ['⚡', 'Modos de batalha', `I${AR.nv >= BM_NV[1] ? ' · II' : ''}${AR.nv >= BM_NV[2] ? ' · III' : ''}${AR.nv < BM_NV[2] ? ' (III no nv ' + BM_NV[2] + ')' : ''}`], ['🌳', 'Pontos de habilidade', AR.pts], ['🐺', 'Bichos derrotados', `${tot}${ab.golem ? ' · Golem ✔' : ''}`], ['🏆', 'Finais', `${finais.length} / 6`], ['💰', 'Moedas', AR.inv.moedas]];
@@ -7234,23 +7257,57 @@ window.FIREBASE_CONFIG = {
   ['keydown', 'keyup'].forEach(t => tela.addEventListener(t, e => e.stopPropagation()));
   const tap = (el, fn) => { el.addEventListener('click', e => { e.preventDefault(); fn(); }); };
   function mostra(t, erro) { msg.textContent = t || ''; msg.className = erro ? 'erro' : ''; }
-  function ocupado(on) { tela.querySelectorAll('button,input').forEach(b => b.disabled = on); }
-  function fecha() { tela.hidden = true; }
+  function ocupado(on) { tela.querySelectorAll('button,input').forEach(b => b.disabled = on); tela.querySelectorAll('.lg-pri').forEach(b => { if (on) { b.dataset.h = b.dataset.h || b.innerHTML; b.innerHTML = '<span class="lg-gira"></span>'; } else if (b.dataset.h) { b.innerHTML = b.dataset.h; delete b.dataset.h; } }); }
+  function fecha() { tela.hidden = true; window.__entrou = true; }
   function lerLocal() { const o = {}; CHAVES.forEach(k => { try { o[k] = localStorage.getItem(k); } catch (e) {} }); return o; }
   const ERROS = { 'auth/invalid-email': 'Esse e-mail não é válido.', 'auth/missing-password': 'Digite a senha.', 'auth/weak-password': 'A senha precisa ter pelo menos 6 letras ou números.',
-    'auth/email-already-in-use': 'Já existe uma conta com esse e-mail. Toque em Entrar.', 'auth/invalid-credential': 'E-mail ou senha errados.', 'auth/wrong-password': 'Senha errada.', 'auth/user-not-found': 'Não existe conta com esse e-mail.',
+    'auth/email-already-in-use': 'Já existe uma conta com esse e-mail. Toque em Entrar.', 'auth/invalid-credential': 'Usuário/e-mail ou senha errados.', 'auth/wrong-password': 'Senha errada.', 'auth/user-not-found': 'Não existe conta com esse e-mail.',
     'auth/too-many-requests': 'Muitas tentativas. Espera um pouquinho e tenta de novo.', 'auth/network-request-failed': 'Sem internet. Verifique a conexão.' };
   const erroTxt = e => ERROS[e && e.code] || 'Deu um erro: ' + ((e && (e.code || e.message)) || 'desconhecido');
 
+
+  // ---- arte do topo: céu noturno, lua, estrelas, montanhas, castelo e círculos mágicos ----
+  const ARTE = (() => { const cv = $('lg-arte'); if (!cv) return { liga() {} }; const x = cv.getContext('2d'); let W = 0, H = 0, est = [], raf = 0, t0 = performance.now();
+    function mede() { const r = cv.getBoundingClientRect(), d = Math.min(2, window.devicePixelRatio || 1); W = Math.max(1, r.width); H = Math.max(1, r.height); cv.width = W * d; cv.height = H * d; x.setTransform(d, 0, 0, d, 0, 0);
+      est = []; let sd = 7; const rnd = () => (sd = (sd * 16807) % 2147483647) / 2147483647; for (let i = 0; i < Math.round(W * H / 2600); i++) est.push([rnd() * W, rnd() * H * 0.72, rnd() * 1.4 + 0.3, rnd() * 6]); }
+    function monte(base, alt, cor, sd) { x.beginPath(); x.moveTo(0, H); let px = 0; x.lineTo(0, base); const n = 9; for (let i = 0; i <= n; i++) { const xx = W * i / n, yy = base - alt * (0.4 + 0.6 * Math.abs(Math.sin(i * 1.7 + sd))); x.lineTo(xx, yy); } x.lineTo(W, H); x.closePath(); x.fillStyle = cor; x.fill(); }
+    function circ(cx, cy, r, a, al) { x.save(); x.translate(cx, cy); x.rotate(a); x.globalAlpha = al; x.strokeStyle = '#c9b2ff'; x.shadowColor = '#8a5aff'; x.shadowBlur = 12; x.lineWidth = 1.6; x.beginPath(); x.arc(0, 0, r, 0, 7); x.stroke(); x.lineWidth = 1; x.beginPath(); x.arc(0, 0, r * 0.82, 0, 7); x.stroke();
+      for (let k = 0; k < 2; k++) { x.beginPath(); for (let i = 0; i <= 3; i++) { const q = i / 3 * Math.PI * 2 + k * Math.PI / 3 - Math.PI / 2; i ? x.lineTo(Math.cos(q) * r * 0.8, Math.sin(q) * r * 0.8) : x.moveTo(Math.cos(q) * r * 0.8, Math.sin(q) * r * 0.8); } x.stroke(); }
+      for (let i = 0; i < 12; i++) { const q = i / 12 * Math.PI * 2; x.fillStyle = '#e8dcff'; x.fillRect(Math.cos(q) * r * 0.91 - 1, Math.sin(q) * r * 0.91 - 1, 2, 2); } x.restore(); }
+    function desenha(now) { const t = (now - t0) / 1000; const g = x.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#0b0826'); g.addColorStop(0.55, '#2a1460'); g.addColorStop(0.85, '#5a2a7a'); g.addColorStop(1, '#8a3a6a'); x.fillStyle = g; x.fillRect(0, 0, W, H);
+      est.forEach(([sx, sy, r, f]) => { x.globalAlpha = 0.45 + 0.55 * Math.abs(Math.sin(t * 1.2 + f)); x.fillStyle = '#fff'; x.beginPath(); x.arc(sx, sy, r, 0, 7); x.fill(); }); x.globalAlpha = 1;
+      // lua crescente com brilho
+      const lx = W * 0.82, ly = H * 0.2, lr = Math.min(W, H) * 0.075; const gl = x.createRadialGradient(lx, ly, lr * 0.5, lx, ly, lr * 4); gl.addColorStop(0, 'rgba(255,230,170,.35)'); gl.addColorStop(1, 'rgba(255,230,170,0)'); x.fillStyle = gl; x.fillRect(lx - lr * 4, ly - lr * 4, lr * 8, lr * 8);
+      x.fillStyle = '#ffe9b0'; x.beginPath(); x.arc(lx, ly, lr, 0, 7); x.fill(); x.fillStyle = '#1a0e44'; x.beginPath(); x.arc(lx + lr * 0.45, ly - lr * 0.2, lr * 0.9, 0, 7); x.fill();
+      // círculos mágicos flutuando
+      circ(W * 0.84, H * 0.5, Math.min(W, H) * 0.09, t * 0.25, 0.5); circ(W * 0.93, H * 0.66, Math.min(W, H) * 0.045, -t * 0.5, 0.4); circ(W * 0.12, H * 0.16, Math.min(W, H) * 0.05, t * 0.4, 0.35);
+      // montanhas
+      monte(H * 0.8, H * 0.22, '#2a1550', 1); monte(H * 0.88, H * 0.16, '#1c0e3a', 3);
+      // castelo
+      const cx = W * 0.88, cb = H * 0.9, u = Math.min(W, H) * 0.016; x.fillStyle = '#120828'; const tor = (tx, w, h) => { x.fillRect(tx, cb - h, w, h); for (let k = 0; k < 3; k++) x.fillRect(tx + k * w / 2.5, cb - h - u * 0.8, w / 5, u * 0.8); x.beginPath(); x.moveTo(tx - u * 0.3, cb - h - u * 0.8); x.lineTo(tx + w / 2, cb - h - u * 4); x.lineTo(tx + w + u * 0.3, cb - h - u * 0.8); x.fill(); };
+      x.fillRect(cx - u * 6, cb - u * 7, u * 12, u * 7); tor(cx - u * 8, u * 3, u * 11); tor(cx + u * 5, u * 3, u * 11); tor(cx - u * 1.6, u * 3.2, u * 15);
+      x.fillStyle = '#ffcf6a'; [[cx - u * 0.5, cb - u * 11], [cx - u * 7, cb - u * 8], [cx + u * 6, cb - u * 8], [cx - u * 3, cb - u * 4], [cx + u * 2.5, cb - u * 4]].forEach(([a, b]) => { x.globalAlpha = 0.7 + 0.3 * Math.sin(t * 2 + a); x.fillRect(a, b, u * 0.9, u * 1.4); }); x.globalAlpha = 1;
+      x.fillStyle = '#0c0620'; x.fillRect(0, H * 0.93, W, H * 0.07);
+      // névoa
+      const nv = x.createLinearGradient(0, H * 0.75, 0, H); nv.addColorStop(0, 'rgba(140,90,200,0)'); nv.addColorStop(1, 'rgba(140,90,200,.25)'); x.fillStyle = nv; x.fillRect(0, H * 0.75, W, H * 0.25); }
+    function loop(now) { if (tela.hidden) { raf = 0; return; } if (!W || Math.abs(cv.getBoundingClientRect().width - W) > 1) mede(); desenha(now); raf = requestAnimationFrame(loop); }
+    return { liga() { if (!raf) raf = requestAnimationFrame(loop); } }; })();
+  new MutationObserver(() => { if (!tela.hidden) ARTE.liga(); }).observe(tela, { attributes: true, attributeFilter: ['hidden'] }); if (!tela.hidden) ARTE.liga();
+  // olho de mostrar senha
+  tela.querySelectorAll('.lg-olho').forEach(b => b.addEventListener('click', e => { e.preventDefault(); const i = $(b.dataset.alvo); i.type = i.type === 'password' ? 'text' : 'password'; b.style.color = i.type === 'text' ? '#6a3ae8' : ''; }));
+  function modo(criar) { $('lg-entrarv').hidden = criar; $('lg-criarv').hidden = !criar; mostra(''); const f = $(criar ? 'lg-usuario' : 'lg-id'); if (f) setTimeout(() => f.focus(), 50); }
+  tap($('lg-ircriar'), () => modo(true)); tap($('lg-irentrar'), () => modo(false)); tap($('lg-voltar'), () => modo(false));
+  // o jogo só toca som depois de entrar
+  window.__entrou = false;
   // jogar sem conta (fica salvo só no celular)
   tap($('lg-convidado'), () => { try { sessionStorage.setItem('aetherion-convidado', '1'); } catch (e) {} fecha(); });
   let convidado = false; try { convidado = sessionStorage.getItem('aetherion-convidado') === '1'; } catch (e) {}
 
   const cfg = window.FIREBASE_CONFIG;
-  if (!cfg || !window.firebase) { $('lg-form').hidden = true; mostra(!cfg ? 'O login ainda não foi ligado ao Firebase. Dá pra jogar sem conta (o progresso fica salvo no celular).' : 'Sem conexão com o servidor agora. Jogue sem conta e tente de novo depois.', !!cfg); if (convidado) fecha(); return; }
+  if (!cfg || !window.firebase) { $('lg-entrarv').hidden = true; $('lg-criarv').hidden = true; $('lg-convidado').hidden = false; mostra(!cfg ? 'O login ainda não foi ligado ao Firebase. Dá pra jogar sem conta (o progresso fica salvo no celular).' : 'Sem conexão com o servidor agora. Jogue sem conta e tente de novo depois.', !!cfg); if (convidado) fecha(); return; }
 
   let app, auth, db;
-  try { app = firebase.initializeApp(cfg); auth = firebase.auth(); db = firebase.firestore(); C.db = db; } catch (e) { $('lg-form').hidden = true; mostra('Não deu pra ligar o Firebase: ' + e.message, true); return; }
+  try { app = firebase.initializeApp(cfg); auth = firebase.auth(); db = firebase.firestore(); C.db = db; } catch (e) { $('lg-entrarv').hidden = true; $('lg-criarv').hidden = true; $('lg-convidado').hidden = false; mostra('Não deu pra ligar o Firebase: ' + e.message, true); return; }
   try { auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL); } catch (e) {}
   const docDe = uid => db.collection('jogadores').doc(uid);
 
@@ -7267,7 +7324,7 @@ window.FIREBASE_CONFIG = {
 
   // quando entra: puxa o progresso da nuvem; conta nova: sobe o progresso do celular
   // puxa o progresso da nuvem só UMA vez por sessão (senão o jogo ficava recarregando sem parar)
-  async function aoEntrar(u) { C.usuario = u; mostra('Carregando seu progresso...'); ocupado(true); let puxado = null; try { puxado = sessionStorage.getItem('aetherion-puxado'); } catch (e) {}
+  async function aoEntrar(u) { C.usuario = u; registraUsuario(u, u.displayName); mostra('Carregando seu progresso...'); ocupado(true); let puxado = null; try { puxado = sessionStorage.getItem('aetherion-puxado'); } catch (e) {}
     try { const d = await docDe(u.uid).get();
       if (d.exists && d.data().arvore && puxado !== u.uid) { const dt = d.data(); try { sessionStorage.setItem('aetherion-puxado', u.uid); } catch (e) {}
         let nvLocal = 0, nvNuvem = 0; try { nvLocal = (JSON.parse(localStorage.getItem('aetherion-arvore') || '{}').nv || 0); nvNuvem = (JSON.parse(dt.arvore).nv || 0); } catch (e) {}
@@ -7280,12 +7337,27 @@ window.FIREBASE_CONFIG = {
   let primeira = true;
   auth.onAuthStateChanged(u => { const era = primeira; primeira = false; if (u) aoEntrar(u); else { C.usuario = null; if (convidado) fecha(); else { tela.hidden = false; if (era) mostra(''); } atualizaSelo(); } });
 
-  const email = () => $('lg-email').value.trim(), senha = () => $('lg-senha').value;
-  tap($('lg-entrar'), async () => { mostra('Entrando...'); ocupado(true); try { await auth.signInWithEmailAndPassword(email(), senha()); } catch (e) { mostra(erroTxt(e), true); } ocupado(false); });
-  tap($('lg-criar'), async () => { const nome = $('lg-nome'); if ($('lg-nomewrap').hidden) { $('lg-nomewrap').hidden = false; nome.focus(); mostra('Escolha seu nome de jogador e toque em Criar conta de novo.'); return; }
-    if (!nome.value.trim()) { mostra('Escolha um nome de jogador.', true); return; } mostra('Criando sua conta...'); ocupado(true);
-    try { const r = await auth.createUserWithEmailAndPassword(email(), senha()); await r.user.updateProfile({ displayName: nome.value.trim() }); C.usuario = r.user; await enviar(); } catch (e) { mostra(erroTxt(e), true); } ocupado(false); });
-  tap($('lg-esqueci'), async () => { if (!email()) { mostra('Digite seu e-mail primeiro.', true); return; } try { await auth.sendPasswordResetEmail(email()); mostra('Mandamos um e-mail pra trocar a senha. Olhe a caixa de entrada (e o spam).'); } catch (e) { mostra(erroTxt(e), true); } });
+  // ---- usuário (login) → e-mail: coleção "usuarios/{nome em minúsculo}" ----
+  const RX_USU = /^[A-Za-z0-9_.]{3,16}$/;
+  const usuDoc = n => db.collection('usuarios').doc(n.toLowerCase());
+  async function registraUsuario(u, nome) { if (!nome || !RX_USU.test(nome)) return; try { const d = await usuDoc(nome).get(); if (!d.exists) await usuDoc(nome).set({ uid: u.uid, email: (u.email || '').toLowerCase(), nome, criado: firebase.firestore.FieldValue.serverTimestamp() }); } catch (e) {} }
+  async function emailDe(id) { if (id.includes('@')) return id; if (!RX_USU.test(id)) throw { msg: 'Usuário inválido. Use letras, números, _ ou ponto (ou entre com o e-mail).' };
+    let d; try { d = await usuDoc(id).get(); } catch (e) { throw { msg: 'Não deu pra achar o usuário agora. Entre com o e-mail.' }; }
+    if (!d.exists || !d.data().email) throw { msg: 'Não existe conta com esse usuário.' }; return d.data().email; }
+  tap($('lg-entrar'), async () => { const id = $('lg-id').value.trim(), sen = $('lg-senha').value; if (!id) { mostra('Digite seu usuário ou e-mail.', true); return; } if (!sen) { mostra('Digite a senha.', true); return; }
+    mostra('Entrando...'); ocupado(true); try { const em = await emailDe(id); await auth.signInWithEmailAndPassword(em, sen); } catch (e) { mostra(e && e.msg ? e.msg : erroTxt(e), true); } ocupado(false); });
+  tap($('lg-criar'), async () => { const nome = $('lg-usuario').value.trim(), em = $('lg-email').value.trim(), s1 = $('lg-senha2').value, s2 = $('lg-senha3').value;
+    if (!RX_USU.test(nome)) { mostra('Usuário: 3 a 16 letras, números, _ ou ponto. Sem espaço.', true); return; }
+    if (!em || !em.includes('@')) { mostra('Digite um e-mail válido.', true); return; }
+    if (s1.length < 6) { mostra('A senha precisa ter pelo menos 6 letras ou números.', true); return; }
+    if (s1 !== s2) { mostra('As senhas não são iguais.', true); return; }
+    mostra('Criando sua conta...'); ocupado(true);
+    try { let livre = true; try { const d = await usuDoc(nome).get(); livre = !d.exists; } catch (e) {} if (!livre) { mostra('Esse usuário já existe. Escolha outro.', true); ocupado(false); return; }
+      const r = await auth.createUserWithEmailAndPassword(em, s1); await r.user.updateProfile({ displayName: nome }); C.usuario = r.user; await registraUsuario(r.user, nome); await enviar(); } catch (e) { mostra(erroTxt(e), true); } ocupado(false); });
+  tap($('lg-esqueci'), async () => { const id = $('lg-id').value.trim(); if (!id) { mostra('Digite seu usuário ou e-mail primeiro.', true); return; }
+    try { const em = await emailDe(id); await auth.sendPasswordResetEmail(em); mostra('Mandamos um e-mail pra trocar a senha. Olhe a caixa de entrada (e o spam).'); } catch (e) { mostra(e && e.msg ? e.msg : erroTxt(e), true); } });
+  ['lg-id', 'lg-senha'].forEach(k => $(k).addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); $('lg-entrar').click(); } }));
+  ['lg-usuario', 'lg-email', 'lg-senha2', 'lg-senha3'].forEach(k => $(k).addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); $('lg-criar').click(); } }));
 })();
 
 </script>
