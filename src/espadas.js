@@ -394,7 +394,7 @@ const glowA = cv(128, (x) => { const g = x.createRadialGradient(64, 64, 0, 64, 6
     ARC.voo.push({ m: d.m, alvo: al, p0, p1, t: 0, dur: 0.5 + Math.random() * 0.2, prev: p0.clone() }); som('tiro', 0.5, 1.4, 0.05); adagasHud(); }
   function adagasFim() { const S = ARC.st; if (!S) return; S.lista.forEach(d => d.m.parent && d.m.parent.remove(d.m)); ARC.voo.forEach(v => v.m.parent && v.m.parent.remove(v.m)); ARC.voo.length = 0; ARC.st = null; adagasHud(); }
   const _v = new T3.Vector3(), _q = new T3.Vector3();
-  function arcanoFrame(dt) { laminaFrame(dt); const on = arcanoOn() || !!ARC.lam; ARC.C.visible = ARC.F.visible = on;
+  function arcanoFrame(dt) { laminaFrame(dt); const on = arcanoOn() || !!ARC.lam; ARC.C.visible = ARC.F.visible = on; surfFrame(dt); if (ARC.surf) ARC.F.visible = on && ARC.surf.fase === 'forma' && ARC.surf.t < 0.9;
     if (AR.divino !== 'arcano' && ARC.st) adagasFim();
     if (on) { ARC.C.rotation.y = 0; ARC.gira.forEach(o => { o.a += dt * o.v * (ARC.velX || 1); o.m.rotation.z = o.m2.rotation.z = o.a; o.m2.material.opacity = 0.4 + Math.sin(gT * 3 + o.f) * 0.2; if (o.gl) o.gl.material.opacity = 0.2 + Math.sin(gT * 2 + o.f) * 0.08; }); }
     const S = ARC.st; let alvoK = S && S.fase !== 'desce' ? 1 : 0;
@@ -464,6 +464,44 @@ const glowA = cv(128, (x) => { const g = x.createRadialGradient(64, 64, 0, 64, 6
         fx('luz', [L.P.x, 0.6, L.P.z], 0.8); fx('gelo', [L.P.x, 1, L.P.z], 0.6); fx('fumo', [L.P.x, 0.3, L.P.z], 0.9); som('explosao', 1, 0.7); flash('rgba(190,140,255,.5)'); ESPG.imp.visible = true; ESPG.imp.position.set(L.P.x, 0.05, L.P.z); }
       const u = Math.min(1, (t - 2.15) / 1.25); ESPG.imp.scale.setScalar(1 + u * 8); ESPG.imp.material.opacity = 1 - u; ESPG.imp.rotation.z += dt * 2;
       const f = t > 2.9 ? Math.max(0, 1 - (t - 2.9) / 0.5) : 1; ESPG.mats[0].opacity = f; ESPG.mats[1].opacity = 0.45 * f + Math.sin(t * 20) * 0.1 * f; ESPG.mats[2].opacity = 0.6 * f; G.visible = f > 0; } }
+  // ---- TRAVESSIA ASTRAL: os círculos descem pros pés, se fundem e viram uma espada voadora (montaria) ----
+  const SURF = (() => { const g = new T3.Group(); const tex = ESPG.mats[0].map;
+    const geo = new T3.PlaneGeometry(0.62, 2.5); const mk = (add, op) => new T3.MeshBasicMaterial({ map: tex, transparent: true, side: T3.DoubleSide, depthWrite: false, toneMapped: false, opacity: op || 1, blending: add ? T3.AdditiveBlending : T3.NormalBlending, color: add ? '#b08aff' : '#ffffff' });
+    const a = new T3.Mesh(geo, mk()); a.rotation.x = Math.PI / 2; const ab = new T3.Mesh(geo, mk(true, 0.5)); ab.rotation.x = Math.PI / 2; ab.position.y = 0.004; const v = new T3.Mesh(geo, mk(false, 0.9)); v.rotation.set(Math.PI / 2, Math.PI / 2, 0);
+    g.add(a, ab, v); g.position.set(0, -0.06, 0.15);
+    const aura = new T3.Sprite(new T3.SpriteMaterial({ map: ARC.TX.glowA, transparent: true, depthWrite: false, blending: T3.AdditiveBlending, toneMapped: false, opacity: 0.55 })); aura.scale.set(3, 1.4, 1); aura.position.y = -0.1; g.add(aura);
+    const anel = new T3.Mesh(new T3.PlaneGeometry(1.5, 1.5), new T3.MeshBasicMaterial({ map: ARC.TX.texMedio, transparent: true, side: T3.DoubleSide, depthWrite: false, toneMapped: false, blending: T3.AdditiveBlending, opacity: 0.7 })); anel.rotation.x = -Math.PI / 2; anel.position.y = -0.08; g.add(anel);
+    g.visible = false; heroi.add(g);
+    const rastro = []; for (let i = 0; i < 14; i++) { const s = new T3.Sprite(new T3.SpriteMaterial({ map: ARC.TX.glowA, transparent: true, depthWrite: false, blending: T3.AdditiveBlending, toneMapped: false, opacity: 0 })); s.visible = false; world.add(s); rastro.push({ s, t: 9 }); }
+    const flashS = new T3.Sprite(new T3.SpriteMaterial({ map: ARC.TX.glowA, transparent: true, depthWrite: false, blending: T3.AdditiveBlending, toneMapped: false, opacity: 0 })); flashS.position.y = 0.2; heroi.add(flashS);
+    return { g, ab, aura, anel, rastro, flashS, mats: [a.material, ab.material, v.material], ri: 0, rt: 0 }; })();
+  const SURF_H = 1.15;
+  function surfAtiva() { if (AR.divino !== 'arcano') { aviso('Equipe o Grimório dos Círculos Arcanos.', '#c8a8ff'); return false; }
+    const S = ARC.surf; if (S) { if (S.fase === 'on') { S.fase = 'desfaz'; S.t = 0; som('magia', 0.6, 1.2); aviso('🌌 Travessia Astral desfeita.', '#c8a8ff'); } return true; }
+    if (ARC.lam || ARC.st) return false; if (typeof montado !== 'undefined' && montado) montar(false); if (voando) voa(false);
+    ARC.surf = { fase: 'forma', t: 0 }; som('magia', 0.9, 0.8); aviso('🌌 Travessia Astral! Os círculos viram sua espada voadora.', '#d0a8ff'); return true; }
+  function surfOn() { return !!(ARC.surf && ARC.surf.fase === 'on'); }
+  function surfVel() { return surfOn() ? 2.1 : 1; }
+  function surfY() { const S = ARC.surf; if (!S) return null; if (S.fase === 'forma') return S.t < 0.9 ? 0 : SURF_H * Math.min(1, (S.t - 0.9) / 0.5); if (S.fase === 'on') return SURF_H + Math.sin(gT * 2.2) * 0.08; return SURF_H * Math.max(0, 1 - S.t / 0.6); }
+  function surfPose() { const S = ARC.surf; if (!S || (S.fase === 'forma' && S.t < 0.9)) return false; const b = Math.sin(gT * 2.2) * 0.05, ad = Math.min(1, vel / 8);
+    pose(heroi, gT, { mood: 'smile', lean: 0.08 + ad * 0.22, arms: { shL: [0.1 + ad * 0.5, 0, -0.75 - b], shR: [0.1 + ad * 0.5, 0, 0.75 + b], elL: [-0.25, 0, 0], elR: [-0.25, 0, 0] }, legs: { thL: -0.35, knL: 0.45, thR: 0.25, knR: 0.2 } }); return true; }
+  const _sw = new T3.Vector3();
+  function surfFrame(dt) { const S = ARC.surf, C = ARC.C, G = SURF.g; if (!S) { G.visible = false; return; }
+    if (AR.divino !== 'arcano') { ARC.surf = null; G.visible = false; C.position.set(0, 1.55, -0.62); C.rotation.x = 0; C.scale.setScalar(1); return; }
+    if ((voando || montado) && S.fase !== 'desfaz') { S.fase = 'desfaz'; S.t = 0; }
+    S.t += dt; const casa = new T3.Vector3(0, 1.55, -0.62), pe = new T3.Vector3(0, 0.08, 0.1), ease = u => u < 0.5 ? 2 * u * u : 1 - Math.pow(-2 * u + 2, 2) / 2;
+    if (S.fase === 'forma') { const u = ease(Math.min(1, S.t / 0.7)); C.visible = true; C.position.lerpVectors(casa, pe, u); C.rotation.x = -Math.PI / 2 * u; C.scale.setScalar(1 - u * 0.55 - Math.max(0, (S.t - 0.7) / 0.25) * 0.4); ARC.velX = 1 + u * 6;
+      if (S.t > 0.85 && !S.fl) { S.fl = true; som('explosao', 0.5, 1.6); fx('luz', [heroi.position.x, 0.4, heroi.position.z], 0.5); }
+      if (S.t >= 0.9) { G.visible = true; const k = Math.min(1, (S.t - 0.9) / 0.4); G.scale.set(k, 1, 0.2 + k * 0.8); }
+      if (S.t >= 1.4) { S.fase = 'on'; ARC.velX = 1; G.scale.set(1, 1, 1); } }
+    const ff = S.flt = S.fase === 'forma' ? Math.max(0, 1 - Math.abs(S.t - 0.9) / 0.2) : S.fase === 'desfaz' ? Math.max(0, 1 - Math.abs(S.t - 0.25) / 0.2) : 0; SURF.flashS.material.opacity = ff; SURF.flashS.scale.setScalar(0.5 + ff * 3);
+    if (S.fase === 'on') { C.visible = false; G.visible = true; }
+    if (S.fase === 'desfaz') { const u = ease(Math.min(1, S.t / 0.8)); G.visible = S.t < 0.3; C.visible = S.t >= 0.25; C.position.lerpVectors(pe, casa, u); C.rotation.x = -Math.PI / 2 * (1 - u); C.scale.setScalar(0.3 + u * 0.7);
+      if (S.t >= 0.85) { ARC.surf = null; C.position.copy(casa); C.rotation.x = 0; C.scale.setScalar(1); G.visible = false; return; } }
+    if (G.visible) { SURF.anel.rotation.z += dt * 2.5; SURF.ab.material.opacity = 0.4 + Math.sin(gT * 5) * 0.15; SURF.aura.material.opacity = 0.45 + Math.sin(gT * 3) * 0.12; G.rotation.z = Math.sin(gT * 1.6) * 0.05 - (input.x || 0) * 0.12; G.rotation.x = Math.sin(gT * 2.2 + 1) * 0.03; }
+    // rastro de estrelas atrás da espada
+    SURF.rt -= dt; if (G.visible && vel > 1 && SURF.rt <= 0) { SURF.rt = 0.04; const r = SURF.rastro[SURF.ri++ % SURF.rastro.length]; G.getWorldPosition(_sw); r.s.position.set(_sw.x - Math.sin(facing) * 1.1 + (Math.random() - 0.5) * 0.3, _sw.y + (Math.random() - 0.5) * 0.15, _sw.z - Math.cos(facing) * 1.1 + (Math.random() - 0.5) * 0.3); r.t = 0; r.s.visible = true; }
+    SURF.rastro.forEach(r => { if (r.t > 0.6) { r.s.visible = false; return; } r.t += dt; const k = r.t / 0.6; r.s.material.opacity = 0.7 * (1 - k); const sc = 0.35 * (1 - k * 0.6); r.s.scale.set(sc, sc, 1); }); }
   function haloFrame(dt) { arcanoFrame(dt); rubraFrame(dt); seteFrame(dt); seloFrame(dt); arautoFrame(dt); const quer = haloVis() && !dentro; haloDefFrame(dt); HALO.H.visible = quer || HALO.elos.length > 0; if (HALO.cd > 0) HALO.cd -= dt;
     if (!HALO.H.visible) return; HALO.F.rotation.z += dt * 2.1; HALO.G.material.opacity = 0.5 + Math.sin(gT * 3) * 0.15; { const pu = 0.5 + Math.sin(gT * 3.4) * 0.25; HALO.brA.material.opacity = pu; HALO.brB.material.opacity = 0.45 + Math.sin(gT * 4.1 + 1) * 0.25; HALO.brA2.material.opacity = 0.15 + Math.sin(gT * 2.2) * 0.12; }
     if (HALO.def) { HALO.A.rotation.z += dt * 6; HALO.B.rotation.z -= dt * 9; HALO.F.rotation.z += dt * 4; return; }
