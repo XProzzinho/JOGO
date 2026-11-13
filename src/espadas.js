@@ -156,9 +156,20 @@
       const d = new T3.Group(); d.rotation.x = -Math.PI / 2; h.add(d); const A = pl(HALO.A.material.map, 0.62), B = pl(HALO.B.material.map, 0.42), F = pl(HALO.F.material.map, 0.5); A.position.z = -0.01; F.position.z = 0.01; d.add(A, B, F); const bl = (m, cor) => { const b = new T3.Mesh(m.geometry, new T3.MeshBasicMaterial({ map: m.material.map, color: cor, transparent: true, depthWrite: false, toneMapped: false, blending: T3.AdditiveBlending, opacity: 0.6, side: T3.DoubleSide })); b.position.z = 0.004; m.add(b); return b; }; const bA = bl(A, '#ffd070'), bB = bl(B, '#ffe8a0'); SETE.g.add(h); SETE.h.push({ h, A, B, F, gl, bA, bB }); } }
   function seteFrame(dt) { const on = BUFF.sete > 0 && !dentro; if (on && !SETE.g.visible) { SETE.t = 0; fx('luz', [heroi.position.x, 1, heroi.position.z], 1); som('magia', 0.8, 1.2); }
     if (!on && SETE.g.visible) { fx('luz', [heroi.position.x, 1.4, heroi.position.z], 0.7); }
-    SETE.g.visible = on; if (!on) return; SETE.t += dt; const t = SETE.t, ex = Math.min(1, t / 0.5), hp = heroi.position, R = 0.3 + ex * 1.15;
-    SETE.h.forEach((o, i) => { const a = t * 2.6 + i / 7 * Math.PI * 2; o.h.position.set(hp.x + Math.cos(a) * R, hp.y + 0.95 + Math.sin(t * 3 + i) * 0.04, hp.z + Math.sin(a) * R); o.h.scale.setScalar(0.3 + ex * 0.7); o.A.rotation.z += dt * 9; o.B.rotation.z -= dt * 12; o.F.rotation.z += dt * 10; const pu = 0.5 + Math.sin(gT * 5 + i) * 0.3; o.bA.material.opacity = pu; o.bB.material.opacity = 0.4 + Math.sin(gT * 6 + i * 2) * 0.3; o.gl.material.opacity = 0.45 + Math.sin(gT * 4 + i) * 0.2; });
-    SETE.hitT -= dt; if (SETE.hitT <= 0 && ex >= 1) { SETE.hitT = 0.25; const W0 = ARMAS[AR.arma] || ARMAS.punho, dn = Math.max(W0.dano || 10, 30) * 0.22 * atkMult(); let bateu = false;
+    SETE.g.visible = on; if (!on) return; SETE.t += dt; const t = SETE.t, hp = heroi.position, ry = heroi.rotation.y, fx_ = Math.sin(ry), fz = Math.cos(ry);
+    const T1 = 1.0, T2 = 1.6, T3_ = 2.9, ease = k => k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2, R = 1.45, BIG = 3.7;
+    const ex = t < T2 ? 0 : Math.min(1, (t - T2) / (T3_ - T2)), ee = ease(ex);
+    const frente = [hp.x + fx_ * 1.4, hp.y + 0.95, hp.z + fz * 1.4];
+    SETE.h.forEach((o, i) => { const a = (t - T3_) * 2.6 + i / 7 * Math.PI * 2; const d = o.A.parent;
+      if (t < T2) { // 1) o disco grande sai das costas, vai pra frente e deita
+        const k = ease(Math.min(1, t / T1)); o.h.visible = i === 0; o.h.position.set(hp.x - fx_ * 0.55 + (frente[0] - (hp.x - fx_ * 0.55)) * k, hp.y + 1.7 + (frente[1] - hp.y - 1.7) * k, hp.z - fz * 0.55 + (frente[2] - (hp.z - fz * 0.55)) * k);
+        o.h.rotation.set(0, ry, 0); d.rotation.x = -Math.PI / 2 * k; o.h.scale.setScalar(BIG); }
+      else { // 2) diminui e se divide em 7, abrindo em volta do personagem
+        o.h.visible = true; const ox = hp.x + Math.cos(a) * R, oy = hp.y + 0.95 + Math.sin(t * 3 + i) * 0.04 * ee, oz = hp.z + Math.sin(a) * R;
+        o.h.position.set(frente[0] + (ox - frente[0]) * ee, frente[1] + (oy - frente[1]) * ee, frente[2] + (oz - frente[2]) * ee); o.h.rotation.set(0, 0, 0); d.rotation.x = -Math.PI / 2; o.h.scale.setScalar(BIG + (1 - BIG) * ee); }
+      const sp = t < T2 ? 1.6 : 1; o.A.rotation.z += dt * 9 * sp; o.B.rotation.z -= dt * 12 * sp; o.F.rotation.z += dt * 10 * sp; const jm = t < T2 ? 1 : 0.15 + 0.85 * ee; const pu = (0.5 + Math.sin(gT * 5 + i) * 0.3) * jm; o.bA.material.opacity = pu; o.bB.material.opacity = (0.4 + Math.sin(gT * 6 + i * 2) * 0.3) * jm; o.gl.material.opacity = ((t < T2 ? 0.7 : 0.45) + Math.sin(gT * 4 + i) * 0.2) * jm; });
+    if (t > T2 && t - dt <= T2) { som('magia', 0.7, 1.6); fx('luz', frente, 0.8); }
+    SETE.hitT -= dt; if (SETE.hitT <= 0 && t >= T3_) { SETE.hitT = 0.25; const W0 = ARMAS[AR.arma] || ARMAS.punho, dn = Math.max(W0.dano || 10, 30) * 0.22 * atkMult(); let bateu = false;
       SETE.h.forEach(o => area(o.h.position.x, o.h.position.z, 0.75, f => { dano(f, dn, null, critico()); bateu = true; })); if (bateu) { som('espada', 0.3, 1.5 + Math.random() * 0.3, 0.05); fx('luz', [hp.x + (Math.random() - 0.5) * 2, 0.9, hp.z + (Math.random() - 0.5) * 2], 0.3); } } }
   function haloFrame(dt) { seteFrame(dt); const quer = haloVis() && !dentro; haloDefFrame(dt); HALO.H.visible = quer || HALO.elos.length > 0; if (HALO.cd > 0) HALO.cd -= dt;
     if (!HALO.H.visible) return; HALO.F.rotation.z += dt * 2.1; HALO.G.material.opacity = 0.5 + Math.sin(gT * 3) * 0.15; { const pu = 0.5 + Math.sin(gT * 3.4) * 0.25; HALO.brA.material.opacity = pu; HALO.brB.material.opacity = 0.45 + Math.sin(gT * 4.1 + 1) * 0.25; HALO.brA2.material.opacity = 0.15 + Math.sin(gT * 2.2) * 0.12; }
