@@ -468,7 +468,29 @@ const glowA = cv(128, (x) => { const g = x.createRadialGradient(64, 64, 0, 64, 6
   const SURF = (() => { const g = new T3.Group(); const tex = ESPG.mats[0].map;
     const geo = new T3.PlaneGeometry(0.62, 2.5); const mk = (add, op) => new T3.MeshBasicMaterial({ map: tex, transparent: true, side: T3.DoubleSide, depthWrite: false, toneMapped: false, opacity: op || 1, blending: add ? T3.AdditiveBlending : T3.NormalBlending, color: add ? '#b08aff' : '#ffffff' });
     const a = new T3.Mesh(geo, mk()); a.rotation.x = Math.PI / 2; const ab = new T3.Mesh(geo, mk(true, 0.5)); ab.rotation.x = Math.PI / 2; ab.position.y = 0.004; const v = new T3.Mesh(geo, mk(false, 0.9)); v.rotation.set(Math.PI / 2, Math.PI / 2, 0);
-    g.add(a, ab, v); g.position.set(0, -0.06, 0.15);
+    ab.material.opacity = 0.35; ab.scale.set(1.25, 1.05, 1); g.add(ab); g.position.set(0, -0.06, 0.1);
+    // ---- espada 3D: lâmina estrelada, guarda de lua prateada, gema de ametista, cabo e pomo ----
+    const E3 = new T3.Group(); g.add(E3); E3.rotation.x = Math.PI / 2; E3.position.y = 0.02; // a ponta aponta pra frente, a lâmina fica deitada
+    const est = (() => { const c = document.createElement('canvas'); c.width = 128; c.height = 512; const x = c.getContext('2d'); const gr = x.createLinearGradient(0, 0, 128, 0); gr.addColorStop(0, '#24084e'); gr.addColorStop(0.5, '#7a3ae8'); gr.addColorStop(1, '#1e0644'); x.fillStyle = gr; x.fillRect(0, 0, 128, 512);
+      for (let i = 0; i < 160; i++) { x.fillStyle = `rgba(255,255,255,${0.4 + Math.random() * 0.6})`; x.beginPath(); x.arc(Math.random() * 128, Math.random() * 512, Math.random() < 0.12 ? 2.4 : 1, 0, 7); x.fill(); }
+      const nb = x.createRadialGradient(64, 260, 4, 64, 260, 120); nb.addColorStop(0, 'rgba(255,120,240,.5)'); nb.addColorStop(1, 'rgba(255,120,240,0)'); x.fillStyle = nb; x.fillRect(0, 0, 128, 512);
+      const t = new T3.CanvasTexture(c); t.colorSpace = T3.SRGBColorSpace; t.wrapS = t.wrapT = T3.RepeatWrapping; return t; })();
+    const L = 1.75, Wd = 0.17; const sh = new T3.Shape(); sh.moveTo(0, L); sh.quadraticCurveTo(Wd * 0.9, L * 0.82, Wd, L * 0.55); sh.lineTo(Wd * 0.85, 0); sh.lineTo(-Wd * 0.85, 0); sh.lineTo(-Wd, L * 0.55); sh.quadraticCurveTo(-Wd * 0.9, L * 0.82, 0, L);
+    const lg = new T3.ExtrudeGeometry(sh, { depth: 0.03, bevelEnabled: true, bevelThickness: 0.025, bevelSize: 0.03, bevelSegments: 2, curveSegments: 10 }); lg.translate(0, 0, -0.015);
+    { const uv = lg.attributes.uv; for (let i = 0; i < uv.count; i++) uv.setXY(i, (uv.getX(i) + Wd) / (Wd * 2), uv.getY(i) / L); }
+    const lam = new T3.Mesh(lg, new T3.MeshStandardMaterial({ map: est, emissive: '#5a1ac8', emissiveMap: est, emissiveIntensity: 0.9, metalness: 0.4, roughness: 0.25 })); lam.position.y = 0.06; E3.add(lam);
+    const fio = new T3.Mesh(new T3.BoxGeometry(0.018, L * 0.92, 0.075), new T3.MeshBasicMaterial({ color: '#e8d8ff', toneMapped: false })); fio.position.y = 0.06 + L * 0.46; E3.add(fio);
+    const prata = new T3.MeshStandardMaterial({ color: '#e8e8f4', metalness: 0.9, roughness: 0.22, emissive: '#2a2a40', emissiveIntensity: 0.4 });
+    const gu = new T3.Mesh(new T3.TorusGeometry(0.3, 0.045, 10, 32, Math.PI * 0.95), prata); gu.rotation.z = Math.PI * 0.025; gu.scale.set(1, 0.55, 1); gu.position.y = 0.0; E3.add(gu);
+    [-1, 1].forEach(sd => { const p = new T3.Mesh(new T3.ConeGeometry(0.04, 0.16, 8), prata); p.position.set(sd * 0.3, 0.08, 0); E3.add(p); });
+    const gema = new T3.Mesh(new T3.SphereGeometry(0.075, 18, 14), new T3.MeshStandardMaterial({ color: '#c45aff', emissive: '#a03aff', emissiveIntensity: 1.2, metalness: 0.1, roughness: 0.1 })); gema.position.y = 0.0; gema.scale.set(1, 1, 0.8); E3.add(gema);
+    const aro = new T3.Mesh(new T3.TorusGeometry(0.08, 0.018, 8, 24), prata); E3.add(aro);
+    const cabo = new T3.Mesh(new T3.CylinderGeometry(0.035, 0.04, 0.42, 12), new T3.MeshStandardMaterial({ color: '#1e1430', roughness: 0.8 })); cabo.position.y = -0.27; E3.add(cabo);
+    for (let i = 0; i < 4; i++) { const r = new T3.Mesh(new T3.TorusGeometry(0.041, 0.008, 6, 16), prata); r.rotation.x = Math.PI / 2; r.position.y = -0.12 - i * 0.1; E3.add(r); }
+    const pomo = new T3.Mesh(new T3.TorusGeometry(0.09, 0.03, 8, 24, Math.PI * 1.3), prata); pomo.position.y = -0.55; pomo.rotation.z = Math.PI * 0.85; E3.add(pomo);
+    const pg = new T3.Mesh(new T3.SphereGeometry(0.035, 12, 10), gema.material); pg.position.y = -0.55; E3.add(pg);
+    E3.position.z = -0.35; // o herói fica em pé em cima da lâmina, logo à frente da guarda
+
     const aura = new T3.Sprite(new T3.SpriteMaterial({ map: ARC.TX.glowA, transparent: true, depthWrite: false, blending: T3.AdditiveBlending, toneMapped: false, opacity: 0.55 })); aura.scale.set(3, 1.4, 1); aura.position.y = -0.1; g.add(aura);
     const anel = new T3.Mesh(new T3.PlaneGeometry(1.5, 1.5), new T3.MeshBasicMaterial({ map: ARC.TX.texMedio, transparent: true, side: T3.DoubleSide, depthWrite: false, toneMapped: false, blending: T3.AdditiveBlending, opacity: 0.7 })); anel.rotation.x = -Math.PI / 2; anel.position.y = -0.08; g.add(anel);
     g.visible = false; heroi.add(g);
