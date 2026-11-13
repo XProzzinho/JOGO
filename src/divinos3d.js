@@ -1926,3 +1926,972 @@
   // esconder cabelo/capuz do personagem (o elmo cobre)
   return L; }
 
+  // Arauto das Chamas — personagem completo (modelo detalhado do Geanderson)
+  function createArautoDasChamas(THREE) {
+            const characterGroup = new THREE.Group();
+            characterGroup.name = "ArautoDasChamas";
+
+            // ------------------------------------------------------------------------
+            // 1. TEXTURAS PROCEDURAIS EMBUTIDAS (NÃO DEPENDE DE ARQUIVOS EXTERNOS)
+            // ------------------------------------------------------------------------
+            function makeObsidianTextures() {
+                const size = 512;
+                const diffC = document.createElement('canvas');
+                const emisC = document.createElement('canvas');
+                diffC.width = emisC.width = size;
+                diffC.height = emisC.height = size;
+                const dCtx = diffC.getContext('2d');
+                const eCtx = emisC.getContext('2d');
+
+                const grad = dCtx.createLinearGradient(0, 0, size, size);
+                grad.addColorStop(0, '#171215');
+                grad.addColorStop(0.5, '#0c090b');
+                grad.addColorStop(1, '#1c1412');
+                dCtx.fillStyle = grad;
+                dCtx.fillRect(0, 0, size, size);
+
+                eCtx.fillStyle = '#000000';
+                eCtx.fillRect(0, 0, size, size);
+
+                // Veios de lava ardente nas placas da armadura
+                for (let i = 0; i < 34; i++) {
+                    let x = Math.random() * size;
+                    let y = Math.random() * size;
+                    let ang = Math.random() * Math.PI * 2;
+                    dCtx.beginPath();
+                    eCtx.beginPath();
+                    dCtx.moveTo(x, y);
+                    eCtx.moveTo(x, y);
+                    for (let s = 0; s < 12; s++) {
+                        ang += (Math.random() - 0.5) * 0.9;
+                        x += Math.cos(ang) * 16;
+                        y += Math.sin(ang) * 16;
+                        dCtx.lineTo(x, y);
+                        eCtx.lineTo(x, y);
+                    }
+                    dCtx.strokeStyle = '#381004';
+                    dCtx.lineWidth = 4;
+                    dCtx.stroke();
+
+                    eCtx.strokeStyle = 'rgba(255, 75, 0, 0.85)';
+                    eCtx.lineWidth = 3.5;
+                    eCtx.stroke();
+
+                    eCtx.strokeStyle = 'rgba(255, 210, 60, 0.95)';
+                    eCtx.lineWidth = 1.2;
+                    eCtx.stroke();
+                }
+                const map = new THREE.CanvasTexture(diffC);
+                const emissiveMap = new THREE.CanvasTexture(emisC);
+                map.wrapS = map.wrapT = emissiveMap.wrapS = emissiveMap.wrapT = THREE.RepeatWrapping;
+                return { map, emissiveMap };
+            }
+
+            function makeFaceTexture() {
+                const c = document.createElement('canvas');
+                c.width = c.height = 512;
+                const ctx = c.getContext('2d');
+
+                const g = ctx.createLinearGradient(0, 0, 0, 512);
+                g.addColorStop(0, '#dba990');
+                g.addColorStop(0.5, '#e8bba5');
+                g.addColorStop(0.8, '#c78c73');
+                g.addColorStop(1, '#9b604b');
+                ctx.fillStyle = g;
+                ctx.fillRect(0, 0, 512, 512);
+
+                // Marca de fogo sagrada na testa
+                ctx.save();
+                ctx.translate(256, 160);
+                ctx.fillStyle = '#ff2200';
+                ctx.beginPath();
+                ctx.moveTo(0, -18);
+                ctx.quadraticCurveTo(9, 0, 0, 18);
+                ctx.quadraticCurveTo(-9, 0, 0, -18);
+                ctx.fill();
+                ctx.fillStyle = '#ffd255';
+                ctx.beginPath();
+                ctx.moveTo(0, -9);
+                ctx.quadraticCurveTo(4, 0, 0, 9);
+                ctx.quadraticCurveTo(-4, 0, 0, -9);
+                ctx.fill();
+                ctx.restore();
+
+                // Sobrancelhas ruivas escuras arqueadas
+                ctx.strokeStyle = '#5c0e06';
+                ctx.lineWidth = 9;
+                ctx.lineCap = 'round';
+                ctx.beginPath();
+                ctx.moveTo(155, 212);
+                ctx.quadraticCurveTo(195, 200, 232, 220);
+                ctx.moveTo(357, 212);
+                ctx.quadraticCurveTo(317, 200, 280, 220);
+                ctx.stroke();
+
+                // Sombra dos olhos
+                ctx.fillStyle = 'rgba(65, 18, 12, 0.55)';
+                ctx.beginPath();
+                ctx.ellipse(196, 232, 32, 15, -0.07, 0, Math.PI * 2);
+                ctx.ellipse(316, 232, 32, 15, 0.07, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Lábios definidos
+                ctx.fillStyle = '#994f42';
+                ctx.beginPath();
+                ctx.moveTo(222, 344);
+                ctx.quadraticCurveTo(256, 334, 290, 344);
+                ctx.quadraticCurveTo(256, 357, 222, 344);
+                ctx.fill();
+
+                return new THREE.CanvasTexture(c);
+            }
+
+            function makeCapeTextures() {
+                const w = 512, h = 1024;
+                const diffC = document.createElement('canvas');
+                const emisC = document.createElement('canvas');
+                diffC.width = emisC.width = w;
+                diffC.height = emisC.height = h;
+                const dCtx = diffC.getContext('2d');
+                const eCtx = emisC.getContext('2d');
+
+                const g = dCtx.createLinearGradient(0, 0, 0, h);
+                g.addColorStop(0.0, '#2a0404');
+                g.addColorStop(0.45, '#5e0907');
+                g.addColorStop(0.78, '#9c1708');
+                g.addColorStop(0.93, '#ea4b09');
+                g.addColorStop(1.0, '#ffba26');
+                dCtx.fillStyle = g;
+                dCtx.fillRect(0, 0, w, h);
+
+                eCtx.fillStyle = '#000000';
+                eCtx.fillRect(0, 0, w, h);
+
+                const eg = eCtx.createLinearGradient(0, h * 0.65, 0, h);
+                eg.addColorStop(0.0, 'rgba(0,0,0,0)');
+                eg.addColorStop(0.7, 'rgba(255, 70, 0, 0.65)');
+                eg.addColorStop(1.0, 'rgba(255, 200, 50, 1.0)');
+                eCtx.fillStyle = eg;
+                eCtx.fillRect(0, h * 0.65, w, h * 0.35);
+
+                // Bordados rúnicos dourados
+                dCtx.strokeStyle = '#e3a846';
+                dCtx.lineWidth = 4;
+                dCtx.strokeRect(32, 20, w - 64, h - 60);
+                for (let y = 120; y < h - 100; y += 120) {
+                    dCtx.beginPath();
+                    dCtx.moveTo(w * 0.5, y - 40);
+                    dCtx.lineTo(w * 0.5 + 36, y);
+                    dCtx.lineTo(w * 0.5, y + 40);
+                    dCtx.lineTo(w * 0.5 - 36, y);
+                    dCtx.closePath();
+                    dCtx.stroke();
+                }
+
+                return {
+                    map: new THREE.CanvasTexture(diffC),
+                    emissiveMap: new THREE.CanvasTexture(emisC)
+                };
+            }
+
+            const obsTex = makeObsidianTextures();
+            const faceTex = makeFaceTexture();
+            const capeTex = makeCapeTextures();
+
+            // ------------------------------------------------------------------------
+            // 2. MATERIAIS PBR + EMISSIVOS PARA O BLOOM
+            // ------------------------------------------------------------------------
+            const obsidianMat = new THREE.MeshStandardMaterial({
+                map: obsTex.map,
+                emissiveMap: obsTex.emissiveMap,
+                emissive: new THREE.Color(0xff5500),
+                emissiveIntensity: 1.4,
+                metalness: 0.86,
+                roughness: 0.26
+            });
+
+            const goldMat = new THREE.MeshStandardMaterial({
+                color: 0xf4b644,
+                emissive: new THREE.Color(0x4a1c00),
+                emissiveIntensity: 0.35,
+                metalness: 0.94,
+                roughness: 0.18
+            });
+
+            const flameHornMat = new THREE.MeshStandardMaterial({
+                color: 0xff5500,
+                emissive: new THREE.Color(0xff5e00),
+                emissiveIntensity: 2.1,
+                roughness: 0.15,
+                metalness: 0.1
+            });
+
+            const rubyMat = new THREE.MeshStandardMaterial({
+                color: 0xff0a1a,
+                emissive: new THREE.Color(0xff1e00),
+                emissiveIntensity: 2.5,
+                metalness: 0.15,
+                roughness: 0.08
+            });
+
+            const brightCoreMat = new THREE.MeshBasicMaterial({
+                color: 0xfff099
+            });
+
+            const hairMat = new THREE.MeshStandardMaterial({
+                color: 0x991106,
+                emissive: new THREE.Color(0x300400),
+                emissiveIntensity: 0.5,
+                roughness: 0.38,
+                metalness: 0.12,
+                side: THREE.DoubleSide
+            });
+
+            const faceSkinMat = new THREE.MeshStandardMaterial({
+                map: faceTex,
+                roughness: 0.45,
+                metalness: 0.04
+            });
+
+            const neckSkinMat = new THREE.MeshStandardMaterial({
+                color: 0xd49c84,
+                roughness: 0.5,
+                metalness: 0.04
+            });
+
+            const capeMat = new THREE.MeshStandardMaterial({
+                map: capeTex.map,
+                emissiveMap: capeTex.emissiveMap,
+                emissive: new THREE.Color(0xff6600),
+                emissiveIntensity: 1.35,
+                roughness: 0.6,
+                metalness: 0.12,
+                side: THREE.DoubleSide
+            });
+
+            // ------------------------------------------------------------------------
+            // 3. HELPERS GEOMÉTRICOS (CHIFRES DE FOGO, GEMAS RUBI, PLACAS)
+            // ------------------------------------------------------------------------
+            function createCurvedFlameHorn(length = 0.4, radius = 0.04, curveX = 0.15, curveZ = 0.03) {
+                const group = new THREE.Group();
+                const segs = 14;
+                const pts = [];
+                for (let i = 0; i <= segs; i++) {
+                    const t = i / segs;
+                    const y = t * length;
+                    const x = Math.sin(t * Math.PI * 0.85) * curveX - (t * t * curveX * 0.45);
+                    const z = Math.sin(t * Math.PI) * curveZ;
+                    pts.push(new THREE.Vector3(x, y, z));
+                }
+                const curve = new THREE.CatmullRomCurve3(pts);
+                const geo = new THREE.TubeGeometry(curve, 18, radius, 8, false);
+                const pos = geo.attributes.position;
+                const v = new THREE.Vector3();
+
+                for (let i = 0; i < pos.count; i++) {
+                    const ringIdx = Math.floor(i / 9);
+                    const t = Math.min(1, ringIdx / 18);
+                    const center = curve.getPointAt(t);
+                    v.fromBufferAttribute(pos, i).sub(center);
+                    const taper = Math.pow(1 - t, 0.78);
+                    v.x *= taper * 1.2;
+                    v.y *= taper;
+                    v.z *= taper * 0.52;
+                    v.add(center);
+                    pos.setXYZ(i, v.x, v.y, v.z);
+                }
+                geo.computeVertexNormals();
+
+                const bodyMesh = new THREE.Mesh(geo, obsidianMat);
+                group.add(bodyMesh);
+
+                const innerGeo = geo.clone();
+                innerGeo.scale(0.86, 1.04, 0.62);
+                const flameMesh = new THREE.Mesh(innerGeo, flameHornMat);
+                flameMesh.position.set(curveX * 0.09, 0.015, 0);
+                group.add(flameMesh);
+
+                const baseCollar = new THREE.Mesh(
+                    new THREE.TorusGeometry(radius * 1.12, radius * 0.28, 6, 12),
+                    goldMat
+                );
+                baseCollar.rotation.x = Math.PI / 2;
+                group.add(baseCollar);
+
+                return group;
+            }
+
+            function createRubyGemstone(w = 0.14, h = 0.22, d = 0.07) {
+                const group = new THREE.Group();
+                const gemGeo = new THREE.OctahedronGeometry(1, 0);
+                gemGeo.scale(w * 0.52, h * 0.52, d * 0.55);
+                const gem = new THREE.Mesh(gemGeo, rubyMat);
+                group.add(gem);
+
+                const core = new THREE.Mesh(gemGeo, brightCoreMat);
+                core.scale.set(0.4, 0.4, 0.4);
+                group.add(core);
+
+                // Moldura dourada
+                const frameShape = new THREE.Shape();
+                const fw = w * 0.72, fh = h * 0.70;
+                frameShape.moveTo(0, fh);
+                frameShape.lineTo(fw, 0);
+                frameShape.lineTo(0, -fh);
+                frameShape.lineTo(-fw, 0);
+                frameShape.closePath();
+
+                const hole = new THREE.Path();
+                hole.moveTo(0, fh * 0.66);
+                hole.lineTo(fw * 0.66, 0);
+                hole.lineTo(0, -fh * 0.66);
+                hole.lineTo(-fw * 0.66, 0);
+                hole.closePath();
+                frameShape.holes.push(hole);
+
+                const extrudeGeo = new THREE.ExtrudeGeometry(frameShape, {
+                    depth: d * 0.42,
+                    bevelEnabled: true,
+                    bevelThickness: 0.008,
+                    bevelSize: 0.008,
+                    bevelSegments: 2
+                });
+                extrudeGeo.center();
+                const frame = new THREE.Mesh(extrudeGeo, goldMat);
+                frame.position.z = -d * 0.06;
+                group.add(frame);
+
+                return group;
+            }
+
+            function createOrnateArmorPlate(w, h, d, curveDepth = 0.05) {
+                const group = new THREE.Group();
+                const geo = new THREE.BoxGeometry(w, h, d, 6, 6, 2);
+                const pos = geo.attributes.position;
+                for (let i = 0; i < pos.count; i++) {
+                    const x = pos.getX(i), y = pos.getY(i), z = pos.getZ(i);
+                    const nx = x / (w * 0.5);
+                    const ny = y / (h * 0.5);
+                    const zCurve = -Math.pow(nx, 2) * curveDepth + (1 - Math.abs(ny)) * (curveDepth * 0.35);
+                    const taperX = x * (1 - Math.max(0, -ny) * 0.22);
+                    pos.setXYZ(i, taperX, y, z + zCurve);
+                }
+                geo.computeVertexNormals();
+
+                const obsidianPlate = new THREE.Mesh(geo, obsidianMat);
+                group.add(obsidianPlate);
+
+                const goldBorderGeo = geo.clone();
+                goldBorderGeo.scale(1.055, 1.055, 0.80);
+                const goldBorder = new THREE.Mesh(goldBorderGeo, goldMat);
+                goldBorder.position.z = -0.003;
+                group.add(goldBorder);
+
+                return group;
+            }
+
+            function createPointedBanner(w, h) {
+                const geo = new THREE.PlaneGeometry(w, h, 8, 14);
+                geo.translate(0, -h * 0.5, 0);
+                const pos = geo.attributes.position;
+                for (let i = 0; i < pos.count; i++) {
+                    let x = pos.getX(i), y = pos.getY(i);
+                    const ty = -y / h;
+                    if (ty > 0.72) {
+                        const factor = 1 - ((ty - 0.72) / 0.28);
+                        x *= Math.max(0.04, factor);
+                    }
+                    const z = Math.sin(ty * Math.PI) * 0.025;
+                    pos.setXYZ(i, x, y, z);
+                }
+                geo.computeVertexNormals();
+                return new THREE.Mesh(geo, capeMat);
+            }
+
+            // ------------------------------------------------------------------------
+            // 4. HIERARQUIA DE JUNTAS (RIGGING) PARA O JOGO
+            // ------------------------------------------------------------------------
+            const hipsGroup = new THREE.Group();
+            hipsGroup.position.set(0, 1.0, 0);
+            characterGroup.add(hipsGroup);
+
+            const upperBodyGroup = new THREE.Group();
+            upperBodyGroup.position.set(0, 0.07, 0);
+            hipsGroup.add(upperBodyGroup);
+
+            const headMasterGroup = new THREE.Group();
+            headMasterGroup.position.set(0, 0.54, 0.015);
+            upperBodyGroup.add(headMasterGroup);
+
+            const backArtifactGroup = new THREE.Group();
+            backArtifactGroup.position.set(0, 0.34, -0.22);
+            upperBodyGroup.add(backArtifactGroup);
+
+            // ------------------------------------------------------------------------
+            // 5. PERNAS ARTICULADAS, JOELHEIRAS COM RUBI E BOTAS BLINDADAS
+            // ------------------------------------------------------------------------
+            function buildArmoredLeg(side) {
+                const legPivot = new THREE.Group();
+                legPivot.position.set(side * 0.18, -0.02, 0);
+                legPivot.rotation.z = -side * 0.035;
+
+                // Coxa
+                const thighMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.118, 0.09, 0.45, 16), obsidianMat);
+                thighMesh.position.y = -0.22;
+                legPivot.add(thighMesh);
+
+                const thighPlate = createOrnateArmorPlate(0.18, 0.35, 0.052, 0.055);
+                thighPlate.position.set(0, -0.21, 0.088);
+                legPivot.add(thighPlate);
+
+                // Junta do Joelho + Greva + Bota
+                const kneePivot = new THREE.Group();
+                kneePivot.position.set(0, -0.46, 0);
+                legPivot.add(kneePivot);
+
+                const kneeArmor = new THREE.Group();
+                kneeArmor.position.set(0, 0, 0.025);
+                kneePivot.add(kneeArmor);
+
+                kneeArmor.add(createOrnateArmorPlate(0.16, 0.17, 0.06, 0.055));
+                const kneeGem = createRubyGemstone(0.075, 0.115, 0.04);
+                kneeGem.position.set(0, 0.01, 0.095);
+                kneeArmor.add(kneeGem);
+
+                const kneeHorn = createCurvedFlameHorn(0.16, 0.016, side * 0.05, 0.02);
+                kneeHorn.position.set(side * 0.065, 0.02, 0.05);
+                kneeHorn.rotation.set(0.2, 0, -side * 0.35);
+                kneeArmor.add(kneeHorn);
+
+                // Canela (Greva)
+                const shinMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.088, 0.064, 0.42, 16), obsidianMat);
+                shinMesh.position.set(0, -0.23, -0.01);
+                kneePivot.add(shinMesh);
+
+                const greavePlate = createOrnateArmorPlate(0.145, 0.38, 0.055, 0.06);
+                greavePlate.position.set(0, -0.22, 0.07);
+                kneePivot.add(greavePlate);
+
+                // Asa de fogo no calcanhar/tornozelo
+                const ankleSpur = createCurvedFlameHorn(0.16, 0.018, side * 0.06, -0.02);
+                ankleSpur.position.set(side * 0.06, -0.38, -0.02);
+                ankleSpur.rotation.set(-0.3, 0, -side * 0.45);
+                kneePivot.add(ankleSpur);
+
+                // Bota Blindada (Sabaton)
+                const bootGroup = new THREE.Group();
+                bootGroup.position.set(0, -0.46, 0.02);
+                bootGroup.rotation.y = side * 0.1;
+                kneePivot.add(bootGroup);
+
+                const footGeo = new THREE.BoxGeometry(0.12, 0.08, 0.26, 4, 2, 6);
+                const fp = footGeo.attributes.position;
+                for (let i = 0; i < fp.count; i++) {
+                    if (fp.getZ(i) > 0.02) {
+                        const t = (fp.getZ(i) - 0.02) / 0.11;
+                        fp.setX(i, fp.getX(i) * (1 - t * 0.68));
+                        fp.setY(i, fp.getY(i) - t * 0.015);
+                    }
+                }
+                footGeo.computeVertexNormals();
+                const footMesh = new THREE.Mesh(footGeo, obsidianMat);
+                footMesh.position.set(0, -0.02, 0.055);
+                bootGroup.add(footMesh);
+
+                const footTrim = new THREE.Mesh(footGeo.clone().scale(1.04, 0.65, 1.02), goldMat);
+                footTrim.position.set(0, -0.032, 0.055);
+                bootGroup.add(footTrim);
+
+                return { legPivot, kneePivot };
+            }
+
+            const leftLeg = buildArmoredLeg(-1);
+            const rightLeg = buildArmoredLeg(1);
+            hipsGroup.add(leftLeg.legPivot);
+            hipsGroup.add(rightLeg.legPivot);
+
+            // ------------------------------------------------------------------------
+            // 6. CINTURA, CINTO COM RUBI E TASSETS / FALDÃO DE COMBATE
+            // ------------------------------------------------------------------------
+            const hipCore = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.16, 0.19, 16), obsidianMat);
+            hipCore.scale.set(1.15, 1, 0.85);
+            hipsGroup.add(hipCore);
+
+            const beltRing = new THREE.Mesh(new THREE.TorusGeometry(0.182, 0.026, 8, 28), goldMat);
+            beltRing.rotation.x = Math.PI / 2;
+            beltRing.scale.set(1.16, 0.88, 1);
+            beltRing.position.y = 0.065;
+            hipsGroup.add(beltRing);
+
+            const beltRuby = createRubyGemstone(0.105, 0.155, 0.05);
+            beltRuby.position.set(0, 0.055, 0.172);
+            hipsGroup.add(beltRuby);
+
+            const frontTabard = createPointedBanner(0.21, 0.56);
+            frontTabard.position.set(0, 0.02, 0.162);
+            frontTabard.rotation.x = -0.06;
+            hipsGroup.add(frontTabard);
+
+            const backTabard = createPointedBanner(0.32, 0.78);
+            backTabard.position.set(0, 0.02, -0.155);
+            backTabard.rotation.x = 0.08;
+            hipsGroup.add(backTabard);
+
+            [-1, 1].forEach(side => {
+                for (let l = 0; l < 3; l++) {
+                    const tasset = createOrnateArmorPlate(0.17 - l * 0.015, 0.14, 0.032, 0.04);
+                    tasset.position.set(side * (0.19 + l * 0.018), -0.04 - l * 0.095, 0.06 - l * 0.01);
+                    tasset.rotation.set(-0.08, side * 0.42, side * (0.22 + l * 0.05));
+                    hipsGroup.add(tasset);
+                }
+                for (let f = 0; f < 2; f++) {
+                    const wingSkirt = createPointedBanner(0.24, 0.74 - f * 0.12);
+                    wingSkirt.position.set(side * (0.21 + f * 0.03), -0.02, -0.02 - f * 0.04);
+                    wingSkirt.rotation.set(0.06, side * 0.35, -side * (0.26 + f * 0.10));
+                    hipsGroup.add(wingSkirt);
+                }
+            });
+
+            // ------------------------------------------------------------------------
+            // 7. TRONCO, PEITORAL LENDÁRIO E CORAÇÃO RUBI
+            // ------------------------------------------------------------------------
+            const abdomen = new THREE.Mesh(new THREE.CylinderGeometry(0.21, 0.165, 0.25, 16), obsidianMat);
+            abdomen.position.y = 0.12;
+            abdomen.scale.set(1.12, 1, 0.82);
+            upperBodyGroup.add(abdomen);
+
+            for (let r = 0; r < 3; r++) {
+                const abPlate = createOrnateArmorPlate(0.25 - r * 0.025, 0.07, 0.042, 0.055);
+                abPlate.position.set(0, 0.19 - r * 0.062, 0.152 - r * 0.008);
+                upperBodyGroup.add(abPlate);
+            }
+
+            const chestCore = new THREE.Mesh(new THREE.CylinderGeometry(0.265, 0.21, 0.30, 18), obsidianMat);
+            chestCore.position.y = 0.36;
+            chestCore.scale.set(1.18, 1, 0.84);
+            upperBodyGroup.add(chestCore);
+
+            [-1, 1].forEach(side => {
+                const pecPlate = createOrnateArmorPlate(0.22, 0.23, 0.058, 0.055);
+                pecPlate.position.set(side * 0.12, 0.37, 0.175);
+                pecPlate.rotation.set(-0.14, side * 0.28, -side * 0.12);
+                upperBodyGroup.add(pecPlate);
+
+                for (let w = 0; w < 2; w++) {
+                    const chestWing = createCurvedFlameHorn(0.23 - w * 0.04, 0.022, side * 0.09, 0.02);
+                    chestWing.position.set(side * 0.055, 0.34 + w * 0.045, 0.215);
+                    chestWing.rotation.set(0.18, side * 0.22, -side * (0.68 + w * 0.22));
+                    upperBodyGroup.add(chestWing);
+                }
+            });
+
+            const mainChestRuby = createRubyGemstone(0.165, 0.25, 0.08);
+            mainChestRuby.position.set(0, 0.365, 0.228);
+            mainChestRuby.rotation.x = -0.1;
+            upperBodyGroup.add(mainChestRuby);
+
+            const gorget = new THREE.Mesh(new THREE.CylinderGeometry(0.145, 0.19, 0.09, 18), obsidianMat);
+            gorget.position.set(0, 0.51, 0.01);
+            upperBodyGroup.add(gorget);
+
+            const gorgetRim = new THREE.Mesh(new THREE.TorusGeometry(0.148, 0.014, 8, 24), goldMat);
+            gorgetRim.rotation.x = Math.PI / 2;
+            gorgetRim.position.set(0, 0.55, 0.01);
+            upperBodyGroup.add(gorgetRim);
+
+            // ------------------------------------------------------------------------
+            // 8. OMBREIRAS DRACÔNICAS (PAULDRONS) E BRAÇOS ARTICULADOS
+            // ------------------------------------------------------------------------
+            function buildArmAndPauldron(side) {
+                const shoulderPivot = new THREE.Group();
+                shoulderPivot.position.set(side * 0.325, 0.43, 0.0);
+
+                // Pauldron multicamadas com chifres de fogo
+                const pauldron = new THREE.Group();
+                pauldron.position.set(0, 0.025, 0);
+                pauldron.rotation.z = -side * 0.20;
+                shoulderPivot.add(pauldron);
+
+                for (let layer = 0; layer < 3; layer++) {
+                    const r = 0.175 - layer * 0.016;
+                    const domeGeo = new THREE.SphereGeometry(r, 18, 14, 0, Math.PI * 1.35, 0, Math.PI * 0.58);
+                    const dome = new THREE.Mesh(domeGeo, obsidianMat);
+                    dome.position.set(side * (layer * 0.028), -layer * 0.048, 0);
+                    dome.rotation.set(0, side > 0 ? -Math.PI * 0.18 : Math.PI * 0.82, -side * (0.22 + layer * 0.12));
+                    pauldron.add(dome);
+
+                    const goldArch = new THREE.Mesh(
+                        new THREE.TorusGeometry(r * 0.97, 0.013, 6, 20, Math.PI * 1.18),
+                        goldMat
+                    );
+                    goldArch.position.copy(dome.position);
+                    goldArch.rotation.set(Math.PI / 2, side * 0.28, side > 0 ? -0.3 : Math.PI + 0.3);
+                    pauldron.add(goldArch);
+                }
+
+                const hornSpecs = [
+                    { pos: [side * 0.04, 0.12, 0.02], rot: [0.05, 0, -side * 0.22], len: 0.38, rad: 0.038, cx: side * 0.15 },
+                    { pos: [side * 0.12, 0.07, -0.04], rot: [-0.18, 0, -side * 0.52], len: 0.32, rad: 0.032, cx: side * 0.13 },
+                    { pos: [side * 0.10, 0.05, 0.08], rot: [0.22, 0, -side * 0.46], len: 0.26, rad: 0.028, cx: side * 0.11 },
+                    { pos: [side * 0.16, -0.02, 0.0], rot: [0.0, 0, -side * 0.82], len: 0.22, rad: 0.024, cx: side * 0.09 }
+                ];
+                hornSpecs.forEach(s => {
+                    const h = createCurvedFlameHorn(s.len, s.rad, s.cx, 0.03);
+                    h.position.set(...s.pos);
+                    h.rotation.set(...s.rot);
+                    pauldron.add(h);
+                });
+
+                // Braço e Antebraço
+                const upperArmGroup = new THREE.Group();
+                upperArmGroup.position.set(side * 0.025, -0.04, 0.01);
+                upperArmGroup.rotation.set(0.07, 0, -side * 0.15);
+                shoulderPivot.add(upperArmGroup);
+
+                const bicep = new THREE.Mesh(new THREE.CylinderGeometry(0.082, 0.070, 0.27, 14), obsidianMat);
+                bicep.position.y = -0.135;
+                upperArmGroup.add(bicep);
+
+                const elbowGem = createRubyGemstone(0.055, 0.085, 0.03);
+                elbowGem.position.set(side * 0.07, -0.26, -0.02);
+                elbowGem.rotation.y = side * Math.PI * 0.5;
+                upperArmGroup.add(elbowGem);
+
+                const forearmPivot = new THREE.Group();
+                forearmPivot.position.set(0, -0.27, 0);
+                forearmPivot.rotation.set(-0.2, 0, side * 0.05);
+                upperArmGroup.add(forearmPivot);
+
+                const vambrace = new THREE.Mesh(new THREE.CylinderGeometry(0.076, 0.056, 0.26, 14), obsidianMat);
+                vambrace.position.y = -0.13;
+                forearmPivot.add(vambrace);
+
+                const cuffPlate = createOrnateArmorPlate(0.10, 0.23, 0.038, 0.035);
+                cuffPlate.position.set(side * 0.058, -0.125, 0.01);
+                cuffPlate.rotation.y = side * Math.PI * 0.5;
+                forearmPivot.add(cuffPlate);
+
+                for (let k = 0; k < 2; k++) {
+                    const spike = createCurvedFlameHorn(0.22 - k * 0.04, 0.020, side * 0.08, -0.02);
+                    spike.position.set(side * 0.07, -0.07 - k * 0.07, -0.02);
+                    spike.rotation.set(-0.22, 0, -side * (0.42 + k * 0.15));
+                    forearmPivot.add(spike);
+                }
+
+                const hand = new THREE.Mesh(new THREE.BoxGeometry(0.075, 0.095, 0.085), obsidianMat);
+                hand.position.set(0, -0.29, 0.01);
+                forearmPivot.add(hand);
+
+                const handGold = new THREE.Mesh(new THREE.BoxGeometry(0.082, 0.045, 0.09), goldMat);
+                handGold.position.set(0, -0.27, 0.01);
+                forearmPivot.add(handGold);
+
+                return { shoulderPivot, forearmPivot };
+            }
+
+            const leftArm = buildArmAndPauldron(-1);
+            const rightArm = buildArmAndPauldron(1);
+            upperBodyGroup.add(leftArm.shoulderPivot);
+            upperBodyGroup.add(rightArm.shoulderPivot);
+
+            // ------------------------------------------------------------------------
+            // 9. CABEÇA ESCULPIDA, OLHOS EM BRASA, COROA REAL E CABELO LONGO VERMELHO
+            // ------------------------------------------------------------------------
+            const neck = new THREE.Mesh(new THREE.CylinderGeometry(0.065, 0.078, 0.12, 16), neckSkinMat);
+            neck.position.y = 0.045;
+            headMasterGroup.add(neck);
+
+            const headGeo = new THREE.SphereGeometry(0.122, 28, 28);
+            const hp = headGeo.attributes.position;
+            for (let i = 0; i < hp.count; i++) {
+                let x = hp.getX(i), y = hp.getY(i), z = hp.getZ(i);
+                y *= 1.18;
+                z *= 1.06;
+                if (y < 0) {
+                    const t = Math.min(1, -y / 0.14);
+                    x *= (1 - t * 0.36);
+                    if (z > 0) z *= (1 - t * 0.12);
+                }
+                hp.setXYZ(i, x, y, z);
+            }
+            headGeo.computeVertexNormals();
+            const headMesh = new THREE.Mesh(headGeo, faceSkinMat);
+            headMesh.position.set(0, 0.17, 0.018);
+            headMesh.rotation.y = -Math.PI / 2;
+            headMasterGroup.add(headMesh);
+
+            const noseMesh = new THREE.Mesh(new THREE.ConeGeometry(0.018, 0.052, 4), neckSkinMat);
+            noseMesh.position.set(0, 0.168, 0.142);
+            noseMesh.rotation.x = Math.PI * 0.42;
+            noseMesh.rotation.y = Math.PI / 4;
+            headMasterGroup.add(noseMesh);
+
+            [-1, 1].forEach(side => {
+                const eyeOrb = new THREE.Mesh(new THREE.SphereGeometry(0.011, 10, 10), brightCoreMat);
+                eyeOrb.scale.set(1.4, 0.65, 0.5);
+                eyeOrb.position.set(side * 0.036, 0.18, 0.126);
+                headMasterGroup.add(eyeOrb);
+            });
+
+            // Coroa Dourada com Chifres Flamejantes
+            const crownGroup = new THREE.Group();
+            crownGroup.position.set(0, 0.238, 0.018);
+            crownGroup.rotation.x = 0.06;
+            headMasterGroup.add(crownGroup);
+
+            const diadem = new THREE.Mesh(new THREE.TorusGeometry(0.124, 0.012, 8, 32), goldMat);
+            diadem.rotation.x = Math.PI / 2;
+            diadem.scale.set(0.95, 1.08, 1);
+            crownGroup.add(diadem);
+
+            const crownGem = createRubyGemstone(0.032, 0.052, 0.02);
+            crownGem.position.set(0, 0.01, 0.138);
+            crownGroup.add(crownGem);
+
+            const centerCrest = createCurvedFlameHorn(0.11, 0.012, 0.0, -0.02);
+            centerCrest.position.set(0, 0.02, 0.132);
+            crownGroup.add(centerCrest);
+
+            [-1, 1].forEach(side => {
+                const mainCrownHorn = createCurvedFlameHorn(0.22, 0.015, side * 0.085, -0.02);
+                mainCrownHorn.position.set(side * 0.082, 0.005, 0.088);
+                mainCrownHorn.rotation.set(0.12, 0, -side * 0.58);
+                crownGroup.add(mainCrownHorn);
+
+                const subCrownHorn = createCurvedFlameHorn(0.15, 0.011, side * 0.055, -0.01);
+                subCrownHorn.position.set(side * 0.112, 0.002, 0.03);
+                subCrownHorn.rotation.set(-0.08, 0, -side * 0.78);
+                crownGroup.add(subCrownHorn);
+            });
+
+            // Cabelo Longo Vermelho Escarlate
+            const scalpHair = new THREE.Mesh(new THREE.SphereGeometry(0.132, 20, 18), hairMat);
+            scalpHair.scale.set(1.05, 1.15, 1.14);
+            scalpHair.position.set(0, 0.19, -0.006);
+            headMasterGroup.add(scalpHair);
+
+            for (let i = -4; i <= 4; i++) {
+                const lock = createCurvedFlameHorn(0.15, 0.022, i * 0.018, -0.04);
+                lock.children[0].material = hairMat;
+                lock.children[1].material = hairMat;
+                lock.children[2].visible = false;
+                lock.position.set(i * 0.02, 0.27, 0.045 - Math.abs(i) * 0.01);
+                lock.rotation.set(-0.55, 0, -i * 0.16);
+                headMasterGroup.add(lock);
+            }
+
+            const hairCascadeGroup = new THREE.Group();
+            hairCascadeGroup.position.set(0, 0.22, -0.085);
+            headMasterGroup.add(hairCascadeGroup);
+
+            for (let s = -6; s <= 6; s++) {
+                const len = 0.78 - Math.abs(s) * 0.035;
+                const spreadX = s * 0.024;
+                const hPts = [
+                    new THREE.Vector3(spreadX * 0.7, 0, 0),
+                    new THREE.Vector3(spreadX * 1.1, -len * 0.32, -0.075),
+                    new THREE.Vector3(spreadX * 1.25, -len * 0.68, -0.055),
+                    new THREE.Vector3(spreadX * 1.4, -len, -0.09)
+                ];
+                const hCurve = new THREE.CatmullRomCurve3(hPts);
+                const hGeo = new THREE.TubeGeometry(hCurve, 14, 0.038 - Math.abs(s) * 0.0025, 7, false);
+                const strand = new THREE.Mesh(hGeo, hairMat);
+                hairCascadeGroup.add(strand);
+            }
+
+            // ------------------------------------------------------------------------
+            // 10. ARTEFATO DORSAL DE CHAMAS + CAPA CARMESIM RASGADA
+            // ------------------------------------------------------------------------
+            const spineShield = createOrnateArmorPlate(0.28, 0.26, 0.055, -0.05);
+            spineShield.position.set(0, -0.02, 0.02);
+            backArtifactGroup.add(spineShield);
+
+            const artifactCenterRuby = createRubyGemstone(0.13, 0.20, 0.065);
+            artifactCenterRuby.position.set(0, -0.02, -0.045);
+            artifactCenterRuby.rotation.y = Math.PI;
+            backArtifactGroup.add(artifactCenterRuby);
+
+            [-1, 1].forEach(side => {
+                const wingSideGroup = new THREE.Group();
+                wingSideGroup.position.set(side * 0.06, -0.04, -0.035);
+                backArtifactGroup.add(wingSideGroup);
+
+                const crescentPts = [
+                    new THREE.Vector3(0, -0.04, 0),
+                    new THREE.Vector3(side * 0.26, 0.02, -0.03),
+                    new THREE.Vector3(side * 0.48, 0.22, -0.06),
+                    new THREE.Vector3(side * 0.54, 0.52, -0.05),
+                    new THREE.Vector3(side * 0.44, 0.82, -0.02),
+                    new THREE.Vector3(side * 0.26, 1.02, 0.01)
+                ];
+                const crescentCurve = new THREE.CatmullRomCurve3(crescentPts);
+                const mainBeamGeo = new THREE.TubeGeometry(crescentCurve, 28, 0.040, 10, false);
+
+                const bp = mainBeamGeo.attributes.position;
+                const v = new THREE.Vector3();
+                for (let i = 0; i < bp.count; i++) {
+                    const ringIdx = Math.floor(i / 11);
+                    const t = Math.min(1, ringIdx / 28);
+                    const center = crescentCurve.getPointAt(t);
+                    v.fromBufferAttribute(bp, i).sub(center);
+                    const scale = t > 0.7 ? Math.pow(1 - (t - 0.7) / 0.3, 0.7) : 1.0;
+                    v.multiplyScalar(scale);
+                    v.add(center);
+                    bp.setXYZ(i, v.x, v.y, v.z);
+                }
+                mainBeamGeo.computeVertexNormals();
+
+                const crescentGold = new THREE.Mesh(mainBeamGeo, goldMat);
+                wingSideGroup.add(crescentGold);
+
+                const crescentFire = new THREE.Mesh(mainBeamGeo.clone().scale(1.03, 1.02, 0.65), flameHornMat);
+                crescentFire.position.z = -0.01;
+                wingSideGroup.add(crescentFire);
+
+                const featherConfigs = [
+                    { t: 0.14, len: 0.24, rad: 0.026, rotZ: -side * 1.25 },
+                    { t: 0.26, len: 0.32, rad: 0.030, rotZ: -side * 1.12 },
+                    { t: 0.38, len: 0.36, rad: 0.032, rotZ: -side * 0.95 },
+                    { t: 0.52, len: 0.38, rad: 0.034, rotZ: -side * 0.75 },
+                    { t: 0.66, len: 0.35, rad: 0.030, rotZ: -side * 0.55 },
+                    { t: 0.80, len: 0.30, rad: 0.026, rotZ: -side * 0.32 },
+                    { t: 0.92, len: 0.25, rad: 0.022, rotZ: side * 0.18 }
+                ];
+                featherConfigs.forEach(fc => {
+                    const anchor = crescentCurve.getPointAt(fc.t);
+                    const blade = createCurvedFlameHorn(fc.len, fc.rad, side * 0.12, 0.02);
+                    blade.position.copy(anchor);
+                    blade.rotation.set(0.06, 0, fc.rotZ);
+                    wingSideGroup.add(blade);
+                });
+
+                [0.32, 0.55, 0.75].forEach(tVal => {
+                    const anchor = crescentCurve.getPointAt(tVal);
+                    const innerHook = createCurvedFlameHorn(0.20, 0.022, -side * 0.09, 0.01);
+                    innerHook.position.copy(anchor);
+                    innerHook.rotation.set(0, 0, side * 0.38);
+                    wingSideGroup.add(innerHook);
+                });
+            });
+
+            // Capa Real Carmesim
+            const capeHolder = new THREE.Group();
+            capeHolder.position.set(0, 0.46, -0.165);
+            upperBodyGroup.add(capeHolder);
+
+            const capeWidth = 0.96, capeHeight = 1.48;
+            const capeGeo = new THREE.PlaneGeometry(capeWidth, capeHeight, 24, 32);
+            capeGeo.translate(0, -capeHeight * 0.5, 0);
+            const cp = capeGeo.attributes.position;
+            const capeBasePositions = new Float32Array(cp.array.length);
+
+            for (let i = 0; i < cp.count; i++) {
+                let x = cp.getX(i), y = cp.getY(i);
+                const ty = -y / capeHeight;
+                const nx = x / (capeWidth * 0.5);
+                x *= (0.48 + ty * 0.88);
+                if (ty > 0.70) {
+                    const jag = Math.abs(Math.sin(nx * Math.PI * 4.0)) * 0.18;
+                    y -= jag * ((ty - 0.70) / 0.30);
+                }
+                const folds = Math.cos(nx * Math.PI * 3.5) * (0.045 * ty);
+                const z = -ty * 0.20 - Math.pow(nx, 2) * 0.14 + folds;
+                cp.setXYZ(i, x, y, z);
+                capeBasePositions[i * 3] = x;
+                capeBasePositions[i * 3 + 1] = y;
+                capeBasePositions[i * 3 + 2] = z;
+            }
+            capeGeo.computeVertexNormals();
+            const capeMesh = new THREE.Mesh(capeGeo, capeMat);
+            capeHolder.add(capeMesh);
+
+            // ------------------------------------------------------------------------
+            // 11. CONTROLADOR DE ANIMAÇÕES (IDLE, WALK, ATTACK)
+            // ------------------------------------------------------------------------
+            let animTime = 0;
+            characterGroup.userData = {
+                joints: {
+                    hipsGroup,
+                    upperBodyGroup,
+                    headMasterGroup,
+                    backArtifactGroup,
+                    leftArm,
+                    rightArm,
+                    leftLeg,
+                    rightLeg,
+                    capeMesh
+                },
+                update: function (dt, state = 'idle') {
+                    animTime += dt;
+
+                    // Pulsação das chamas e cristais
+                    obsidianMat.emissiveIntensity = 1.35 + Math.sin(animTime * 3.8) * 0.35;
+                    rubyMat.emissiveIntensity = 2.3 + Math.sin(animTime * 4.5) * 0.55;
+                    backArtifactGroup.position.y = 0.34 + Math.sin(animTime * 2.5) * 0.015;
+
+                    // Ondulação dinâmica da capa
+                    const cAttr = capeMesh.geometry.attributes.position;
+                    const waveSpeed = state === 'walk' ? 5.5 : 2.5;
+                    const waveAmp = state === 'walk' ? 0.065 : 0.035;
+                    for (let i = 0; i < cAttr.count; i++) {
+                        const bx = capeBasePositions[i * 3];
+                        const by = capeBasePositions[i * 3 + 1];
+                        const bz = capeBasePositions[i * 3 + 2];
+                        const factor = Math.min(1, -by / capeHeight);
+                        const waveZ = Math.sin(animTime * waveSpeed + by * 3.5 + bx * 2.8) * (waveAmp * factor * factor);
+                        const waveX = Math.cos(animTime * (waveSpeed * 0.7) + by * 2.2) * (0.015 * factor);
+                        cAttr.setXYZ(i, bx + waveX, by, bz + waveZ);
+                    }
+                    cAttr.needsUpdate = true;
+
+                    if (state === 'idle') {
+                        hipsGroup.position.y = 1.0 + Math.sin(animTime * 2.0) * 0.01;
+                        upperBodyGroup.rotation.y = Math.sin(animTime * 0.9) * 0.03;
+                        upperBodyGroup.rotation.x = 0;
+                        headMasterGroup.rotation.y = Math.sin(animTime * 0.7) * 0.04;
+
+                        leftArm.shoulderPivot.rotation.set(Math.sin(animTime * 2) * 0.04, 0, 0);
+                        rightArm.shoulderPivot.rotation.set(-Math.sin(animTime * 2) * 0.04, 0, 0);
+                        leftArm.forearmPivot.rotation.x = -0.2;
+                        rightArm.forearmPivot.rotation.x = -0.2;
+
+                        leftLeg.legPivot.rotation.x = 0;
+                        rightLeg.legPivot.rotation.x = 0;
+                        leftLeg.kneePivot.rotation.x = 0;
+                        rightLeg.kneePivot.rotation.x = 0;
+                    } else if (state === 'walk') {
+                        const wSpeed = 6.5;
+                        const phase = animTime * wSpeed;
+                        hipsGroup.position.y = 1.0 + Math.abs(Math.sin(phase)) * 0.035;
+                        upperBodyGroup.rotation.y = Math.sin(phase) * 0.08;
+                        upperBodyGroup.rotation.x = 0.06;
+
+                        leftLeg.legPivot.rotation.x = Math.sin(phase) * 0.48;
+                        rightLeg.legPivot.rotation.x = -Math.sin(phase) * 0.48;
+                        leftLeg.kneePivot.rotation.x = Math.max(0, -Math.sin(phase + 0.6) * 0.55);
+                        rightLeg.kneePivot.rotation.x = Math.max(0, Math.sin(phase + 0.6) * 0.55);
+
+                        leftArm.shoulderPivot.rotation.x = -Math.sin(phase) * 0.35;
+                        rightArm.shoulderPivot.rotation.x = Math.sin(phase) * 0.35;
+                        leftArm.forearmPivot.rotation.x = -0.35;
+                        rightArm.forearmPivot.rotation.x = -0.35;
+                    } else if (state === 'attack') {
+                        const aSpeed = 5.5;
+                        const swing = Math.sin(animTime * aSpeed);
+                        hipsGroup.position.y = 0.97 + Math.abs(swing) * 0.03;
+                        upperBodyGroup.rotation.y = swing * 0.38;
+                        upperBodyGroup.rotation.x = 0.08;
+
+                        rightArm.shoulderPivot.rotation.x = -0.85 + swing * 0.95;
+                        rightArm.shoulderPivot.rotation.z = -0.25;
+                        rightArm.forearmPivot.rotation.x = -0.45 + swing * 0.25;
+
+                        leftArm.shoulderPivot.rotation.x = -0.35 - swing * 0.3;
+                        leftLeg.legPivot.rotation.x = -0.18;
+                        rightLeg.legPivot.rotation.x = 0.18;
+                    }
+                }
+            };
+
+            return characterGroup;
+        }
