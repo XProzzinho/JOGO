@@ -1140,7 +1140,7 @@
     if (subiu) { attrBadge(); som('nivel', 1, 1); aplicaNivel(); vida = VIDA_MAX; mana = MANA_MAX; atualizaPts(); fx('luz', [heroi.position.x, 0, heroi.position.z], 1.2); fx('cura', [heroi.position.x, 0, heroi.position.z], 1.6); flash('rgba(255,230,120,.45)');
       const el = $('lvup'); el.innerHTML = `<small>SUBIU DE NÍVEL!</small>Nível ${AR.nv}<em>+${ATTR_NV} pontos de atributo · +1 ponto de habilidade</em>`; el.classList.remove('on'); void el.offsetWidth; el.classList.add('on'); setTimeout(fazRetrato, 300); }
     else if (motivo) numero(heroi.position, '+' + n + ' XP', '#c8a8ff', 2.6); }
-  function atualizaNivel() { $('nv').textContent = 'Nv ' + AR.nv; $('xp-fill').style.width = (AR.nv >= NV_MAX ? 100 : AR.xp / xpPara(AR.nv) * 100) + '%'; }
+  function atualizaNivel() { $('nv').textContent = 'Nv ' + AR.nv; const xpP = AR.nv >= NV_MAX ? 100 : AR.xp / xpPara(AR.nv) * 100; $('xp-fill').style.width = xpP + '%'; const xt = $('xp-txt'); if (xt) xt.textContent = AR.nv >= NV_MAX ? 'XP · NÍVEL MÁXIMO' : 'XP ' + Math.floor(AR.xp) + ' / ' + Math.round(xpPara(AR.nv)) + '  (' + xpP.toFixed(1) + '%)'; }
   const XP_TIPO = { aranha: 40, esqueleto: 55, cogumelo: 60, gosma: 55, troll: 160, espectro: 90, dragao: 1200, goblin: 18, lobo: 15, javali: 25, rato: 8, golem: 300, morcego: 150 };
 
   // ---- reflexo do ambiente pro metal parecer metal ----
