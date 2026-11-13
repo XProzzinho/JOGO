@@ -1499,7 +1499,7 @@
   document.querySelectorAll('#perfil .aba').forEach(b => tapBtn(b, () => { abaPerfil = b.dataset.a; desenhaPerfil(); }));
   tapBtn($('perfil-btn'), abrirPerfil); tapBtn($('pf-fecha'), () => { $('perfil').hidden = true; });
   let previaT = 0; function perfilFrame(dt) { if ($('perfil').hidden || !$('previa')) return; previaT += dt; if (previaT > 0.06) { fazPrevia(previaT); previaT = 0; } }
-  aplicaNivel(); atualizaNivel(); vesteFantasia(AR.fantasia); setTimeout(fazRetrato, 700); attrBadge(); if (AR.attrNovo) { AR.attrNovo = false; salvaAR(); setTimeout(() => aviso('✨ Novo sistema de ATRIBUTOS! Você tem ' + AR.attrPts + ' pontos. Toque no seu retrato › Status pra distribuir.', '#ffd23c'), 5000); }
+  aplicaNivel(); vida = VIDA_MAX; mana = MANA_MAX; atualizaNivel(); vesteFantasia(AR.fantasia); setTimeout(fazRetrato, 700); attrBadge(); if (AR.attrNovo) { AR.attrNovo = false; salvaAR(); setTimeout(() => aviso('✨ Novo sistema de ATRIBUTOS! Você tem ' + AR.attrPts + ' pontos. Toque no seu retrato › Status pra distribuir.', '#ffd23c'), 5000); }
   // ===================== CLASSES E CRIAÇÃO DO PERSONAGEM =====================
   CLASSES = {
     guerreiro: { nome: 'Guerreiro', icone: '⚔️', papel: 'Força bruta', cor: '#e04a32', roupa: '#7a2a22', vida: 140, mana: 80, atk: 1.25, def: 15, vel: 1.0, crit: 0.05, esq: 0, arma: 'espadao', hab: 'sismico', desc: 'Muita vida, defesa alta e o maior ataque do jogo. Usa um espadão de duas mãos. Ótimo pra começar.' },
@@ -2300,13 +2300,14 @@
   //@@GM@@
   //@@MUNDO@@
   //@@CALAB@@
-  window.__dbg = { danoHeroi, abrirLoja, aprimora, falar, dano, CAL, DGS, calEntra, MIS, abreMural, get PRACA() { return PRACA; }, staffArmas, equipaArma, MONT3D, PET3D, get MONT() { return MONT; }, montar, petChama, MQ, set GMB(v) { GMB = v; gmHud(); }, gmPct, ASAT, COSM, vesteCosm, CB_LISTA, abrirLivros, trocaPag, get mana() { return mana; }, set mana(v) { mana = v; }, ARMAG, T3, vesteCosm, voa, get voando() { return voando; }, input, mpRecebe, entraMasmorra, saiMasmorra, MM, mmFaseAtual, mmMorte, setaFrame, equipaArma, abrirGuilda, arthurNPC, vestePeca, atualizaPecas, PECAS, BLOCOS, modoBatalha, bmLiga, bmDesliga, BMS, ORB, get BM() { return BM; }, get hora() { return hora; }, set hora(v) { hora = v; }, usarHab2: id => classePoder2(id), BUFF, abrirCriar, aplicaClasse, CLASSES, get desp() { return desp; }, set desp(v) { desp = v; }, usarHab: id => classePoder(id), renderer, scene, world, ganhaXp, vesteFantasia, abrirPerfil, fazRetrato, irValdren, Q, heroi, ativo, AR, FERAS, golem, atacar, get vida() { return vida; }, set vida(v) { vida = v; }, abrirLoja, usarPoder: id => usarPoder(PW[id]), acao: () => acao(), get alvo() { return alvo; } };
+  window.__dbg = { get _in() { return [input.x, input.y, vel, facing, dashT, Object.keys(keys).join()]; }, danoHeroi, abrirLoja, aprimora, falar, dano, CAL, DGS, calEntra, MIS, abreMural, get PRACA() { return PRACA; }, staffArmas, equipaArma, MONT3D, PET3D, get MONT() { return MONT; }, montar, petChama, MQ, set GMB(v) { GMB = v; gmHud(); }, gmPct, ASAT, COSM, vesteCosm, CB_LISTA, abrirLivros, trocaPag, get mana() { return mana; }, set mana(v) { mana = v; }, ARMAG, T3, vesteCosm, voa, get voando() { return voando; }, input, mpRecebe, entraMasmorra, saiMasmorra, MM, mmFaseAtual, mmMorte, setaFrame, equipaArma, abrirGuilda, arthurNPC, vestePeca, atualizaPecas, PECAS, BLOCOS, modoBatalha, bmLiga, bmDesliga, BMS, ORB, get BM() { return BM; }, get hora() { return hora; }, set hora(v) { hora = v; }, usarHab2: id => classePoder2(id), BUFF, abrirCriar, aplicaClasse, CLASSES, get desp() { return desp; }, set desp(v) { desp = v; }, usarHab: id => classePoder(id), renderer, scene, world, ganhaXp, vesteFantasia, abrirPerfil, fazRetrato, irValdren, Q, heroi, ativo, AR, FERAS, golem, atacar, get vida() { return vida; }, set vida(v) { vida = v; }, abrirLoja, usarPoder: id => usarPoder(PW[id]), acao: () => acao(), get alvo() { return alvo; } };
   // ---------- laço do jogo ----------
   let vy = 0, noChao = true, facing = 0, vel = 0, gT = 0, last = performance.now();
   const ANDAR = 3.0, CORRER = 6.5, GRAV = 22, PULO = 7.6; const tmp = new T3.Vector3();
   heroi.position.set(0, 0, 4.2); heroi.rotation.y = Math.PI; facing = Math.PI;
   function loop(now) {
-    const dt = Math.min(0.05, (now - last) / 1000); last = now; gT += dt;
+    // o 1º quadro pode vir com horário ANTES do 'last' (dt negativo): isso jogava o herói pra trás e mexia na vida
+    const dt = Math.max(0, Math.min(0.05, ((now || performance.now()) - last) / 1000)); last = Math.max(last, now || performance.now()); gT += dt;
     ceu(dt); const noite = modo === 'noite';
     let ix = input.x, iy = input.y; if (keys.KeyA || keys.ArrowLeft) ix -= 1; if (keys.KeyD || keys.ArrowRight) ix += 1; if (keys.KeyW || keys.ArrowUp) iy -= 1; if (keys.KeyS || keys.ArrowDown) iy += 1;
     if (!guildPanel.hidden || conversa || cenaQ || !$('fim').hidden || Q.naCarroca || desmaiado) { ix = 0; iy = 0; }
