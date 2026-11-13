@@ -314,7 +314,16 @@
     } catch (err) { console.warn('div3d', k, err); o = null; }
     DIV3D[k] = o; return o; }
   function div3dFrame(dt) { solFrame(dt || 1 / 60); ['manto', 'emblema', 'astrolabio'].forEach(k => { const quer = AR.divino === k && !dentro; if (!quer && !DIV3D[k]) return; const o = div3dPega(k); if (!o) return; o.g.visible = quer; if (!quer) return; o.up(gT);
-      o.base.position.y = (k === 'manto' ? -0.22 : k === 'astrolabio' ? 0.07 : 0) + Math.sin(gT * 2) * 0.02; }); }
+      o.base.position.y = (k === 'manto' ? -0.22 : k === 'astrolabio' ? 0.07 : 0) + Math.sin(gT * 2) * 0.02;
+      if (k === 'astrolabio') astVoo(o, dt || 1 / 60); }); }
+  // ---- VOO COM O ASTROLÁBIO: sai das costas girando, deita debaixo dos pés e vira a plataforma de voo ----
+  let AST_V = null; function astVooAtivo() { return !!AST_V; }
+  function astVoo(o, dt) { const quer = voando && !dentro;
+    if (quer && !AST_V) { heroi.add(o.g); AST_V = { t: 0, rz: 0 }; som('magia', 0.6, 1.5); }
+    if (!quer && AST_V) { heroi.userData.P.spine.add(o.g); o.g.position.set(0, 0.5, -0.62); o.g.rotation.set(0, 0, 0); o.g.scale.setScalar(1); AST_V = null; return; }
+    if (!AST_V) return; const V = AST_V; V.t += dt; const u = Math.min(1, V.t / 0.8), e = u < 0.5 ? 2 * u * u : 1 - Math.pow(-2 * u + 2, 2) / 2;
+    V.rz += dt * (12 * (1 - e) + 0.6); o.g.position.set(0, 1.7 + (-0.12 - 1.7) * e + (u >= 1 ? Math.sin(gT * 2.2) * 0.03 : 0), -0.62 * (1 - e));
+    o.g.rotation.set(-Math.PI / 2 * e, 0, V.rz); o.g.scale.setScalar(1 + e * 0.55); }
   // ---- SOL DO MEIO-DIA: o Sol sai do Emblema, sobe acima do título, fica gigante e abençoa o personagem ----
   const SOLH = { st: 0, t: 0, sun: null, pai: null, loc: null, ws: 1, feixe: null, queima: 0 };
   function solFrame(dt) { const quer = BUFF.sol > 0 && AR.divino === 'emblema' && !dentro; if (!quer && !SOLH.st) return; const hp = heroi.position;
