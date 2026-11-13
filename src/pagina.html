@@ -454,6 +454,18 @@
 #guild-label b{display:block;line-height:1.15}
 #guild-label em{margin-bottom:4px!important}
 .mp-tag small{display:flex;align-items:center;justify-content:center;gap:4px;line-height:16px}.mp-tag small .ico{width:16px!important;height:16px!important}
+
+/* barra de habilidades só com ícone + barra divina */
+#poderes .slot .nm{display:none}
+#poderes .slot .ic{font-size:calc(var(--s) * .5)}#poderes .slot .ic .ico{width:calc(var(--s) * .66)!important;height:calc(var(--s) * .66)!important}
+#div-barra{display:flex;gap:5px;justify-content:center;margin:0 0 5px;pointer-events:auto}
+.dslot{position:relative;width:34px;height:34px;padding:0;box-sizing:border-box;border-radius:10px;border:2px solid #6a4a10;background:linear-gradient(180deg,#2a1a50,#160a30);box-shadow:0 2px 0 #2b2340,inset 0 0 8px rgba(255,210,110,.25);display:flex;align-items:center;justify-content:center;font-family:inherit;overflow:hidden}
+.dslot .ic{font-size:18px;line-height:1;display:flex}.dslot .ic .ico{width:26px!important;height:26px!important}
+.dslot.vazio{background:rgba(30,16,60,.35);border:1.5px dashed rgba(255,216,106,.5);box-shadow:none}
+.dslot.vazio::before{content:"✦";color:rgba(255,216,106,.45);font-size:12px}
+.dslot.on{box-shadow:0 0 12px #ffd86a,0 2px 0 #2b2340}
+.dslot.falta{filter:grayscale(.8) brightness(.8)}
+.dslot .cdv{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(10,6,24,.65);color:#fff;font:900 12px var(--fonte)}
 </style>
 </head>
 <body>

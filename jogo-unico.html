@@ -454,6 +454,18 @@
 #guild-label b{display:block;line-height:1.15}
 #guild-label em{margin-bottom:4px!important}
 .mp-tag small{display:flex;align-items:center;justify-content:center;gap:4px;line-height:16px}.mp-tag small .ico{width:16px!important;height:16px!important}
+
+/* barra de habilidades só com ícone + barra divina */
+#poderes .slot .nm{display:none}
+#poderes .slot .ic{font-size:calc(var(--s) * .5)}#poderes .slot .ic .ico{width:calc(var(--s) * .66)!important;height:calc(var(--s) * .66)!important}
+#div-barra{display:flex;gap:5px;justify-content:center;margin:0 0 5px;pointer-events:auto}
+.dslot{position:relative;width:34px;height:34px;padding:0;box-sizing:border-box;border-radius:10px;border:2px solid #6a4a10;background:linear-gradient(180deg,#2a1a50,#160a30);box-shadow:0 2px 0 #2b2340,inset 0 0 8px rgba(255,210,110,.25);display:flex;align-items:center;justify-content:center;font-family:inherit;overflow:hidden}
+.dslot .ic{font-size:18px;line-height:1;display:flex}.dslot .ic .ico{width:26px!important;height:26px!important}
+.dslot.vazio{background:rgba(30,16,60,.35);border:1.5px dashed rgba(255,216,106,.5);box-shadow:none}
+.dslot.vazio::before{content:"✦";color:rgba(255,216,106,.45);font-size:12px}
+.dslot.on{box-shadow:0 0 12px #ffd86a,0 2px 0 #2b2340}
+.dslot.falta{filter:grayscale(.8) brightness(.8)}
+.dslot .cdv{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(10,6,24,.65);color:#fff;font:900 12px var(--fonte)}
 </style>
 </head>
 <body>
@@ -984,7 +996,14 @@ ${_}`}class A extends Error{constructor({message:e,code:t,cause:r,name:s}){var n
   function montaBarra() { PODERES.forEach(pw => pw.el = null);
     SLOTS.forEach((b, i) => { const pw = AR.barra[i] && PW[AR.barra[i]]; b.classList.toggle('vazio', !pw); b.classList.remove('on', 'falta');
       if (pw) { pw.el = b; b.innerHTML = `<span class="ic">${pw.icone}</span><span class="nm">${pw.nome}</span><span class="tc">${i + 1}</span>${i < 3 ? '<span class="cad">🔒</span>' : ''}${nivelHab(pw.id) > 1 ? '<span class="lv">' + nivelHab(pw.id) + '</span>' : ''}`; b.classList.toggle('on', pw.tipo === 'liga' && !!ativo[pw.id]); }
-      else b.innerHTML = `<span class="ic">＋</span><span class="tc">${i + 1}</span>`; }); }
+      else b.innerHTML = `<span class="ic">＋</span><span class="tc">${i + 1}</span>`; });  if (typeof montaDiv === 'function') montaDiv(); }
+  // ---- barra divina: 6 espacinhos em cima com as habilidades do artefato divino equipado ----
+  const divBar = document.createElement('div'); divBar.id = 'div-barra'; const DSL = [];
+  for (let i = 0; i < 6; i++) { const b = document.createElement('button'); b.className = 'dslot'; tapBtn(b, () => { const ids = divHabs(); const id = ids[i]; if (id && PW[id]) usarPoder(PW[id]); else if (typeof abrirLivros === 'function') aviso('✦ Espaço das habilidades divinas. Equipe um artefato divino (loja da Deusa).', '#ffd86a'); }); divBar.appendChild(b); DSL.push(b); }
+  { const hud = $('hud'); hud.insertBefore(divBar, hud.firstChild); }
+  function divHabs() { try { return AR.divino && DIVINOS[AR.divino] ? DIVINOS[AR.divino].habs.slice(0, 6) : []; } catch (e) { return []; } }
+  function montaDiv() { const ids = divHabs(); divBar.classList.toggle('tem', ids.length > 0); DSL.forEach((b, i) => { const pw = ids[i] && PW[ids[i]]; b.classList.toggle('vazio', !pw); b.classList.remove('on');
+      if (pw) { if (!pw.el) pw.el = b; b.innerHTML = '<span class="ic">' + pw.icone + '</span>'; b.title = pw.nome; } else { b.innerHTML = ''; b.title = ''; } }); }
   function marca(pw, cls, on) { if (pw.el) pw.el.classList.toggle(cls, on); }
   window.addEventListener('keydown', e => { const n = parseInt(e.key); if (n >= 1 && n <= NSLOTS) { const id = AR.barra[n - 1]; if (id) usarPoder(PW[id]); } if (e.code === 'KeyT') abrirArvore(); });
   let avisoT = null; function aviso(t, cor) { const el = $('aviso'); el.innerHTML = limpaIco(t); el.style.borderColor = cor || '#5ab8ff'; el.classList.add('on'); clearTimeout(avisoT); avisoT = setTimeout(() => el.classList.remove('on'), 3200); }
@@ -3724,7 +3743,9 @@ const glowA = cv(128, (x) => { const g = x.createRadialGradient(64, 64, 0, 64, 6
     for (let i = asaRastro.length - 1; i >= 0; i--) { const r = asaRastro[i]; r.t += dt; r.s.material.opacity = 0.8 * (1 - r.t / 0.6); r.s.position.y -= dt * 0.4; r.s.scale.multiplyScalar(1 - dt * 1.2); if (r.t > 0.6) { world.remove(r.s); r.s.material.dispose(); asaRastro.splice(i, 1); } } if (cbB('cb_regen')) vida = Math.min(VIDA_MAX, vida + 6 * dt); if (cbB('cb_mana')) mana = Math.min(MANA_MAX, mana + 6 * dt);
     if (cbB('cb_aura')) { cbAuraT -= dt; if (cbAuraT <= 0) { cbAuraT = 1; const M = atkMult(); area(p.x, p.z, 3, e => { dano(e, 8 * M, cbAuraEl === 'gelo' || cbAuraEl === 'fogo' ? cbAuraEl : null); cbEl(e, cbAuraEl); }); fx('vento', [p.x, 0, p.z], 0.4); } }
     const now = performance.now(); SLOTS.forEach((b, i) => { const s = CB_PW[AR.barra[i]]; let o = b.querySelector('.cdv'); const f = s ? (CB_CD[s.id] || 0) - now : 0;
-      if (f > 0) { if (!o) { o = document.createElement('span'); o.className = 'cdv'; b.appendChild(o); } const t = Math.ceil(f / 1000) + ''; if (o.textContent !== t) o.textContent = t; } else if (o) o.remove(); }); }
+      if (f > 0) { if (!o) { o = document.createElement('span'); o.className = 'cdv'; b.appendChild(o); } const t = Math.ceil(f / 1000) + ''; if (o.textContent !== t) o.textContent = t; } else if (o) o.remove(); }); 
+    { const ids = typeof divHabs === 'function' ? divHabs() : []; if (typeof DSL !== 'undefined') DSL.forEach((b, i) => { const s = CB_PW[ids[i]]; let o = b.querySelector('.cdv'); const f = s ? (CB_CD[s.id] || 0) - now : 0;
+      if (f > 0) { if (!o) { o = document.createElement('span'); o.className = 'cdv'; b.appendChild(o); } const t = Math.ceil(f / 1000) + ''; if (o.textContent !== t) o.textContent = t; } else if (o) o.remove(); }); } }
   // ---- páginas da barra (3 páginas de 5 slots livres) ----
   function trocaPag() { AR.pags = AR.pags || [null, null, null]; AR.pag = AR.pag || 0; AR.pags[AR.pag] = AR.barra.slice(3); AR.pag = (AR.pag + 1) % 3; const nv = AR.pags[AR.pag] || [null, null, null, null, null];
     for (let i = 3; i < NSLOTS; i++) { const v = AR.barra[i]; if (v && ativo[v] && !nv.includes(v)) ativo[v] = false; AR.barra[i] = nv[i - 3] || null; } salvaAR(); montaBarra(); pagBtn.innerHTML = '⇅<small>' + (AR.pag + 1) + '/3</small>'; som('clique', 0.5, 1); }
@@ -4266,8 +4287,11 @@ const glowA = cv(128, (x) => { const g = x.createRadialGradient(64, 64, 0, 64, 6
   if ((AR.cbt || []).includes('cb_mandala')) { if (!AR.divinos.includes('mandala')) AR.divinos.push('mandala'); AR.cbt = AR.cbt.filter(x => x !== 'cb_mandala'); if (!AR.divino) AR.divino = 'mandala'; }
   function divItem() { const D = DIVINOS[AR.divino]; return D ? { icone: D.icone, nome: D.nome } : null; }
   function divOps() { return AR.divinos.filter(k => DIVINOS[k]).map(k => ({ icone: DIVINOS[k].icone, nome: DIVINOS[k].nome, sub: DIVINOS[k].habs.length ? 'Item divino · ' + DIVINOS[k].habs.length + ' habilidades' : 'Item divino · visual', on: AR.divino === k, fn: () => divVeste(k) })); }
+  // habilidades divinas ficam só na barra divina (6 espacinhos em cima); tira da barra normal e das páginas
+  function divLimpaBarra() { const eDiv = id => !!(id && CB_PW[id] && CB_PW[id].divino); for (let i = 3; i < AR.barra.length; i++) if (eDiv(AR.barra[i])) AR.barra[i] = null; (AR.pags || []).forEach(pg => pg && pg.forEach((id, i) => { if (eDiv(id)) pg[i] = null; })); }
+  divLimpaBarra(); setTimeout(() => { try { montaBarra(); } catch (e) {} }, 0);
   function divVeste(k) { const antes = AR.divino && DIVINOS[AR.divino] ? DIVINOS[AR.divino].habs : []; antes.forEach(id => { for (let i = 3; i < AR.barra.length; i++) if (AR.barra[i] === id) AR.barra[i] = null; });
-    AR.divino = k && DIVINOS[k] ? k : null; if (AR.divino) { DIVINOS[k].habs.forEach(id => { if (AR.barra.indexOf(id) >= 0) return; let v = AR.barra.indexOf(null, 3); if (v < 0) v = AR.barra.indexOf(null); if (v >= 0) AR.barra[v] = id; else aviso('Barra cheia: libere um espaço pra ' + CB_PW[id].nome + '.', '#ffb040'); }); aviso('✦ ' + DIVINOS[k].nome + ' equipada! Habilidades na barra.', '#ffd86a'); fx('luz', [heroi.position.x, 1, heroi.position.z], 1); }
+    AR.divino = k && DIVINOS[k] ? k : null; divLimpaBarra(); if (AR.divino) { aviso('✦ ' + DIVINOS[k].nome + ' equipada! Habilidades na barra divina.', '#ffd86a'); fx('luz', [heroi.position.x, 1, heroi.position.z], 1); }
     BUFF.mandala = 0; BUFF.mandef = 0; salvaAR(); montaBarra(); if (typeof desenhaPerfil === 'function' && !$('perfil').hidden) desenhaPerfil(); }
   DIVINOS.rubra = { nome: 'Mandala Rubra da Lenda', icone: IC('div_rubra'), preco: 15000, habs: ['cb_mandala', 'cb_mandala_def', 'cb_mandala_sete', 'cb_mandala_selo'], desc: 'Halo de chamas carmesim e ouro com pétalas de cristal (um anel gira pra cada lado), asas de fogo nos ombros e o elo de fogo na cintura. Mesmas 4 habilidades da Mandala Solar: ⚔️ Juízo, 🛡️ Égide, ☀️ Sete Sóis e 🔻 Selo.' };
   DIVINOS.manto = { nome: 'Manto do Abismo Espectral', icone: IC('div_manto'), preco: 18000, habs: [], desc: 'Armadura gótica com cristal de safira, asas de energia azul e capa roxa rasgada que queima em fogo espectral. Balança com o vento.' };

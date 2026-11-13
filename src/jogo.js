@@ -331,7 +331,14 @@
   function montaBarra() { PODERES.forEach(pw => pw.el = null);
     SLOTS.forEach((b, i) => { const pw = AR.barra[i] && PW[AR.barra[i]]; b.classList.toggle('vazio', !pw); b.classList.remove('on', 'falta');
       if (pw) { pw.el = b; b.innerHTML = `<span class="ic">${pw.icone}</span><span class="nm">${pw.nome}</span><span class="tc">${i + 1}</span>${i < 3 ? '<span class="cad">🔒</span>' : ''}${nivelHab(pw.id) > 1 ? '<span class="lv">' + nivelHab(pw.id) + '</span>' : ''}`; b.classList.toggle('on', pw.tipo === 'liga' && !!ativo[pw.id]); }
-      else b.innerHTML = `<span class="ic">＋</span><span class="tc">${i + 1}</span>`; }); }
+      else b.innerHTML = `<span class="ic">＋</span><span class="tc">${i + 1}</span>`; });  if (typeof montaDiv === 'function') montaDiv(); }
+  // ---- barra divina: 6 espacinhos em cima com as habilidades do artefato divino equipado ----
+  const divBar = document.createElement('div'); divBar.id = 'div-barra'; const DSL = [];
+  for (let i = 0; i < 6; i++) { const b = document.createElement('button'); b.className = 'dslot'; tapBtn(b, () => { const ids = divHabs(); const id = ids[i]; if (id && PW[id]) usarPoder(PW[id]); else if (typeof abrirLivros === 'function') aviso('✦ Espaço das habilidades divinas. Equipe um artefato divino (loja da Deusa).', '#ffd86a'); }); divBar.appendChild(b); DSL.push(b); }
+  { const hud = $('hud'); hud.insertBefore(divBar, hud.firstChild); }
+  function divHabs() { try { return AR.divino && DIVINOS[AR.divino] ? DIVINOS[AR.divino].habs.slice(0, 6) : []; } catch (e) { return []; } }
+  function montaDiv() { const ids = divHabs(); divBar.classList.toggle('tem', ids.length > 0); DSL.forEach((b, i) => { const pw = ids[i] && PW[ids[i]]; b.classList.toggle('vazio', !pw); b.classList.remove('on');
+      if (pw) { if (!pw.el) pw.el = b; b.innerHTML = '<span class="ic">' + pw.icone + '</span>'; b.title = pw.nome; } else { b.innerHTML = ''; b.title = ''; } }); }
   function marca(pw, cls, on) { if (pw.el) pw.el.classList.toggle(cls, on); }
   window.addEventListener('keydown', e => { const n = parseInt(e.key); if (n >= 1 && n <= NSLOTS) { const id = AR.barra[n - 1]; if (id) usarPoder(PW[id]); } if (e.code === 'KeyT') abrirArvore(); });
   let avisoT = null; function aviso(t, cor) { const el = $('aviso'); el.innerHTML = limpaIco(t); el.style.borderColor = cor || '#5ab8ff'; el.classList.add('on'); clearTimeout(avisoT); avisoT = setTimeout(() => el.classList.remove('on'), 3200); }
