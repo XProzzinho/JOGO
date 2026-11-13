@@ -217,13 +217,13 @@
   let voando = false, voSobe = 0, voPitch = 0;
   var vooLiberado = false; function temVoo() { return vooLiberado || souAdmin(); }
   function podeVoar() { return typeof ASAS !== 'undefined' && ASAS.visible && temVoo() && !dentro && !conversa && !cenaQ && !desmaiado; }
-  function voa(on) { if (on && !voando && ASAS.visible && !temVoo()) { aviso('🔒 Voar só com permissão do Administrador. As asas continuam dando os bônus.', '#c8a8ff'); return; } if (on && !podeVoar()) { aviso('Equipe umas asas (🎒 › Costas) pra voar. Tem asas na loja da Elysia!', '#c8a8ff'); return; } if (on && !voando && AR.cosm === 'asa_titan') { const q = heroi.position; fx('luz', [q.x, 0, q.z], 0.8); fx('fumo', [q.x, 0, q.z], 1); tremor = Math.max(tremor, 0.4); flash('rgba(255,180,60,.35)'); area(q.x, q.z, 4, e => dano(e, 30 * atkMult(), 'fogo')); } voando = on; input.sobe = input.desce = false;
+  function voa(on) { if (on && !voando && ASAS.visible && !temVoo()) { return; } if (on && !podeVoar()) { aviso('Equipe umas asas (🎒 › Costas) pra voar. Tem asas na loja da Elysia!', '#c8a8ff'); return; } if (on && !voando && AR.cosm === 'asa_titan') { const q = heroi.position; fx('luz', [q.x, 0, q.z], 0.8); fx('fumo', [q.x, 0, q.z], 1); tremor = Math.max(tremor, 0.4); flash('rgba(255,180,60,.35)'); area(q.x, q.z, 4, e => dano(e, 30 * atkMult(), 'fogo')); } voando = on; input.sobe = input.desce = false;
     if (on) { feito('asas'); voSobe = 0.7; noChao = false; vy = 0; som('vento', 0.8, 1); aviso('🦇 Voando! ⬆ SUBIR e ⬇ DESCER pra altura, o controle pra ir pra frente.', '#c8a8ff'); } else { som('aterrissa', 0.5); }
     $('voar').innerHTML = voando ? IC('ui_voar') + ' POUSAR' : IC('ui_voar') + ' VOAR'; $('pular').textContent = voando ? '⬆ SUBIR' : 'PULAR'; $('correr').textContent = voando ? '⬇ DESCER' : 'CORRER'; $('correr').classList.toggle('on', !voando && input.run); }
   const segura = (el, k) => { const on = e => { if (voando) { input[k] = true; e.preventDefault(); } }, off = () => { input[k] = false; }; el.addEventListener('touchstart', on, { passive: false }); el.addEventListener('mousedown', on); ['touchend', 'touchcancel', 'mouseup', 'mouseleave'].forEach(ev => el.addEventListener(ev, off)); };
   segura($('pular'), 'sobe'); segura($('correr'), 'desce');
   let pularT = 0; function pulo2x() { const n = performance.now(), dois = n - pularT < 380; pularT = dois ? 0 : n; if (!dois) return false;
-    if (voando) { voa(false); return true; } if (typeof ASAS !== 'undefined' && ASAS.visible && !dentro) { if (!temVoo()) { aviso('🔒 Voar só com permissão do Administrador.', '#c8a8ff'); return true; } voa(true); return true; } return false; }
+    if (voando) { voa(false); return true; } if (typeof ASAS !== 'undefined' && ASAS.visible && !dentro) { if (!temVoo()) return false; voa(true); return true; } return false; }
   tapBtn($('pular'), () => { if (pulo2x()) return; if (!voando) input.jump = true; });
   tapBtn($('voar'), () => voa(!voando));
   tapBtn($('correr'), () => { if (voando) return; input.run = !input.run; $('correr').classList.toggle('on', input.run); });

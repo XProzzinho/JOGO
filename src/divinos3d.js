@@ -1721,7 +1721,7 @@
         // --- CAMADA 3: ANÉIS ORBITAIS 3D INCLINADOS (ESFERA ARMILAR) ---
         const orbitalGroup1 = new THREE.Group();
         const orbitalGroup2 = new THREE.Group();
-        artifactRoot.add(orbitalGroup1, orbitalGroup2);
+        // (anéis orbitais de fora tirados a pedido: os grupos existem mas não entram no artefato)
 
         function buildOrbitalBand(radius) {
             const group = new THREE.Group();
