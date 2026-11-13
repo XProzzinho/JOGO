@@ -113,9 +113,9 @@
       for (let i = 0; i < N; i++) { x.save(); x.rotate(i / N * Math.PI * 2); const L = (i % 2 ? 0.86 : 0.98) * c, w = c * 0.07; x.beginPath(); x.moveTo(-w, c * 0.5); x.bezierCurveTo(-w * 1.6, c * 0.7, w * 0.6, c * 0.78, -w * 0.3, L); x.bezierCurveTo(w * 1.8, c * 0.8, w * 1.5, c * 0.65, w, c * 0.5); x.closePath();
         const g = x.createLinearGradient(0, c * 0.5, 0, L); g.addColorStop(0, '#7a3a04'); g.addColorStop(0.45, '#d8901a'); g.addColorStop(0.8, '#ffd86a'); g.addColorStop(1, '#fff2c0'); x.fillStyle = g; x.fill(); x.stroke();
         x.beginPath(); x.moveTo(w * 0.6, c * 0.62); x.quadraticCurveTo(w * 3, c * 0.66, w * 2.6, c * 0.74); x.quadraticCurveTo(w * 1.8, c * 0.68, w * 0.8, c * 0.68); x.closePath(); x.fillStyle = '#c8801a'; x.fill(); x.stroke(); x.restore(); }
-      x.beginPath(); x.arc(0, 0, c * 0.54, 0, 7); x.arc(0, 0, c * 0.46, 0, 7, true); x.fillStyle = ouro(x, c * 0.46, c * 0.54); x.fill('evenodd'); x.lineWidth = 2; x.beginPath(); x.arc(0, 0, c * 0.54, 0, 7); x.stroke(); x.beginPath(); x.arc(0, 0, c * 0.46, 0, 7); x.stroke();
+      x.beginPath(); x.arc(0, 0, c * 0.54, 0, Math.PI * 2); x.moveTo(c * 0.46, 0); x.arc(0, 0, c * 0.46, 0, Math.PI * 2, true); x.fillStyle = ouro(x, c * 0.46, c * 0.54); x.fill('evenodd'); x.lineWidth = 2; x.beginPath(); x.arc(0, 0, c * 0.54, 0, 7); x.stroke(); x.beginPath(); x.arc(0, 0, c * 0.46, 0, 7); x.stroke();
       for (let i = 0; i < 44; i++) { x.save(); x.rotate(i / 44 * Math.PI * 2); x.fillStyle = '#5a2a04'; x.fillRect(-1.5, c * 0.47, 3, c * 0.06); x.restore(); } });
-    const texB = cv(512, (x, n) => { const c = n / 2; x.translate(c, c); x.beginPath(); x.arc(0, 0, c * 0.78, 0, 7); x.arc(0, 0, c * 0.6, 0, 7, true); x.fillStyle = ouro(x, c * 0.6, c * 0.78); x.fill('evenodd'); x.lineWidth = 2.5; x.strokeStyle = '#5a2a04'; x.beginPath(); x.arc(0, 0, c * 0.78, 0, 7); x.stroke(); x.beginPath(); x.arc(0, 0, c * 0.6, 0, 7); x.stroke();
+    const texB = cv(512, (x, n) => { const c = n / 2; x.translate(c, c); x.beginPath(); x.arc(0, 0, c * 0.78, 0, Math.PI * 2); x.moveTo(c * 0.6, 0); x.arc(0, 0, c * 0.6, 0, Math.PI * 2, true); x.fillStyle = ouro(x, c * 0.6, c * 0.78); x.fill('evenodd'); x.lineWidth = 2.5; x.strokeStyle = '#5a2a04'; x.beginPath(); x.arc(0, 0, c * 0.78, 0, 7); x.stroke(); x.beginPath(); x.arc(0, 0, c * 0.6, 0, 7); x.stroke();
       x.strokeStyle = '#6a1a04'; x.lineWidth = 2.5; x.lineCap = 'round'; let sd = 7; const rnd = () => { sd = (sd * 9301 + 49297) % 233280; return sd / 233280; };
       for (let i = 0; i < 28; i++) { x.save(); x.rotate(i / 28 * Math.PI * 2); x.beginPath(); const r = c * 0.69; for (let k = 0; k < 3; k++) { const a = (rnd() - 0.5) * c * 0.05, b = (rnd() - 0.5) * c * 0.07; k ? x.lineTo(a, r + b) : x.moveTo(a, r + b); } x.stroke(); x.restore(); }
       for (let i = 0; i < 8; i++) { x.save(); x.rotate(i / 8 * Math.PI * 2 + 0.2); x.beginPath(); x.moveTo(-c * 0.05, c * 0.78); x.quadraticCurveTo(c * 0.02, c * 0.98, c * 0.14, c * 0.95); x.quadraticCurveTo(c * 0.05, c * 0.9, c * 0.06, c * 0.78); x.closePath(); x.fillStyle = '#ffd86a'; x.fill(); x.lineWidth = 2; x.strokeStyle = '#5a2a04'; x.stroke();
@@ -130,7 +130,7 @@
     const anc = m => ({ p: m.position.clone(), q: m.quaternion.clone(), s: m.scale.clone() });
     return { H, A, B, F, G, ancA: anc(A), ancB: anc(B), elos: [], cd: 0 }; })();
   function haloOn() { const W = ARMAS[AR.arma]; return (!!(W && W.halo) || BUFF.mandala > 0) && !(BUFF.mandef > 0); }
-  function haloVis() { const W = ARMAS[AR.arma]; return !!(W && W.halo) || AR.divino === 'mandala' || BUFF.mandala > 0 || BUFF.mandef > 0; }
+  function haloVis() { if (BUFF.sete > 0) return false; const W = ARMAS[AR.arma]; return !!(W && W.halo) || AR.divino === 'mandala' || BUFF.mandala > 0 || BUFF.mandef > 0; }
   function haloAtk(forca) { if (!haloOn() || HALO.elos.length || (HALO.cd > 0 && !forca)) return; HALO.H.visible = true; const alvo = maisPerto(24); if (!alvo) return;
     HALO.cd = 3.2; som('magia', 0.8, 0.8); fx('luz', [heroi.position.x, 1.5, heroi.position.z], 0.6);
     [[HALO.A, 1, HALO.ancA], [HALO.B, -1, HALO.ancB]].forEach(([m, sd, anc]) => { world.attach(m); HALO.elos.push({ m, sd, anc, alvo, fase: 'ida', t: 0, hit: 0, ang: sd > 0 ? 0 : Math.PI, spin: 0, s0: m.scale.x }); }); }
@@ -146,7 +146,18 @@
     if (!HALO.def) return; const D = HALO.def; D.t += dt; const ex = Math.min(1, D.t / 0.45), k = 0.15 + ex * 1.05 + (D.t < 0.6 ? Math.sin(ex * Math.PI) * 0.18 : 0); HALO.H.scale.setScalar(k);
     BOLHA.material.opacity = ex * (0.12 + Math.sin(gT * 6) * 0.04); BOLHA.scale.setScalar(0.3 + ex * 0.7); DEF_ANEL.material.opacity = 0.6 + Math.sin(gT * 9) * 0.3; HALO.G.material.opacity = 0.45 + Math.sin(gT * 7) * 0.15;
     if (DEF_FL.userData.t > 0) { DEF_FL.userData.t -= dt; const s = 2.3 * Math.max(0, DEF_FL.userData.t / 0.22); DEF_FL.scale.set(s, s, 1); } else DEF_FL.scale.set(0.01, 0.01, 1); }
-  function haloFrame(dt) { const quer = haloVis() && !dentro; haloDefFrame(dt); HALO.H.visible = quer || HALO.elos.length > 0; if (HALO.cd > 0) HALO.cd -= dt;
+  // ---- COROA DOS SETE SÓIS: 7 mini-halos deitados girando como serra em volta do personagem ----
+  const SETE = { g: new T3.Group(), h: [], t: 0, hitT: 0 }; SETE.g.visible = false; world.add(SETE.g);
+  { const pl = (m, s) => new T3.Mesh(new T3.PlaneGeometry(s, s), new T3.MeshBasicMaterial({ map: m, transparent: true, side: T3.DoubleSide, depthWrite: false, toneMapped: false }));
+    for (let i = 0; i < 7; i++) { const h = new T3.Group(); const gl = new T3.Sprite(new T3.SpriteMaterial({ map: HALO.G.material.map, transparent: true, depthWrite: false, blending: T3.AdditiveBlending, toneMapped: false, opacity: 0.45 })); gl.scale.set(0.8, 0.8, 1); h.add(gl);
+      const d = new T3.Group(); d.rotation.x = -Math.PI / 2; h.add(d); const A = pl(HALO.A.material.map, 0.62), B = pl(HALO.B.material.map, 0.42), F = pl(HALO.F.material.map, 0.5); A.position.z = -0.01; F.position.z = 0.01; d.add(A, B, F); SETE.g.add(h); SETE.h.push({ h, A, B, F }); } }
+  function seteFrame(dt) { const on = BUFF.sete > 0 && !dentro; if (on && !SETE.g.visible) { SETE.t = 0; fx('luz', [heroi.position.x, 1, heroi.position.z], 1); som('magia', 0.8, 1.2); }
+    if (!on && SETE.g.visible) { fx('luz', [heroi.position.x, 1.4, heroi.position.z], 0.7); }
+    SETE.g.visible = on; if (!on) return; SETE.t += dt; const t = SETE.t, ex = Math.min(1, t / 0.5), hp = heroi.position, R = 0.3 + ex * 1.15;
+    SETE.h.forEach((o, i) => { const a = t * 2.6 + i / 7 * Math.PI * 2; o.h.position.set(hp.x + Math.cos(a) * R, hp.y + 0.95 + Math.sin(t * 3 + i) * 0.04, hp.z + Math.sin(a) * R); o.h.scale.setScalar(0.3 + ex * 0.7); o.A.rotation.z += dt * 9; o.B.rotation.z -= dt * 12; o.F.rotation.z += dt * 10; });
+    SETE.hitT -= dt; if (SETE.hitT <= 0 && ex >= 1) { SETE.hitT = 0.25; const W0 = ARMAS[AR.arma] || ARMAS.punho, dn = Math.max(W0.dano || 10, 30) * 0.22 * atkMult(); let bateu = false;
+      SETE.h.forEach(o => area(o.h.position.x, o.h.position.z, 0.75, f => { dano(f, dn, null, critico()); bateu = true; })); if (bateu) { som('espada', 0.3, 1.5 + Math.random() * 0.3, 0.05); fx('luz', [hp.x + (Math.random() - 0.5) * 2, 0.9, hp.z + (Math.random() - 0.5) * 2], 0.3); } } }
+  function haloFrame(dt) { seteFrame(dt); const quer = haloVis() && !dentro; haloDefFrame(dt); HALO.H.visible = quer || HALO.elos.length > 0; if (HALO.cd > 0) HALO.cd -= dt;
     if (!HALO.H.visible) return; HALO.F.rotation.z += dt * 2.1; HALO.G.material.opacity = 0.32 + Math.sin(gT * 3) * 0.1;
     if (HALO.def) { HALO.A.rotation.z += dt * 6; HALO.B.rotation.z -= dt * 9; HALO.F.rotation.z += dt * 4; return; }
     if (!HALO.elos.length) { HALO.A.rotation.z += dt * 0.55; HALO.B.rotation.z -= dt * 1.5; return; }

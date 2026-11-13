@@ -287,7 +287,7 @@
     NPCS.push(n); COL.push({ t: 'c', x, z, r: 0.45, npc: n }); n.marca = new T3.Sprite(new T3.SpriteMaterial({ map: marcaT('✦', '#5ae8ff'), transparent: true, depthWrite: false, toneMapped: false })); n.marca.scale.set(0.45, 0.6, 1); n.marca.position.set(x, 2.8, z); world.add(n.marca); }
 
   // ===================== ITENS DIVINOS (slot próprio) =====================
-  const DIVINOS = { mandala: { nome: 'Mandala do Juízo Solar', icone: IC('cb_mandala'), preco: 15000, habs: ['cb_mandala', 'cb_mandala_def'], desc: 'Gira nas suas costas com os elos dourados e o fogo vermelho. Libera 2 habilidades divinas na barra: ⚔️ Juízo Solar (os elos atacam) e 🛡️ Égide Solar (defesa total por 30 s).' } };
+  const DIVINOS = { mandala: { nome: 'Mandala do Juízo Solar', icone: IC('cb_mandala'), preco: 15000, habs: ['cb_mandala', 'cb_mandala_def', 'cb_mandala_sete'], desc: 'Gira nas suas costas com os elos dourados e o fogo vermelho. Libera 3 habilidades divinas: ⚔️ Juízo Solar (os elos atacam), 🛡️ Égide Solar (defesa total 30 s) e ☀️ Sete Sóis (7 serras de fogo giram em volta de você).' } };
   AR.divinos = AR.divinos || []; if (AR.divino === undefined) AR.divino = null;
   if ((AR.cbt || []).includes('cb_mandala')) { if (!AR.divinos.includes('mandala')) AR.divinos.push('mandala'); AR.cbt = AR.cbt.filter(x => x !== 'cb_mandala'); if (!AR.divino) AR.divino = 'mandala'; }
   function divItem() { const D = DIVINOS[AR.divino]; return D ? { icone: D.icone, nome: D.nome } : null; }
