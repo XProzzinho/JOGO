@@ -93,3 +93,14 @@
       escolhas: () => [NAC.aberta ? { t: '⚔️ <b>Entrar na Batalha</b><small>' + (na ? na.ic + ' ' + na.nome : 'Escolha sua nação') + '</small>', fn: nacaoEntra } : null, { t: '⚡ <b>Modos de Batalha</b><small>Liberar os modos II e III</small>', fn: falaKaelen },
         !AR.nacao ? { t: '🏳️ <b>Escolher minha nação</b>', fn: () => { nacP.hidden = false; } } : null,
         souAdmin() ? (NAC.aberta ? { t: '🛑 <b>Encerrar a batalha agora</b><small>Só administrador</small>', fn: () => nacaoAdm(false) } : { t: '🟢 <b>Iniciar batalha agora</b><small>Só administrador · 20 minutos</small>', fn: () => nacaoAdm(true) }) : null, { t: 'Agora não', fn: null }].filter(Boolean) }); }
+  // ---------- céu estrelado do labirinto ----------
+  const NAC_CEU = (() => { const W = 2048, H = 1024, c = document.createElement('canvas'); c.width = W; c.height = H; const x = c.getContext('2d');
+    const g = x.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#02030c'); g.addColorStop(0.35, '#070a24'); g.addColorStop(0.5, '#14183e'); g.addColorStop(0.56, '#1a1640'); g.addColorStop(1, '#05040e'); x.fillStyle = g; x.fillRect(0, 0, W, H);
+    // via láctea (faixa de névoa colorida atravessando o céu)
+    for (let i = 0; i < 900; i++) { const u = Math.random(), px = u * W, py = H * 0.22 + Math.sin(u * Math.PI * 2) * H * 0.1 + (Math.random() - 0.5) * 120, r = 20 + Math.random() * 60; const gg = x.createRadialGradient(px, py, 0, px, py, r); const cor = Math.random() < 0.5 ? '120,90,220' : Math.random() < 0.5 ? '70,140,255' : '220,110,200'; gg.addColorStop(0, `rgba(${cor},.05)`); gg.addColorStop(1, `rgba(${cor},0)`); x.fillStyle = gg; x.fillRect(px - r, py - r, r * 2, r * 2); }
+    // estrelas
+    for (let i = 0; i < 4200; i++) { const px = Math.random() * W, py = Math.pow(Math.random(), 1.4) * H * 0.55, b = Math.random(), r = b < 0.92 ? 0.6 + Math.random() * 0.8 : 1.4 + Math.random() * 1.6; x.fillStyle = b < 0.15 ? '#bcd4ff' : b < 0.25 ? '#ffe8c0' : '#ffffff'; x.globalAlpha = 0.45 + Math.random() * 0.55; x.beginPath(); x.arc(px, py, r, 0, 7); x.fill(); }
+    x.globalAlpha = 1; for (let i = 0; i < 40; i++) { const px = Math.random() * W, py = Math.random() * H * 0.45, r = 6 + Math.random() * 6; const gg = x.createRadialGradient(px, py, 0, px, py, r); gg.addColorStop(0, 'rgba(255,255,255,.9)'); gg.addColorStop(1, 'rgba(160,190,255,0)'); x.fillStyle = gg; x.fillRect(px - r, py - r, r * 2, r * 2); }
+    const t = new T3.CanvasTexture(c); t.colorSpace = T3.SRGBColorSpace;
+    const m = new T3.Mesh(new T3.SphereGeometry(600, 48, 24), new T3.MeshBasicMaterial({ map: t, side: T3.BackSide, fog: false, depthWrite: false, toneMapped: false })); m.position.set(NX, 0, NZ); m.renderOrder = -10; m.visible = false; world.add(m); return m; })();
+  function nacaoCeuFrame(dt) { NAC_CEU.visible = zona === 'nacao'; if (NAC_CEU.visible) { NAC_CEU.rotation.y += dt * 0.004; NAC_CEU.position.set(heroi.position.x, 0, heroi.position.z); } }
