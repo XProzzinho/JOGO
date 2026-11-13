@@ -858,7 +858,7 @@
       s.forEach(e => { if (!feraAtiva(e)) return; if (Math.hypot(e.g.position.x - hitPos.x, e.g.position.z - hitPos.z) < 2.6 + e.T.raio) { dano(e, n, 'gelo', crit || critico()); e.congela = Math.max(e.congela || 0, e.T.chefe ? 0.3 : 0.8); } }); },
     onCameraShake: (i) => { tremor = Math.max(tremor, i * 2.2); },
     onCasterAnim: (tipo, d) => { if (tipo === 'dash' && d.endPos) { heroi.position.x = d.endPos.x; heroi.position.z = d.endPos.z; fx('gelo', [d.endPos.x, 1, d.endPos.z], 0.5); } } });
-  function geloCast(k) { if (AR.divino !== 'astrolabio') { aviso('Equipe o Astrolábio do Firmamento Eterno.', '#9ae6ff'); return false; }
+  function geloCast(k) { if (AR.divino !== 'astrolabio' && AR.divino !== 'firmamento') { aviso('Equipe o Astrolábio do Firmamento Eterno.', '#9ae6ff'); return false; }
     const alvo = maisPerto(k === 'passo' ? 14 : 22); if (!alvo) { aviso('Nenhum inimigo perto.', '#c8b48a'); return false; }
     const p = heroi.position, c = new T3.Vector3(p.x, 0, p.z), t = new T3.Vector3(alvo.g.position.x, 0, alvo.g.position.z); facing = Math.atan2(t.x - c.x, t.z - c.z);
     som(k === 'juizo' ? 'raio' : 'gelo', 0.8, 1); atkT = 0;

@@ -133,7 +133,7 @@
     const anc = m => ({ p: m.position.clone(), q: m.quaternion.clone(), s: m.scale.clone() });
     return { H, A, B, F, G, brA, brB, brA2, ancA: anc(A), ancB: anc(B), elos: [], cd: 0 }; })();
   function haloOn() { const W = ARMAS[AR.arma]; return (!!(W && W.halo) || BUFF.mandala > 0) && !(BUFF.mandef > 0); }
-  function haloVis() { if (BUFF.sete > 0 || seloVoando()) return false; const W = ARMAS[AR.arma]; return !!(W && W.halo) || AR.divino === 'mandala' || AR.divino === 'rubra' || BUFF.mandala > 0 || BUFF.mandef > 0; }
+  function haloVis() { if (BUFF.sete > 0 || seloVoando()) return false; const W = ARMAS[AR.arma]; return !!(W && W.halo) || AR.divino === 'mandala' || AR.divino === 'rubra' || AR.divino === 'firmamento' || BUFF.mandala > 0 || BUFF.mandef > 0; }
   function haloAtk(forca) { if (!haloOn() || HALO.elos.length || (HALO.cd > 0 && !forca)) return; HALO.H.visible = true; const alvo = maisPerto(24); if (!alvo) return;
     HALO.cd = 3.2; som('magia', 0.8, 0.8); fx('luz', [heroi.position.x, 1.5, heroi.position.z], 0.6);
     [[HALO.A, 1, HALO.ancA], [HALO.B, -1, HALO.ancB]].forEach(([m, sd, anc]) => { world.attach(m); HALO.elos.push({ m, sd, anc, alvo, fase: 'ida', t: 0, hit: 0, ang: sd > 0 ? 0 : Math.PI, spin: 0, s0: m.scale.x }); }); }
@@ -279,14 +279,17 @@ const glowR = cv(128, (x) => { const g = x.createRadialGradient(64, 64, 0, 64, 6
 
     return { texCoroa, texInterno, texAsa, texElo, texBroche, glowR }; })();
   const TEMA = { atual: 'mandala', orig: null };
-  function haloTema() { const k = AR.divino === 'rubra' ? 'rubra' : 'mandala'; if (k === TEMA.atual) return; TEMA.atual = k;
-    if (!TEMA.orig) TEMA.orig = { A: HALO.A.material.map, B: HALO.B.material.map, G: HALO.G.material.map };
-    const A = k === 'rubra' ? RUBRA.texCoroa : TEMA.orig.A, B = k === 'rubra' ? RUBRA.texInterno : TEMA.orig.B, G = k === 'rubra' ? RUBRA.glowR : TEMA.orig.G, fogo = k !== 'rubra';
+  function haloTema() { const k = AR.divino === 'rubra' ? 'rubra' : AR.divino === 'firmamento' ? 'azul' : 'mandala'; if (k === TEMA.atual) return; TEMA.atual = k;
+    if (!TEMA.orig) TEMA.orig = { A: HALO.A.material.map, B: HALO.B.material.map, G: HALO.G.material.map, F: HALO.F.material && HALO.F.material.map };
+    if (k === 'azul' && !TEMA.azul) { const az = t => { if (!t || !t.image) return t; const s = t.image, c = document.createElement('canvas'); c.width = s.width; c.height = s.height; const x = c.getContext('2d'); x.filter = 'hue-rotate(170deg) saturate(1.35) brightness(1.12)'; x.drawImage(s, 0, 0); const n = new T3.CanvasTexture(c); n.colorSpace = t.colorSpace; return n; };
+      TEMA.azul = { A: az(TEMA.orig.A), B: az(TEMA.orig.B), G: az(TEMA.orig.G), F: az(TEMA.orig.F) }; }
+    const Z = k === 'azul' ? TEMA.azul : TEMA.orig; if (HALO.F.material && Z.F) { HALO.F.material.map = Z.F; HALO.F.material.needsUpdate = true; }
+    const A = k === 'rubra' ? RUBRA.texCoroa : Z.A, B = k === 'rubra' ? RUBRA.texInterno : Z.B, G = k === 'rubra' ? RUBRA.glowR : Z.G, fogo = k !== 'rubra';
     const sA = k === 'rubra' ? 2.7 / 2.3 : 1, sB = k === 'rubra' ? 1.7 / 1.55 : 1;
     const troca = (m, t) => { if (m && m.material) { m.material.map = t; m.material.needsUpdate = true; } };
     troca(HALO.A, A); troca(HALO.brA, A); troca(HALO.brA2, A); troca(HALO.B, B); troca(HALO.brB, B); troca(HALO.G, G); HALO.F.visible = fogo; HALO.A.scale.setScalar(sA); HALO.B.scale.setScalar(sB);
     if (HALO.ancA) HALO.ancA.s.setScalar(sA); if (HALO.ancB) HALO.ancB.s.setScalar(sB);
-    [HALO.brA, HALO.brA2, HALO.brB].forEach(b => b && b.material.color.set(k === 'rubra' ? '#ff9ac0' : (b === HALO.brB ? '#ffe8a0' : b === HALO.brA2 ? '#ff9a30' : '#ffd070')));
+    [HALO.brA, HALO.brA2, HALO.brB].forEach(b => b && b.material.color.set(k === 'rubra' ? '#ff9ac0' : k === 'azul' ? (b === HALO.brB ? '#bff4ff' : '#5ad8ff') : (b === HALO.brB ? '#ffe8a0' : b === HALO.brA2 ? '#ff9a30' : '#ffd070')));
     SETE.h.forEach(o => { troca(o.A, A); troca(o.bA, A); troca(o.B, B); troca(o.bB, B); troca(o.gl, G); o.F.visible = fogo; }); }
   // asas de chama nos ombros + elo na cintura + broche (só da Rubra)
   const RUB = (() => { const P = heroi.userData.P, pl = (t, w, h, add) => new T3.Mesh(new T3.PlaneGeometry(w, h || w), new T3.MeshBasicMaterial({ map: t, transparent: true, side: T3.DoubleSide, depthWrite: false, toneMapped: false, blending: add ? T3.AdditiveBlending : T3.NormalBlending }));
@@ -526,7 +529,7 @@ const glowA = cv(128, (x) => { const g = x.createRadialGradient(64, 64, 0, 64, 6
     SURF.rastro.forEach(r => { if (r.t > 0.6) { r.s.visible = false; return; } r.t += dt; const k = r.t / 0.6; r.s.material.opacity = 0.7 * (1 - k); const sc = 0.35 * (1 - k * 0.6); r.s.scale.set(sc, sc, 1); }); }
   // ---- VOO COM O ELO: o elo sai das costas, gira, desce pros pés e o herói voa em pé em cima dele ----
   function haloVooAtivo() { return !!HALO.voo; }
-  function haloVooFrame(dt) { const quer = voando && (AR.divino === 'mandala' || AR.divino === 'rubra') && !HALO.def && !(BUFF.sete > 0) && !seloVoando() && !dentro;
+  function haloVooFrame(dt) { const quer = voando && (AR.divino === 'mandala' || AR.divino === 'rubra' || AR.divino === 'firmamento') && !HALO.def && !(BUFF.sete > 0) && !seloVoando() && !dentro;
     if (quer && !HALO.voo) { HALO.elos.slice().forEach(o => { HALO.H.add(o.m); o.m.position.copy(o.anc.p); o.m.quaternion.copy(o.anc.q); o.m.scale.copy(o.anc.s); }); HALO.elos.length = 0;
       heroi.add(HALO.H); HALO.voo = { t: 0 }; som('magia', 0.6, 1.3); }
     if (!quer && HALO.voo) { heroi.userData.P.spine.add(HALO.H); HALO.H.position.set(0, 0.62, -0.62); HALO.H.rotation.set(0, 0, 0); HALO.H.scale.setScalar(1); HALO.voo = null; return; }

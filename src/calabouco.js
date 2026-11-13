@@ -302,6 +302,7 @@
   DIVINOS.manto = { nome: 'Manto do Abismo Espectral', icone: IC('div_manto'), preco: 18000, habs: [], desc: 'Armadura gótica com cristal de safira, asas de energia azul e capa roxa rasgada que queima em fogo espectral. Balança com o vento.' };
   DIVINOS.emblema = { nome: 'Emblema Ígneo do Sol', icone: IC('div_emblema'), preco: 22000, habs: ['cb_sol'], desc: 'Emblema de ouro, obsidiana e magma nas costas, com chifres, garras de lava e um Sol vivo girando no centro.' };
   DIVINOS.arcano = { nome: 'Grimório dos Círculos Arcanos', icone: IC('div_arcano'), preco: 20000, habs: ['cb_adagas', 'cb_lamina', 'cb_travessia', 'cb_pilares', 'cb_guardias', 'cb_katana'], desc: 'Constelação de círculos mágicos roxos nas costas (cada círculo gira ao contrário do vizinho) e dois círculos no chão que te seguem, girando em sentidos opostos. Habilidades: 🗡️ Adagas Astrais, ⚔️ Lâmina do Firmamento 🌌 Travessia Astral (espada voadora) 🏛️ Pilares do Vazio , 🗡️ Adagas Guardiãs e 🌑 Lâmina Sombria.' };
+  DIVINOS.firmamento = { nome: 'Mandala do Firmamento Azul', icone: IC('div_firmamento'), preco: 30000, habs: ['cb_mandala', 'cb_mandala_def', 'cb_mandala_sete', 'cb_mandala_selo', 'cb_ast_corte', 'cb_ast_juizo'], desc: 'Fusão da Mandala Solar com o Astrolábio do Firmamento Eterno: o halo da Mandala em azul-gelo com o Astrolábio por cima, os dois girando juntos nas costas (e viram a plataforma de voo debaixo dos pés). Habilidades: ⚔️ Juízo, 🛡️ Égide, ☀️ Sete Sóis, 🔻 Selo, ❄️ Corte Glacial e Juízo Congelado.' };
   DIVINOS.astrolabio = { nome: 'Astrolábio do Firmamento Eterno', icone: IC('div_astrolabio'), preco: 25000, habs: ['cb_ast_corte', 'cb_ast_pilares', 'cb_ast_penas', 'cb_ast_passo', 'cb_ast_juizo'], desc: 'Halo arcano nas costas: a coroa de ouro gira pra um lado e o anel de runas azuis pro outro, com anéis orbitais, estrela e cristal central pulsando e pingentes de cristal. Habilidades de Gelo Arcano: ❄️ Corte Glacial, Pilares Gélidos, Penas de Gelo, Passo Glacial e Juízo Congelado.' };
   // modelos 3D (criados só quando equipa, pra não pesar)
   const DIV3D = {};
@@ -313,16 +314,16 @@
       if (o) o.g.traverse(x => { if (x.isMesh) { x.frustumCulled = false; } });
     } catch (err) { console.warn('div3d', k, err); o = null; }
     DIV3D[k] = o; return o; }
-  function div3dFrame(dt) { solFrame(dt || 1 / 60); ['manto', 'emblema', 'astrolabio'].forEach(k => { const quer = AR.divino === k && !dentro; if (!quer && !DIV3D[k]) return; const o = div3dPega(k); if (!o) return; o.g.visible = quer; if (!quer) return; o.up(gT);
+  function div3dFrame(dt) { solFrame(dt || 1 / 60); ['manto', 'emblema', 'astrolabio'].forEach(k => { const quer = (AR.divino === k || (k === 'astrolabio' && AR.divino === 'firmamento')) && !dentro; if (!quer && !DIV3D[k]) return; const o = div3dPega(k); if (!o) return; o.g.visible = quer; if (!quer) return; o.up(gT);
       o.base.position.y = (k === 'manto' ? -0.22 : k === 'astrolabio' ? 0.07 : 0) + Math.sin(gT * 2) * 0.02;
-      if (k === 'astrolabio') astVoo(o, dt || 1 / 60); }); }
+      if (k === 'astrolabio') { const fu = AR.divino === 'firmamento'; o.base.scale.setScalar(fu ? 0.16 : 0.2); if (!AST_V) o.g.position.set(0, fu ? 0.62 : 0.5, fu ? -0.7 : -0.62); astVoo(o, dt || 1 / 60); } }); }
   // ---- VOO COM O ASTROLÁBIO: sai das costas girando, deita debaixo dos pés e vira a plataforma de voo ----
   let AST_V = null; function astVooAtivo() { return !!AST_V; }
   function astVoo(o, dt) { const quer = voando && !dentro;
     if (quer && !AST_V) { heroi.add(o.g); AST_V = { t: 0, rz: 0 }; som('magia', 0.6, 1.5); }
     if (!quer && AST_V) { heroi.userData.P.spine.add(o.g); o.g.position.set(0, 0.5, -0.62); o.g.rotation.set(0, 0, 0); o.g.scale.setScalar(1); AST_V = null; return; }
     if (!AST_V) return; const V = AST_V; V.t += dt; const u = Math.min(1, V.t / 0.8), e = u < 0.5 ? 2 * u * u : 1 - Math.pow(-2 * u + 2, 2) / 2;
-    V.rz += dt * (12 * (1 - e) + 0.6); o.g.position.set(0, 1.7 + (-0.12 - 1.7) * e + (u >= 1 ? Math.sin(gT * 2.2) * 0.03 : 0), -0.62 * (1 - e));
+    V.rz += dt * (12 * (1 - e) + 0.6); o.g.position.set(0, 1.7 + ((AR.divino === 'firmamento' ? -0.02 : -0.12) - 1.7) * e + (u >= 1 ? Math.sin(gT * 2.2) * 0.03 : 0), -0.62 * (1 - e));
     o.g.rotation.set(-Math.PI / 2 * e, 0, V.rz); o.g.scale.setScalar(1 + e * 0.55); }
   // ---- SOL DO MEIO-DIA: o Sol sai do Emblema, sobe acima do título, fica gigante e abençoa o personagem ----
   const SOLH = { st: 0, t: 0, sun: null, pai: null, loc: null, ws: 1, feixe: null, queima: 0 };
