@@ -42,8 +42,8 @@
       if (c.n && i === 0) add(cx + NCEL / 2, cz, NCEL + ESP, ESP); if (c.o && j === 0) add(cx, cz + NCEL / 2, ESP, NCEL + ESP);
       if (c.s) add(cx + NCEL / 2, cz + NCEL, NCEL + ESP, ESP); if (c.l) add(cx + NCEL, cz + NCEL / 2, ESP, NCEL + ESP); }
     const G = grp(world, 0, 0, 0); G.visible = false;
-    const pisoT = (() => { const c = document.createElement('canvas'); c.width = c.height = 128; const x = c.getContext('2d'); x.fillStyle = '#4a4650'; x.fillRect(0, 0, 128, 128); for (let a = 0; a < 2; a++) for (let b = 0; b < 2; b++) { x.fillStyle = (a + b) % 2 ? '#56525c' : '#423e48'; x.fillRect(a * 64 + 2, b * 64 + 2, 60, 60); } const t = new T3.CanvasTexture(c); t.wrapS = t.wrapT = T3.RepeatWrapping; t.repeat.set(L / 6, L / 6); t.colorSpace = T3.SRGBColorSpace; return t; })();
-    const piso = new T3.Mesh(new T3.PlaneGeometry(L + 30, L + 30), new T3.MeshStandardMaterial({ map: pisoT, roughness: 0.95 })); piso.rotation.x = -Math.PI / 2; piso.position.set(NX, 0.01, NZ); piso.receiveShadow = true; G.add(piso);
+    const pisoT = (() => { const c = document.createElement('canvas'); c.width = c.height = 128; const x = c.getContext('2d'); x.fillStyle = '#4a4650'; x.fillRect(0, 0, 128, 128); for (let a = 0; a < 2; a++) for (let b = 0; b < 2; b++) { x.fillStyle = (a + b) % 2 ? '#56525c' : '#423e48'; x.fillRect(a * 64 + 2, b * 64 + 2, 60, 60); } const t = new T3.CanvasTexture(c); t.wrapS = t.wrapT = T3.RepeatWrapping; t.repeat.set((L + 300) / 6, (L + 300) / 6); t.colorSpace = T3.SRGBColorSpace; return t; })();
+    const piso = new T3.Mesh(new T3.PlaneGeometry(L + 300, L + 300), new T3.MeshStandardMaterial({ map: pisoT, roughness: 0.95 })); piso.rotation.x = -Math.PI / 2; piso.position.set(NX, 0.01, NZ); piso.receiveShadow = true; G.add(piso);
     const muroM = new T3.MeshStandardMaterial({ color: '#ffffff', roughness: 0.9 }); const im = new T3.InstancedMesh(BOX, muroM, W.length); const dm = new T3.Object3D(); const cor = new T3.Color();
     W.forEach((w, k) => { dm.position.set(w.x, ALT / 2, w.z); dm.scale.set(w.hw * 2, ALT, w.hd * 2); dm.updateMatrix(); im.setMatrixAt(k, dm.matrix);
       const dr = Math.hypot(w.x - (x0 + NCEL / 2), w.z - (z0 + NCEL / 2)), da = Math.hypot(w.x - (x0 + L - NCEL / 2), w.z - (z0 + L - NCEL / 2)); const t = Math.max(0, 1 - Math.min(dr, da) / 45);
@@ -58,8 +58,8 @@
     // centro: arena com cristal
     const cc = [x0 + 7.5 * NCEL, z0 + 7.5 * NCEL]; const cri = new T3.Mesh(new T3.OctahedronGeometry(1.2, 0), new T3.MeshStandardMaterial({ color: '#ffd86a', emissive: '#ffb020', emissiveIntensity: 0.9, flatShading: true })); cri.position.set(cc[0], 3.2, cc[1]); G.add(cri); glowSpr(G, cc[0], 3.2, cc[1], 6, '#ffd86a', 0.45);
     return { G, W, bases, x0, z0, L, cri }; })();
-  function nacaoLimita(p) { const r = 0.4; LAB.W.forEach(w => { const dx = p.x - w.x, dz = p.z - w.z; if (Math.abs(dx) > w.hw + r || Math.abs(dz) > w.hd + r) return; const px = w.hw + r - Math.abs(dx), pz = w.hd + r - Math.abs(dz); if (px < pz) p.x += Math.sign(dx || 1) * px; else p.z += Math.sign(dz || 1) * pz; });
-    p.x = clamp(p.x, LAB.x0 + 0.5, LAB.x0 + LAB.L - 0.5); p.z = clamp(p.z, LAB.z0 + 0.5, LAB.z0 + LAB.L - 0.5); }
+  function nacaoLimita(p) { const r = 0.4; if (p.y < 4.1) LAB.W.forEach(w => { const dx = p.x - w.x, dz = p.z - w.z; if (Math.abs(dx) > w.hw + r || Math.abs(dz) > w.hd + r) return; const px = w.hw + r - Math.abs(dx), pz = w.hd + r - Math.abs(dz); if (px < pz) p.x += Math.sign(dx || 1) * px; else p.z += Math.sign(dz || 1) * pz; });
+    p.x = clamp(p.x, LAB.x0 - 140, LAB.x0 + LAB.L + 140); p.z = clamp(p.z, LAB.z0 - 140, LAB.z0 + LAB.L + 140); }
   // ---------- entrar / sair ----------
   function nacaoBase() { const [bx, bz] = LAB.bases[AR.nacao] || LAB.bases.vermelha; return [bx + (Math.random() - 0.5) * 3, bz + (Math.random() - 0.5) * 3]; }
   function nacaoEntra() { nacConv.hidden = true; if (!AR.nacao) { nacP.hidden = false; return; } if (!NAC.aberta) { aviso('⚔️ A Batalha de Nação acontece às 12h e às 20h (horário de Brasília).', '#ffd86a'); return; } if (Q.naCarroca || conversa) return;
