@@ -1031,3 +1031,40 @@ const ArcanePillarAssets = (function () {
       if (_gd.lengthSq() > 1e-8) { _gd.normalize(); m.quaternion.slerp(new T3.Quaternion().setFromUnitVectors(_gu, _gd), Math.min(1, dt * 12)); } d.prev.copy(m.position);
       if (m.userData.h) m.userData.h.material.opacity = 0.45 + Math.sin(gT * 6 + d.i) * 0.2; });
     if (acabou && GUA.ad.every(d => d.fase === 'fim' && d.t > 0.5)) { GUA.ad.forEach(d => world.remove(d.m)); GUA.ad = []; GUA.on = false; } }
+  // ---- habilidade: LÂMINA SOMBRIA (a arma vira uma katana negra soltando névoa roxa e preta) ----
+  const KAT = (() => { const G = grp(maoG); G.visible = false;
+    const L = 1.05; const sh = new T3.Shape(); const cv = u => 0.05 * u * u; // curvatura da katana (sobe pra ponta)
+    sh.moveTo(0, -0.022); for (let i = 1; i <= 20; i++) { const u = i / 20; sh.lineTo(u * L, cv(u) - 0.022 * (1 - u * 0.55)); } sh.lineTo(L + 0.04, cv(1) + 0.035); for (let i = 20; i >= 0; i--) { const u = i / 20; sh.lineTo(u * L, cv(u) + 0.022 * (1 - u * 0.3)); } sh.closePath();
+    const bg = new T3.ExtrudeGeometry(sh, { depth: 0.012, bevelEnabled: true, bevelThickness: 0.004, bevelSize: 0.004, bevelSegments: 1 }); bg.translate(0, 0, -0.006); bg.rotateY(-Math.PI / 2);
+    const lam = new T3.Mesh(bg, new T3.MeshStandardMaterial({ color: '#08050e', metalness: 0.92, roughness: 0.28, emissive: '#2a0a4a', emissiveIntensity: 0.6 })); lam.position.z = 0.12; lam.castShadow = true; G.add(lam);
+    // fio da lâmina em neon roxo (lado de baixo)
+    const pts = []; for (let i = 0; i <= 24; i++) { const u = i / 24; pts.push(new T3.Vector3(0, cv(u) - 0.022 * (1 - u * 0.55), 0.12 + u * L)); } pts.push(new T3.Vector3(0, cv(1) + 0.035, 0.12 + L + 0.04));
+    const fio = new T3.Mesh(new T3.TubeGeometry(new T3.CatmullRomCurve3(pts), 40, 0.0055, 5, false), new T3.MeshBasicMaterial({ color: '#c86aff', toneMapped: false })); G.add(fio);
+    const fio2 = new T3.Mesh(new T3.TubeGeometry(new T3.CatmullRomCurve3(pts), 40, 0.016, 6, false), new T3.MeshBasicMaterial({ color: '#7a2ae8', transparent: true, opacity: 0.35, blending: T3.AdditiveBlending, depthWrite: false, toneMapped: false })); G.add(fio2);
+    const ouro = new T3.MeshStandardMaterial({ color: '#c8a050', metalness: 0.9, roughness: 0.3 }), preto = new T3.MeshStandardMaterial({ color: '#0e0a14', metalness: 0.6, roughness: 0.5 });
+    const hab = new T3.Mesh(new T3.BoxGeometry(0.018, 0.055, 0.03), ouro); hab.position.z = 0.115; G.add(hab);
+    const tsu = new T3.Mesh(new T3.CylinderGeometry(0.065, 0.065, 0.012, 8), preto); tsu.rotation.x = Math.PI / 2; tsu.position.z = 0.095; G.add(tsu);
+    const aro = new T3.Mesh(new T3.TorusGeometry(0.064, 0.006, 6, 24), new T3.MeshBasicMaterial({ color: '#b45aff', toneMapped: false })); aro.position.z = 0.095; G.add(aro);
+    const cabo = new T3.Mesh(new T3.CylinderGeometry(0.02, 0.022, 0.26, 8), preto); cabo.rotation.x = Math.PI / 2; cabo.position.z = -0.04; G.add(cabo);
+    for (let i = 0; i < 7; i++) { const x = new T3.Mesh(new T3.BoxGeometry(0.046, 0.008, 0.012), new T3.MeshBasicMaterial({ color: i % 2 ? '#5a1aa0' : '#8a3ae8', toneMapped: false })); x.position.z = 0.07 - i * 0.034; x.rotation.z = i % 2 ? 0.6 : -0.6; G.add(x); }
+    const kas = new T3.Mesh(new T3.SphereGeometry(0.026, 10, 8), ouro); kas.position.z = -0.175; kas.scale.set(1, 1, 0.7); G.add(kas);
+    const aura = glowSpr(G, 0, 0.03, 0.65, 0.9, '#9a4aff', 0.35);
+    // névoa roxa e preta saindo da lâmina
+    const tx = (() => { const c = document.createElement('canvas'); c.width = c.height = 64; const x = c.getContext('2d'); const g = x.createRadialGradient(32, 32, 2, 32, 32, 32); g.addColorStop(0, 'rgba(255,255,255,1)'); g.addColorStop(0.5, 'rgba(255,255,255,.45)'); g.addColorStop(1, 'rgba(255,255,255,0)'); x.fillStyle = g; x.fillRect(0, 0, 64, 64); return new T3.CanvasTexture(c); })();
+    const nev = []; for (let i = 0; i < 34; i++) { const preta = i % 3 === 0; const s = new T3.Sprite(new T3.SpriteMaterial({ map: tx, color: preta ? '#0a0410' : (i % 2 ? '#8a2ae8' : '#b45aff'), transparent: true, depthWrite: false, opacity: 0, blending: preta ? T3.NormalBlending : T3.AdditiveBlending, toneMapped: false })); s.visible = false; world.add(s); nev.push({ s, t: 9, v: new T3.Vector3(), vida: 1, preta }); }
+    const golpes = []; for (let i = 0; i < 3; i++) { const m = new T3.Mesh(new T3.RingGeometry(0.9, 1.25, 32, 1, -0.9, 1.8), new T3.MeshBasicMaterial({ color: '#b45aff', transparent: true, opacity: 0, side: T3.DoubleSide, depthWrite: false, blending: T3.AdditiveBlending, toneMapped: false })); m.visible = false; world.add(m); golpes.push({ m, t: 9 }); }
+    return { G, lam, fio2, aura, nev, ni: 0, nt: 0, golpes, gi: 0, on: false, t: 0, dur: 20, arma: null }; })();
+  const _kw = new T3.Vector3();
+  function katanaAtiva() { if (AR.divino !== 'arcano') { aviso('Equipe o Grimório dos Círculos Arcanos.', '#c8a8ff'); return false; } if (KAT.on) return false;
+    const A = ARMAS[AR.arma]; if (!A || A.longe || AR.arma === 'punho') { aviso('Segure uma arma de corpo a corpo pra virar a Lâmina Sombria.', '#c8a8ff'); return false; }
+    KAT.on = true; KAT.t = 0; BUFF.katana = KAT.dur; KAT.arma = AR.arma; som('espectro', 0.8, 0.8); som('magia', 0.7, 0.6); flash('rgba(60,10,90,.45)');
+    for (let i = 0; i < 20; i++) katanaNevoa(true); aviso('🌑 Lâmina Sombria! Sua arma virou uma katana negra: +30% de dano por 20 s.', '#c88aff'); return true; }
+  function katanaNevoa(forte) { const n = KAT.nev[KAT.ni++ % KAT.nev.length], u = Math.random(); KAT.G.updateMatrixWorld(); _kw.set(0, 0.03, 0.15 + u * 1.0); KAT.G.localToWorld(_kw); n.s.position.copy(_kw); n.t = 0; n.vida = 0.7 + Math.random() * 0.8; n.s.visible = true;
+    n.v.set((Math.random() - 0.5) * (forte ? 1.6 : 0.35), 0.35 + Math.random() * (forte ? 1.4 : 0.55), (Math.random() - 0.5) * (forte ? 1.6 : 0.35)); n.tam = (n.preta ? 0.35 : 0.22) + Math.random() * 0.2; }
+  function katanaAtk() { if (!KAT.on || KAT.t < 0.3) return; const g = KAT.golpes[KAT.gi++ % KAT.golpes.length], p = heroi.position; g.m.position.set(p.x + Math.sin(facing) * 0.9, p.y + 1.05, p.z + Math.cos(facing) * 0.9); g.m.rotation.set(-Math.PI / 2 + 0.25, 0, -facing + Math.PI / 2 + (Math.random() - 0.5) * 0.6); g.t = 0; g.m.visible = true; for (let i = 0; i < 5; i++) katanaNevoa(true); }
+  function katanaFrame(dt) { const quer = KAT.on && AR.arma === KAT.arma && AR.divino === 'arcano' && BUFF.katana > 0;
+    if (KAT.on && !quer) { KAT.on = false; BUFF.katana = 0; KAT.G.visible = false; mostraArma(); for (let i = 0; i < 12; i++) katanaNevoa(true); aviso('🌑 A Lâmina Sombria voltou a ser sua arma.', '#c8a8ff'); }
+    if (KAT.on) { KAT.t += dt; const k = Math.min(1, KAT.t / 0.5); Object.keys(ARMAG).forEach(a => { if (ARMAG[a] !== KAT.G) ARMAG[a].visible = false; }); KAT.G.visible = true; KAT.G.scale.set(1, 1, 0.3 + 0.7 * k);
+      KAT.fio2.material.opacity = 0.25 + Math.sin(gT * 7) * 0.15; KAT.aura.material.opacity = 0.25 + Math.sin(gT * 4) * 0.12; KAT.nt -= dt; if (KAT.nt <= 0) { KAT.nt = 0.045; katanaNevoa(false); } }
+    KAT.nev.forEach(n => { if (!n.s.visible) return; n.t += dt; const u = n.t / n.vida; if (u >= 1) { n.s.visible = false; return; } n.s.position.addScaledVector(n.v, dt); n.v.multiplyScalar(1 - dt * 1.2); const sc = n.tam * (0.6 + u * 1.4); n.s.scale.set(sc, sc, 1); n.s.material.opacity = (n.preta ? 0.55 : 0.75) * Math.sin(u * Math.PI); });
+    KAT.golpes.forEach(g => { if (!g.m.visible) return; g.t += dt; const u = g.t / 0.28; if (u >= 1) { g.m.visible = false; return; } g.m.scale.setScalar(0.7 + u * 0.6); g.m.material.opacity = 0.85 * (1 - u); }); }
