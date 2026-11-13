@@ -502,7 +502,16 @@ const glowA = cv(128, (x) => { const g = x.createRadialGradient(64, 64, 0, 64, 6
     // rastro de estrelas atrás da espada
     SURF.rt -= dt; if (G.visible && vel > 1 && SURF.rt <= 0) { SURF.rt = 0.04; const r = SURF.rastro[SURF.ri++ % SURF.rastro.length]; G.getWorldPosition(_sw); r.s.position.set(_sw.x - Math.sin(facing) * 1.1 + (Math.random() - 0.5) * 0.3, _sw.y + (Math.random() - 0.5) * 0.15, _sw.z - Math.cos(facing) * 1.1 + (Math.random() - 0.5) * 0.3); r.t = 0; r.s.visible = true; }
     SURF.rastro.forEach(r => { if (r.t > 0.6) { r.s.visible = false; return; } r.t += dt; const k = r.t / 0.6; r.s.material.opacity = 0.7 * (1 - k); const sc = 0.35 * (1 - k * 0.6); r.s.scale.set(sc, sc, 1); }); }
-  function haloFrame(dt) { arcanoFrame(dt); rubraFrame(dt); seteFrame(dt); seloFrame(dt); arautoFrame(dt); const quer = haloVis() && !dentro; haloDefFrame(dt); HALO.H.visible = quer || HALO.elos.length > 0; if (HALO.cd > 0) HALO.cd -= dt;
+  // ---- VOO COM O ELO: o elo sai das costas, gira, desce pros pés e o herói voa em pé em cima dele ----
+  function haloVooAtivo() { return !!HALO.voo; }
+  function haloVooFrame(dt) { const quer = voando && (AR.divino === 'mandala' || AR.divino === 'rubra') && !HALO.def && !(BUFF.sete > 0) && !seloVoando() && !dentro;
+    if (quer && !HALO.voo) { HALO.elos.slice().forEach(o => { HALO.H.add(o.m); o.m.position.copy(o.anc.p); o.m.quaternion.copy(o.anc.q); o.m.scale.copy(o.anc.s); }); HALO.elos.length = 0;
+      heroi.add(HALO.H); HALO.voo = { t: 0 }; som('magia', 0.6, 1.3); }
+    if (!quer && HALO.voo) { heroi.userData.P.spine.add(HALO.H); HALO.H.position.set(0, 0.62, -0.62); HALO.H.rotation.set(0, 0, 0); HALO.H.scale.setScalar(1); HALO.voo = null; return; }
+    if (!HALO.voo) return; const V = HALO.voo; V.t += dt; const u = Math.min(1, V.t / 0.75), e = u < 0.5 ? 2 * u * u : 1 - Math.pow(-2 * u + 2, 2) / 2;
+    HALO.H.position.set(0, 1.75 + (-0.08 - 1.75) * e + (u >= 1 ? Math.sin(gT * 2.2) * 0.03 : 0), -0.75 * (1 - e));
+    HALO.H.rotation.x = -Math.PI / 2 * e; HALO.H.rotation.z += dt * (14 * (1 - e) + 0.9); HALO.H.scale.setScalar(1 + e * 0.25); }
+  function haloFrame(dt) { arcanoFrame(dt); rubraFrame(dt); seteFrame(dt); seloFrame(dt); arautoFrame(dt); const quer = haloVis() && !dentro; haloDefFrame(dt); haloVooFrame(dt); HALO.H.visible = quer || HALO.elos.length > 0; if (HALO.cd > 0) HALO.cd -= dt;
     if (!HALO.H.visible) return; HALO.F.rotation.z += dt * 2.1; HALO.G.material.opacity = 0.5 + Math.sin(gT * 3) * 0.15; { const pu = 0.5 + Math.sin(gT * 3.4) * 0.25; HALO.brA.material.opacity = pu; HALO.brB.material.opacity = 0.45 + Math.sin(gT * 4.1 + 1) * 0.25; HALO.brA2.material.opacity = 0.15 + Math.sin(gT * 2.2) * 0.12; }
     if (HALO.def) { HALO.A.rotation.z += dt * 6; HALO.B.rotation.z -= dt * 9; HALO.F.rotation.z += dt * 4; return; }
     if (!HALO.elos.length) { HALO.A.rotation.z += dt * 0.55; HALO.B.rotation.z -= dt * 1.5; return; }
