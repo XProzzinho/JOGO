@@ -2335,7 +2335,7 @@ ${_}`}class A extends Error{constructor({message:e,code:t,cause:r,name:s}){var n
     const anc = m => ({ p: m.position.clone(), q: m.quaternion.clone(), s: m.scale.clone() });
     return { H, A, B, F, G, brA, brB, brA2, ancA: anc(A), ancB: anc(B), elos: [], cd: 0 }; })();
   function haloOn() { const W = ARMAS[AR.arma]; return (!!(W && W.halo) || BUFF.mandala > 0) && !(BUFF.mandef > 0); }
-  function haloVis() { if (BUFF.sete > 0 || seloVoando()) return false; const W = ARMAS[AR.arma]; return !!(W && W.halo) || AR.divino === 'mandala' || BUFF.mandala > 0 || BUFF.mandef > 0; }
+  function haloVis() { if (BUFF.sete > 0 || seloVoando()) return false; const W = ARMAS[AR.arma]; return !!(W && W.halo) || AR.divino === 'mandala' || AR.divino === 'rubra' || BUFF.mandala > 0 || BUFF.mandef > 0; }
   function haloAtk(forca) { if (!haloOn() || HALO.elos.length || (HALO.cd > 0 && !forca)) return; HALO.H.visible = true; const alvo = maisPerto(24); if (!alvo) return;
     HALO.cd = 3.2; som('magia', 0.8, 0.8); fx('luz', [heroi.position.x, 1.5, heroi.position.z], 0.6);
     [[HALO.A, 1, HALO.ancA], [HALO.B, -1, HALO.ancB]].forEach(([m, sd, anc]) => { world.attach(m); HALO.elos.push({ m, sd, anc, alvo, fase: 'ida', t: 0, hit: 0, ang: sd > 0 ? 0 : Math.PI, spin: 0, s0: m.scale.x }); }); }
@@ -2424,7 +2424,81 @@ ${_}`}class A extends Error{constructor({message:e,code:t,cause:r,name:s}){var n
     let anda = 0; if (ARAUTO.ult) anda = Math.hypot(hp.x - ARAUTO.ult[0], hp.z - ARAUTO.ult[1]) / Math.max(dt, 0.001); ARAUTO.ult = [hp.x, hp.z];
     const est = atkT < 0.35 ? 'attack' : anda > 0.8 ? 'walk' : 'idle'; try { ARAUTO.M.userData.update(dt, est); } catch (err) {}
     ARAUTO.brasas.forEach(b => { b.f += dt * (0.8 + b.r); const y = (b.f % 2.4); b.s.position.set(hp.x + Math.cos(b.a + gT * 0.6) * b.r, hp.y + 0.2 + y, hp.z + Math.sin(b.a + gT * 0.6) * b.r); const sc = 0.12 * (1 - y / 2.4); b.s.scale.set(sc, sc, 1); b.s.material.opacity = 1 - y / 2.4; }); }
-  function haloFrame(dt) { seteFrame(dt); seloFrame(dt); arautoFrame(dt); const quer = haloVis() && !dentro; haloDefFrame(dt); HALO.H.visible = quer || HALO.elos.length > 0; if (HALO.cd > 0) HALO.cd -= dt;
+  // ===================== MANDALA RUBRA DA LENDA: mesmo poder da Mandala, visual carmesim e ouro =====================
+  const RUBRA = (() => {
+const cv = (n, f, h) => { const c = document.createElement('canvas'); c.width = n; c.height = h || n; f(c.getContext('2d'), n, h || n); const t = new T3.CanvasTexture(c); t.colorSpace = T3.SRGBColorSpace; return t; };
+const ouroG = (x, a, b, c, d) => { const g = x.createLinearGradient(a, b, c, d); g.addColorStop(0, '#fff2b0'); g.addColorStop(0.35, '#ffc23a'); g.addColorStop(0.7, '#c87814'); g.addColorStop(1, '#6a3404'); return g; };
+const brilho = (x, cor, blur) => { x.shadowColor = cor; x.shadowBlur = blur; };
+function chama(x, L, w, curva) { x.beginPath(); x.moveTo(-w, 0); x.bezierCurveTo(-w * 1.6, L * 0.35, curva - w * 0.4, L * 0.7, curva, L); x.bezierCurveTo(curva + w * 0.5, L * 0.72, w * 1.5, L * 0.35, w, 0); x.closePath(); }
+// HALO EXTERNO: coroa de chamas carmesim com contorno de ouro e pétalas de cristal no topo
+const texCoroa = cv(1024, (x, n) => { const c = n / 2; x.translate(c, c); x.lineJoin = 'round';
+  // pétalas de cristal (atrás)
+  for (let i = 0; i < 14; i++) { x.save(); x.rotate(i / 14 * Math.PI * 2); const L = c * 0.78; x.beginPath(); x.moveTo(-c * 0.09, c * 0.42); x.lineTo(0, L); x.lineTo(c * 0.09, c * 0.42); x.closePath();
+    const g = x.createLinearGradient(0, c * 0.42, 0, L); g.addColorStop(0, 'rgba(255,140,190,.7)'); g.addColorStop(1, 'rgba(255,235,245,.85)'); x.fillStyle = g; x.fill(); x.strokeStyle = 'rgba(255,255,255,.8)'; x.lineWidth = 2; x.stroke(); x.beginPath(); x.moveTo(0, c * 0.44); x.lineTo(0, L * 0.97); x.stroke(); x.restore(); }
+  // chamas carmesim com borda dourada
+  const N = 22; for (let i = 0; i < N; i++) { x.save(); x.rotate(i / N * Math.PI * 2); x.translate(0, c * 0.6); const L = c * (i % 2 ? 0.3 : 0.39), w = c * 0.055;
+    brilho(x, '#ff2a6a', 25); chama(x, L, w * 1.35, (i % 2 ? 1 : -1) * w * 1.6); x.fillStyle = ouroG(x, 0, 0, 0, L); x.fill(); x.shadowBlur = 0;
+    chama(x, L * 0.86, w * 0.95, (i % 2 ? 1 : -1) * w * 1.3); const g = x.createLinearGradient(0, 0, 0, L); g.addColorStop(0, '#6a0a1e'); g.addColorStop(0.45, '#e01848'); g.addColorStop(1, '#ff8ab0'); x.fillStyle = g; x.fill();
+    chama(x, L * 0.55, w * 0.4, (i % 2 ? 1 : -1) * w * 0.7); x.fillStyle = '#ffd0e0'; x.fill();
+    // gancho dourado lateral
+    x.beginPath(); x.moveTo(w, L * 0.25); x.quadraticCurveTo(w * 3.4, L * 0.28, w * 3, L * 0.55); x.quadraticCurveTo(w * 2.6, L * 0.38, w * 1.1, L * 0.38); x.closePath(); x.fillStyle = ouroG(x, 0, 0, w * 3, 0); x.fill(); x.strokeStyle = '#4a1a04'; x.lineWidth = 1.5; x.stroke(); x.restore(); }
+  // aro dourado filigranado
+  brilho(x, '#ff3a7a', 20); x.lineWidth = c * 0.05; x.strokeStyle = '#c87814'; x.beginPath(); x.arc(0, 0, c * 0.6, 0, Math.PI * 2); x.stroke(); x.shadowBlur = 0;
+  x.lineWidth = c * 0.025; x.strokeStyle = '#ffd86a'; x.beginPath(); x.arc(0, 0, c * 0.6, 0, Math.PI * 2); x.stroke();
+  for (let i = 0; i < 44; i++) { x.save(); x.rotate(i / 44 * Math.PI * 2); x.beginPath(); x.arc(0, c * 0.6, c * 0.012, 0, 7); x.fillStyle = i % 4 ? '#7a3a04' : '#ff3a7a'; x.fill(); x.restore(); }
+  x.lineWidth = 3; x.strokeStyle = '#ffd86a'; x.beginPath(); x.arc(0, 0, c * 0.545, 0, 7); x.stroke(); });
+// HALO INTERNO: anel de ouro ornamentado com pétalas, gemas rosa e brilho no centro (gira ao contrário)
+const texInterno = cv(1024, (x, n) => { const c = n / 2; x.translate(c, c); x.lineJoin = 'round';
+  const g0 = x.createRadialGradient(0, 0, 0, 0, 0, c * 0.5); g0.addColorStop(0, 'rgba(255,90,150,.0)'); g0.addColorStop(0.55, 'rgba(255,60,130,.15)'); g0.addColorStop(0.85, 'rgba(255,40,110,.55)'); g0.addColorStop(1, 'rgba(255,40,110,0)'); x.fillStyle = g0; x.beginPath(); x.arc(0, 0, c * 0.52, 0, 7); x.fill();
+  for (let k = 0; k < 2; k++) { const N = 24, R0 = c * (k ? 0.62 : 0.5), R1 = c * (k ? 0.86 : 0.7); for (let i = 0; i < N; i++) { x.save(); x.rotate(i / N * Math.PI * 2 + k * Math.PI / N);
+    x.beginPath(); x.moveTo(-c * 0.045, R0); x.bezierCurveTo(-c * 0.08, (R0 + R1) / 2, -c * 0.02, R1 * 0.95, 0, R1); x.bezierCurveTo(c * 0.02, R1 * 0.95, c * 0.08, (R0 + R1) / 2, c * 0.045, R0); x.closePath();
+    brilho(x, '#ff3a7a', 12); x.fillStyle = ouroG(x, 0, R0, 0, R1); x.fill(); x.shadowBlur = 0; x.lineWidth = 2; x.strokeStyle = '#4a1a04'; x.stroke();
+    x.beginPath(); x.moveTo(0, R0 + c * 0.02); x.lineTo(0, R1 - c * 0.04); x.strokeStyle = '#8a3a08'; x.lineWidth = 2; x.stroke();
+    if (!k || i % 2 === 0) { x.beginPath(); x.ellipse(0, R0 + (R1 - R0) * 0.5, c * 0.016, c * 0.026, 0, 0, 7); x.fillStyle = '#ff2a6a'; brilho(x, '#ff2a6a', 10); x.fill(); x.shadowBlur = 0; } x.restore(); } }
+  [0.5, 0.62].forEach(r => { x.lineWidth = c * 0.022; x.strokeStyle = '#ffc23a'; x.beginPath(); x.arc(0, 0, c * r, 0, 7); x.stroke(); x.lineWidth = 2; x.strokeStyle = '#6a3404'; x.stroke(); });
+  for (let i = 0; i < 32; i++) { x.save(); x.rotate(i / 32 * Math.PI * 2); x.font = `bold ${c * 0.04}px serif`; x.fillStyle = '#ff7ab0'; x.textAlign = 'center'; brilho(x, '#ff2a6a', 8); x.fillText('✦', 0, -c * 0.56); x.restore(); } });
+// ASAS DE CHAMA (cantinhos) ao lado dos ombros — lado direito; o esquerdo espelha
+const texAsa = cv(512, (x, w, h) => { x.lineJoin = 'round'; x.translate(30, h * 0.55);
+  const lingua = (ang, L, larg, curva, k) => { x.save(); x.rotate(ang); brilho(x, '#ff2a6a', 20); chama(x, L, larg * 1.4, curva); x.fillStyle = ouroG(x, 0, 0, 0, L); x.fill(); x.shadowBlur = 0;
+    chama(x, L * 0.88, larg, curva * 0.9); const g = x.createLinearGradient(0, 0, 0, L); g.addColorStop(0, '#7a0a20'); g.addColorStop(0.5, '#e81848'); g.addColorStop(1, '#ffa0c0'); x.fillStyle = g; x.fill();
+    chama(x, L * 0.5, larg * 0.4, curva * 0.5); x.fillStyle = '#ffe0ea'; x.fill();
+    x.beginPath(); x.moveTo(larg, L * 0.3); x.quadraticCurveTo(larg * 3, L * 0.32, larg * 2.6, L * 0.55); x.quadraticCurveTo(larg * 2.2, L * 0.4, larg * 1.1, L * 0.42); x.closePath(); x.fillStyle = '#ffc23a'; x.fill(); x.strokeStyle = '#4a1a04'; x.lineWidth = 1.5; x.stroke(); x.restore(); };
+  // leque de chamas pra fora e pra cima/baixo
+  [[-2.3, 300, 26, 40], [-1.95, 360, 30, -50], [-1.6, 400, 32, 60], [-1.25, 360, 28, -40], [-0.9, 300, 26, 50], [-0.55, 240, 22, -30]].forEach(([a, L, lw, cu]) => lingua(a, L, lw, cu));
+  // espiral dourada com gema na base
+  brilho(x, '#ff2a6a', 14); x.strokeStyle = '#ffc23a'; x.lineWidth = 12; x.lineCap = 'round'; x.beginPath(); for (let a = 0; a < 10; a += 0.15) { const r = 70 * (1 - a / 11); const X = 60 + Math.cos(a) * r, Y = -10 + Math.sin(a) * r; a ? x.lineTo(X, Y) : x.moveTo(X, Y); } x.stroke(); x.shadowBlur = 0;
+  x.beginPath(); x.arc(60, -10, 18, 0, 7); const gg = x.createRadialGradient(56, -14, 2, 60, -10, 18); gg.addColorStop(0, '#fff'); gg.addColorStop(0.4, '#ff6aa0'); gg.addColorStop(1, '#a00a3a'); x.fillStyle = gg; brilho(x, '#ff2a6a', 20); x.fill(); x.shadowBlur = 0; x.strokeStyle = '#ffd86a'; x.lineWidth = 4; x.stroke(); }, 640);
+// ELO DA CINTURA: anel dourado de fogo
+const texElo = cv(1024, (x, n) => { const c = n / 2; x.translate(c, c);
+  brilho(x, '#ff3a7a', 30); x.lineWidth = c * 0.07; x.strokeStyle = '#ff5a8a'; x.beginPath(); x.arc(0, 0, c * 0.86, 0, 7); x.stroke();
+  x.lineWidth = c * 0.04; x.strokeStyle = '#ffc23a'; x.beginPath(); x.arc(0, 0, c * 0.86, 0, 7); x.stroke(); x.lineWidth = c * 0.012; x.strokeStyle = '#fff2b0'; x.beginPath(); x.arc(0, 0, c * 0.86, 0, 7); x.stroke(); x.shadowBlur = 0;
+  x.lineWidth = 4; x.strokeStyle = '#ffd86a'; x.beginPath(); x.arc(0, 0, c * 0.78, 0, 7); x.stroke(); x.beginPath(); x.arc(0, 0, c * 0.94, 0, 7); x.stroke();
+  for (let i = 0; i < 40; i++) { x.save(); x.rotate(i / 40 * Math.PI * 2); x.beginPath(); x.moveTo(0, c * 0.78); x.quadraticCurveTo(c * 0.03, c * 0.86, 0, c * 0.95); x.strokeStyle = '#ff8ab0'; x.lineWidth = 3; brilho(x, '#ff2a6a', 10); x.stroke(); x.restore(); } x.shadowBlur = 0; });
+// broche estrela da cintura
+const texBroche = cv(256, (x, n) => { const c = n / 2; x.translate(c, c); brilho(x, '#ff2a6a', 20); x.beginPath(); for (let i = 0; i < 16; i++) { const a = i / 16 * Math.PI * 2 - Math.PI / 2, r = i % 4 === 0 ? c * 0.95 : i % 2 ? c * 0.32 : c * 0.6; i ? x.lineTo(Math.cos(a) * r, Math.sin(a) * r) : x.moveTo(Math.cos(a) * r, Math.sin(a) * r); } x.closePath(); x.fillStyle = ouroG(x, -c, -c, c, c); x.fill(); x.shadowBlur = 0; x.strokeStyle = '#4a1a04'; x.lineWidth = 3; x.stroke();
+  x.beginPath(); x.arc(0, 0, c * 0.22, 0, 7); const g = x.createRadialGradient(-6, -6, 2, 0, 0, c * 0.22); g.addColorStop(0, '#fff'); g.addColorStop(0.4, '#ff6aa0'); g.addColorStop(1, '#a00a3a'); x.fillStyle = g; brilho(x, '#ff2a6a', 16); x.fill(); x.shadowBlur = 0; x.strokeStyle = '#ffd86a'; x.lineWidth = 4; x.stroke(); });
+const glowR = cv(128, (x) => { const g = x.createRadialGradient(64, 64, 0, 64, 64, 64); g.addColorStop(0, 'rgba(255,170,205,.9)'); g.addColorStop(0.45, 'rgba(255,50,120,.4)'); g.addColorStop(1, 'rgba(255,20,90,0)'); x.fillStyle = g; x.fillRect(0, 0, 128, 128); });
+
+    return { texCoroa, texInterno, texAsa, texElo, texBroche, glowR }; })();
+  const TEMA = { atual: 'mandala', orig: null };
+  function haloTema() { const k = AR.divino === 'rubra' ? 'rubra' : 'mandala'; if (k === TEMA.atual) return; TEMA.atual = k;
+    if (!TEMA.orig) TEMA.orig = { A: HALO.A.material.map, B: HALO.B.material.map, G: HALO.G.material.map };
+    const A = k === 'rubra' ? RUBRA.texCoroa : TEMA.orig.A, B = k === 'rubra' ? RUBRA.texInterno : TEMA.orig.B, G = k === 'rubra' ? RUBRA.glowR : TEMA.orig.G, fogo = k !== 'rubra';
+    const sA = k === 'rubra' ? 2.7 / 2.3 : 1, sB = k === 'rubra' ? 1.7 / 1.55 : 1;
+    const troca = (m, t) => { if (m && m.material) { m.material.map = t; m.material.needsUpdate = true; } };
+    troca(HALO.A, A); troca(HALO.brA, A); troca(HALO.brA2, A); troca(HALO.B, B); troca(HALO.brB, B); troca(HALO.G, G); HALO.F.visible = fogo; HALO.A.scale.setScalar(sA); HALO.B.scale.setScalar(sB);
+    if (HALO.ancA) HALO.ancA.s.setScalar(sA); if (HALO.ancB) HALO.ancB.s.setScalar(sB);
+    [HALO.brA, HALO.brA2, HALO.brB].forEach(b => b && b.material.color.set(k === 'rubra' ? '#ff9ac0' : (b === HALO.brB ? '#ffe8a0' : b === HALO.brA2 ? '#ff9a30' : '#ffd070')));
+    SETE.h.forEach(o => { troca(o.A, A); troca(o.bA, A); troca(o.B, B); troca(o.bB, B); troca(o.gl, G); o.F.visible = fogo; }); }
+  // asas de chama nos ombros + elo na cintura + broche (só da Rubra)
+  const RUB = (() => { const P = heroi.userData.P, pl = (t, w, h, add) => new T3.Mesh(new T3.PlaneGeometry(w, h || w), new T3.MeshBasicMaterial({ map: t, transparent: true, side: T3.DoubleSide, depthWrite: false, toneMapped: false, blending: add ? T3.AdditiveBlending : T3.NormalBlending }));
+    const W = grp(P.spine, 0, 0.42, 0.02), asas = []; [-1, 1].forEach(s => { const g = grp(W, s * 0.2, 0, 0); const m = pl(RUBRA.texAsa, 1.2, 1.5); m.position.set(s * 0.55, 0.12, 0); m.scale.x = s; g.add(m); const mb = pl(RUBRA.texAsa, 1.2, 1.5, true); mb.material.opacity = 0.35; mb.position.set(s * 0.55, 0.12, 0.004); mb.scale.x = s; g.add(mb); g.rotation.y = -s * 0.15; asas.push({ g, mb, s }); });
+    const E = grp(P.hips, 0, 0.05, 0); E.rotation.x = 0.18; const el = pl(RUBRA.texElo, 1.4); el.rotation.x = -Math.PI / 2; E.add(el); const elb = pl(RUBRA.texElo, 1.4, 1.4, true); elb.rotation.x = -Math.PI / 2; elb.material.opacity = 0.4; elb.position.y = 0.002; E.add(elb);
+    const br = pl(RUBRA.texBroche, 0.24); P.spine.add(br); br.position.set(0, 0.06, 0.175); const tudo = [W, E, br]; tudo.forEach(o => o.visible = false); return { W, E, br, asas, el, elb, tudo }; })();
+  function rubraFrame(dt) { haloTema(); const on = AR.divino === 'rubra' && !dentro; RUB.tudo.forEach(o => o.visible = on); if (!on) return;
+    RUB.el.rotation.z += dt * 1.6; RUB.elb.rotation.z = RUB.el.rotation.z; RUB.elb.material.opacity = 0.35 + Math.sin(gT * 4) * 0.15;
+    RUB.asas.forEach(a => { a.g.rotation.z = a.s * Math.sin(gT * 1.8) * 0.06; a.mb.material.opacity = 0.3 + Math.sin(gT * 3.5 + a.s) * 0.2; }); }
+  function haloFrame(dt) { rubraFrame(dt); seteFrame(dt); seloFrame(dt); arautoFrame(dt); const quer = haloVis() && !dentro; haloDefFrame(dt); HALO.H.visible = quer || HALO.elos.length > 0; if (HALO.cd > 0) HALO.cd -= dt;
     if (!HALO.H.visible) return; HALO.F.rotation.z += dt * 2.1; HALO.G.material.opacity = 0.5 + Math.sin(gT * 3) * 0.15; { const pu = 0.5 + Math.sin(gT * 3.4) * 0.25; HALO.brA.material.opacity = pu; HALO.brB.material.opacity = 0.45 + Math.sin(gT * 4.1 + 1) * 0.25; HALO.brA2.material.opacity = 0.15 + Math.sin(gT * 2.2) * 0.12; }
     if (HALO.def) { HALO.A.rotation.z += dt * 6; HALO.B.rotation.z -= dt * 9; HALO.F.rotation.z += dt * 4; return; }
     if (!HALO.elos.length) { HALO.A.rotation.z += dt * 0.55; HALO.B.rotation.z -= dt * 1.5; return; }
@@ -3306,7 +3380,7 @@ ${_}`}class A extends Error{constructor({message:e,code:t,cause:r,name:s}){var n
     s.desc = I[2].replace('{el}', CB_ELN[s.e] || 'energia').replace('{d}', s.dur); s.tipo = 'uso'; s.ramo = 'livro'; s.cabal = true; s.preco = s.lendaria ? 15000 : CB_PRECO[s.r]; s.nvMin = 1; if (s.lendaria) s.dur = 30; CB_PW[s.id] = s; PW[s.id] = s; PODERES.push(s); });
   AR.cbt = (AR.cbt || []).filter(id => CB_PW[id]); for (let i = 3; i < NSLOTS; i++) if (/^cb_/.test(AR.barra[i] || '') && !CB_PW[AR.barra[i]]) AR.barra[i] = null;
   (AR.pags || []).forEach(pg => pg && pg.forEach((id, i) => { if (/^cb_/.test(id || '') && !CB_PW[id]) pg[i] = null; }));
-  function cbTem(id) { const s = CB_PW && CB_PW[id]; if (s && s.divino) return AR.divino === s.divino; return (AR.cbt || []).includes(id); }
+  function cbTem(id) { const s = CB_PW && CB_PW[id]; if (s && s.divino) return !!(typeof DIVINOS !== 'undefined' && DIVINOS[AR.divino] && DIVINOS[AR.divino].habs.includes(id)); return (AR.cbt || []).includes(id); }
   function cbPas(k) { let v = 0; if (!CB_PW || AR.classe !== 'guerreiro') return v; (AR.cbt || []).forEach(id => { const s = CB_PW[id]; if (!s || !s.passiva) return; const t = s.t;
       if (k === 'atk') v += t === 'p_atk' ? 0.04 : t === 'p_tudo' ? 0.05 : 0; if (k === 'def') v += t === 'p_def' ? 3 : t === 'p_tudo' ? 4 : 0; if (k === 'crit') v += t === 'p_crit' ? 0.02 : t === 'p_tudo' ? 0.03 : 0;
       if (k === 'vida') v += t === 'p_vida' ? 15 : t === 'p_tudo' ? 20 : 0; if (k === 'mana') v += t === 'p_mana' ? 10 : 0; }); return v; }
@@ -3924,6 +3998,7 @@ ${_}`}class A extends Error{constructor({message:e,code:t,cause:r,name:s}){var n
   function divVeste(k) { const antes = AR.divino && DIVINOS[AR.divino] ? DIVINOS[AR.divino].habs : []; antes.forEach(id => { for (let i = 3; i < AR.barra.length; i++) if (AR.barra[i] === id) AR.barra[i] = null; });
     AR.divino = k && DIVINOS[k] ? k : null; if (AR.divino) { DIVINOS[k].habs.forEach(id => { if (AR.barra.indexOf(id) >= 0) return; let v = AR.barra.indexOf(null, 3); if (v < 0) v = AR.barra.indexOf(null); if (v >= 0) AR.barra[v] = id; else aviso('Barra cheia: libere um espaço pra ' + CB_PW[id].nome + '.', '#ffb040'); }); aviso('✦ ' + DIVINOS[k].nome + ' equipada! Habilidades na barra.', '#ffd86a'); fx('luz', [heroi.position.x, 1, heroi.position.z], 1); }
     BUFF.mandala = 0; BUFF.mandef = 0; salvaAR(); montaBarra(); if (typeof desenhaPerfil === 'function' && !$('perfil').hidden) desenhaPerfil(); }
+  DIVINOS.rubra = { nome: 'Mandala Rubra da Lenda', icone: IC('div_rubra'), preco: 15000, habs: ['cb_mandala', 'cb_mandala_def', 'cb_mandala_sete', 'cb_mandala_selo'], desc: 'Halo de chamas carmesim e ouro com pétalas de cristal (um anel gira pra cada lado), asas de fogo nos ombros e o elo de fogo na cintura. Mesmas 4 habilidades da Mandala Solar: ⚔️ Juízo, 🛡️ Égide, ☀️ Sete Sóis e 🔻 Selo.' };
   DIVINOS.manto = { nome: 'Manto do Abismo Espectral', icone: IC('div_manto'), preco: 18000, habs: [], desc: 'Armadura gótica com cristal de safira, asas de energia azul e capa roxa rasgada que queima em fogo espectral. Balança com o vento.' };
   DIVINOS.emblema = { nome: 'Emblema Ígneo do Sol', icone: IC('div_emblema'), preco: 22000, habs: ['cb_sol'], desc: 'Emblema de ouro, obsidiana e magma nas costas, com chifres, garras de lava e um Sol vivo girando no centro.' };
   DIVINOS.astrolabio = { nome: 'Astrolábio do Firmamento Eterno', icone: IC('div_astrolabio'), preco: 25000, habs: [], desc: 'Halo arcano nas costas: a coroa de ouro gira pra um lado e o anel de runas azuis pro outro, com anéis orbitais, estrela e cristal central pulsando e pingentes de cristal.' };

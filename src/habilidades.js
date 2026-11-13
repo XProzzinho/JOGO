@@ -25,7 +25,7 @@
     s.desc = I[2].replace('{el}', CB_ELN[s.e] || 'energia').replace('{d}', s.dur); s.tipo = 'uso'; s.ramo = 'livro'; s.cabal = true; s.preco = s.lendaria ? 15000 : CB_PRECO[s.r]; s.nvMin = 1; if (s.lendaria) s.dur = 30; CB_PW[s.id] = s; PW[s.id] = s; PODERES.push(s); });
   AR.cbt = (AR.cbt || []).filter(id => CB_PW[id]); for (let i = 3; i < NSLOTS; i++) if (/^cb_/.test(AR.barra[i] || '') && !CB_PW[AR.barra[i]]) AR.barra[i] = null;
   (AR.pags || []).forEach(pg => pg && pg.forEach((id, i) => { if (/^cb_/.test(id || '') && !CB_PW[id]) pg[i] = null; }));
-  function cbTem(id) { const s = CB_PW && CB_PW[id]; if (s && s.divino) return AR.divino === s.divino; return (AR.cbt || []).includes(id); }
+  function cbTem(id) { const s = CB_PW && CB_PW[id]; if (s && s.divino) return !!(typeof DIVINOS !== 'undefined' && DIVINOS[AR.divino] && DIVINOS[AR.divino].habs.includes(id)); return (AR.cbt || []).includes(id); }
   function cbPas(k) { let v = 0; if (!CB_PW || AR.classe !== 'guerreiro') return v; (AR.cbt || []).forEach(id => { const s = CB_PW[id]; if (!s || !s.passiva) return; const t = s.t;
       if (k === 'atk') v += t === 'p_atk' ? 0.04 : t === 'p_tudo' ? 0.05 : 0; if (k === 'def') v += t === 'p_def' ? 3 : t === 'p_tudo' ? 4 : 0; if (k === 'crit') v += t === 'p_crit' ? 0.02 : t === 'p_tudo' ? 0.03 : 0;
       if (k === 'vida') v += t === 'p_vida' ? 15 : t === 'p_tudo' ? 20 : 0; if (k === 'mana') v += t === 'p_mana' ? 10 : 0; }); return v; }
