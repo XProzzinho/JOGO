@@ -237,7 +237,7 @@
       else { HALO.H.updateMatrixWorld(true); const alvoW = new T3.Vector3(); HALO.H.localToWorld(alvoW.copy(o.anc.p)); tmpV.copy(alvoW).sub(m.position); const d = tmpV.length(); m.position.addScaledVector(tmpV.normalize(), Math.min(d, dt * 20));
         if (d < 0.25) { HALO.H.add(m); m.position.copy(o.anc.p); m.quaternion.copy(o.anc.q); m.scale.copy(o.anc.s); HALO.elos.splice(i, 1); fx('luz', [heroi.position.x, 1.6, heroi.position.z], 0.4); continue; } }
       m.lookAt(cam.position); m.rotateZ(o.spin); const k = o.fase === 'volta' ? 1 : 1.15; m.scale.setScalar(o.s0 * k); } }
-  function espFrame(dt) { brFrame(); if (typeof div3dFrame === 'function') div3dFrame(); haloFrame(dt || 1 / 60); if (!podeArma(AR.arma)) equipaArma(null); const A = ARMAS[AR.arma]; buffBtn.hidden = !(A && A.staff) || !!conversa; if (buffBtn.hidden) buffP.hidden = true; }
+  function espFrame(dt) { brFrame(); if (typeof div3dFrame === 'function') div3dFrame(dt); haloFrame(dt || 1 / 60); if (!podeArma(AR.arma)) equipaArma(null); const A = ARMAS[AR.arma]; buffBtn.hidden = !(A && A.staff) || !!conversa; if (buffBtn.hidden) buffP.hidden = true; }
   // ---- lâminas GL do Gladiador (manopla + meia-lua em cada braço) ----
   function fazGarras(T){
  const mt=(c,m,r,e,ei)=>new T.MeshStandardMaterial({envMap:ENV,envMapIntensity:1.1,color:c,metalness:m==null?.6:m,roughness:r==null?.32:r,emissive:e||'#000',emissiveIntensity:e?(ei||.6):0,side:T.DoubleSide});

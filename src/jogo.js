@@ -1817,8 +1817,8 @@
 
   // ---- aplicar classe ----
   function CLA() { return CLASSES[AR.classe] || null; }
-  function atkMult() { const c = CLA(); return (1 + attrV('for') * 0.006) * (c ? c.atk : 1) * potAtual * (BM && BM.atk ? BM.atk : 1) * (BUFF.furia > 0 ? 1.4 : 1) * (BUFF.pacto > 0 ? 1.5 : 1) * (1 + cbPas('atk')) * (BUFF.cb_atk > 0 ? 1.25 : 1) * (BUFF.cb_tudo > 0 ? 1.15 : 1) * asaB('dano') * (1 + gmPct('forca')) * (1 + aprimNv(AR.arma) * APRIM_PCT) * (1 + titB('atk')) * (BUFF.arauto > 0 ? 1.3 : 1); }
-  function critico() { const c = CLA(); return Math.random() < (c ? c.crit : 0.05) + attrV('agi') * 0.0008 + (BM && BM.crit ? BM.crit : 0) + cbPas('crit') + (BUFF.cb_crit > 0 ? 0.15 : 0) + (BUFF.cb_tudo > 0 ? 0.05 : 0) + (ARMAS[AR.arma] && ARMAS[AR.arma].esp === 'sup' ? 0.15 : 0); }
+  function atkMult() { const c = CLA(); return (1 + attrV('for') * 0.006) * (c ? c.atk : 1) * potAtual * (BM && BM.atk ? BM.atk : 1) * (BUFF.furia > 0 ? 1.4 : 1) * (BUFF.pacto > 0 ? 1.5 : 1) * (1 + cbPas('atk')) * (BUFF.cb_atk > 0 ? 1.25 : 1) * (BUFF.cb_tudo > 0 ? 1.15 : 1) * asaB('dano') * (1 + gmPct('forca')) * (1 + aprimNv(AR.arma) * APRIM_PCT) * (1 + titB('atk')) * (BUFF.arauto > 0 ? 1.3 : 1) * (BUFF.sol > 0 ? 1.25 : 1); }
+  function critico() { const c = CLA(); return Math.random() < (c ? c.crit : 0.05) + attrV('agi') * 0.0008 + (BUFF.sol > 0 ? 0.15 : 0) + (BM && BM.crit ? BM.crit : 0) + cbPas('crit') + (BUFF.cb_crit > 0 ? 0.15 : 0) + (BUFF.cb_tudo > 0 ? 0.05 : 0) + (ARMAS[AR.arma] && ARMAS[AR.arma].esp === 'sup' ? 0.15 : 0); }
   function aplicaClasse(id) { if (typeof bmDesliga === 'function') bmDesliga(); const c = CLASSES[id]; AR.classe = id; if (!AR.armas.includes(c.arma)) AR.armas.push(c.arma); AR.arma = c.arma;
     const v = AR.barra[2]; if (v && !(PW[v] && PW[v].classe)) { const k = AR.barra.indexOf(null, 3); if (k >= 3 && !AR.barra.slice(3).includes(v)) AR.barra[k] = v; }
     AR.barra[2] = c.hab; if (!AR.tem.includes(c.hab)) AR.tem.push(c.hab); HABS.forEach(h => { const i = AR.barra.indexOf(h.id); if (i > 2) AR.barra[i] = null; });

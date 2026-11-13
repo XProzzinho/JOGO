@@ -296,7 +296,7 @@
     AR.divino = k && DIVINOS[k] ? k : null; if (AR.divino) { DIVINOS[k].habs.forEach(id => { if (AR.barra.indexOf(id) >= 0) return; let v = AR.barra.indexOf(null, 3); if (v < 0) v = AR.barra.indexOf(null); if (v >= 0) AR.barra[v] = id; else aviso('Barra cheia: libere um espaço pra ' + CB_PW[id].nome + '.', '#ffb040'); }); aviso('✦ ' + DIVINOS[k].nome + ' equipada! Habilidades na barra.', '#ffd86a'); fx('luz', [heroi.position.x, 1, heroi.position.z], 1); }
     BUFF.mandala = 0; BUFF.mandef = 0; salvaAR(); montaBarra(); if (typeof desenhaPerfil === 'function' && !$('perfil').hidden) desenhaPerfil(); }
   DIVINOS.manto = { nome: 'Manto do Abismo Espectral', icone: IC('div_manto'), preco: 18000, habs: [], desc: 'Armadura gótica com cristal de safira, asas de energia azul e capa roxa rasgada que queima em fogo espectral. Balança com o vento.' };
-  DIVINOS.emblema = { nome: 'Emblema Ígneo do Sol', icone: IC('div_emblema'), preco: 22000, habs: [], desc: 'Emblema de ouro, obsidiana e magma nas costas, com chifres, garras de lava e um Sol vivo girando no centro.' };
+  DIVINOS.emblema = { nome: 'Emblema Ígneo do Sol', icone: IC('div_emblema'), preco: 22000, habs: ['cb_sol'], desc: 'Emblema de ouro, obsidiana e magma nas costas, com chifres, garras de lava e um Sol vivo girando no centro.' };
   DIVINOS.astrolabio = { nome: 'Astrolábio do Firmamento Eterno', icone: IC('div_astrolabio'), preco: 25000, habs: [], desc: 'Halo arcano nas costas: a coroa de ouro gira pra um lado e o anel de runas azuis pro outro, com anéis orbitais, estrela e cristal central pulsando e pingentes de cristal.' };
   // modelos 3D (criados só quando equipa, pra não pesar)
   const DIV3D = {};
@@ -308,7 +308,25 @@
       if (o) o.g.traverse(x => { if (x.isMesh) { x.frustumCulled = false; } });
     } catch (err) { console.warn('div3d', k, err); o = null; }
     DIV3D[k] = o; return o; }
-  function div3dFrame() { ['manto', 'emblema', 'astrolabio'].forEach(k => { const quer = AR.divino === k && !dentro; if (!quer && !DIV3D[k]) return; const o = div3dPega(k); if (!o) return; o.g.visible = quer; if (!quer) return; o.up(gT);
+  function div3dFrame(dt) { solFrame(dt || 1 / 60); ['manto', 'emblema', 'astrolabio'].forEach(k => { const quer = AR.divino === k && !dentro; if (!quer && !DIV3D[k]) return; const o = div3dPega(k); if (!o) return; o.g.visible = quer; if (!quer) return; o.up(gT);
       o.base.position.y = (k === 'manto' ? -0.22 : k === 'astrolabio' ? 0.07 : 0) + Math.sin(gT * 2) * 0.02; }); }
+  // ---- SOL DO MEIO-DIA: o Sol sai do Emblema, sobe acima do título, fica gigante e abençoa o personagem ----
+  const SOLH = { st: 0, t: 0, sun: null, pai: null, loc: null, ws: 1, feixe: null, queima: 0 };
+  function solFrame(dt) { const quer = BUFF.sol > 0 && AR.divino === 'emblema' && !dentro; if (!quer && !SOLH.st) return; const hp = heroi.position;
+    if (quer && !SOLH.st) { const o = div3dPega('emblema'); const s = o && o.base.getObjectByName('CentralBlazingSun'); if (!s) { BUFF.sol = 0; return; }
+      SOLH.sun = s; SOLH.pai = s.parent; SOLH.loc = { p: s.position.clone(), q: s.quaternion.clone(), sc: s.scale.clone() }; const w = new T3.Vector3(); s.getWorldScale(w); SOLH.ws = w.x; world.attach(s); SOLH.ini = s.position.clone(); SOLH.st = 1; SOLH.t = 0;
+      if (!SOLH.feixe) { SOLH.feixe = new T3.Mesh(new T3.CylinderGeometry(0.25, 0.9, 1, 24, 1, true), new T3.MeshBasicMaterial({ color: '#ffc040', transparent: true, opacity: 0, blending: T3.AdditiveBlending, depthWrite: false, toneMapped: false, side: T3.DoubleSide })); world.add(SOLH.feixe); }
+      SOLH.feixe.visible = true; som('portal', 0.9, 1.3); fx('luz', [hp.x, 1.5, hp.z], 1.2); }
+    if (!quer && SOLH.st === 2) { SOLH.st = 3; SOLH.t = 0; SOLH.ini = SOLH.sun.position.clone(); SOLH.ini.sub(hp); SOLH.sc0 = SOLH.sun.scale.x; aviso('☀️ O Sol do Meio-Dia voltou pro Emblema.', '#ffc040'); }
+    const s = SOLH.sun, ease = q => q < 0.5 ? 2 * q * q : 1 - Math.pow(-2 * q + 2, 2) / 2, ALTO = 5.4, GIG = SOLH.ws * 7; SOLH.t += dt; s.rotation.z += dt * 0.6;
+    if (SOLH.st === 1) { const q = ease(Math.min(1, SOLH.t / 1.2)); s.position.set(SOLH.ini.x + (hp.x - SOLH.ini.x) * q, SOLH.ini.y + (hp.y + ALTO - SOLH.ini.y) * q, SOLH.ini.z + (hp.z - SOLH.ini.z) * q); s.scale.setScalar(SOLH.ws + (GIG - SOLH.ws) * q);
+      if (SOLH.t >= 1.2) { SOLH.st = 2; flash('rgba(255,220,120,.55)'); tremor = Math.max(tremor, 0.3); som('missao_ok', 1, 0.7); fx('luz', [hp.x, 1, hp.z], 1.6); aviso('☀️ Bênção do Sol do Meio-Dia! +25% ataque, +15% crítico, cura e chamas que queimam quem chegar perto.', '#ffc040'); } }
+    else if (SOLH.st === 2) { s.position.set(hp.x, hp.y + ALTO + Math.sin(gT * 1.5) * 0.12, hp.z); s.scale.setScalar(GIG * (1 + Math.sin(gT * 3) * 0.03));
+      if (typeof vida !== 'undefined') vida = Math.min(VIDA_MAX, vida + VIDA_MAX * 0.02 * dt);
+      SOLH.queima -= dt; if (SOLH.queima <= 0) { SOLH.queima = 0.5; const W0 = ARMAS[AR.arma] || ARMAS.punho; area(hp.x, hp.z, 5, f => { dano(f, Math.max(W0.dano || 10, 25) * 0.18 * atkMult(), null, false); fx('luz', [f.g.position.x, 0.6, f.g.position.z], 0.3); }); } }
+    else if (SOLH.st === 3) { const q = ease(Math.min(1, SOLH.t / 1.0)); const o = div3dPega('emblema'); o.g.updateMatrixWorld(true); const alvo = SOLH.pai.localToWorld(SOLH.loc.p.clone());
+      const de = SOLH.ini.clone().add(hp); s.position.lerpVectors(de, alvo, q); s.scale.setScalar(SOLH.sc0 + (SOLH.ws - SOLH.sc0) * q);
+      if (SOLH.t >= 1.0) { SOLH.pai.add(s); s.position.copy(SOLH.loc.p); s.quaternion.copy(SOLH.loc.q); s.scale.copy(SOLH.loc.sc); SOLH.st = 0; SOLH.feixe.visible = false; return; } }
+    const F = SOLH.feixe, topo = s.position.y - hp.y, alt = Math.max(0.1, topo); F.position.set(hp.x, hp.y + alt / 2, hp.z); F.scale.set(1, alt, 1); F.material.opacity = SOLH.st === 2 ? 0.16 + Math.sin(gT * 5) * 0.05 : 0.08; }
   SLOTS_EQ.push(['divino', IC('cb_mandala'), 'Divino']);
   if (AR.divino) setTimeout(() => divVeste(AR.divino), 500);
