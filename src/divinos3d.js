@@ -1857,3 +1857,72 @@
         };
         return artifactRoot;
   }
+  // Armadura do Arauto das Chamas (feita a partir do modelo do Geanderson)
+  function fazArauto(T, P, S) { S = S || 1; const L = [];
+  const mat = (c, m, r, e, i) => new T.MeshStandardMaterial({ color: c, metalness: m, roughness: r, emissive: e || 0, emissiveIntensity: i || 0 });
+  const M = { obs: mat(0x30343f, .55, .38), black: mat(0x14171e, .45, .45), steel: mat(0xa4a2ac, .6, .3), gold: mat(0xd89a3a, .6, .3, 0x3a1a00, .3), bgold: mat(0xffc85a, .55, .25, 0x8b3b08, .6), red: mat(0x8e160b, .6, .3, 0x6b1004, .7), ember: mat(0xff5a10, .4, .2, 0xff2600, 2.2), ruby: mat(0xff341e, .4, .15, 0xff1700, 1.6), leather: mat(0x2e1a12, .15, .75) };
+  const add = (par, g, m, x, y, z) => { const o = new T.Mesh(g, m); o.position.set(x || 0, y || 0, z || 0); o.castShadow = true; par.add(o); L.push(o); return o; };
+  const sph = (par, m, p, s) => { const o = add(par, new T.SphereGeometry(1, 20, 14), m, ...p); o.scale.set(...s); return o; };
+  const cyl = (par, m, a, b, r1, r2) => { const d = new T.Vector3(...b).sub(new T.Vector3(...a)); const o = add(par, new T.CylinderGeometry(r2, r1, d.length(), 12), m, (a[0] + b[0]) / 2, (a[1] + b[1]) / 2, (a[2] + b[2]) / 2); o.quaternion.setFromUnitVectors(new T.Vector3(0, 1, 0), d.normalize()); return o; };
+  const plate = (par, m, pts, depth, z) => { const sh = new T.Shape(); sh.moveTo(pts[0][0], pts[0][1]); pts.slice(1).forEach(p => sh.lineTo(p[0], p[1])); sh.closePath(); const o = add(par, new T.ExtrudeGeometry(sh, { depth, bevelEnabled: true, bevelSegments: 2, steps: 1, bevelSize: depth * .3, bevelThickness: depth * .25 }), m, 0, 0, z || 0); return o; };
+  const curve = (par, pts, r, m) => add(par, new T.TubeGeometry(new T.CatmullRomCurve3(pts.map(p => new T.Vector3(...p))), 32, r, 7, false), m);
+  // ===== TRONCO (spine: origem na cintura, peito ~0.38, pescoço 0.6) =====
+  const sp = P.spine;
+  sph(sp, M.obs, [0, 0.38, 0], [0.235, 0.25, 0.165]); // couraça
+  cyl(sp, M.obs, [0, .0, 0], [0, .26, 0], .205, .22).scale.z = .76; cyl(P.hips, M.obs, [0, .02, 0], [0, -.12, 0], .2, .215).scale.z = .78;
+  plate(sp, M.steel, [[-.2, .55], [0, .6], [.2, .55], [.17, .3], [0, .22], [-.17, .3]], .03, .135);
+  plate(sp, M.obs, [[-.15, .52], [0, .56], [.15, .52], [.12, .33], [0, .27], [-.12, .33]], .02, .16);
+  curve(sp, [[-.15, .52, .19], [-.09, .42, .195], [0, .34, .2], [.09, .42, .195], [.15, .52, .19]], .011, M.gold);
+  sph(sp, M.ruby, [0, .44, .2], [.04, .055, .02]);
+  plate(sp, M.obs, [[-.19, .54], [0, .59], [.19, .54], [.15, .3], [0, .24], [-.15, .3]], .03, -.165);
+  cyl(sp, M.gold, [0, .02, 0], [0, .07, 0], .2, .2).scale.z = .75; // cinto
+  sph(sp, M.bgold, [0, .045, .155], [.035, .03, .015]);
+  // mochila/arnês
+  const pack = new T.Group(); sp.add(pack); pack.position.set(0, .4, -.19);
+  add(pack, new T.BoxGeometry(.24, .3, .08), M.obs); add(pack, new T.BoxGeometry(.19, .25, .03), M.gold, 0, 0, -.05); add(pack, new T.BoxGeometry(.15, .21, .02), M.black, 0, 0, -.07);
+  [-1, 1].forEach(s => { curve(pack, [[s * .09, .14, -.07], [s * .14, .06, -.08], [s * .14, -.09, -.07]], .014, M.bgold); sph(pack, M.red, [s * .13, -.02, -.085], [.025, .055, .02]);
+    curve(sp, [[s * .07, .58, -.12], [s * .12, .48, -.18], [s * .15, .36, -.18]], .013, M.gold); });
+  // BRASÃO ÍGNEO nas costas (escala do original)
+  const crest = new T.Group(); sp.add(crest); crest.position.set(0, .44, -.32); crest.scale.setScalar(.36); L.crest = crest;
+  { const ring = add(crest, new T.TorusGeometry(.78, .075, 12, 72), M.gold); ring.scale.set(1.15, 1.25, 1); add(crest, new T.TorusGeometry(.62, .025, 8, 64), M.bgold, 0, 0, .025);
+    add(crest, new T.OctahedronGeometry(.23, 1), M.ruby, 0, -.02, .12).scale.set(.8, 1.2, .55); add(crest, new T.OctahedronGeometry(.11, 1), M.bgold, 0, -.02, .24);
+    for (const s of [-1, 1]) {
+      curve(crest, [[s * .58, -.42, 0], [s * .95, -.12, .02], [s * 1.08, .38, 0], [s * 1.02, .85, 0], [s * .78, 1.18, .02], [s * .72, 1.52, .04]], .105, M.obs);
+      curve(crest, [[s * .63, -.38, .11], [s * .98, -.08, .12], [s * 1.12, .4, .1], [s * 1.05, .83, .1], [s * .82, 1.17, .1], [s * .76, 1.48, .1]], .045, M.bgold);
+      curve(crest, [[s * .76, -.22, .16], [s * 1.0, .18, .17], [s * .96, .62, .16], [s * .79, .95, .16]], .035, M.ember);
+      curve(crest, [[s * .35, -.55, .05], [s * .66, -.28, .07], [s * .72, .12, .08], [s * .52, .36, .09], [s * .39, .65, .1], [s * .48, .88, .12]], .09, M.steel);
+      curve(crest, [[s * .4, -.5, .15], [s * .68, -.2, .16], [s * .7, .12, .17], [s * .5, .38, .17]], .035, M.gold);
+      for (let j = 0; j < 2; j++) { const xx = s * (.72 + j * .18), yy = -.58 - j * .08; curve(crest, [[s * .45, yy, .08], [xx, yy - .08, .1], [s * (1.05 + j * .08), yy - .32, .1], [s * (1.12 + j * .12), yy - .53, .12]], .07, j === 0 ? M.red : M.obs); curve(crest, [[s * .55, yy - .03, .16], [xx, yy - .14, .17], [s * 1.0, yy - .36, .17]], .025, M.ember); }
+      for (let j = 0; j < 3; j++) curve(crest, [[s * (.55 + j * .12), .15 + j * .2, .02], [s * (.78 + j * .13), .27 + j * .2, .03], [s * (.9 + j * .13), .52 + j * .18, .04]], .035, M.gold);
+      add(crest, new T.OctahedronGeometry(.13, 1), M.ember, s * .48, .12, .16).scale.set(.7, 1.5, .5); }
+    curve(crest, [[-.48, .62, 0], [0, .83, .02], [.48, .62, 0]], .07, M.steel); curve(crest, [[-.38, -.55, .02], [0, -.9, .02], [.38, -.55, .02]], .09, M.obs); curve(crest, [[0, -.58, .12], [0, -.98, .12]], .035, M.bgold);
+    crest.rotation.y = Math.PI; }
+  // ===== SAIA DE PLACAS (hips) =====
+  for (let i = 0; i < 5; i++) { const x = (i - 2) * .072; plate(P.hips, M.obs, [[x - .05, .0], [x + .05, .0], [x + .068, -.2], [x, -.25], [x - .068, -.2]], .03, .12); curve(P.hips, [[x - .035, -.02, .165], [x, -.12, .17], [x, -.2, .165]], .007, M.gold); }
+  for (let i = 0; i < 4; i++) { const x = (i - 1.5) * .08; plate(P.hips, M.obs, [[x - .05, .0], [x + .05, .0], [x + .06, -.18], [x, -.22], [x - .06, -.18]], .03, -.16); }
+  // ===== OMBROS E BRAÇOS =====
+  ['L', 'R'].forEach((sd, i) => { const s = i ? 1 : -1, sh = P['sh' + sd], el = P['el' + sd];
+    sph(sh, M.obs, [s * .03, .03, 0], [.13, .115, .12]); sph(sh, M.steel, [s * .04, .05, .04], [.115, .088, .105]);
+    for (let k = 0; k < 3; k++) curve(sh, [[s * .03, .1, .06], [s * (.08 + k * .03), .19 - k * .03, .03], [s * (.13 + k * .03), .1 - k * .035, .02]], .017, k === 0 ? M.gold : M.obs);
+    sph(sh, M.bgold, [s * .06, .07, .13], [.03, .03, .014]);
+    cyl(sh, M.obs, [0, -.05, 0], [0, -.25, 0], .07, .075);
+    cyl(el, M.steel, [0, -.04, 0], [0, -.22, 0], .066, .06); for (let j = 0; j < 3; j++) add(el, new T.TorusGeometry(.067, .007, 6, 18), M.gold, 0, -.07 - j * .05, 0).rotation.x = Math.PI / 2;
+    sph(el, M.black, [0, -.29, .01], [.062, .07, .056]);
+    // pernas
+    const th = P['th' + sd], kn = P['kn' + sd], ft = P['ft' + sd];
+    if (th) cyl(th, M.leather, [0, -.04, 0], [0, -.38, 0], .085, .075);
+    sph(kn, M.obs, [0, 0, .04], [.078, .088, .07]); sph(kn, M.gold, [0, 0, .1], [.04, .046, .018]);
+    cyl(kn, M.steel, [0, -.06, 0], [0, -.38, 0], .07, .06); plate(kn, M.obs, [[-.06, -.06], [.06, -.06], [.045, -.34], [0, -.38], [-.045, -.34]], .03, .055);
+    curve(kn, [[-.04, -.1, .095], [0, -.17, .1], [.04, -.1, .095]], .008, M.bgold);
+    sph(ft, M.black, [0, .005, .05], [.085, .066, .15]); });
+  // ===== ELMO =====
+  const hd = P.head; const H = new T.Group(); hd.add(H); H.position.set(0, .14, 0);
+  sph(H, M.obs, [0, 0, 0], [.235, .27, .245]);
+  plate(H, M.steel, [[-.18, .1], [0, .22], [.18, .1], [.16, -.12], [0, -.2], [-.16, -.12]], .04, .17);
+  plate(H, M.black, [[-.13, .07], [0, .14], [.13, .07], [.11, -.06], [0, -.12], [-.11, -.06]], .02, .215);
+  curve(H, [[-.1, .02, .245], [0, .0, .255], [.1, .02, .245]], .012, M.ember);
+  sph(H, M.ruby, [0, .11, .23], [.025, .04, .015]);
+  for (const s of [-1, 1]) { curve(H, [[s * .12, .1, .15], [s * .2, .25, .08], [s * .27, .36, -.02]], .03, M.gold); curve(H, [[s * .05, .12, .22], [s * .06, .2, .2], [s * .1, .26, .17]], .01, M.ember); }
+  // esconder cabelo/capuz do personagem (o elmo cobre)
+  return L; }
+

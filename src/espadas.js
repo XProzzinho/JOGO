@@ -204,7 +204,17 @@
       const ex = Math.min(1, s.t / 0.4), fim = Math.min(1, f.selo / 0.5), k = (s.principal ? 1 : ex) * fim; ch.scale.setScalar(0.2 + k * 0.8); cm.scale.setScalar(0.2 + k * 0.8);
       s.A.rotation.z += dt * 1.6; s.Ab.rotation.z = s.A.rotation.z; s.B.rotation.z -= dt * 3.2; s.Bb.rotation.z = s.B.rotation.z; cm.position.y = alt + 0.55 + Math.sin(gT * 2.5) * 0.08;
       const pu = 0.45 + Math.sin(gT * 4) * 0.25; s.Ab.material.opacity = pu * k; s.Bb.material.opacity = pu * k; s.gl.material.opacity = (0.35 + Math.sin(gT * 3) * 0.15) * k; s.gs.material.opacity = 0.45 * k; s.raio.material.opacity = (0.1 + Math.sin(gT * 6) * 0.05) * k; s.A.material.opacity = k; s.B.material.opacity = k; } }
-  function haloFrame(dt) { seteFrame(dt); seloFrame(dt); const quer = haloVis() && !dentro; haloDefFrame(dt); HALO.H.visible = quer || HALO.elos.length > 0; if (HALO.cd > 0) HALO.cd -= dt;
+  // ---- ARAUTO DAS CHAMAS: a armadura lendária se forma no corpo por 30 s ----
+  const ARAUTO = { L: null, on: false, t: 0, brasas: [] };
+  function arautoFrame(dt) { const quer = BUFF.arauto > 0; if (!quer && !ARAUTO.on) return;
+    if (quer && !ARAUTO.L) { try { ARAUTO.L = fazArauto(T3, heroi.userData.P); } catch (err) { console.warn('arauto', err); ARAUTO.L = []; } ARAUTO.L.forEach(m => m.visible = false);
+      for (let i = 0; i < 14; i++) { const s = new T3.Sprite(new T3.SpriteMaterial({ map: HALO.G.material.map, color: i % 3 ? '#ff6a1a' : '#ffd060', transparent: true, depthWrite: false, blending: T3.AdditiveBlending, toneMapped: false })); s.visible = false; world.add(s); ARAUTO.brasas.push({ s, f: Math.random() * 6, r: 0.3 + Math.random() * 0.5, a: Math.random() * 6.3 }); } }
+    if (quer !== ARAUTO.on) { ARAUTO.on = quer; ARAUTO.t = 0; ARAUTO.L.forEach(m => m.visible = quer); ARAUTO.brasas.forEach(b => b.s.visible = quer); const hp = heroi.position;
+      fx('luz', [hp.x, 1, hp.z], quer ? 1.4 : 0.7); if (quer) { flash('rgba(255,110,30,.45)'); som('portal', 0.9, 0.7); tremor = Math.max(tremor, 0.25); } else aviso('🔥 A Armadura do Arauto se desfez em brasas.', '#ff9a50'); }
+    if (!ARAUTO.on) return; ARAUTO.t += dt; const k = Math.min(1, ARAUTO.t / 0.6), hp = heroi.position;
+    if (ARAUTO.L.crest) { ARAUTO.L.crest.scale.setScalar(0.36 * (0.2 + 0.8 * k)); ARAUTO.L.crest.rotation.z = Math.sin(gT * 1.2) * 0.04; }
+    ARAUTO.brasas.forEach(b => { b.f += dt * (0.8 + b.r); const y = (b.f % 2.4); b.s.position.set(hp.x + Math.cos(b.a + gT * 0.6) * b.r, hp.y + 0.2 + y, hp.z + Math.sin(b.a + gT * 0.6) * b.r); const sc = 0.12 * (1 - y / 2.4); b.s.scale.set(sc, sc, 1); b.s.material.opacity = 1 - y / 2.4; }); }
+  function haloFrame(dt) { seteFrame(dt); seloFrame(dt); arautoFrame(dt); const quer = haloVis() && !dentro; haloDefFrame(dt); HALO.H.visible = quer || HALO.elos.length > 0; if (HALO.cd > 0) HALO.cd -= dt;
     if (!HALO.H.visible) return; HALO.F.rotation.z += dt * 2.1; HALO.G.material.opacity = 0.5 + Math.sin(gT * 3) * 0.15; { const pu = 0.5 + Math.sin(gT * 3.4) * 0.25; HALO.brA.material.opacity = pu; HALO.brB.material.opacity = 0.45 + Math.sin(gT * 4.1 + 1) * 0.25; HALO.brA2.material.opacity = 0.15 + Math.sin(gT * 2.2) * 0.12; }
     if (HALO.def) { HALO.A.rotation.z += dt * 6; HALO.B.rotation.z -= dt * 9; HALO.F.rotation.z += dt * 4; return; }
     if (!HALO.elos.length) { HALO.A.rotation.z += dt * 0.55; HALO.B.rotation.z -= dt * 1.5; return; }
