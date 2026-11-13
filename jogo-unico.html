@@ -7478,7 +7478,7 @@ const glowA = cv(128, (x) => { const g = x.createRadialGradient(64, 64, 0, 64, 6
     for (let i = 0; i < A.gemas; i++) { x.save(); x.rotate((i + 0.5) / A.gemas * Math.PI * 2); x.translate(0, -R * 0.93); x.rotate(Math.PI / 4); const s = 7 + A.forca * 5; x.fillStyle = '#ffffff'; x.fillRect(-s, -s, s * 2, s * 2); x.fillStyle = c2; x.fillRect(-s * 0.6, -s * 0.6, s * 1.2, s * 1.2); x.restore(); }
     const t = new T3.CanvasTexture(c); t.colorSpace = T3.SRGBColorSpace; return t; });
   const ARO = (() => { const G = new T3.Group(); G.visible = false; heroi.add(G); const geo = new T3.PlaneGeometry(1, 1);
-    const L = AROS.map((A, i) => { const g = new T3.Group(); g.position.y = 0.035 + i * 0.07; G.add(g); const s = 1.9 + i * 0.62;
+    const L = AROS.map((A, i) => { const g = new T3.Group(); g.position.y = 0.05 + i * 0.3; G.add(g); const s = 1.75 + i * 0.1;
       const m = new T3.Mesh(geo, new T3.MeshBasicMaterial({ map: ARO_TEX[i], transparent: true, depthWrite: false, side: T3.DoubleSide, toneMapped: false, opacity: 0 })); m.rotation.x = -Math.PI / 2; m.scale.setScalar(s); g.add(m);
       const m2 = new T3.Mesh(geo, m.material.clone()); m2.material.blending = T3.AdditiveBlending; m2.material.color.set(A.glow); m2.rotation.x = -Math.PI / 2; m2.scale.setScalar(s * 1.04); m2.position.y = 0.005; g.add(m2);
       const fa = []; const nf = Math.round(4 + A.forca * 10); for (let k = 0; k < nf; k++) { const sp = glowSpr(g, 0, 0, 0, 0.18, A.glow, 0); fa.push({ sp, a: Math.random() * 6, h: Math.random(), v: 0.5 + Math.random() }); }
@@ -7492,7 +7492,7 @@ const glowA = cv(128, (x) => { const g = x.createRadialGradient(64, 64, 0, 64, 6
   function aroFrame(dt) { if (!ARO.G.visible) return; ARO.t += dt; const T = arosTem(), resta = ARO.lutaAte - gT;
     if (resta <= -0.8 || !T.length) { ARO.G.visible = false; return; } const sai = resta < 0 ? 1 + resta / 0.8 : 1;
     ARO.L.forEach((o, i) => { const tem = T.includes(i); o.g.visible = tem; if (!tem) return; const ord = T.indexOf(i), ent = clamp((ARO.t - ord * 0.12) / 0.5), e = 1 - Math.pow(1 - ent, 3);
-      const k = e * (1 + Math.sin(gT * 2.4 + i) * 0.025) * (0.4 + 0.6 * sai); o.m.scale.setScalar(o.s * k); o.m2.scale.setScalar(o.s * 1.04 * k);
+      o.g.position.y = (0.05 + ord * 0.3) * e + Math.sin(gT * 1.6 + i) * 0.03 * e; const k = e * (1 + Math.sin(gT * 2.4 + i) * 0.025) * (0.4 + 0.6 * sai); o.m.scale.setScalar(o.s * k); o.m2.scale.setScalar(o.s * 1.04 * k);
       o.m.rotation.z += dt * o.dir * (0.6 + i * 0.12); o.m2.rotation.z = o.m.rotation.z; const op = e * sai; o.m.material.opacity = op * (0.75 + o.A.forca * 0.25); o.m2.material.opacity = op * (0.12 + o.A.forca * 0.28) * (0.7 + Math.sin(gT * 4 + i) * 0.3);
       o.fa.forEach(f => { f.h += dt * f.v * 0.5; if (f.h > 1) { f.h = 0; f.a = Math.random() * 6; } const r = o.s * 0.45 * k; f.sp.position.set(Math.cos(f.a) * r, f.h * (0.6 + o.A.forca * 1.4), Math.sin(f.a) * r); f.sp.material.opacity = op * (1 - f.h) * 0.9; }); }); }
 
