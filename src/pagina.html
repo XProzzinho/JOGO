@@ -548,6 +548,16 @@
 #joy{background:rgba(12,12,20,.18)!important;border:2px solid rgba(255,255,255,.55)!important;box-shadow:none!important}
 #aro-btn{position:fixed;left:calc(14px + env(safe-area-inset-left,0px));top:calc(170px + env(safe-area-inset-top,0px));height:30px;padding:0 10px;font:900 11px var(--fonte);letter-spacing:.5px;transform:scale(.85);transform-origin:0 0;opacity:.9;z-index:7;display:flex;align-items:center;gap:4px}
 #aro-btn.on{box-shadow:0 0 12px rgba(255,216,106,.7)!important}
+#nacao-p{position:fixed;inset:0;z-index:70;background:rgba(10,6,20,.78);display:flex;align-items:center;justify-content:center}
+#nacao-p .box{width:min(640px,94vw);max-height:94vh;overflow:auto;background:#141020;border:2px solid rgba(255,255,255,.25);border-radius:20px;padding:16px;color:#fff;font-family:var(--fonte);text-align:center}
+#nacao-p h2{margin:0 0 6px;font-family:var(--fonte-titulo);font-weight:400;font-size:26px}#nacao-p p{margin:0 0 12px;font-size:13px;color:#d8d0e8}
+.nac-cards{display:flex;gap:12px}.nac-card{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;padding:16px 10px;border-radius:16px;color:#fff;font-family:var(--fonte);border:2px solid #fff}
+.nac-card.vermelha{background:linear-gradient(180deg,#d8283a,#5a0a14);box-shadow:0 0 18px rgba(255,60,70,.5)}.nac-card.azul{background:linear-gradient(180deg,#2a7aff,#0a1e5a);box-shadow:0 0 18px rgba(60,140,255,.5)}
+.nac-card .nac-esc{font-size:42px}.nac-card b{font-size:18px}.nac-card small{font-size:12px;opacity:.9}.nac-card:active{transform:scale(.97)}
+#nacao-hud{position:fixed;left:50%;top:calc(10px + env(safe-area-inset-top,0px));transform:translateX(-50%);z-index:30;display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:10px;padding:6px 16px;border-radius:14px;background:rgba(12,10,20,.7);border:1px solid rgba(255,255,255,.4);color:#fff;font:900 16px var(--fonte);pointer-events:none}
+#nacao-hud .v{color:#ff6a78}#nacao-hud .a{color:#7ab0ff}#nacao-hud small{flex-basis:100%;text-align:center;font-size:11px;font-weight:700;opacity:.85}
+#nacao-conv{position:fixed;left:50%;top:22%;transform:translateX(-50%);z-index:65;width:min(420px,90vw);padding:14px;border-radius:16px;background:linear-gradient(135deg,rgba(150,20,30,.92),rgba(20,50,150,.92));border:2px solid #fff;color:#fff;text-align:center;font-family:var(--fonte);box-shadow:0 10px 40px rgba(0,0,0,.5)}
+#nacao-conv b{display:block;font-size:18px}#nacao-conv small{display:block;margin:4px 0 10px;font-size:12px}#nacao-conv div{display:flex;gap:8px;justify-content:center}#nacao-conv button{padding:9px 18px;border-radius:12px;border:2px solid #fff;font:900 14px var(--fonte)}#nacao-conv .sim{background:#ffd23c;color:#2b2340}#nacao-conv .nao{background:transparent;color:#fff}
 </style>
 </head>
 <body>
