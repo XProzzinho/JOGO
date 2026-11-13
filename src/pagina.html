@@ -516,6 +516,36 @@
 .lei-filtro{display:flex;gap:6px;margin:0 0 8px;flex-wrap:wrap}.lei-filtro button{padding:6px 12px;border-radius:999px;border:2px solid var(--tinta);background:#fff;font:900 12px var(--fonte);color:var(--tinta)}.lei-filtro button.on{background:#2b2340;color:#fff}
 .lei-modo{display:inline-block;margin-bottom:2px;padding:1px 8px;border-radius:999px;font:900 10px var(--fonte);letter-spacing:.5px}.lei-modo.l{background:#efe6ff;color:#5a2ab8}.lei-modo.v{background:#dff6e4;color:#1a7a3a}
 #leilao-p button.pri.comprar{background:#2aa85a}
+
+/* ===== HUD minimalista (layout) ===== */
+#perfil-btn{transform:scale(.78);transform-origin:0 0;opacity:.92}#tit{display:none}
+#inv{top:calc(84px + env(safe-area-inset-top,0px))!important;transform:scale(.8);transform-origin:0 0;opacity:.85}#inv>*{box-shadow:none!important;background:rgba(255,255,255,.75)!important;border-width:2px!important}
+#mp-on{top:calc(112px + env(safe-area-inset-top,0px))!important;transform:scale(.85);transform-origin:0 0;opacity:.7}
+#montar{top:calc(136px + env(safe-area-inset-top,0px))!important;opacity:.6!important;transform:scale(.85);transform-origin:0 0}
+#mini{width:88px!important;height:88px!important;opacity:.85}#correio-btn,#casa,#ciclo{transform:scale(.72);opacity:.8}
+#correio-btn{right:calc(176px + env(safe-area-inset-right,0px))!important}#mini{right:calc(62px + env(safe-area-inset-right,0px))!important}
+#casa{top:calc(56px + env(safe-area-inset-top,0px))!important}
+#joy{opacity:.28!important;transform:scale(.85)}
+#pular,#correr{opacity:.55!important;transform:scale(.82)}#atacar{opacity:.4!important;transform:scale(.9)}
+#poderes{--s:40px!important;opacity:.85}#poderes .slot{box-shadow:none!important;border-width:2px!important;background:rgba(255,255,255,.7)!important}#poderes .slot.vazio{opacity:.35}
+#bms{transform:scale(.8);opacity:.75}#xpbar{height:6px!important;border-width:1px!important;box-shadow:none!important}#xp-txt{display:none}
+.dslot{width:28px!important;height:28px!important;opacity:.85}.dslot.vazio{opacity:.3}
+
+/* ===== HUD minimalista: cantos brancos (colchetes) ===== */
+#perfil-btn,#inv>*,#mp-on,#montar,#correio-btn,#casa,#ciclo,#poderes .slot,#pag-btn,.dslot{border:1px solid rgba(255,255,255,.14)!important;border-radius:4px!important;box-shadow:none!important;background:linear-gradient(rgba(255,255,255,.95),rgba(255,255,255,.95)) 0 0/10px 2px no-repeat,linear-gradient(rgba(255,255,255,.95),rgba(255,255,255,.95)) 0 0/2px 10px no-repeat,linear-gradient(rgba(255,255,255,.95),rgba(255,255,255,.95)) 100% 0/10px 2px no-repeat,linear-gradient(rgba(255,255,255,.95),rgba(255,255,255,.95)) 100% 0/2px 10px no-repeat,linear-gradient(rgba(255,255,255,.95),rgba(255,255,255,.95)) 0 100%/10px 2px no-repeat,linear-gradient(rgba(255,255,255,.95),rgba(255,255,255,.95)) 0 100%/2px 10px no-repeat,linear-gradient(rgba(255,255,255,.95),rgba(255,255,255,.95)) 100% 100%/10px 2px no-repeat,linear-gradient(rgba(255,255,255,.95),rgba(255,255,255,.95)) 100% 100%/2px 10px no-repeat,rgba(12,12,20,.62)!important;color:#fff!important;filter:drop-shadow(0 2px 5px rgba(0,0,0,.35))}
+#perfil-btn{border-radius:6px!important;opacity:1!important}#pn-nome,#perfil-btn .pn{color:#fff!important}#nv{color:#e8e8f0!important}
+#perfil-btn #vida,#perfil-btn #mana{border:1px solid rgba(255,255,255,.35)!important;background:rgba(255,255,255,.1)!important;border-radius:3px!important}
+#inv>*{opacity:1}#inv{opacity:1!important}#mp-on{color:#fff!important;opacity:.9!important}#montar{opacity:.9!important}
+#correio-btn,#casa,#ciclo{opacity:1!important}
+#mini{border:2px solid rgba(255,255,255,.85)!important;box-shadow:0 2px 8px rgba(0,0,0,.35)!important;opacity:.9!important}
+#atacar,#pular,#correr{background:rgba(12,12,20,.38)!important;border:2px solid rgba(255,255,255,.85)!important;box-shadow:0 2px 8px rgba(0,0,0,.3)!important;color:#fff!important;text-shadow:0 1px 3px rgba(0,0,0,.6)!important}
+#atacar::after,#pular::after,#correr::after{display:none}#atacar{opacity:.6!important}#atacar:active{opacity:1!important}#pular,#correr{opacity:.75!important}
+.bm{background:rgba(12,12,20,.55)!important;border:1.5px solid rgba(255,255,255,.8)!important;color:#fff!important;box-shadow:none!important}
+#poderes .slot{opacity:1}#poderes .slot .tc{color:rgba(255,255,255,.75)!important}#poderes .slot.vazio{opacity:.38!important}
+#pag-btn{color:#fff!important}
+#xpbar{background:rgba(12,12,20,.55)!important;border:1px solid rgba(255,255,255,.55)!important;box-shadow:none!important;border-radius:2px!important}#xpbar i{background:#fff!important}
+.dslot.vazio{opacity:.35!important}
+#joy{background:rgba(12,12,20,.18)!important;border:2px solid rgba(255,255,255,.55)!important;box-shadow:none!important}
 </style>
 </head>
 <body>
