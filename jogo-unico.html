@@ -2328,8 +2328,11 @@ ${_}`}class A extends Error{constructor({message:e,code:t,cause:r,name:s}){var n
     const H = new T.Group(); heroi.userData.P.spine.add(H); H.position.set(0, 0.62, -0.62); H.visible = false;
     const G = new T.Sprite(new T.SpriteMaterial({ map: glow, transparent: true, depthWrite: false, blending: T.AdditiveBlending, toneMapped: false, opacity: 0.4 })); G.scale.set(2.8, 2.8, 1); G.position.z = -0.06; H.add(G);
     const A = pl(texA, 2.3); A.position.z = -0.03; H.add(A); const B = pl(texB, 1.55); H.add(B); const F = pl(texF, 1.9); F.position.z = 0.02; H.add(F);
+    const brilhoDe = (m, s, cor) => { const b = new T.Mesh(m.geometry, new T.MeshBasicMaterial({ map: m.material.map, color: cor, transparent: true, depthWrite: false, toneMapped: false, blending: T.AdditiveBlending, opacity: 0.55, side: T.DoubleSide })); b.scale.setScalar(s); b.position.z = 0.005; m.add(b); return b; };
+    const brA = brilhoDe(A, 1.0, '#ffd070'), brB = brilhoDe(B, 1.0, '#ffe8a0'), brA2 = brilhoDe(A, 1.06, '#ff9a30'); brA2.material.opacity = 0.25;
+    G.material.opacity = 0.6; G.scale.set(3.4, 3.4, 1);
     const anc = m => ({ p: m.position.clone(), q: m.quaternion.clone(), s: m.scale.clone() });
-    return { H, A, B, F, G, ancA: anc(A), ancB: anc(B), elos: [], cd: 0 }; })();
+    return { H, A, B, F, G, brA, brB, brA2, ancA: anc(A), ancB: anc(B), elos: [], cd: 0 }; })();
   function haloOn() { const W = ARMAS[AR.arma]; return (!!(W && W.halo) || BUFF.mandala > 0) && !(BUFF.mandef > 0); }
   function haloVis() { if (BUFF.sete > 0) return false; const W = ARMAS[AR.arma]; return !!(W && W.halo) || AR.divino === 'mandala' || BUFF.mandala > 0 || BUFF.mandef > 0; }
   function haloAtk(forca) { if (!haloOn() || HALO.elos.length || (HALO.cd > 0 && !forca)) return; HALO.H.visible = true; const alvo = maisPerto(24); if (!alvo) return;
@@ -2350,16 +2353,16 @@ ${_}`}class A extends Error{constructor({message:e,code:t,cause:r,name:s}){var n
   // ---- COROA DOS SETE SÓIS: 7 mini-halos deitados girando como serra em volta do personagem ----
   const SETE = { g: new T3.Group(), h: [], t: 0, hitT: 0 }; SETE.g.visible = false; world.add(SETE.g);
   { const pl = (m, s) => new T3.Mesh(new T3.PlaneGeometry(s, s), new T3.MeshBasicMaterial({ map: m, transparent: true, side: T3.DoubleSide, depthWrite: false, toneMapped: false }));
-    for (let i = 0; i < 7; i++) { const h = new T3.Group(); const gl = new T3.Sprite(new T3.SpriteMaterial({ map: HALO.G.material.map, transparent: true, depthWrite: false, blending: T3.AdditiveBlending, toneMapped: false, opacity: 0.45 })); gl.scale.set(0.8, 0.8, 1); h.add(gl);
-      const d = new T3.Group(); d.rotation.x = -Math.PI / 2; h.add(d); const A = pl(HALO.A.material.map, 0.62), B = pl(HALO.B.material.map, 0.42), F = pl(HALO.F.material.map, 0.5); A.position.z = -0.01; F.position.z = 0.01; d.add(A, B, F); SETE.g.add(h); SETE.h.push({ h, A, B, F }); } }
+    for (let i = 0; i < 7; i++) { const h = new T3.Group(); const gl = new T3.Sprite(new T3.SpriteMaterial({ map: HALO.G.material.map, transparent: true, depthWrite: false, blending: T3.AdditiveBlending, toneMapped: false, opacity: 0.45 })); gl.scale.set(1.15, 1.15, 1); h.add(gl);
+      const d = new T3.Group(); d.rotation.x = -Math.PI / 2; h.add(d); const A = pl(HALO.A.material.map, 0.62), B = pl(HALO.B.material.map, 0.42), F = pl(HALO.F.material.map, 0.5); A.position.z = -0.01; F.position.z = 0.01; d.add(A, B, F); const bl = (m, cor) => { const b = new T3.Mesh(m.geometry, new T3.MeshBasicMaterial({ map: m.material.map, color: cor, transparent: true, depthWrite: false, toneMapped: false, blending: T3.AdditiveBlending, opacity: 0.6, side: T3.DoubleSide })); b.position.z = 0.004; m.add(b); return b; }; const bA = bl(A, '#ffd070'), bB = bl(B, '#ffe8a0'); SETE.g.add(h); SETE.h.push({ h, A, B, F, gl, bA, bB }); } }
   function seteFrame(dt) { const on = BUFF.sete > 0 && !dentro; if (on && !SETE.g.visible) { SETE.t = 0; fx('luz', [heroi.position.x, 1, heroi.position.z], 1); som('magia', 0.8, 1.2); }
     if (!on && SETE.g.visible) { fx('luz', [heroi.position.x, 1.4, heroi.position.z], 0.7); }
     SETE.g.visible = on; if (!on) return; SETE.t += dt; const t = SETE.t, ex = Math.min(1, t / 0.5), hp = heroi.position, R = 0.3 + ex * 1.15;
-    SETE.h.forEach((o, i) => { const a = t * 2.6 + i / 7 * Math.PI * 2; o.h.position.set(hp.x + Math.cos(a) * R, hp.y + 0.95 + Math.sin(t * 3 + i) * 0.04, hp.z + Math.sin(a) * R); o.h.scale.setScalar(0.3 + ex * 0.7); o.A.rotation.z += dt * 9; o.B.rotation.z -= dt * 12; o.F.rotation.z += dt * 10; });
+    SETE.h.forEach((o, i) => { const a = t * 2.6 + i / 7 * Math.PI * 2; o.h.position.set(hp.x + Math.cos(a) * R, hp.y + 0.95 + Math.sin(t * 3 + i) * 0.04, hp.z + Math.sin(a) * R); o.h.scale.setScalar(0.3 + ex * 0.7); o.A.rotation.z += dt * 9; o.B.rotation.z -= dt * 12; o.F.rotation.z += dt * 10; const pu = 0.5 + Math.sin(gT * 5 + i) * 0.3; o.bA.material.opacity = pu; o.bB.material.opacity = 0.4 + Math.sin(gT * 6 + i * 2) * 0.3; o.gl.material.opacity = 0.45 + Math.sin(gT * 4 + i) * 0.2; });
     SETE.hitT -= dt; if (SETE.hitT <= 0 && ex >= 1) { SETE.hitT = 0.25; const W0 = ARMAS[AR.arma] || ARMAS.punho, dn = Math.max(W0.dano || 10, 30) * 0.22 * atkMult(); let bateu = false;
       SETE.h.forEach(o => area(o.h.position.x, o.h.position.z, 0.75, f => { dano(f, dn, null, critico()); bateu = true; })); if (bateu) { som('espada', 0.3, 1.5 + Math.random() * 0.3, 0.05); fx('luz', [hp.x + (Math.random() - 0.5) * 2, 0.9, hp.z + (Math.random() - 0.5) * 2], 0.3); } } }
   function haloFrame(dt) { seteFrame(dt); const quer = haloVis() && !dentro; haloDefFrame(dt); HALO.H.visible = quer || HALO.elos.length > 0; if (HALO.cd > 0) HALO.cd -= dt;
-    if (!HALO.H.visible) return; HALO.F.rotation.z += dt * 2.1; HALO.G.material.opacity = 0.32 + Math.sin(gT * 3) * 0.1;
+    if (!HALO.H.visible) return; HALO.F.rotation.z += dt * 2.1; HALO.G.material.opacity = 0.5 + Math.sin(gT * 3) * 0.15; { const pu = 0.5 + Math.sin(gT * 3.4) * 0.25; HALO.brA.material.opacity = pu; HALO.brB.material.opacity = 0.45 + Math.sin(gT * 4.1 + 1) * 0.25; HALO.brA2.material.opacity = 0.15 + Math.sin(gT * 2.2) * 0.12; }
     if (HALO.def) { HALO.A.rotation.z += dt * 6; HALO.B.rotation.z -= dt * 9; HALO.F.rotation.z += dt * 4; return; }
     if (!HALO.elos.length) { HALO.A.rotation.z += dt * 0.55; HALO.B.rotation.z -= dt * 1.5; return; }
     const W0 = ARMAS[AR.arma] || ARMAS.punho, W = { dano: Math.max(W0.dano || 10, 30) }, tmpV = new T3.Vector3();
