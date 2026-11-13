@@ -132,6 +132,36 @@ service cloud.firestore {
       allow update, delete: if false;
     }
 
+    // Casa de Leilões: qualquer jogador logado vê; o vendedor cria o dele;
+    // os outros só dão lance maior; cada um resgata só o que é seu
+    match /leiloes/{id} {
+      function n() { return request.resource.data; }
+      function o() { return resource.data; }
+      function eu() { return request.auth.uid; }
+      function agora() { return request.time.toMillis(); }
+      function mudou() { return n().diff(o()).affectedKeys(); }
+      function soEuNosLances() { return n().lances.diff(o().lances).affectedKeys().hasOnly([eu()]); }
+      allow read: if logado();
+      allow create: if logado() && n().de == eu() && n().lider == null && n().lance == 0 && n().lances.size() == 0
+        && n().entregue == false && n().recebeuVend == false && n().ini is int && n().ini >= 1
+        && n().fim is int && n().fim > agora() && n().fim <= agora() + 26 * 3600 * 1000
+        && n().it.t in ['item', 'arma', 'fant', 'cosm', 'sob'];
+      allow update: if logado() && !mudou().hasAny(['de', 'nomeDe', 'it', 'ini', 'criado']) && (
+        // dar lance (maior que o atual, antes de acabar, não pode ser o vendedor)
+        (eu() != o().de && agora() < o().fim && mudou().hasOnly(['lance', 'lider', 'liderNome', 'lances'])
+          && n().lider == eu() && n().lance > o().lance && n().lance >= o().ini && n().lances[eu()] == n().lance && soEuNosLances())
+        // pegar de volta o lance superado
+        || (mudou().hasOnly(['lances']) && o().lider != eu() && n().lances[eu()] == 0 && soEuNosLances())
+        // vendedor cancela se ninguém deu lance
+        || (eu() == o().de && o().lider == null && mudou().hasOnly(['fim']) && n().fim <= agora())
+        // vendedor recebe as moedas depois que acaba
+        || (eu() == o().de && o().lider != null && agora() >= o().fim && mudou().hasOnly(['recebeuVend']) && n().recebeuVend == true && o().recebeuVend == false)
+        // vencedor (ou o vendedor, se não teve lance) pega o item
+        || (agora() >= o().fim && mudou().hasOnly(['entregue']) && n().entregue == true && o().entregue == false
+          && (o().lider == null ? eu() == o().de : eu() == o().lider)));
+      allow delete: if false;
+    }
+
     // Qualquer outra coisa fica bloqueada
     match /{document=**} {
       allow read, write: if false;
