@@ -296,7 +296,124 @@ const glowR = cv(128, (x) => { const g = x.createRadialGradient(64, 64, 0, 64, 6
   function rubraFrame(dt) { haloTema(); const on = AR.divino === 'rubra' && !dentro; RUB.tudo.forEach(o => o.visible = on); if (!on) return;
     RUB.el.rotation.z += dt * 1.6; RUB.elb.rotation.z = RUB.el.rotation.z; RUB.elb.material.opacity = 0.35 + Math.sin(gT * 4) * 0.15;
     RUB.asas.forEach(a => { a.g.rotation.z = a.s * Math.sin(gT * 1.8) * 0.06; a.mb.material.opacity = 0.3 + Math.sin(gT * 3.5 + a.s) * 0.2; }); }
-  function haloFrame(dt) { rubraFrame(dt); seteFrame(dt); seloFrame(dt); arautoFrame(dt); const quer = haloVis() && !dentro; haloDefFrame(dt); HALO.H.visible = quer || HALO.elos.length > 0; if (HALO.cd > 0) HALO.cd -= dt;
+  // ===================== GRIMÓRIO DOS CÍRCULOS ARCANOS: círculos roxos nas costas (fixos) e no chão + Adagas Astrais =====================
+  const ARC = (() => {
+    const T3x = T3;
+    // ---- texturas dos círculos (linhas brancas com neon violeta) ----
+    const TX = (new Function('T3', `const cv = (n, f) => { const c = document.createElement('canvas'); c.width = c.height = n; f(c.getContext('2d'), n); const t = new T3.CanvasTexture(c); t.colorSpace = T3.SRGBColorSpace; return t; };
+const RUN = 'ᚠᚢᚦᚨᚱᚲᚷᚹᚺᚾᛁᛃᛇᛈᛉᛊᛏᛒᛖᛗᛚᛜᛞᛟ';
+const neon = (x, cor, b) => { x.shadowColor = cor; x.shadowBlur = b; };
+function circulo(x, c, tipo) { x.lineCap = 'round'; x.strokeStyle = '#ffffff'; neon(x, '#7a3aff', 26);
+  const anel = (r, lw) => { x.lineWidth = lw; x.beginPath(); x.arc(0, 0, c * r, 0, Math.PI * 2); x.stroke(); };
+  anel(0.96, 12); anel(0.9, 5); anel(0.62, 7); anel(0.56, 3);
+  // runas entre anéis
+  x.font = \`bold \${c * 0.1}px serif\`; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillStyle = '#efe6ff';
+  const N = tipo ? 18 : 24; for (let i = 0; i < N; i++) { x.save(); x.rotate(i / N * Math.PI * 2); x.fillText(RUN[(i * 7 + tipo * 3) % RUN.length], 0, -c * 0.76); x.restore(); }
+  // pontas cardeais (estrela de 8 pontas por fora)
+  for (let i = 0; i < 8; i++) { x.save(); x.rotate(i / 8 * Math.PI * 2); const L = i % 2 ? 1.0 : 1.12; x.beginPath(); x.moveTo(-c * 0.035, -c * 0.95); x.lineTo(0, -c * L * 0.98); x.lineTo(c * 0.035, -c * 0.95); x.closePath(); x.fillStyle = '#ffffff'; x.fill(); x.restore(); }
+  // estrela/hexagrama interno
+  x.lineWidth = 5; const k = tipo === 1 ? 5 : 6; for (let s = 0; s < 2; s++) { x.beginPath(); for (let i = 0; i <= k; i++) { const a = i / k * Math.PI * 2 + s * Math.PI / k - Math.PI / 2; const px = Math.cos(a) * c * 0.56, py = Math.sin(a) * c * 0.56; i ? x.lineTo(px, py) : x.moveTo(px, py); } x.stroke(); }
+  if (tipo === 1) { x.beginPath(); for (let i = 0; i <= 5; i++) { const a = (i * 2) / 5 * Math.PI * 2 - Math.PI / 2; const px = Math.cos(a) * c * 0.56, py = Math.sin(a) * c * 0.56; i ? x.lineTo(px, py) : x.moveTo(px, py); } x.stroke(); }
+  anel(0.3, 6); anel(0.24, 3);
+  for (let i = 0; i < 12; i++) { x.save(); x.rotate(i / 12 * Math.PI * 2); x.beginPath(); x.moveTo(0, -c * 0.3); x.lineTo(0, -c * 0.56); x.lineWidth = 3; x.stroke(); x.beginPath(); x.arc(0, -c * 0.43, c * 0.018, 0, 7); x.fillStyle = '#fff'; x.fill(); x.restore(); }
+  // núcleo
+  const g = x.createRadialGradient(0, 0, 0, 0, 0, c * 0.2); g.addColorStop(0, 'rgba(255,255,255,1)'); g.addColorStop(0.3, 'rgba(200,170,255,.9)'); g.addColorStop(1, 'rgba(120,70,255,0)'); x.fillStyle = g; x.beginPath(); x.arc(0, 0, c * 0.2, 0, 7); x.fill();
+  x.beginPath(); for (let i = 0; i < 8; i++) { const a = i / 8 * Math.PI * 2, r = i % 2 ? c * 0.05 : c * 0.16; i ? x.lineTo(Math.cos(a) * r, Math.sin(a) * r) : x.moveTo(Math.cos(a) * r, Math.sin(a) * r); } x.closePath(); x.fillStyle = '#fff'; x.fill(); }
+const fundo = (x, c) => { const g = x.createRadialGradient(0, 0, c * 0.2, 0, 0, c); g.addColorStop(0, 'rgba(70,20,200,.55)'); g.addColorStop(0.8, 'rgba(50,10,170,.4)'); g.addColorStop(1, 'rgba(40,10,150,0)'); x.fillStyle = g; x.beginPath(); x.arc(0, 0, c, 0, 7); x.fill(); };
+const texGrande = cv(1024, (x, n) => { const c = n / 2; x.translate(c, c); fundo(x, c); circulo(x, c * 0.94, 0); });
+const texMedio = cv(512, (x, n) => { const c = n / 2; x.translate(c, c); fundo(x, c); circulo(x, c * 0.92, 1); });
+const texPeq = cv(256, (x, n) => { const c = n / 2; x.translate(c, c); fundo(x, c); x.strokeStyle = '#ffffff'; neon(x, '#7a3aff', 16); x.lineWidth = 7; x.beginPath(); x.arc(0, 0, c * 0.85, 0, 7); x.stroke(); x.lineWidth = 2; x.beginPath(); x.arc(0, 0, c * 0.62, 0, 7); x.stroke();
+  for (let i = 0; i < 8; i++) { x.save(); x.rotate(i / 8 * Math.PI * 2); x.beginPath(); x.moveTo(-c * 0.06, -c * 0.85); x.lineTo(0, -c * (i % 2 ? 0.98 : 1.0)); x.lineTo(c * 0.06, -c * 0.85); x.fillStyle = '#fff'; x.fill(); x.restore(); }
+  x.beginPath(); for (let i = 0; i < 8; i++) { const a = i / 8 * Math.PI * 2, r = i % 2 ? c * 0.15 : c * 0.55; i ? x.lineTo(Math.cos(a) * r, Math.sin(a) * r) : x.moveTo(Math.cos(a) * r, Math.sin(a) * r); } x.closePath(); x.lineWidth = 2; x.stroke(); const g = x.createRadialGradient(0, 0, 0, 0, 0, c * 0.3); g.addColorStop(0, '#fff'); g.addColorStop(1, 'rgba(140,90,255,0)'); x.fillStyle = g; x.beginPath(); x.arc(0, 0, c * 0.3, 0, 7); x.fill(); });
+// chão: anel externo de runas e anel interno com estrela
+const texChaoFora = cv(1024, (x, n) => { const c = n / 2; x.translate(c, c); x.strokeStyle = '#ffffff'; neon(x, '#7a3aff', 26); [0.97, 0.93, 0.72].forEach((r, i) => { x.lineWidth = i ? 6 : 12; x.beginPath(); x.arc(0, 0, c * r, 0, 7); x.stroke(); });
+  x.font = \`bold \${c * 0.11}px serif\`; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillStyle = '#ffffff'; for (let i = 0; i < 28; i++) { x.save(); x.rotate(i / 28 * Math.PI * 2); x.fillText(RUN[i % RUN.length], 0, -c * 0.83); x.restore(); }
+  for (let i = 0; i < 4; i++) { x.save(); x.rotate(i / 4 * Math.PI * 2 + Math.PI / 4); x.beginPath(); x.moveTo(-c * 0.05, -c * 0.97); x.lineTo(0, -c * 1.0); x.lineTo(c * 0.05, -c * 0.97); x.fillStyle = '#fff'; x.fill(); x.restore(); } });
+const texChaoDentro = cv(1024, (x, n) => { const c = n / 2; x.translate(c, c); circulo(x, c * 0.7, 2); });
+const glowA = cv(128, (x) => { const g = x.createRadialGradient(64, 64, 0, 64, 64, 64); g.addColorStop(0, 'rgba(200,180,255,.9)'); g.addColorStop(0.45, 'rgba(110,60,255,.4)'); g.addColorStop(1, 'rgba(60,20,220,0)'); x.fillStyle = g; x.fillRect(0, 0, 128, 128); });
+;return {texGrande,texMedio,texPeq,texChaoFora,texChaoDentro,glowA};`))(T3x);
+    // ---- textura da adaga: lâmina roxa estrelada, guarda crescente de prata, gema de ametista, pomo crescente ----
+    const texAdaga = (() => { const c = document.createElement('canvas'); c.width = 128; c.height = 512; const x = c.getContext('2d');
+      const prata = (a, b) => { const g = x.createLinearGradient(a, 0, b, 0); g.addColorStop(0, '#6a6a86'); g.addColorStop(0.45, '#ffffff'); g.addColorStop(0.6, '#d8d8ec'); g.addColorStop(1, '#5a5a76'); return g; };
+      // lâmina (ponta pra cima)
+      x.save(); x.shadowColor = '#b06aff'; x.shadowBlur = 18; x.beginPath(); x.moveTo(64, 8); x.bezierCurveTo(84, 90, 88, 200, 80, 300); x.lineTo(48, 300); x.bezierCurveTo(40, 200, 44, 90, 64, 8); x.closePath();
+      const gl = x.createLinearGradient(40, 0, 88, 0); gl.addColorStop(0, '#2a0a5a'); gl.addColorStop(0.5, '#6a2ad8'); gl.addColorStop(1, '#22084a'); x.fillStyle = gl; x.fill(); x.restore();
+      x.save(); x.beginPath(); x.moveTo(64, 8); x.bezierCurveTo(84, 90, 88, 200, 80, 300); x.lineTo(48, 300); x.bezierCurveTo(40, 200, 44, 90, 64, 8); x.closePath(); x.clip();
+      for (let i = 0; i < 70; i++) { const px = 44 + Math.random() * 40, py = 20 + Math.random() * 280, r = Math.random() < 0.15 ? 2.2 : 0.9; x.fillStyle = `rgba(255,255,255,${0.5 + Math.random() * 0.5})`; x.beginPath(); x.arc(px, py, r, 0, 7); x.fill(); }
+      const nb = x.createRadialGradient(64, 170, 2, 64, 170, 60); nb.addColorStop(0, 'rgba(255,120,240,.45)'); nb.addColorStop(1, 'rgba(255,120,240,0)'); x.fillStyle = nb; x.fillRect(0, 0, 128, 320);
+      x.strokeStyle = 'rgba(230,200,255,.9)'; x.lineWidth = 1.5; x.beginPath(); x.moveTo(64, 14); x.lineTo(64, 296); x.stroke(); x.restore();
+      x.strokeStyle = '#e8d8ff'; x.lineWidth = 2.5; x.beginPath(); x.moveTo(64, 8); x.bezierCurveTo(84, 90, 88, 200, 80, 300); x.moveTo(64, 8); x.bezierCurveTo(44, 90, 40, 200, 48, 300); x.stroke();
+      // guarda crescente (asas de lua pra cima)
+      x.fillStyle = prata(4, 124); x.beginPath(); x.moveTo(64, 318); x.quadraticCurveTo(20, 320, 6, 270); x.quadraticCurveTo(26, 300, 64, 298); x.quadraticCurveTo(102, 300, 122, 270); x.quadraticCurveTo(108, 320, 64, 318); x.closePath(); x.fill(); x.strokeStyle = '#3a3a52'; x.lineWidth = 1.5; x.stroke();
+      // gema de ametista
+      x.save(); x.shadowColor = '#d07aff'; x.shadowBlur = 16; const gm = x.createRadialGradient(58, 302, 2, 64, 308, 16); gm.addColorStop(0, '#ffe0ff'); gm.addColorStop(0.35, '#c05aff'); gm.addColorStop(1, '#3a0a6a'); x.fillStyle = gm; x.beginPath(); x.arc(64, 308, 15, 0, 7); x.fill(); x.restore(); x.strokeStyle = prata(48, 80); x.lineWidth = 3; x.beginPath(); x.arc(64, 308, 15, 0, 7); x.stroke();
+      // cabo
+      x.fillStyle = '#1e1430'; x.fillRect(56, 322, 16, 120); x.strokeStyle = '#8a7ab0'; x.lineWidth = 2; for (let y = 326; y < 440; y += 10) { x.beginPath(); x.moveTo(56, y); x.lineTo(72, y + 6); x.stroke(); }
+      // pomo crescente
+      x.fillStyle = prata(30, 98); x.beginPath(); x.arc(64, 470, 26, Math.PI * 0.1, Math.PI * 0.9, false); x.arc(64, 452, 22, Math.PI * 0.82, Math.PI * 0.18, true); x.closePath(); x.fill();
+      x.save(); x.shadowColor = '#d07aff'; x.shadowBlur = 10; x.fillStyle = '#c87aff'; x.beginPath(); x.arc(64, 446, 6, 0, 7); x.fill(); x.restore();
+      const t = new T3x.CanvasTexture(c); t.colorSpace = T3x.SRGBColorSpace; return t; })();
+    const mat = (t, add, op) => new T3x.MeshBasicMaterial({ map: t, transparent: true, side: T3x.DoubleSide, depthWrite: false, toneMapped: false, opacity: op == null ? 1 : op, blending: add ? T3x.AdditiveBlending : T3x.NormalBlending });
+    const gira = [];
+    function circ(par, t, s, x, y, z, v, glow) { const g = new T3x.Group(); g.position.set(x, y, z); par.add(g); const m = new T3x.Mesh(new T3x.PlaneGeometry(s, s), mat(t)); g.add(m);
+      const m2 = new T3x.Mesh(m.geometry, mat(t, true, 0.5)); m2.material.color.set('#9a7aff'); m2.position.z = 0.003; g.add(m2); let gl = null;
+      if (glow !== false) { gl = new T3x.Sprite(new T3x.SpriteMaterial({ map: TX.glowA, transparent: true, depthWrite: false, blending: T3x.AdditiveBlending, toneMapped: false, opacity: 0.25 })); gl.scale.set(s * 1.2, s * 1.2, 1); gl.position.z = -0.02; g.add(gl); }
+      const o = { g, m, m2, v, gl, f: Math.random() * 6, a: Math.random() * 6 }; gira.push(o); return o; }
+    // COSTAS: preso na raiz do herói (não balança com o corpo)
+    const C = new T3x.Group(); C.position.set(0, 1.55, -0.62); heroi.add(C);
+    circ(C, TX.texGrande, 1.25, 0, 0.62, 0, 0.6);
+    const lados = [circ(C, TX.texGrande, 1.0, -0.95, 0.05, 0.05, -0.7), circ(C, TX.texGrande, 1.0, 0.95, 0.05, 0.05, 0.7)];
+    lados.forEach((o, i) => { o.base = o.g.position.clone(); o.sobe = new T3x.Vector3(i ? 1.25 : -1.25, 0.75, 0.35); o.side = i ? 1 : -1; });
+    [[-0.55, 0.75, 0.4, 1.3], [0.55, 0.75, 0.4, -1.3], [-0.45, -0.42, 0.42, -1.1], [0.45, -0.42, 0.42, 1.1]].forEach(([x, y, s, v]) => circ(C, TX.texMedio, s, x, y, 0.08, v));
+    [[-1.45, 0.55, 0.28, -1.8], [1.45, 0.55, 0.28, 1.8], [-1.35, -0.55, 0.24, 1.6], [1.35, -0.55, 0.24, -1.6], [0, 1.35, 0.26, 2]].forEach(([x, y, s, v]) => circ(C, TX.texPeq, s, x, y, 0.1, v));
+    // CHÃO: segue o personagem, dois anéis girando ao contrário
+    const F = new T3x.Group(); F.position.y = 0.03; heroi.add(F);
+    const fo = circ(F, TX.texChaoFora, 2.6, 0, 0, 0, 0.4, false); fo.g.rotation.x = -Math.PI / 2;
+    const fd = circ(F, TX.texChaoDentro, 2.6, 0, 0.012, 0, -0.8, false); fd.g.rotation.x = -Math.PI / 2;
+    C.visible = F.visible = false;
+    // ---- ADAGAS ----
+    const geoA = new T3x.PlaneGeometry(0.16, 0.64); geoA.translate(0, 0.07, 0);
+    function fazAdaga() { const g = new T3x.Group(); const a = new T3x.Mesh(geoA, mat(texAdaga)); const b = a.clone(); b.rotation.y = Math.PI / 2; g.add(a, b);
+      const h = new T3x.Sprite(new T3x.SpriteMaterial({ map: TX.glowA, transparent: true, depthWrite: false, blending: T3x.AdditiveBlending, toneMapped: false, opacity: 0.55 })); h.scale.set(0.5, 0.5, 1); h.position.y = 0.2; g.add(h); g.userData.h = h; return g; }
+    const HUD = document.createElement('div'); HUD.id = 'adagasHud'; HUD.style.cssText = 'position:fixed;left:50%;bottom:172px;transform:translateX(-50%);z-index:30;padding:5px 14px;border-radius:14px;background:linear-gradient(180deg,rgba(40,14,80,.85),rgba(18,6,40,.85));border:1.5px solid #b48aff;color:#f0e6ff;font:700 15px system-ui;text-shadow:0 0 8px #a06aff;box-shadow:0 0 14px rgba(150,90,255,.6);pointer-events:none;display:none';
+    document.body.appendChild(HUD);
+    return { TX, C, F, gira, lados, fazAdaga, HUD, st: null, voo: [] };
+  })();
+  function arcanoOn() { return AR.divino === 'arcano' && !dentro; }
+  function adagasN() { return ARC.st ? ARC.st.lista.length + ARC.voo.length : 0; }
+  function adagasHud() { const n = adagasN(); ARC.HUD.style.display = ARC.st ? 'block' : 'none'; ARC.HUD.textContent = '🗡️ Adagas Astrais: ' + n; }
+  function adagasAtiva() { if (AR.divino !== 'arcano') { aviso('Equipe o Grimório dos Círculos Arcanos.', '#c8a8ff'); return false; }
+    if (ARC.st) { aviso('🗡️ Ainda restam ' + adagasN() + ' adagas. Ataque pra lançar!', '#c8a8ff'); return false; }
+    ARC.st = { t: 0, lista: [], fase: 'sobe' }; som('magia', 0.9, 0.7); fx('luz', [heroi.position.x, 2, heroi.position.z], 0.6); aviso('🗡️ Adagas Astrais! Cada ataque lança uma adaga.', '#d0a8ff'); adagasHud(); return true; }
+  function adagaAtk() { const S = ARC.st; if (!S || !S.lista.length || S.fase === 'sobe') return; const alvo = maisPerto(22); if (!alvo) return;
+    // escolhe um alvo aleatório entre os próximos (às vezes o mais perto)
+    let al = alvo; const vz = FERAS.concat(typeof CAL !== 'undefined' && CAL.feras ? CAL.feras : []).filter(e => feraAtiva(e) && Math.hypot(e.g.position.x - heroi.position.x, e.g.position.z - heroi.position.z) < 18); if (vz.length > 1 && Math.random() < 0.5) al = vz[Math.floor(Math.random() * vz.length)];
+    const d = S.lista.pop(); d.m.updateMatrixWorld(); world.attach(d.m); const p0 = d.m.position.clone();
+    const lado = Math.random() < 0.5 ? -1 : 1, f = facing + lado * (0.9 + Math.random() * 0.9);
+    const p1 = p0.clone().add(new T3.Vector3(Math.sin(f) * (2 + Math.random() * 2.5), 1 + Math.random() * 2.2, Math.cos(f) * (2 + Math.random() * 2.5)));
+    ARC.voo.push({ m: d.m, alvo: al, p0, p1, t: 0, dur: 0.5 + Math.random() * 0.2, prev: p0.clone() }); som('tiro', 0.5, 1.4, 0.05); adagasHud(); }
+  function adagasFim() { const S = ARC.st; if (!S) return; S.lista.forEach(d => d.m.parent && d.m.parent.remove(d.m)); ARC.voo.forEach(v => v.m.parent && v.m.parent.remove(v.m)); ARC.voo.length = 0; ARC.st = null; adagasHud(); }
+  const _v = new T3.Vector3(), _q = new T3.Vector3();
+  function arcanoFrame(dt) { const on = arcanoOn(); ARC.C.visible = ARC.F.visible = on;
+    if (AR.divino !== 'arcano' && ARC.st) adagasFim();
+    if (on) { ARC.C.rotation.y = 0; ARC.gira.forEach(o => { o.a += dt * o.v; o.m.rotation.z = o.m2.rotation.z = o.a; o.m2.material.opacity = 0.4 + Math.sin(gT * 3 + o.f) * 0.2; if (o.gl) o.gl.material.opacity = 0.2 + Math.sin(gT * 2 + o.f) * 0.08; }); }
+    const S = ARC.st; let alvoK = S && S.fase !== 'desce' ? 1 : 0;
+    ARC.lados.forEach(o => { o.k = o.k || 0; o.k += (alvoK - o.k) * Math.min(1, dt * 5); o.g.position.lerpVectors(o.base, o.sobe, o.k); const s = 1 + o.k * 0.15; o.g.scale.setScalar(s); });
+    if (S) { S.t += dt;
+      if (S.fase === 'sobe' && S.t > 0.55) { S.fase = 'invoca'; S.ti = 0; }
+      if (S.fase === 'invoca') { S.ti += dt; while (S.lista.length < 10 && S.ti > S.lista.length * 0.08) { const i = S.lista.length, lado = ARC.lados[i % 2], k = Math.floor(i / 2); const m = ARC.fazAdaga(); lado.g.add(m);
+          const ang = (-0.7 + k * 0.35); m.userData.alvo = new T3.Vector3(Math.sin(ang) * 0.7 * lado.side * -1 + lado.side * 0.05, 0.25 + Math.cos(ang) * 0.55, 0.12); m.position.set(0, 0, 0.05); m.scale.setScalar(0.01); S.lista.push({ m, ang, i }); som('magia', 0.25, 1.6, 0.05); }
+        if (S.lista.length >= 10) S.fase = 'pronto'; adagasHud(); }
+      S.lista.forEach(d => { const a = d.m.userData.alvo; d.m.position.lerp(a, Math.min(1, dt * 8)); const sc = Math.min(1, d.m.scale.x + dt * 3); d.m.scale.setScalar(sc); d.m.position.y = a.y + Math.sin(gT * 2.5 + d.i) * 0.04 + (d.m.position.y - a.y) * 0.9;
+        d.m.rotation.set(0, gT * 1.5 + d.i, (a.x > 0 ? -1 : 1) * 0.12); if (d.m.userData.h) d.m.userData.h.material.opacity = 0.4 + Math.sin(gT * 5 + d.i) * 0.2; });
+      if (S.fase === 'pronto' && !S.lista.length && !ARC.voo.length) { S.fase = 'desce'; S.td = 0; aviso('🗡️ Adagas esgotadas — habilidade liberada!', '#c8a8ff'); }
+      if (S.fase === 'desce') { S.td += dt; if (S.td > 0.5) { ARC.st = null; adagasHud(); } } }
+    for (let i = ARC.voo.length - 1; i >= 0; i--) { const v = ARC.voo[i]; v.t += dt / v.dur; const u = Math.min(1, v.t);
+      const e = v.alvo, vivo = e && !e.morto; if (vivo) v.p2 = (v.p2 || new T3.Vector3()).set(e.g.position.x, e.g.position.y + (e.T.alt || 1.2) * 0.6, e.g.position.z); else if (!v.p2) v.p2 = v.p1.clone();
+      const a = 1 - u; _v.set(0, 0, 0).addScaledVector(v.p0, a * a).addScaledVector(v.p1, 2 * a * u).addScaledVector(v.p2, u * u);
+      v.m.position.copy(_v); _q.subVectors(_v, v.prev); if (_q.lengthSq() > 1e-6) { _q.normalize(); v.m.quaternion.setFromUnitVectors(new T3.Vector3(0, 1, 0), _q); } v.prev.copy(_v);
+      if (u >= 1) { if (vivo) { const W = ARMAS[AR.arma]; dano(e, ((W && W.dano) || 20) * 1.2 * atkMult(), 'magia', critico()); } fx('gelo', [_v.x, _v.y, _v.z], 0.35); v.m.parent && v.m.parent.remove(v.m); ARC.voo.splice(i, 1); adagasHud(); } } }
+  function haloFrame(dt) { arcanoFrame(dt); rubraFrame(dt); seteFrame(dt); seloFrame(dt); arautoFrame(dt); const quer = haloVis() && !dentro; haloDefFrame(dt); HALO.H.visible = quer || HALO.elos.length > 0; if (HALO.cd > 0) HALO.cd -= dt;
     if (!HALO.H.visible) return; HALO.F.rotation.z += dt * 2.1; HALO.G.material.opacity = 0.5 + Math.sin(gT * 3) * 0.15; { const pu = 0.5 + Math.sin(gT * 3.4) * 0.25; HALO.brA.material.opacity = pu; HALO.brB.material.opacity = 0.45 + Math.sin(gT * 4.1 + 1) * 0.25; HALO.brA2.material.opacity = 0.15 + Math.sin(gT * 2.2) * 0.12; }
     if (HALO.def) { HALO.A.rotation.z += dt * 6; HALO.B.rotation.z -= dt * 9; HALO.F.rotation.z += dt * 4; return; }
     if (!HALO.elos.length) { HALO.A.rotation.z += dt * 0.55; HALO.B.rotation.z -= dt * 1.5; return; }
