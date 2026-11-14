@@ -11449,7 +11449,7 @@ const ArcaneWingSystem = (function () {
     const ehPortao = (a, r, larg) => PORTOES.some(g => dAng(a, g) * r < larg);
     // ----- muralha grande com torres -----
     { const N = 150, seg = 2 * Math.PI * C.R / N + 0.2; const muro = [], torre = [];
-      for (let i = 0; i < N; i++) { const a = i / N * Math.PI * 2; if (ehPortao(a, C.R, 7)) continue; { const [wx, wz] = pol(a, C.R); if (Math.hypot(wx - POUSADA[0], wz - POUSADA[1]) < 21) continue; } // a Pousada fica encostada na muralha: ali vira passagem muro.push(a); if (i % 10 === 0) torre.push(a); COL.push({ t: 'c', x: pol(a, C.R)[0], z: pol(a, C.R)[1], r: 2.4 }); }
+      for (let i = 0; i < N; i++) { const a = i / N * Math.PI * 2; if (ehPortao(a, C.R, 7)) continue; { const [wx, wz] = pol(a, C.R); if (Math.hypot(wx - POUSADA[0], wz - POUSADA[1]) < 21) continue; } /* a Pousada fica encostada na muralha: ali vira passagem */ muro.push(a); if (i % 10 === 0) torre.push(a); COL.push({ t: 'c', x: pol(a, C.R)[0], z: pol(a, C.R)[1], r: 2.4 }); }
       PORTOES.forEach(g => [-1, 1].forEach(s => torre.push(g + s * 8.5 / C.R)));
       const m4 = new T3.Matrix4(), q = new T3.Quaternion(), sc = new T3.Vector3(), ps = new T3.Vector3(), up = new T3.Vector3(0, 1, 0);
       const pedra = M('#b9b0a0'), pedra2 = M('#8e8676'), telha = M('#7a2a2a');
