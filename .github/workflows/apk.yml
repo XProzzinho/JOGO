@@ -23,7 +23,7 @@ jobs:
       - name: Baixar o Firebase
         run: |
           mkdir -p firebase
-          for f in firebase-app-compat.js firebase-auth-compat.js firebase-firestore-compat.js; do curl -fsSL "https://cdn.jsdelivr.net/npm/firebase@10.12.2/$f" -o "firebase/$f"; done
+          for f in firebase-app-compat.js firebase-auth-compat.js firebase-firestore-compat.js firebase-database-compat.js; do curl -fsSL "https://cdn.jsdelivr.net/npm/firebase@10.12.2/$f" -o "firebase/$f"; done
           ls -la firebase
       - name: Copiar o jogo pro APK
         run: |

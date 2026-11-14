@@ -16,7 +16,7 @@ jobs:
       - name: Montar a pasta do site
         run: |
           mkdir -p site/firebase
-          for f in firebase-app-compat.js firebase-auth-compat.js firebase-firestore-compat.js; do curl -fsSL "https://cdn.jsdelivr.net/npm/firebase@10.12.2/$f" -o "site/firebase/$f"; done
+          for f in firebase-app-compat.js firebase-auth-compat.js firebase-firestore-compat.js firebase-database-compat.js; do curl -fsSL "https://cdn.jsdelivr.net/npm/firebase@10.12.2/$f" -o "site/firebase/$f"; done
           cp -r index.html three.min.js vozes sons icones site/
           touch site/.nojekyll
       - name: Enviar pro branch gh-pages

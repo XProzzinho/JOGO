@@ -565,7 +565,7 @@
 .sim-tag .sim-hp{display:block;width:56px;height:5px;margin:2px auto 0;background:rgba(0,0,0,.6);border-radius:3px;overflow:hidden;border:1px solid rgba(255,255,255,.5)}.sim-tag .sim-hp i{display:block;height:100%}.sim-tag em.sim-ok{color:#9affb0;font-size:11px}
 #sim-res{position:fixed;inset:0;z-index:300;background:rgba(10,6,20,.78);display:flex;align-items:center;justify-content:center}#sim-res[hidden]{display:none}#sim-res .box{width:min(560px,94vw);max-height:92vh;overflow:auto;background:#141020;border:2px solid rgba(255,255,255,.25);border-radius:20px;padding:14px 16px;color:#fff;font-family:var(--fonte);text-align:center}#sim-res h2{margin:2px 0 6px;font-size:20px}.sim-pl{font:900 30px var(--fonte)}.sim-v{font-size:14px;line-height:1.5}.sim-v img{width:44px;height:48px;object-fit:contain;vertical-align:middle}#sim-res table{width:100%;border-collapse:collapse;font-size:13px;margin:6px 0 10px}#sim-res td,#sim-res th{padding:4px 6px;border-bottom:1px solid rgba(255,255,255,.12)}#sim-res td:nth-child(2){text-align:left;font-weight:900}#sim-res .cb{min-width:140px}
 
-#hist-hud{position:fixed;left:calc(12px + env(safe-area-inset-left,0px));top:calc(108px + env(safe-area-inset-top,0px));z-index:7;max-width:165px;padding:3px 7px;border-radius:9px;background:rgba(14,18,34,.6);border:1px solid rgba(122,232,255,.45);color:#fff;font:800 9px var(--fonte);line-height:1.3;padding-right:30px}#hist-hud[hidden]{display:none}#hist-hud b{display:block;color:#7ae8ff;font-size:10px;margin-bottom:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}#hist-hud .dist{float:right;color:#ffd23c;font-size:9px;margin-left:5px}#hist-hud .ok{color:#9affb0}#hist-hud .nx{opacity:.6}#hist-p .hbt{display:block;width:100%;margin-top:8px;padding:9px;border-radius:10px;border:0;font:900 13px var(--fonte);color:#fff;background:#2e9d4f}#hist-p .hbt.ab{background:#c62828}
+#hist-hud{position:fixed;left:calc(12px + env(safe-area-inset-left,0px));top:calc(166px + env(safe-area-inset-top,0px));z-index:7;max-width:165px;padding:3px 7px;border-radius:9px;background:rgba(14,18,34,.6);border:1px solid rgba(122,232,255,.45);color:#fff;font:800 9px var(--fonte);line-height:1.3;padding-right:30px}#hist-hud[hidden]{display:none}#hist-hud b{display:block;color:#7ae8ff;font-size:10px;margin-bottom:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}#hist-hud .dist{float:right;color:#ffd23c;font-size:9px;margin-left:5px}#hist-hud .ok{color:#9affb0}#hist-hud .nx{opacity:.6}#hist-p .hbt{display:block;width:100%;margin-top:8px;padding:9px;border-radius:10px;border:0;font:900 13px var(--fonte);color:#fff;background:#2e9d4f}#hist-p .hbt.ab{background:#c62828}
 #hist-p{position:fixed;inset:0;z-index:70;background:rgba(10,8,24,.72);display:flex;align-items:center;justify-content:center}#hist-p[hidden]{display:none}#hist-p .box{width:min(620px,94vw);max-height:90vh;display:flex;flex-direction:column;background:#fffaf0;border:3px solid #2b2340;border-radius:20px;box-shadow:0 6px 0 #2b2340;color:#2b2340;font-family:var(--fonte)}#hist-p .hd{display:flex;align-items:center;padding:10px 14px;border-bottom:2px solid #efe4cc;font-size:18px}#hist-p .x{margin-left:auto;border:0;background:#2b2340;color:#fff;border-radius:10px;width:34px;height:34px;font-weight:900}#hist-p .lst{overflow:auto;padding:10px 12px}
 #hist-p .cap{border:2px solid #e6d9bc;border-radius:16px;padding:10px 12px;margin-bottom:10px;background:#fff}#hist-p .cap.ativa{border-color:#3ab8e8;box-shadow:0 0 0 3px rgba(58,184,232,.2)}#hist-p .cap.feita{opacity:.75}#hist-p .t{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 8px}#hist-p .t small{width:100%;color:#8a7a60;font-weight:800}#hist-p .t b{font-size:17px}#hist-p .st{margin-left:auto;font-size:12px;font-weight:900;padding:2px 8px;border-radius:999px;background:#efe4cc}#hist-p .st.ok{background:#d6f5dc;color:#1f7a34}#hist-p .st.at{background:#d6efff;color:#1a6a9a}#hist-p .st.nv{background:#fff1c8;color:#9a6a00}#hist-p p{margin:6px 0;font-size:13px;line-height:1.4}#hist-p .meta{font-size:12px;color:#6a5a44;font-weight:800}#hist-p ul{margin:6px 0;padding-left:4px;list-style:none;font-size:13px;font-weight:700}#hist-p li.ok{color:#1f7a34}#hist-p .rec{font-size:13px;font-weight:900;color:#9a6a00}
 
@@ -597,6 +597,7 @@
 @keyframes stfReflexo{0%{left:-70%}50%,100%{left:140%}}
 @keyframes stfBrilho{50%{box-shadow:0 0 14px rgba(255,210,60,1),0 0 3px #fff,inset 0 -1.5px 0 rgba(120,70,0,.55),inset 0 1px 0 rgba(255,255,255,.8);filter:brightness(1.15)}}
 @keyframes stfFaisca{45%{opacity:0;transform:scale(.4)}55%{opacity:1;transform:scale(1.3) rotate(45deg)}70%,100%{opacity:0;transform:scale(.4)}}
+#srv-p{position:fixed;inset:0;z-index:90;display:flex;align-items:center;justify-content:center;background:rgba(8,10,20,.55)}#srv-p[hidden]{display:none}#srv-p .box{width:min(380px,86vw);padding:16px;border-radius:18px;background:#141a2e;border:2px solid #3a4a7a;color:#fff;text-align:center;box-shadow:0 8px 30px rgba(0,0,0,.5)}#srv-p .box>b{display:block;font:900 18px var(--fonte-titulo,var(--fonte))}#srv-p .box>small{display:block;font-size:11px;opacity:.8;margin:4px 0 10px}#srv-p .ls{display:grid;gap:8px}#srv-p .sv{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;border:2px solid #2c3a62;background:#1c2440;color:#fff;text-align:left;font:800 14px var(--fonte)}#srv-p .sv.on{border-color:#5ab8ff;background:#1f3358}#srv-p .sv i{font-style:normal;font-size:24px}#srv-p .sv span small{display:block;font-size:11px;opacity:.75}#srv-p .fx{margin-top:10px;padding:8px 18px;border-radius:10px;border:0;background:#33405e;color:#fff;font:800 13px var(--fonte)}#mp-on{pointer-events:auto!important}#mp-on.off{color:#ffb4b4}
 </style>
 </head>
 <body>
@@ -3745,13 +3746,43 @@ const glowA = cv(128, (x) => { const g = x.createRadialGradient(64, 64, 0, 64, 6
     o.tx = d.x; o.tz = d.zz; o.ty = d.y || 0; o.tr = d.r || 0; o.a = d.a; o.d = d; o.t = performance.now();
     const NA = typeof NACOES !== 'undefined' && NACOES[d.na]; if (NA && !o.anelNa) { o.anelNa = new T3.Mesh(new T3.RingGeometry(0.45, 0.6, 28), new T3.MeshBasicMaterial({ color: NA.cor, transparent: true, opacity: 0.85, side: T3.DoubleSide, toneMapped: false })); o.anelNa.rotation.x = -Math.PI / 2; o.anelNa.position.y = 0.04; o.c.add(o.anelNa); } if (o.anelNa) o.anelNa.visible = d.z === 'nacao';
     { const _h = (NA && d.z === 'nacao' ? `<em style="color:${NA.cor}">${NA.ic} ${NA.curto}</em>` : '') + (d.t ? `<em>${titBadge(String(d.t).slice(0, 26), TIT_COR[d.tr] ? d.tr : 'comum')}</em>` : '') + `<b${NA ? ` style="color:${NA.cor}"` : ''}>${d.st === 'adm' || d.st === 'gm' ? stfBadge(d.st) : ''}${String(d.n || 'Jogador').replace(/</g, '').slice(0, 20)}${d.lv ? ` <i>Nv ${d.lv | 0}</i>` : ''}</b>${d.g ? `<small>${String(d.ge || '🛡️').slice(0, 4)} ${String(d.g).replace(/</g, '').slice(0, 24)}</small>` : ''}`; if (o.tag.dataset.h !== _h) { o.tag.dataset.h = _h; o.tag.innerHTML = _h; } } }
-  function mpLiga() { if (MP.ch || typeof guildClient === 'undefined') return; try { MP.ch = guildClient.channel('aetherion-mundo', { config: { broadcast: { self: false, ack: false } } });
+  // ---------- servidores do multiplayer: 1 = Supabase Realtime, 2 = Firebase Realtime Database ----------
+  const MP_SRV = { 1: { nome: 'Servidor 1', sub: 'Rede Supabase' }, 2: { nome: 'Servidor 2', sub: 'Rede Firebase' } };
+  MP.srv = 0;
+  function mpCanalFB() { const db = firebase.database(), raiz = db.ref('mundo2'), hs = {}, TS = firebase.database.ServerValue.TIMESTAMP; let pd = false;
+    const disp = (e, p) => (hs[e] || []).forEach(f => { try { f({ payload: p }); } catch (er) {} });
+    const ch = { on(t, f, cb) { (hs[f.event] = hs[f.event] || []).push(cb); return ch; },
+      send(m) { const pl = JSON.parse(JSON.stringify(m.payload || {}));
+        if (m.event === 'p') { const r = raiz.child('p/' + MP.id); if (!pd) { pd = true; r.onDisconnect().remove(); } pl._t = TS; r.set(pl); }
+        else if (m.event === 'sai') raiz.child('p/' + MP.id).remove();
+        else { const r = raiz.child('ev').push({ e: m.event, p: pl, de: MP.id, _t: TS }); r.onDisconnect().remove(); setTimeout(() => r.remove(), 8000); } },
+      subscribe(cb) { const pr = raiz.child('p'), fp = sn => { const v = sn.val(); if (v && v.id && v.id !== MP.id && !(v._t && Date.now() - v._t > 60000)) disp('p', v); };
+        pr.on('child_added', fp); pr.on('child_changed', fp); pr.on('child_removed', sn => { const v = sn.val(); if (v && v.id) disp('sai', { id: v.id }); });
+        raiz.child('ev').orderByChild('_t').startAt(Date.now() - 8000).on('child_added', sn => { const v = sn.val(); if (v && v.de !== MP.id) disp(v.e, v.p); });
+        db.ref('.info/connected').on('value', sn => cb(sn.val() ? 'SUBSCRIBED' : 'CHANNEL_ERROR')); return ch; },
+      sai() { try { raiz.child('p/' + MP.id).remove(); raiz.child('p').off(); raiz.child('ev').off(); db.ref('.info/connected').off(); } catch (e) {} } };
+    return ch; }
+  function mpLiga() { if (MP.ch || !MP.srv) return; MP.desde = performance.now();
+    try { if (MP.srv === 2) { if (typeof firebase === 'undefined' || !firebase.database) { MP.erro = 'Firebase indisponível'; return; } MP.ch = mpCanalFB(); }
+      else { if (typeof guildClient === 'undefined') { MP.erro = 'Supabase indisponível'; return; } MP.ch = guildClient.channel('aetherion-mundo', { config: { broadcast: { self: false, ack: false } } }); }
       MP.ch.on('broadcast', { event: 'p' }, m => mpRecebe(m.payload)).on('broadcast', { event: 'sai' }, m => { const o = m.payload && MP.outros[m.payload.id]; if (o) o.t = 0; })
-        ; if (window.__mpOn) window.__mpOn(MP.ch); MP.ch.subscribe(st => { MP.ok = st === 'SUBSCRIBED'; }); } catch (e) { MP.ch = null; } }
+        ; if (window.__mpOn) window.__mpOn(MP.ch); MP.ch.subscribe(st => { MP.ok = st === 'SUBSCRIBED'; if (MP.ok) MP.erro = ''; else if (st) MP.erro = 'sem conexão'; }); } catch (e) { MP.ch = null; MP.erro = String(e.message || e).slice(0, 40); } }
+  function mpDesliga() { const ch = MP.ch; MP.ch = null; MP.ok = false; MP.ult = '';
+    try { if (ch) { ch.send({ type: 'broadcast', event: 'sai', payload: { id: MP.id } }); if (ch.sai) ch.sai(); else guildClient.removeChannel(ch); } } catch (e) {}
+    Object.keys(MP.outros).forEach(id => { const o = MP.outros[id]; try { world.remove(o.c); o.tag.remove(); } catch (e) {} delete MP.outros[id]; }); }
+  function mpEscolhe(n) { if (MP.srv === n && MP.ch) return; mpDesliga(); MP.srv = n; MP.erro = ''; try { localStorage.setItem('aetherion-srv', n); sessionStorage.setItem('aetherion-srv', n); } catch (e) {} mpLiga(); aviso('🌐 Conectando ao ' + MP_SRV[n].nome + '...', '#5ab8ff'); }
+  const srvP = document.createElement('div'); srvP.id = 'srv-p'; srvP.hidden = true; document.body.appendChild(srvP);
+  function srvAbre() { let ult = 1; try { ult = +localStorage.getItem('aetherion-srv') || 1; } catch (e) {}
+    srvP.innerHTML = '<div class="box"><b>🌐 Escolha o servidor</b><small>Jogue com seus amigos: todos precisam estar no mesmo servidor (vale pro app e pro site).</small><div class="ls">' + [1, 2].map(n => `<button class="sv${n === (MP.srv || ult) ? ' on' : ''}" data-n="${n}"><i>🌎</i><span><b>${MP_SRV[n].nome}</b><small>${MP_SRV[n].sub}${MP.srv === n ? (MP.ok ? ' · ✅ conectado' : ' · ⏳ conectando') : n === ult && !MP.srv ? ' · último usado' : ''}</small></span></button>`).join('') + '</div>' + (MP.srv ? '<button class="fx">Fechar</button>' : '') + '</div>';
+    srvP.hidden = false; srvP.querySelectorAll('.sv').forEach(b => tapBtn(b, () => { srvP.hidden = true; mpEscolhe(+b.dataset.n); })); const fx = srvP.querySelector('.fx'); if (fx) tapBtn(fx, () => { srvP.hidden = true; }); }
+  tapBtn(mpCont, () => srvAbre());
+  let srvPedido = false;
+  function srvAuto() { if (MP.srv || srvPedido) return; const cr = $('criar'); if (window.__entrou === false || (cr && !cr.hidden) || conversa || cenaQ) return;
+    let s = 0; try { s = +sessionStorage.getItem('aetherion-srv') || 0; } catch (e) {} srvPedido = true; if (s) mpEscolhe(s); else srvAbre(); }
   window.addEventListener('pagehide', () => { try { MP.ch && MP.ch.send({ type: 'broadcast', event: 'sai', payload: { id: MP.id } }); } catch (e) {} });
   function mpEstado(p) { const G = typeof guildState !== 'undefined' && guildState && guildState.guild; const TT = tituloAtual(); return { id: MP.id, u: window.CONTA && CONTA.usuario ? CONTA.usuario.uid : '', n: (AR.visual && AR.visual.nome) || 'Leonardo', t: TT.nome, tr: TT.r, lv: AR.nv, g: G ? G.name : '', ge: G && typeof emblemIcon === 'function' ? emblemIcon(G.emblem) : '', st: meuCargo(), z: zona, dn: dentro ? 1 : 0, x: +p.x.toFixed(2), y: +p.y.toFixed(2), zz: +p.z.toFixed(2), r: +facing.toFixed(2), a: voando ? (voPitch > 0.6 ? 'voa' : 'paira') : !noChao ? 'pulo' : atkT < 0.3 ? 'atk' : vel > 4.2 ? 'corre' : vel > 0.4 ? 'anda' : 'para', w: AR.arma, na: AR.nacao || '' }; }
-  function mpFrame(dt, p) { mpLiga(); MP.envT -= dt;
-    if (MP.ok && MP.envT <= 0) { const e = mpEstado(p); const s = JSON.stringify(e); if (s !== MP.ult || MP.envT < -2) { MP.ult = s; MP.envT = 0.15; try { MP.ch.send({ type: 'broadcast', event: 'p', payload: e }); } catch (er) {} } else MP.envT = 0.15; }
+  function mpFrame(dt, p) { srvAuto(); mpLiga(); MP.envT -= dt;
+    if (MP.ok && MP.envT <= 0) { const e = mpEstado(p); const s = JSON.stringify(e); if (s !== MP.ult || performance.now() - (MP.ultT || 0) > 2000) { MP.ult = s; MP.ultT = performance.now(); MP.envT = MP.srv === 2 ? 0.25 : 0.15; try { MP.ch.send({ type: 'broadcast', event: 'p', payload: e }); } catch (er) {} } else MP.envT = 0.15; }
     const agora = performance.now(); let n = 0;
     Object.keys(MP.outros).forEach(id => { const o = MP.outros[id]; if (agora - o.t > 8000) { world.remove(o.c); o.tag.remove(); delete MP.outros[id]; return; }
       const mesma = o.d.z === zona && !!o.d.dn === !!dentro && !dentro; o.c.visible = mesma; if (!mesma) { o.tag.hidden = true; return; } n++;
@@ -3762,7 +3793,7 @@ const glowA = cv(128, (x) => { const g = x.createRadialGradient(64, 64, 0, 64, 6
       else if (o.a === 'corre' || o.a === 'anda') pose(o.c, gT + o.ph, o.a === 'corre' ? { run: true, mood: 'smile' } : { walk: true, mood: 'neutral' }); else pose(o.c, gT, { mood: 'neutral' });
       if (o.a === 'atk') { P.shR.rotation.x = -1.6 + Math.sin(gT * 18) * 0.9; }
       const dd = Math.hypot(o.x - p.x, o.z - p.z); if (dd > 22) { o.tag.hidden = true; return; } guildPosition(o.tag, o.c, 1.75); o.tag.style.transform = 'translate(-50%,-100%) scale(' + clamp(1.15 - dd / 22, 0.5, 1).toFixed(2) + ')'; o.tag.style.zIndex = String(100 - Math.round(dd)); });
-    mpCont.hidden = !MP.ok; mpCont.textContent = '🌐 Online: ' + (n + 1); }
+    mpCont.hidden = !MP.srv; mpCont.classList.toggle('off', !MP.ok); mpCont.textContent = MP.ok ? '🌐 S' + MP.srv + ' · Online: ' + (n + 1) : (performance.now() - (MP.desde || 0) > 6000 || MP.erro ? '⚠️ S' + MP.srv + ' sem conexão · trocar' : '⏳ Conectando S' + MP.srv); }
   window.__guild={client:guildClient,open:abrirGuilda,get state(){return guildState;},arthur:arthurNPC};
 
   // ---------- GUARDA RODRIK: missão dos 50 goblins ----------
@@ -11301,13 +11332,14 @@ const ArcaneWingSystem = (function () {
 
 
 </script>
-<script src="https://cdn.jsdelivr.net/npm/firebase@10.12.2/firebase-app-compat.js"></script><script src="https://cdn.jsdelivr.net/npm/firebase@10.12.2/firebase-auth-compat.js"></script><script src="https://cdn.jsdelivr.net/npm/firebase@10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/firebase@10.12.2/firebase-app-compat.js"></script><script src="https://cdn.jsdelivr.net/npm/firebase@10.12.2/firebase-auth-compat.js"></script><script src="https://cdn.jsdelivr.net/npm/firebase@10.12.2/firebase-firestore-compat.js"></script><script src="https://cdn.jsdelivr.net/npm/firebase@10.12.2/firebase-database-compat.js"></script>
 <script>
 // Projeto do Firebase: brumafria-o-despertar
 window.FIREBASE_CONFIG = {
   apiKey: 'AIzaSyAdby2vAyOw5U1kcQLfHQFx1YiAKdjdhD8',
   authDomain: 'brumafria-o-despertar.firebaseapp.com',
   projectId: 'brumafria-o-despertar',
+  databaseURL: 'https://brumafria-o-despertar-default-rtdb.firebaseio.com',
   storageBucket: 'brumafria-o-despertar.firebasestorage.app',
   messagingSenderId: '160136857728',
   appId: '1:160136857728:android:fce31276797790007f3e65'

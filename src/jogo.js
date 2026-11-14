@@ -2258,13 +2258,43 @@
     o.tx = d.x; o.tz = d.zz; o.ty = d.y || 0; o.tr = d.r || 0; o.a = d.a; o.d = d; o.t = performance.now();
     const NA = typeof NACOES !== 'undefined' && NACOES[d.na]; if (NA && !o.anelNa) { o.anelNa = new T3.Mesh(new T3.RingGeometry(0.45, 0.6, 28), new T3.MeshBasicMaterial({ color: NA.cor, transparent: true, opacity: 0.85, side: T3.DoubleSide, toneMapped: false })); o.anelNa.rotation.x = -Math.PI / 2; o.anelNa.position.y = 0.04; o.c.add(o.anelNa); } if (o.anelNa) o.anelNa.visible = d.z === 'nacao';
     { const _h = (NA && d.z === 'nacao' ? `<em style="color:${NA.cor}">${NA.ic} ${NA.curto}</em>` : '') + (d.t ? `<em>${titBadge(String(d.t).slice(0, 26), TIT_COR[d.tr] ? d.tr : 'comum')}</em>` : '') + `<b${NA ? ` style="color:${NA.cor}"` : ''}>${d.st === 'adm' || d.st === 'gm' ? stfBadge(d.st) : ''}${String(d.n || 'Jogador').replace(/</g, '').slice(0, 20)}${d.lv ? ` <i>Nv ${d.lv | 0}</i>` : ''}</b>${d.g ? `<small>${String(d.ge || '🛡️').slice(0, 4)} ${String(d.g).replace(/</g, '').slice(0, 24)}</small>` : ''}`; if (o.tag.dataset.h !== _h) { o.tag.dataset.h = _h; o.tag.innerHTML = _h; } } }
-  function mpLiga() { if (MP.ch || typeof guildClient === 'undefined') return; try { MP.ch = guildClient.channel('aetherion-mundo', { config: { broadcast: { self: false, ack: false } } });
+  // ---------- servidores do multiplayer: 1 = Supabase Realtime, 2 = Firebase Realtime Database ----------
+  const MP_SRV = { 1: { nome: 'Servidor 1', sub: 'Rede Supabase' }, 2: { nome: 'Servidor 2', sub: 'Rede Firebase' } };
+  MP.srv = 0;
+  function mpCanalFB() { const db = firebase.database(), raiz = db.ref('mundo2'), hs = {}, TS = firebase.database.ServerValue.TIMESTAMP; let pd = false;
+    const disp = (e, p) => (hs[e] || []).forEach(f => { try { f({ payload: p }); } catch (er) {} });
+    const ch = { on(t, f, cb) { (hs[f.event] = hs[f.event] || []).push(cb); return ch; },
+      send(m) { const pl = JSON.parse(JSON.stringify(m.payload || {}));
+        if (m.event === 'p') { const r = raiz.child('p/' + MP.id); if (!pd) { pd = true; r.onDisconnect().remove(); } pl._t = TS; r.set(pl); }
+        else if (m.event === 'sai') raiz.child('p/' + MP.id).remove();
+        else { const r = raiz.child('ev').push({ e: m.event, p: pl, de: MP.id, _t: TS }); r.onDisconnect().remove(); setTimeout(() => r.remove(), 8000); } },
+      subscribe(cb) { const pr = raiz.child('p'), fp = sn => { const v = sn.val(); if (v && v.id && v.id !== MP.id && !(v._t && Date.now() - v._t > 60000)) disp('p', v); };
+        pr.on('child_added', fp); pr.on('child_changed', fp); pr.on('child_removed', sn => { const v = sn.val(); if (v && v.id) disp('sai', { id: v.id }); });
+        raiz.child('ev').orderByChild('_t').startAt(Date.now() - 8000).on('child_added', sn => { const v = sn.val(); if (v && v.de !== MP.id) disp(v.e, v.p); });
+        db.ref('.info/connected').on('value', sn => cb(sn.val() ? 'SUBSCRIBED' : 'CHANNEL_ERROR')); return ch; },
+      sai() { try { raiz.child('p/' + MP.id).remove(); raiz.child('p').off(); raiz.child('ev').off(); db.ref('.info/connected').off(); } catch (e) {} } };
+    return ch; }
+  function mpLiga() { if (MP.ch || !MP.srv) return; MP.desde = performance.now();
+    try { if (MP.srv === 2) { if (typeof firebase === 'undefined' || !firebase.database) { MP.erro = 'Firebase indisponível'; return; } MP.ch = mpCanalFB(); }
+      else { if (typeof guildClient === 'undefined') { MP.erro = 'Supabase indisponível'; return; } MP.ch = guildClient.channel('aetherion-mundo', { config: { broadcast: { self: false, ack: false } } }); }
       MP.ch.on('broadcast', { event: 'p' }, m => mpRecebe(m.payload)).on('broadcast', { event: 'sai' }, m => { const o = m.payload && MP.outros[m.payload.id]; if (o) o.t = 0; })
-        ; if (window.__mpOn) window.__mpOn(MP.ch); MP.ch.subscribe(st => { MP.ok = st === 'SUBSCRIBED'; }); } catch (e) { MP.ch = null; } }
+        ; if (window.__mpOn) window.__mpOn(MP.ch); MP.ch.subscribe(st => { MP.ok = st === 'SUBSCRIBED'; if (MP.ok) MP.erro = ''; else if (st) MP.erro = 'sem conexão'; }); } catch (e) { MP.ch = null; MP.erro = String(e.message || e).slice(0, 40); } }
+  function mpDesliga() { const ch = MP.ch; MP.ch = null; MP.ok = false; MP.ult = '';
+    try { if (ch) { ch.send({ type: 'broadcast', event: 'sai', payload: { id: MP.id } }); if (ch.sai) ch.sai(); else guildClient.removeChannel(ch); } } catch (e) {}
+    Object.keys(MP.outros).forEach(id => { const o = MP.outros[id]; try { world.remove(o.c); o.tag.remove(); } catch (e) {} delete MP.outros[id]; }); }
+  function mpEscolhe(n) { if (MP.srv === n && MP.ch) return; mpDesliga(); MP.srv = n; MP.erro = ''; try { localStorage.setItem('aetherion-srv', n); sessionStorage.setItem('aetherion-srv', n); } catch (e) {} mpLiga(); aviso('🌐 Conectando ao ' + MP_SRV[n].nome + '...', '#5ab8ff'); }
+  const srvP = document.createElement('div'); srvP.id = 'srv-p'; srvP.hidden = true; document.body.appendChild(srvP);
+  function srvAbre() { let ult = 1; try { ult = +localStorage.getItem('aetherion-srv') || 1; } catch (e) {}
+    srvP.innerHTML = '<div class="box"><b>🌐 Escolha o servidor</b><small>Jogue com seus amigos: todos precisam estar no mesmo servidor (vale pro app e pro site).</small><div class="ls">' + [1, 2].map(n => `<button class="sv${n === (MP.srv || ult) ? ' on' : ''}" data-n="${n}"><i>🌎</i><span><b>${MP_SRV[n].nome}</b><small>${MP_SRV[n].sub}${MP.srv === n ? (MP.ok ? ' · ✅ conectado' : ' · ⏳ conectando') : n === ult && !MP.srv ? ' · último usado' : ''}</small></span></button>`).join('') + '</div>' + (MP.srv ? '<button class="fx">Fechar</button>' : '') + '</div>';
+    srvP.hidden = false; srvP.querySelectorAll('.sv').forEach(b => tapBtn(b, () => { srvP.hidden = true; mpEscolhe(+b.dataset.n); })); const fx = srvP.querySelector('.fx'); if (fx) tapBtn(fx, () => { srvP.hidden = true; }); }
+  tapBtn(mpCont, () => srvAbre());
+  let srvPedido = false;
+  function srvAuto() { if (MP.srv || srvPedido) return; const cr = $('criar'); if (window.__entrou === false || (cr && !cr.hidden) || conversa || cenaQ) return;
+    let s = 0; try { s = +sessionStorage.getItem('aetherion-srv') || 0; } catch (e) {} srvPedido = true; if (s) mpEscolhe(s); else srvAbre(); }
   window.addEventListener('pagehide', () => { try { MP.ch && MP.ch.send({ type: 'broadcast', event: 'sai', payload: { id: MP.id } }); } catch (e) {} });
   function mpEstado(p) { const G = typeof guildState !== 'undefined' && guildState && guildState.guild; const TT = tituloAtual(); return { id: MP.id, u: window.CONTA && CONTA.usuario ? CONTA.usuario.uid : '', n: (AR.visual && AR.visual.nome) || 'Leonardo', t: TT.nome, tr: TT.r, lv: AR.nv, g: G ? G.name : '', ge: G && typeof emblemIcon === 'function' ? emblemIcon(G.emblem) : '', st: meuCargo(), z: zona, dn: dentro ? 1 : 0, x: +p.x.toFixed(2), y: +p.y.toFixed(2), zz: +p.z.toFixed(2), r: +facing.toFixed(2), a: voando ? (voPitch > 0.6 ? 'voa' : 'paira') : !noChao ? 'pulo' : atkT < 0.3 ? 'atk' : vel > 4.2 ? 'corre' : vel > 0.4 ? 'anda' : 'para', w: AR.arma, na: AR.nacao || '' }; }
-  function mpFrame(dt, p) { mpLiga(); MP.envT -= dt;
-    if (MP.ok && MP.envT <= 0) { const e = mpEstado(p); const s = JSON.stringify(e); if (s !== MP.ult || MP.envT < -2) { MP.ult = s; MP.envT = 0.15; try { MP.ch.send({ type: 'broadcast', event: 'p', payload: e }); } catch (er) {} } else MP.envT = 0.15; }
+  function mpFrame(dt, p) { srvAuto(); mpLiga(); MP.envT -= dt;
+    if (MP.ok && MP.envT <= 0) { const e = mpEstado(p); const s = JSON.stringify(e); if (s !== MP.ult || performance.now() - (MP.ultT || 0) > 2000) { MP.ult = s; MP.ultT = performance.now(); MP.envT = MP.srv === 2 ? 0.25 : 0.15; try { MP.ch.send({ type: 'broadcast', event: 'p', payload: e }); } catch (er) {} } else MP.envT = 0.15; }
     const agora = performance.now(); let n = 0;
     Object.keys(MP.outros).forEach(id => { const o = MP.outros[id]; if (agora - o.t > 8000) { world.remove(o.c); o.tag.remove(); delete MP.outros[id]; return; }
       const mesma = o.d.z === zona && !!o.d.dn === !!dentro && !dentro; o.c.visible = mesma; if (!mesma) { o.tag.hidden = true; return; } n++;
@@ -2275,7 +2305,7 @@
       else if (o.a === 'corre' || o.a === 'anda') pose(o.c, gT + o.ph, o.a === 'corre' ? { run: true, mood: 'smile' } : { walk: true, mood: 'neutral' }); else pose(o.c, gT, { mood: 'neutral' });
       if (o.a === 'atk') { P.shR.rotation.x = -1.6 + Math.sin(gT * 18) * 0.9; }
       const dd = Math.hypot(o.x - p.x, o.z - p.z); if (dd > 22) { o.tag.hidden = true; return; } guildPosition(o.tag, o.c, 1.75); o.tag.style.transform = 'translate(-50%,-100%) scale(' + clamp(1.15 - dd / 22, 0.5, 1).toFixed(2) + ')'; o.tag.style.zIndex = String(100 - Math.round(dd)); });
-    mpCont.hidden = !MP.ok; mpCont.textContent = '🌐 Online: ' + (n + 1); }
+    mpCont.hidden = !MP.srv; mpCont.classList.toggle('off', !MP.ok); mpCont.textContent = MP.ok ? '🌐 S' + MP.srv + ' · Online: ' + (n + 1) : (performance.now() - (MP.desde || 0) > 6000 || MP.erro ? '⚠️ S' + MP.srv + ' sem conexão · trocar' : '⏳ Conectando S' + MP.srv); }
   window.__guild={client:guildClient,open:abrirGuilda,get state(){return guildState;},arthur:arthurNPC};
 
   // ---------- GUARDA RODRIK: missão dos 50 goblins ----------
