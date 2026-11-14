@@ -256,7 +256,7 @@
     C.divino = Object.keys(DIVINOS).map(k => [k, DIVINOS[k].nome, src(DIVINOS[k].icone), 'Item divino']); C.item = Object.keys(ITEM_INFO).map(k => [k, ITEM_INFO[k][1], src(ITEM_INFO[k][0]), 'Item']); C.titulo = Object.keys(TITULOS).filter(k => k !== 'admin').map(k => [k, TITULOS[k].nome, '', TITULOS[k].r]); return C; };
   // ===================== MAPA-MÚNDI COM TELEPORTE + MAGO TELEPORTADOR =====================
   function lugaresMapa() { const lib = Q.passo >= 1 || finais.some(f => f[0] === 'A') || souAdmin(); const S = SALAO, sx = S[0] + Math.sin(S[2]) * 11, sz = S[1] + Math.cos(S[2]) * 11;
-    return [{ id: 'vila', nome: 'Brumafria', ic: '🏠', x: 0, z: 4.2, cor: '#ffd23c' }, { id: 'praca', nome: 'Praça dos Aventureiros', ic: '🏰', x: PRACA.x, z: PRACA.z + 8, cor: '#ff5a3a', sub: 'Calabouços, Torre, Missões' },
+    return [{ id: 'vila', nome: 'Brumafria', ic: '🏠', x: 0, z: 8.5, cor: '#ffd23c' }, { id: 'praca', nome: 'Praça dos Aventureiros', ic: '🏰', x: PRACA.x, z: PRACA.z + 8, cor: '#ff5a3a', sub: 'Calabouços, Torre, Missões' },
       { id: 'guilda', nome: 'Salão das Guildas', ic: '🛡️', x: sx, z: sz, cor: '#5ab8ff' }, { id: 'masmorra', nome: 'Masmorra', ic: '💀', x: MM_ENT.x + 4, z: MM_ENT.z, cor: '#a07aff' },
       { id: 'goblin', nome: 'Floresta Goblin', ic: '👺', x: GBX - 10, z: GBZ + 10, cor: '#4ab84a' }, { id: 'ponte', nome: 'Ponte do Rio', ic: '🌉', x: RIO.ponte[0] - 9, z: RIO.ponte[1], cor: '#4aa8e8' },
       { id: 'pousada', nome: 'Pousada do Meio', ic: '🏡', x: POUSADA[0], z: POUSADA[1] + 4, cor: '#e8a040' }, { id: 'colosso', nome: 'Colosso (chefe de mundo)', ic: '🌋', x: 205, z: -48, cor: '#ff6a2a' }, { id: 'leilao', nome: 'Praça do Leilão', ic: '🔨', x: 15 + 3.2, z: 150 - 26 - 3.0, cor: '#e8a040', sub: 'Palanque do leiloeiro' },

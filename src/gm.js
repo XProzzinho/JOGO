@@ -18,5 +18,5 @@
       if (!a) return; a.s.visible = a.q.visible = on && !dentro; if (!on) return; const t = gT * 2 + i * 1.05; a.s.position.set(p.x, p.y + 0.15, p.z); a.s.scale.setScalar(1.5 + Math.sin(gT * 3 + i) * 0.15); a.s.material.opacity = 0.16;
       a.q.position.set(p.x + Math.cos(t) * 0.75, p.y + 0.5 + ((gT * 0.6 + i * 0.3) % 1.6), p.z + Math.sin(t) * 0.75); }); }
   // perfil público com "visto por último", pro painel saber quem está online
-  setInterval(() => { try { if (window.CONTA && CONTA.db && CONTA.usuario) CONTA.db.collection('perfis').doc(CONTA.usuario.uid).set({ nome: trNome(), codigo: trCodigo(CONTA.usuario.uid), nv: AR.nv || 1, classe: AR.classe || '', titulo: AR.titulo || '', visto: Date.now() }, { merge: true }).catch(() => {}); } catch (e) {} }, 60000);
+  setInterval(() => { try { if (window.CONTA && CONTA.db && CONTA.usuario) CONTA.db.collection('perfis').doc(CONTA.usuario.uid).set({ nome: trNome(), codigo: trCodigo(CONTA.usuario.uid), nv: AR.nv || 1, classe: AR.classe || '', titulo: AR.titulo || '', visto: Date.now(), ...rankCampos() }, { merge: true }).catch(() => {}); } catch (e) {} }, 60000);
   setTimeout(() => { try { if (window.CONTA && CONTA.db && CONTA.usuario) CONTA.db.collection('perfis').doc(CONTA.usuario.uid).set({ visto: Date.now(), classe: AR.classe || '' }, { merge: true }).catch(() => {}); } catch (e) {} }, 8000);

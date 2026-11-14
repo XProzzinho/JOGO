@@ -668,7 +668,7 @@
       { id: 'valdren', nome: 'Valdren', sub: lib ? 'A capital · Academia Real' : '🔒 Fale com o Professor pra ir', on: lib } ];
     $('mapa-lista').innerHTML = ''; L.forEach(l => { const b = document.createElement('button'); b.className = 'lugar' + (zona === l.id ? ' aqui' : ''); b.disabled = !l.on; b.innerHTML = `<b>${l.nome}</b><small>${zona === l.id ? '📍 Você está aqui' : l.sub}</small>`; if (l.on && zona !== l.id) tapBtn(b, () => viajar(l.id)); $('mapa-lista').appendChild(b); }); $('mapa').hidden = false; }
   function viajar(id) { $('mapa').hidden = true; if (Q.naCarroca) return; cena([{ t: id === 'vila' ? 'De volta pra casa... Brumafria' : 'A caminho de Valdren...', v: id === 'vila' ? 'nar05' : 'nar06' }], () => {
-      dentro = false; zona = id; if (id === 'vila') { heroi.position.set(0, 0, 4.2); facing = Math.PI; camYaw = 0; cam.position.set(0, 3, 10); mostrarLugar('Vila de Brumafria'); }
+      dentro = false; zona = id; if (id === 'vila') { heroi.position.set(0, 0, 8.5); facing = Math.PI; camYaw = 0; cam.position.set(0, 3, 10); mostrarLugar('Vila de Brumafria'); }
       else { heroi.position.set(VX, 0, VZ + 40); facing = Math.PI; camYaw = 0; cam.position.set(VX, 3, VZ + 46); mostrarLugar('Valdren · a capital'); } }); }
   tapBtn(mini, abrirMapa); tapBtn($('mapa-fecha'), () => { $('mapa').hidden = true; }); tapBtn($('casa'), () => { if (zona === 'vila' && !dentro) { aviso('Você já está em Brumafria, sua cidade natal.', '#ffd23c'); return; } if (dentro) { aviso('Você está dentro de casa. A porta fica atrás de você.', '#ffd23c'); return; } viajar('vila'); });
 
@@ -1521,12 +1521,12 @@
   function tituloFrame(dt) { fugaT -= dt; const p = heroi.position; FERAS.forEach(e => { if (!e.T.chefe || e.morto) { e._caca = false; return; } const caca = e.estado === 'caca' || e.estado === 'ataque';
       if (e._caca && !caca && vida > 0 && Math.hypot(p.x - e.g.position.x, p.z - e.g.position.z) > 16) feito('fugitivo'); e._caca = caca; }); }
   document.querySelectorAll('#perfil .aba').forEach(b => tapBtn(b, () => { abaPerfil = b.dataset.a; desenhaPerfil(); }));
-  const menuR = document.createElement('div'); menuR.id = 'menu-r'; menuR.hidden = true; menuR.innerHTML = '<button data-m="hist"><span>📖</span>Modo História</button><button data-m="perfil"><span>👤</span>Perfil e equipamento</button><button data-m="bolsa"><span>🎒</span>Inventário</button><button data-m="arv"><span>🌳</span>Árvore de habilidades<b id="menu-pts" hidden></b></button><button data-m="cfg"><span>⚙️</span>Configurações</button>'; document.body.appendChild(menuR);
+  const menuR = document.createElement('div'); menuR.id = 'menu-r'; menuR.hidden = true; menuR.innerHTML = '<button data-m="hist"><span>📖</span>Modo História</button><button data-m="perfil"><span>👤</span>Perfil e equipamento</button><button data-m="bolsa"><span>🎒</span>Inventário</button><button data-m="arv"><span>🌳</span>Árvore de habilidades<b id="menu-pts" hidden></b></button><button data-m="rank"><span>🏆</span>Ranking de Poder</button><button data-m="cfg"><span>⚙️</span>Configurações</button>'; document.body.appendChild(menuR);
   const menuDot = document.createElement('span'); menuDot.id = 'menu-dot'; menuDot.hidden = true; $('perfil-btn').appendChild(menuDot);
   function menuPts() { const a = $('arv-pts'), on = a && !a.hidden; menuDot.hidden = !on; const m = $('menu-pts'); m.hidden = !on; if (on) m.textContent = a.textContent; }
   if ($('arv-pts')) new MutationObserver(menuPts).observe($('arv-pts'), { attributes: true, childList: true, characterData: true, subtree: true }); setTimeout(menuPts, 500);
   menuR.querySelectorAll('button').forEach(b => tapBtn(b, () => { menuR.hidden = true; const k = b.dataset.m; if (conversa || cenaQ) return;
-    if (k === 'hist') histAbre(); else if (k === 'perfil') abrirPerfil(); else if (k === 'bolsa') abrirBolsa(); else if (k === 'arv') abrirArvore(); else if (k === 'cfg') { $('cfg').hidden = false; configDesenha(); } }));
+    if (k === 'hist') histAbre(); else if (k === 'perfil') abrirPerfil(); else if (k === 'bolsa') abrirBolsa(); else if (k === 'arv') abrirArvore(); else if (k === 'rank') rankAbre(); else if (k === 'cfg') { $('cfg').hidden = false; configDesenha(); } }));
   window.addEventListener('pointerdown', e => { if (!menuR.hidden && !menuR.contains(e.target) && !$('perfil-btn').contains(e.target)) menuR.hidden = true; }, true);
   tapBtn($('perfil-btn'), () => { if (conversa || cenaQ) return; menuR.hidden = !menuR.hidden; menuPts(); }); tapBtn($('pf-fecha'), () => { $('perfil').hidden = true; });
   let previaT = 0; function perfilFrame(dt) { if ($('perfil').hidden || !$('previa')) return; previaT += dt; if (previaT > 0.06) { fazPrevia(previaT); previaT = 0; } }
@@ -2267,7 +2267,8 @@
   function visAtual() { const agora = performance.now(); if (agora - VIS.t > 800) { VIS.t = agora; const k = visLista(); const c = ['pele', 'cab', 'olho', 'top', 'top2', 'calca'].map(x => '#' + MH[x].color.getHexString()).join(','); if (k !== VIS.k || c !== VIS.c) { VIS.k = k; VIS.c = c; VIS.mud = true; } } return VIS; }
   function visEnvia() { if (!MP.ok || !MP.ch) return; const V = visAtual(); if (!V.k) return; const agora = performance.now(); if (V.mud || agora - V.env > (MP.srv === 2 ? 60000 : 6000)) { V.mud = false; V.env = agora; try { MP.ch.send({ type: 'broadcast', event: 'vis', payload: { id: MP.id, k: V.k, c: V.c } }); } catch (e) {} } }
   function visRecebe(d) { if (!d || d.id === MP.id || !d.k) return; const o = MP.outros[d.id]; if (!o) { MP.visPend = MP.visPend || {}; MP.visPend[d.id] = d; return; } if (o.vis && o.vis.k === d.k && o.vis.c === d.c) return; o.vis = { k: d.k, c: d.c }; o.visNovo = true; }
-  function visConstroi(o) { const d = o.vis; if (!d || !d.k) return; let bin; try { bin = atob(d.k); } catch (e) { return; } const K = new Set(); for (let i = 0; i + 3 < bin.length; i += 4) K.add(((bin.charCodeAt(i) << 24) | (bin.charCodeAt(i + 1) << 16) | (bin.charCodeAt(i + 2) << 8) | bin.charCodeAt(i + 3)) >>> 0);
+  function visConstroi(o) { const c = visMonta(o.vis); if (!c) return; c.position.copy(o.c.position); c.rotation.copy(o.c.rotation); c.scale.copy(heroi.scale); c.visible = o.c.visible; world.remove(o.c); if (o.anelNa) c.add(o.anelNa); world.add(c); o.c = c; o.real = true; }
+  function visMonta(d) { if (!d || !d.k) return null; let bin; try { bin = atob(d.k); } catch (e) { return null; } const K = new Set(); for (let i = 0; i + 3 < bin.length; i += 4) K.add(((bin.charCodeAt(i) << 24) | (bin.charCodeAt(i + 1) << 16) | (bin.charCodeAt(i + 2) << 8) | bin.charCodeAt(i + 3)) >>> 0);
     const R = visRosto(), need = new Set(), liga = new Set(); const marca = x => { while (x && !need.has(x)) { need.add(x); if (x === heroi) break; x = x.parent; } };
     heroi.traverse(x => { if (x.isLight || x.isSkinnedMesh) return; if (R.has(x)) marca(x); else if (visDesenha(x) && K.has(visChave(x))) { liga.add(x); marca(x); } });
     (function col(v) { if (v && v.isObject3D) marca(v); else if (Array.isArray(v)) v.forEach(col); else if (v && typeof v === 'object' && v.constructor === Object) Object.entries(v).forEach(([k, w]) => { if (k !== 'o') col(w); }); })(heroi.userData.P);
@@ -2277,8 +2278,7 @@
       mapa.set(x, n); x.children.forEach(ch => { if (need.has(ch)) n.add(cl(ch)); }); return n; };
     const c = cl(heroi);
     const re = v => v && v.isObject3D ? (mapa.get(v) || new T3.Object3D()) : Array.isArray(v) ? v.map(re) : v && typeof v === 'object' && v.constructor === Object ? Object.fromEntries(Object.entries(v).map(([k, w]) => [k, k === 'o' ? w : re(w)])) : v;
-    c.userData = { P: re(heroi.userData.P) };
-    c.position.copy(o.c.position); c.rotation.copy(o.c.rotation); c.scale.copy(heroi.scale); c.visible = o.c.visible; world.remove(o.c); if (o.anelNa) c.add(o.anelNa); world.add(c); o.c = c; o.real = true; }
+    c.userData = { P: re(heroi.userData.P) }; return c; }
   function visFrame() { const agora = performance.now(); Object.values(MP.outros).forEach(o => { if (o.visNovo && (!o.real || agora - (o.visT || -1e9) > 1200)) { o.visNovo = false; o.visT = agora; try { visConstroi(o); } catch (e) { console.warn('visual mp', e); } } }); }
   function mpCria(id, d) { const h = mpHash(id), R = MP_ROUPAS[h % MP_ROUPAS.length]; const c = makeChar({ skin: MP_PELE[(h >> 3) % MP_PELE.length], hairStyle: ['short', 'long', 'short', 'bald'][(h >> 5) % 4], hairC: MP_CAB[(h >> 7) % MP_CAB.length], top: R[0], top2: R[1], pants: '#3a3040', shoe: '#2a2020', iris: '#3a2a1a', s: 0.82, ph: (h % 100) / 10 });
     c.traverse(o => { if (o.isMesh) o.castShadow = true; }); world.add(c); const tag = document.createElement('div'); tag.className = 'mp-tag'; mpTags.appendChild(tag);
@@ -2418,7 +2418,7 @@
   // ---------- laço do jogo ----------
   let vy = 0, noChao = true, facing = 0, vel = 0, gT = 0, last = performance.now();
   const ANDAR = 3.0, CORRER = 6.5, GRAV = 22, PULO = 7.6; const tmp = new T3.Vector3();
-  heroi.position.set(0, 0, 4.2); heroi.rotation.y = Math.PI; facing = Math.PI;
+  heroi.position.set(0, 0, 8.5); heroi.rotation.y = Math.PI; facing = Math.PI;
 
   // ---------- limite do mapa principal: floresta fechada + montanhas em volta, pra ninguém ver a borda ----------
   const BORDA = [-128, -183, 488, 213]; // xmin, zmin, xmax, zmax (mesma área do Mapa de Aetherion)
