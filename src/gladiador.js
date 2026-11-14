@@ -9,7 +9,7 @@
     { id: 'gl_egide', nome: 'Égide', titulo: 'Égide das Sombras', custo: 50, cd: 16, cor: GPAL.roxa, desc: 'Cúpula sombria com runas: empurra os inimigos e reduz 60% do dano que você recebe por 4 segundos.' },
     { id: 'gl_julgamento', nome: 'Julgamento', titulo: 'Julgamento do Campeão', custo: 90, cd: 22, cor: GPAL.luz, desc: 'O chakram cresce, você salta e crava no chão: 4 crateras em linha reta na frente com dano gigante.' }];
   const GL = { ativo: null, t: 0, f: {}, vfx: [], egide: 0, spin: 0, flip: 0, pose: null };
-  GLAD.forEach(L => { L.glad = true; const h = { id: L.id, nome: L.nome, icone: IC('p_' + L.id), tipo: 'uso', custo: L.custo, lend: L, glad: true, nvMin: 5, desc: '⚔️ GLADIADOR · ' + L.desc + ' (recarga ' + L.cd + ' s)' }; PODERES.push(h); PW[L.id] = h; });
+  GLAD.forEach(L => { L.glad = true; const h = { id: L.id, nome: L.nome, icone: IC('p_' + L.id), tipo: 'uso', custo: L.custo, lend: L, glad: true, nvMin: 5, desc: '⚔️ GLADIADOR · ' + L.desc + ' (recarga ' + L.cd + ' s) · 🌀 Precisa de chakram na mão.' }; PODERES.push(h); PW[L.id] = h; });
   // ---------- texturas (do coliseu) ----------
   const GTEX = { cratera: canvasTex(256, 256, (g) => { const cx = 128, cy = 128; const gr = g.createRadialGradient(cx, cy, 8, cx, cy, 120); gr.addColorStop(0, 'rgba(255,200,61,.95)'); gr.addColorStop(0.28, 'rgba(155,32,255,.72)'); gr.addColorStop(0.62, 'rgba(15,8,23,.92)'); gr.addColorStop(1, 'rgba(15,8,23,0)'); g.clearRect(0, 0, 256, 256); g.fillStyle = gr; g.fillRect(0, 0, 256, 256);
       g.lineWidth = 3; for (let i = 0; i < 16; i++) { const a = i / 16 * Math.PI * 2 + (Math.random() - 0.5) * 0.2, len = 55 + Math.random() * 58; g.strokeStyle = i % 2 ? 'rgba(185,85,255,.85)' : 'rgba(255,215,90,.9)'; g.beginPath(); g.moveTo(cx, cy); let r = 18; while (r < len) { r += 14; const j = (Math.random() - 0.5) * 0.25; g.lineTo(cx + Math.cos(a + j) * r, cy + Math.sin(a + j) * r); } g.stroke(); } }),
@@ -118,4 +118,4 @@
     if (GL.egide > 0) { GL.egide -= dt; const p = heroi.position; EGIDE.g.visible = true; EGIDE.g.position.set(p.x, p.y, p.z); EGIDE.an[0].rotation.z += dt * 2.2; EGIDE.an[1].rotation.z -= dt * 3.1; EGIDE.esf.scale.setScalar(1 + Math.sin(gT * 8) * 0.04); if (GL.egide <= 0) EGIDE.g.visible = false; }
     if (!GL.ativo) return; if (desmaiado || zona === 'leilao') { gTerm(); return; } GL.t += dt; let acabou = false; try { acabou = GSKILL[GL.ativo](dt, GL.t); } catch (e) { console.warn(e); acabou = true; } if (acabou) gTerm(); }
   function gladReduz(n) { return GL.egide > 0 ? n * 0.4 : n; }
-  window.__glad = { GL, cast: id => { LEND_CD[id] = 0; GL.ativo = null; usarPoder(PW[id]); } };
+  window.__glad = { GL, equipa: k => equipaArma(k), cast: id => { LEND_CD[id] = 0; GL.ativo = null; usarPoder(PW[id]); } };

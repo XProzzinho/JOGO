@@ -5,9 +5,9 @@
   // só as 6 magias novas; os nós passivos ligam uma à outra
   // fila: cada magia só libera depois da anterior; os bônus ficam pendurados em cima e embaixo de cada magia
   const ROTAS = [
-    { id: 'mago', nome: 'Rota do Mago', sub: 'As 6 magias lendárias, uma depois da outra', ic: '🧙', cor: '#b46aff', etapas: ['lg_trovao', 'lg_glacial', 'lg_eclipse', 'lg_meteoros', 'lg_dragao', 'lg_abismo'],
+    { id: 'mago', nome: 'Rota do Mago', sub: 'Só com 🪄 cajado na mão', ic: '🧙', cor: '#b46aff', etapas: ['lg_trovao', 'lg_glacial', 'lg_eclipse', 'lg_meteoros', 'lg_dragao', 'lg_abismo'],
       lados: [['mana', 'vida'], ['atk', 'def'], ['crit', 'mana'], ['atk', 'vida'], ['crit', 'def'], ['atk', 'mana']], preco: [2, 2, 3, 3, 4, 4], nv: [5, 8, 11, 14, 17, 20] },
-    { id: 'glad', nome: 'Rota do Gladiador', sub: 'Chakram, saltos, giros e terremotos', ic: '⚔️', cor: '#ffc83d', etapas: ['gl_danca', 'gl_devastador', 'gl_investida', 'gl_furia', 'gl_sismo', 'gl_egide', 'gl_julgamento'],
+    { id: 'glad', nome: 'Rota do Gladiador', sub: 'Só com 🌀 chakram na mão', ic: '⚔️', cor: '#ffc83d', etapas: ['gl_danca', 'gl_devastador', 'gl_investida', 'gl_furia', 'gl_sismo', 'gl_egide', 'gl_julgamento'],
       lados: [['atk', 'vida'], ['crit', 'def'], ['atk', 'vida'], ['crit', 'atk'], ['def', 'vida'], ['def', 'crit'], ['atk', 'vida']], preco: [2, 2, 3, 3, 3, 4, 5], nv: [5, 8, 11, 14, 17, 20, 25] }];
   const PONTES = [];
   const ARV = { nos: {}, lig: {}, W: 0, H: 0 };

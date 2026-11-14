@@ -333,7 +333,7 @@
   for (let i = 0; i < NSLOTS; i++) { const b = document.createElement('button'); b.className = 'slot' + (i < 3 ? ' fixo' : ''); tapBtn(b, () => { const id = AR.barra[i]; if (id) usarPoder(PW[id]); else abrirArvore(); }); barra.appendChild(b); SLOTS.push(b); }
   function montaBarra() { PODERES.forEach(pw => pw.el = null);
     SLOTS.forEach((b, i) => { const pw = AR.barra[i] && PW[AR.barra[i]]; b.classList.toggle('vazio', !pw); b.classList.remove('on', 'falta');
-      if (pw) { pw.el = b; b.innerHTML = `<span class="ic">${pw.icone}</span><span class="nm">${pw.nome}</span><span class="tc">${i + 1}</span>${i < 3 ? '<span class="cad">🔒</span>' : ''}${nivelHab(pw.id) > 1 ? '<span class="lv">' + nivelHab(pw.id) + '</span>' : ''}`; b.classList.toggle('on', pw.tipo === 'liga' && !!ativo[pw.id]); }
+      if (pw) { pw.el = b; b.innerHTML = `<span class="ic">${pw.icone}</span><span class="nm">${pw.nome}</span><span class="tc">${i + 1}</span>${i < 2 ? '<span class="cad">🔒</span>' : ''}${nivelHab(pw.id) > 1 ? '<span class="lv">' + nivelHab(pw.id) + '</span>' : ''}`; b.classList.toggle('on', pw.tipo === 'liga' && !!ativo[pw.id]);  b.classList.toggle('semarma', !!(pw.lend && typeof lendArma === 'function' && !lendArma(pw).ok(AR.arma))); if (b.classList.contains('semarma')) b.insertAdjacentHTML('beforeend', '<span class="sa">' + lendArma(pw).ic + '</span>'); }
       else b.innerHTML = `<span class="ic">＋</span><span class="tc">${i + 1}</span>`; });  if (typeof montaDiv === 'function') montaDiv(); }
   // ---- barra divina: 6 espacinhos em cima com as habilidades do artefato divino equipado ----
   const divBar = document.createElement('div'); divBar.id = 'div-barra'; const DSL = [];
@@ -970,7 +970,7 @@
     else { som('gelo', 0.8, 0.7); flash('rgba(120,120,140,.35)'); aviso('💨 O cristal rachou... ' + ARMAS[k].nome + ' continua +' + n + '. Tente de novo!', '#8a8aa0'); }
     salvaAR(); atualizaInv(); abrirLoja(); }
   function abrirLoja() { if (conversa || cenaQ) return; som('forja', 0.8); const L = $('loja-lista'); L.innerHTML = ''; $('loja-m').textContent = AR.inv.moedas;
-    Object.keys(ARMAS).forEach(k => { const A = ARMAS[k], tem = AR.armas.includes(k); if (A.classe || A.oculta || A.staff || (A.drop && !AR.armas.includes(k))) return; const b = document.createElement('div'); b.className = 'item';
+    Object.keys(ARMAS).forEach(k => { const A = ARMAS[k], tem = AR.armas.includes(k); if ((A.classe && !A.preco) || A.oculta || A.staff || (A.drop && !AR.armas.includes(k))) return; const b = document.createElement('div'); b.className = 'item';
       const preco = A.preco ? `${A.preco} 💰${A.precisa ? ' + 💎 Coração de Gelo' : ''}` : 'Presente do seu pai';
       b.innerHTML = `<span class="ic">${A.icone}</span><div class="tx"><b>${A.nome}</b><small>${A.longe ? 'De longe' : 'Corpo a corpo'} · dano ${A.dano}</small><small>${A.desc}</small></div>`;
       const bt = document.createElement('button'); bt.className = 'cb';
@@ -1625,7 +1625,7 @@
     if (ARMAE.runica) ARMAE.runica.visible = false; }
   //@@ESPADAS@@
   function armaVisivel() { return Object.keys(ARMAG).find(k => ARMAG[k].visible) || null; }
-  function equipaArma(k) { if (k && typeof podeArma === 'function' && !podeArma(k)) { aviso('🔒 ' + ARMAS[k].nome + ': só ' + (ARMAS[k].soClasse ? CLASSES[ARMAS[k].soClasse].nome : ARMAS[k].staff === 'adm' ? 'ADM' : 'GM') + ' pode usar.', '#ff6a6a'); k = null; } AR.arma = k && AR.armas.includes(k) ? k : 'punho'; salvaAR(); mostraArma(); armaNasCostas = null; setTimeout(fazRetrato, 60);
+  function equipaArma(k) { setTimeout(() => { try { montaBarra(); } catch (e) {} }, 0); if (k && typeof podeArma === 'function' && !podeArma(k)) { aviso('🔒 ' + ARMAS[k].nome + ': só ' + (ARMAS[k].soClasse ? CLASSES[ARMAS[k].soClasse].nome : ARMAS[k].staff === 'adm' ? 'ADM' : 'GM') + ' pode usar.', '#ff6a6a'); k = null; } AR.arma = k && AR.armas.includes(k) ? k : 'punho'; salvaAR(); mostraArma(); armaNasCostas = null; setTimeout(fazRetrato, 60);
     const A = ARMAS[AR.arma]; aviso(AR.arma === 'punho' ? '👊 Arma guardada na mochila' : 'Equipou: ' + A.icone + ' ' + A.nome, '#ffd23c'); }
 
   // ---- fantasias de enfeite (só visual) ----

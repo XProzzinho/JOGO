@@ -587,7 +587,7 @@
 .arv-faixa{position:absolute;width:150px;height:70px;border-radius:14px;padding:6px 10px;box-sizing:border-box;background:linear-gradient(90deg,color-mix(in srgb,var(--rc) 35%,transparent),transparent);border-left:3px solid var(--rc);display:flex;flex-direction:column;justify-content:center}
 .arv-faixa .fi{font-size:24px}.arv-faixa b{font-size:14px;color:#fff}.arv-faixa small{font-size:10px;color:#c8cce0;line-height:1.2}.arv-faixa em{font-style:normal;font-size:11px;font-weight:900;color:var(--rc)}
 #arvore .box{position:relative}#arv-det{position:absolute;right:16px;bottom:16px;width:min(330px,46vw);max-height:calc(100% - 80px);overflow:auto;box-sizing:border-box;padding:10px 12px;border-radius:16px;background:rgba(14,18,34,.94);border:2px solid #3a4468;box-shadow:0 8px 24px rgba(0,0,0,.5);color:#e8ecf8;z-index:3}#arv-det:has(.vz){width:auto;max-width:300px;padding:6px 10px;font-size:11px;opacity:.85}#arv-det .dt small,#arv-det .vz{color:#aab2cc}#arv-det .slotsel .ss{background:#1e2338;color:#fff}
-#arv-det .arv-x{float:right;border:0;background:#2b2340;color:#fff;width:28px;height:28px;border-radius:9px;font-weight:900;margin:-2px -4px 0 6px}#arvore .box{padding:8px 10px!important;gap:6px!important}#arvore h3{font-size:18px!important}.arv-no .nm{font-size:9px}.arv-rede-wrap:not(.nomes) .arv-no:not(.raiz):not(.sel) .nm{display:none}.arv-no.sel .nm{color:#fff;background:rgba(0,0,0,.6);padding:1px 5px;border-radius:6px;z-index:2}#arv-nomes{background:#1e2338;color:#dfe4f8;border:2px solid #3a4468;border-radius:12px;padding:6px 10px;font-weight:900;font-size:13px}#arv-det:has(.vz){display:none}</style>
+#arv-det .arv-x{float:right;border:0;background:#2b2340;color:#fff;width:28px;height:28px;border-radius:9px;font-weight:900;margin:-2px -4px 0 6px}#arvore .box{padding:8px 10px!important;gap:6px!important}#arvore h3{font-size:18px!important}.arv-no .nm{font-size:9px}.arv-rede-wrap:not(.nomes) .arv-no:not(.raiz):not(.sel) .nm{display:none}.arv-no.sel .nm{color:#fff;background:rgba(0,0,0,.6);padding:1px 5px;border-radius:6px;z-index:2}#arv-nomes{background:#1e2338;color:#dfe4f8;border:2px solid #3a4468;border-radius:12px;padding:6px 10px;font-weight:900;font-size:13px}#arv-det:has(.vz){display:none}.slot.semarma .ic,.slot.semarma img{filter:grayscale(1) brightness(.6)}.slot .sa{position:absolute;right:-3px;bottom:-3px;font-size:13px;background:#2b2340;border-radius:50%;width:18px;height:18px;display:flex;align-items:center;justify-content:center;border:1.5px solid #ff9a6a}</style>
 </head>
 <body>
 <canvas id="jogo-cv"></canvas>
@@ -1119,7 +1119,7 @@ ${_}`}class A extends Error{constructor({message:e,code:t,cause:r,name:s}){var n
   for (let i = 0; i < NSLOTS; i++) { const b = document.createElement('button'); b.className = 'slot' + (i < 3 ? ' fixo' : ''); tapBtn(b, () => { const id = AR.barra[i]; if (id) usarPoder(PW[id]); else abrirArvore(); }); barra.appendChild(b); SLOTS.push(b); }
   function montaBarra() { PODERES.forEach(pw => pw.el = null);
     SLOTS.forEach((b, i) => { const pw = AR.barra[i] && PW[AR.barra[i]]; b.classList.toggle('vazio', !pw); b.classList.remove('on', 'falta');
-      if (pw) { pw.el = b; b.innerHTML = `<span class="ic">${pw.icone}</span><span class="nm">${pw.nome}</span><span class="tc">${i + 1}</span>${i < 3 ? '<span class="cad">🔒</span>' : ''}${nivelHab(pw.id) > 1 ? '<span class="lv">' + nivelHab(pw.id) + '</span>' : ''}`; b.classList.toggle('on', pw.tipo === 'liga' && !!ativo[pw.id]); }
+      if (pw) { pw.el = b; b.innerHTML = `<span class="ic">${pw.icone}</span><span class="nm">${pw.nome}</span><span class="tc">${i + 1}</span>${i < 2 ? '<span class="cad">🔒</span>' : ''}${nivelHab(pw.id) > 1 ? '<span class="lv">' + nivelHab(pw.id) + '</span>' : ''}`; b.classList.toggle('on', pw.tipo === 'liga' && !!ativo[pw.id]);  b.classList.toggle('semarma', !!(pw.lend && typeof lendArma === 'function' && !lendArma(pw).ok(AR.arma))); if (b.classList.contains('semarma')) b.insertAdjacentHTML('beforeend', '<span class="sa">' + lendArma(pw).ic + '</span>'); }
       else b.innerHTML = `<span class="ic">＋</span><span class="tc">${i + 1}</span>`; });  if (typeof montaDiv === 'function') montaDiv(); }
   // ---- barra divina: 6 espacinhos em cima com as habilidades do artefato divino equipado ----
   const divBar = document.createElement('div'); divBar.id = 'div-barra'; const DSL = [];
@@ -1756,7 +1756,7 @@ ${_}`}class A extends Error{constructor({message:e,code:t,cause:r,name:s}){var n
     else { som('gelo', 0.8, 0.7); flash('rgba(120,120,140,.35)'); aviso('💨 O cristal rachou... ' + ARMAS[k].nome + ' continua +' + n + '. Tente de novo!', '#8a8aa0'); }
     salvaAR(); atualizaInv(); abrirLoja(); }
   function abrirLoja() { if (conversa || cenaQ) return; som('forja', 0.8); const L = $('loja-lista'); L.innerHTML = ''; $('loja-m').textContent = AR.inv.moedas;
-    Object.keys(ARMAS).forEach(k => { const A = ARMAS[k], tem = AR.armas.includes(k); if (A.classe || A.oculta || A.staff || (A.drop && !AR.armas.includes(k))) return; const b = document.createElement('div'); b.className = 'item';
+    Object.keys(ARMAS).forEach(k => { const A = ARMAS[k], tem = AR.armas.includes(k); if ((A.classe && !A.preco) || A.oculta || A.staff || (A.drop && !AR.armas.includes(k))) return; const b = document.createElement('div'); b.className = 'item';
       const preco = A.preco ? `${A.preco} 💰${A.precisa ? ' + 💎 Coração de Gelo' : ''}` : 'Presente do seu pai';
       b.innerHTML = `<span class="ic">${A.icone}</span><div class="tx"><b>${A.nome}</b><small>${A.longe ? 'De longe' : 'Corpo a corpo'} · dano ${A.dano}</small><small>${A.desc}</small></div>`;
       const bt = document.createElement('button'); bt.className = 'cb';
@@ -3007,7 +3007,7 @@ const glowA = cv(128, (x) => { const g = x.createRadialGradient(64, 64, 0, 64, 6
   function podeArma(k) { const A = ARMAS[k]; if (!A) return true; if (A.placa && staffPronto && !(souAdmin() || (A.staff === 'adm' ? souADMc : souGM))) return false; return true; }
 
   function armaVisivel() { return Object.keys(ARMAG).find(k => ARMAG[k].visible) || null; }
-  function equipaArma(k) { if (k && typeof podeArma === 'function' && !podeArma(k)) { aviso('🔒 ' + ARMAS[k].nome + ': só ' + (ARMAS[k].soClasse ? CLASSES[ARMAS[k].soClasse].nome : ARMAS[k].staff === 'adm' ? 'ADM' : 'GM') + ' pode usar.', '#ff6a6a'); k = null; } AR.arma = k && AR.armas.includes(k) ? k : 'punho'; salvaAR(); mostraArma(); armaNasCostas = null; setTimeout(fazRetrato, 60);
+  function equipaArma(k) { setTimeout(() => { try { montaBarra(); } catch (e) {} }, 0); if (k && typeof podeArma === 'function' && !podeArma(k)) { aviso('🔒 ' + ARMAS[k].nome + ': só ' + (ARMAS[k].soClasse ? CLASSES[ARMAS[k].soClasse].nome : ARMAS[k].staff === 'adm' ? 'ADM' : 'GM') + ' pode usar.', '#ff6a6a'); k = null; } AR.arma = k && AR.armas.includes(k) ? k : 'punho'; salvaAR(); mostraArma(); armaNasCostas = null; setTimeout(fazRetrato, 60);
     const A = ARMAS[AR.arma]; aviso(AR.arma === 'punho' ? '👊 Arma guardada na mochila' : 'Equipou: ' + A.icone + ' ' + A.nome, '#ffd23c'); }
 
   // ---- fantasias de enfeite (só visual) ----
@@ -10864,8 +10864,14 @@ const ArcaneWingSystem = (function () {
     { id: 'lg_dragao', nome: 'Dragão', titulo: 'Dragão Infernal', custo: 90, cd: 20, cor: '#ff2600', desc: 'Dragão Infernal: um dragão de fogo voa em espiral em cima dos inimigos por 6 segundos, cuspindo chamas.' },
     { id: 'lg_abismo', nome: 'Abismo', titulo: 'Vórtice do Abismo', custo: 85, cd: 18, cor: '#7a2aff', desc: 'Vórtice do Abismo: um buraco negro puxa os inimigos pro centro, machuca sem parar e implode no final.' }];
   const LEND_NV = 20, LEND_CD = {};
-  LEND.forEach(L => { const h = { id: L.id, nome: L.nome, icone: IC('p_' + L.id), tipo: 'uso', custo: L.custo, lend: L, nvMin: LEND_NV, desc: '✨ LENDÁRIA · ' + L.desc + ' (recarga ' + L.cd + ' s)' }; PODERES.push(h); PW[L.id] = h; });
-  function lendPode(pw) { const L = pw.lend; if (!L) return true; if (L.glad && GL.ativo) return false; const r = (LEND_CD[L.id] || 0) - Date.now(); if (r > 0) { aviso(pw.nome + ': recarregando, ' + Math.ceil(r / 1000) + ' s.', '#8a9aba'); return false; } if (AR.nv < (pw.nvMin || LEND_NV) && !souAdmin()) { aviso('Magia lendária: precisa do nível ' + (pw.nvMin || LEND_NV) + '.', '#ff6a6a'); return false; } return true; }
+  // cada rota só funciona com a arma dela
+  const ARMA_ROTA = { mago: { nome: 'cajado', ic: '🪄', txt: 'Cajado Arcano ou Cajado Sombrio', ok: k => k === 'cajado' || k === 'sombrio' },
+    glad: { nome: 'chakram', ic: '🌀', txt: 'Chakrams ou um chakram GL (Eclipse Negro, Abismo Azul, Ceifador Roxo, Lua Sangrenta, Lua de Prata)', ok: k => k === 'chakram' || /^gl_/.test(k) } };
+  Object.assign(ARMAS.cajado, { preco: 250 }); Object.assign(ARMAS.sombrio, { preco: 700 }); Object.assign(ARMAS.chakram, { preco: 250 });
+  ['espadao', 'laminas', 'arco', 'escudo', 'runica', 'arcana'].forEach((k, i) => { if (ARMAS[k] && !ARMAS[k].preco) ARMAS[k].preco = [300, 250, 250, 250, 300, 350][i]; });
+  function lendArma(pw) { const R = ARMA_ROTA[pw.lend && pw.lend.glad ? 'glad' : 'mago']; return R; }
+  LEND.forEach(L => { const h = { id: L.id, nome: L.nome, icone: IC('p_' + L.id), tipo: 'uso', custo: L.custo, lend: L, nvMin: LEND_NV, desc: '✨ LENDÁRIA · ' + L.desc + ' (recarga ' + L.cd + ' s) · 🪄 Precisa de cajado na mão.' }; PODERES.push(h); PW[L.id] = h; });
+  function lendPode(pw) { const L = pw.lend; if (!L) return true; { const R = lendArma(pw); if (!R.ok(AR.arma)) { aviso('🔒 ' + pw.nome + ' só funciona com ' + R.ic + ' ' + R.nome + ' na mão (' + R.txt + '). Compre na Forja da vila.', '#ff9a6a'); return false; } } if (L.glad && GL.ativo) return false; const r = (LEND_CD[L.id] || 0) - Date.now(); if (r > 0) { aviso(pw.nome + ': recarregando, ' + Math.ceil(r / 1000) + ' s.', '#8a9aba'); return false; } if (AR.nv < (pw.nvMin || LEND_NV) && !souAdmin()) { aviso('Magia lendária: precisa do nível ' + (pw.nvMin || LEND_NV) + '.', '#ff6a6a'); return false; } return true; }
   // textura do selo rúnico (do grimório)
   const LEND_SELO = canvasTex(512, 512, (g, w, h) => { const cx = 256, cy = 256; g.clearRect(0, 0, w, h); g.strokeStyle = '#ffffff'; g.shadowColor = '#ffffff'; g.shadowBlur = 10;
     [238, 214, 150, 92].forEach((r, i) => { g.lineWidth = i === 0 ? 5 : 2.5; g.beginPath(); g.arc(cx, cy, r, 0, Math.PI * 2); g.stroke(); });
@@ -10956,7 +10962,7 @@ const ArcaneWingSystem = (function () {
     { id: 'gl_egide', nome: 'Égide', titulo: 'Égide das Sombras', custo: 50, cd: 16, cor: GPAL.roxa, desc: 'Cúpula sombria com runas: empurra os inimigos e reduz 60% do dano que você recebe por 4 segundos.' },
     { id: 'gl_julgamento', nome: 'Julgamento', titulo: 'Julgamento do Campeão', custo: 90, cd: 22, cor: GPAL.luz, desc: 'O chakram cresce, você salta e crava no chão: 4 crateras em linha reta na frente com dano gigante.' }];
   const GL = { ativo: null, t: 0, f: {}, vfx: [], egide: 0, spin: 0, flip: 0, pose: null };
-  GLAD.forEach(L => { L.glad = true; const h = { id: L.id, nome: L.nome, icone: IC('p_' + L.id), tipo: 'uso', custo: L.custo, lend: L, glad: true, nvMin: 5, desc: '⚔️ GLADIADOR · ' + L.desc + ' (recarga ' + L.cd + ' s)' }; PODERES.push(h); PW[L.id] = h; });
+  GLAD.forEach(L => { L.glad = true; const h = { id: L.id, nome: L.nome, icone: IC('p_' + L.id), tipo: 'uso', custo: L.custo, lend: L, glad: true, nvMin: 5, desc: '⚔️ GLADIADOR · ' + L.desc + ' (recarga ' + L.cd + ' s) · 🌀 Precisa de chakram na mão.' }; PODERES.push(h); PW[L.id] = h; });
   // ---------- texturas (do coliseu) ----------
   const GTEX = { cratera: canvasTex(256, 256, (g) => { const cx = 128, cy = 128; const gr = g.createRadialGradient(cx, cy, 8, cx, cy, 120); gr.addColorStop(0, 'rgba(255,200,61,.95)'); gr.addColorStop(0.28, 'rgba(155,32,255,.72)'); gr.addColorStop(0.62, 'rgba(15,8,23,.92)'); gr.addColorStop(1, 'rgba(15,8,23,0)'); g.clearRect(0, 0, 256, 256); g.fillStyle = gr; g.fillRect(0, 0, 256, 256);
       g.lineWidth = 3; for (let i = 0; i < 16; i++) { const a = i / 16 * Math.PI * 2 + (Math.random() - 0.5) * 0.2, len = 55 + Math.random() * 58; g.strokeStyle = i % 2 ? 'rgba(185,85,255,.85)' : 'rgba(255,215,90,.9)'; g.beginPath(); g.moveTo(cx, cy); let r = 18; while (r < len) { r += 14; const j = (Math.random() - 0.5) * 0.25; g.lineTo(cx + Math.cos(a + j) * r, cy + Math.sin(a + j) * r); } g.stroke(); } }),
@@ -11065,7 +11071,7 @@ const ArcaneWingSystem = (function () {
     if (GL.egide > 0) { GL.egide -= dt; const p = heroi.position; EGIDE.g.visible = true; EGIDE.g.position.set(p.x, p.y, p.z); EGIDE.an[0].rotation.z += dt * 2.2; EGIDE.an[1].rotation.z -= dt * 3.1; EGIDE.esf.scale.setScalar(1 + Math.sin(gT * 8) * 0.04); if (GL.egide <= 0) EGIDE.g.visible = false; }
     if (!GL.ativo) return; if (desmaiado || zona === 'leilao') { gTerm(); return; } GL.t += dt; let acabou = false; try { acabou = GSKILL[GL.ativo](dt, GL.t); } catch (e) { console.warn(e); acabou = true; } if (acabou) gTerm(); }
   function gladReduz(n) { return GL.egide > 0 ? n * 0.4 : n; }
-  window.__glad = { GL, cast: id => { LEND_CD[id] = 0; GL.ativo = null; usarPoder(PW[id]); } };
+  window.__glad = { GL, equipa: k => equipaArma(k), cast: id => { LEND_CD[id] = 0; GL.ativo = null; usarPoder(PW[id]); } };
   // ===================== ÁRVORE DE HABILIDADES EM REDE (sem classe: qualquer um segue qualquer rota) =====================
   // Cada rota é uma sequência de etapas. Etapa = 'id' (um nó) ou ['id1','id2'] (dois caminhos lado a lado, que se juntam de novo).
   // 'P:atk' / 'P:crit' / 'P:vida' / 'P:mana' / 'P:def' são nós passivos (bônus de atributo).
@@ -11073,9 +11079,9 @@ const ArcaneWingSystem = (function () {
   // só as 6 magias novas; os nós passivos ligam uma à outra
   // fila: cada magia só libera depois da anterior; os bônus ficam pendurados em cima e embaixo de cada magia
   const ROTAS = [
-    { id: 'mago', nome: 'Rota do Mago', sub: 'As 6 magias lendárias, uma depois da outra', ic: '🧙', cor: '#b46aff', etapas: ['lg_trovao', 'lg_glacial', 'lg_eclipse', 'lg_meteoros', 'lg_dragao', 'lg_abismo'],
+    { id: 'mago', nome: 'Rota do Mago', sub: 'Só com 🪄 cajado na mão', ic: '🧙', cor: '#b46aff', etapas: ['lg_trovao', 'lg_glacial', 'lg_eclipse', 'lg_meteoros', 'lg_dragao', 'lg_abismo'],
       lados: [['mana', 'vida'], ['atk', 'def'], ['crit', 'mana'], ['atk', 'vida'], ['crit', 'def'], ['atk', 'mana']], preco: [2, 2, 3, 3, 4, 4], nv: [5, 8, 11, 14, 17, 20] },
-    { id: 'glad', nome: 'Rota do Gladiador', sub: 'Chakram, saltos, giros e terremotos', ic: '⚔️', cor: '#ffc83d', etapas: ['gl_danca', 'gl_devastador', 'gl_investida', 'gl_furia', 'gl_sismo', 'gl_egide', 'gl_julgamento'],
+    { id: 'glad', nome: 'Rota do Gladiador', sub: 'Só com 🌀 chakram na mão', ic: '⚔️', cor: '#ffc83d', etapas: ['gl_danca', 'gl_devastador', 'gl_investida', 'gl_furia', 'gl_sismo', 'gl_egide', 'gl_julgamento'],
       lados: [['atk', 'vida'], ['crit', 'def'], ['atk', 'vida'], ['crit', 'atk'], ['def', 'vida'], ['def', 'crit'], ['atk', 'vida']], preco: [2, 2, 3, 3, 3, 4, 5], nv: [5, 8, 11, 14, 17, 20, 25] }];
   const PONTES = [];
   const ARV = { nos: {}, lig: {}, W: 0, H: 0 };

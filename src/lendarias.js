@@ -7,8 +7,14 @@
     { id: 'lg_dragao', nome: 'Dragão', titulo: 'Dragão Infernal', custo: 90, cd: 20, cor: '#ff2600', desc: 'Dragão Infernal: um dragão de fogo voa em espiral em cima dos inimigos por 6 segundos, cuspindo chamas.' },
     { id: 'lg_abismo', nome: 'Abismo', titulo: 'Vórtice do Abismo', custo: 85, cd: 18, cor: '#7a2aff', desc: 'Vórtice do Abismo: um buraco negro puxa os inimigos pro centro, machuca sem parar e implode no final.' }];
   const LEND_NV = 20, LEND_CD = {};
-  LEND.forEach(L => { const h = { id: L.id, nome: L.nome, icone: IC('p_' + L.id), tipo: 'uso', custo: L.custo, lend: L, nvMin: LEND_NV, desc: '✨ LENDÁRIA · ' + L.desc + ' (recarga ' + L.cd + ' s)' }; PODERES.push(h); PW[L.id] = h; });
-  function lendPode(pw) { const L = pw.lend; if (!L) return true; if (L.glad && GL.ativo) return false; const r = (LEND_CD[L.id] || 0) - Date.now(); if (r > 0) { aviso(pw.nome + ': recarregando, ' + Math.ceil(r / 1000) + ' s.', '#8a9aba'); return false; } if (AR.nv < (pw.nvMin || LEND_NV) && !souAdmin()) { aviso('Magia lendária: precisa do nível ' + (pw.nvMin || LEND_NV) + '.', '#ff6a6a'); return false; } return true; }
+  // cada rota só funciona com a arma dela
+  const ARMA_ROTA = { mago: { nome: 'cajado', ic: '🪄', txt: 'Cajado Arcano ou Cajado Sombrio', ok: k => k === 'cajado' || k === 'sombrio' },
+    glad: { nome: 'chakram', ic: '🌀', txt: 'Chakrams ou um chakram GL (Eclipse Negro, Abismo Azul, Ceifador Roxo, Lua Sangrenta, Lua de Prata)', ok: k => k === 'chakram' || /^gl_/.test(k) } };
+  Object.assign(ARMAS.cajado, { preco: 250 }); Object.assign(ARMAS.sombrio, { preco: 700 }); Object.assign(ARMAS.chakram, { preco: 250 });
+  ['espadao', 'laminas', 'arco', 'escudo', 'runica', 'arcana'].forEach((k, i) => { if (ARMAS[k] && !ARMAS[k].preco) ARMAS[k].preco = [300, 250, 250, 250, 300, 350][i]; });
+  function lendArma(pw) { const R = ARMA_ROTA[pw.lend && pw.lend.glad ? 'glad' : 'mago']; return R; }
+  LEND.forEach(L => { const h = { id: L.id, nome: L.nome, icone: IC('p_' + L.id), tipo: 'uso', custo: L.custo, lend: L, nvMin: LEND_NV, desc: '✨ LENDÁRIA · ' + L.desc + ' (recarga ' + L.cd + ' s) · 🪄 Precisa de cajado na mão.' }; PODERES.push(h); PW[L.id] = h; });
+  function lendPode(pw) { const L = pw.lend; if (!L) return true; { const R = lendArma(pw); if (!R.ok(AR.arma)) { aviso('🔒 ' + pw.nome + ' só funciona com ' + R.ic + ' ' + R.nome + ' na mão (' + R.txt + '). Compre na Forja da vila.', '#ff9a6a'); return false; } } if (L.glad && GL.ativo) return false; const r = (LEND_CD[L.id] || 0) - Date.now(); if (r > 0) { aviso(pw.nome + ': recarregando, ' + Math.ceil(r / 1000) + ' s.', '#8a9aba'); return false; } if (AR.nv < (pw.nvMin || LEND_NV) && !souAdmin()) { aviso('Magia lendária: precisa do nível ' + (pw.nvMin || LEND_NV) + '.', '#ff6a6a'); return false; } return true; }
   // textura do selo rúnico (do grimório)
   const LEND_SELO = canvasTex(512, 512, (g, w, h) => { const cx = 256, cy = 256; g.clearRect(0, 0, w, h); g.strokeStyle = '#ffffff'; g.shadowColor = '#ffffff'; g.shadowBlur = 10;
     [238, 214, 150, 92].forEach((r, i) => { g.lineWidth = i === 0 ? 5 : 2.5; g.beginPath(); g.arc(cx, cy, r, 0, Math.PI * 2); g.stroke(); });
