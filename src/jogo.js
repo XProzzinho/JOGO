@@ -2268,7 +2268,7 @@
     if (d.w && d.w !== 'punho') { const sw = grp(c.userData.P.elR, 0, -0.33, 0.05); tb(sw, 0, 0, 0.5, 0.06, 0.02, 0.75, d.w === 'dragao' ? '#ffb040' : d.w === 'glacial' ? '#9ae6ff' : '#dfe4ee'); tb(sw, 0, 0, 0.1, 0.22, 0.04, 0.04, '#e2c27a'); }
     return { c, tag, ph: (h % 100) / 10, x: d.x, z: d.zz, y: d.y || 0, r: d.r || 0, tx: d.x, tz: d.zz, ty: d.y || 0, tr: d.r || 0, a: d.a, t: performance.now(), d }; }
   function mpRecebe(d) { if (!d || d.id === MP.id) return; let o = MP.outros[d.id]; if (!o) o = MP.outros[d.id] = mpCria(d.id, d);
-    o.tx = d.x; o.tz = d.zz; o.ty = d.y || 0; o.tr = d.r || 0; o.a = d.a; o.d = d; o.t = performance.now();
+    o.tx = d.x; o.tz = d.zz; o.ty = d.y || 0; o.tr = d.r || 0; o.a = d.a; o.d = d; o.t = performance.now() - (typeof d._t === 'number' ? Math.max(0, Math.min(36e5, Date.now() - d._t)) : 0);
     if (d.vm && (!o.vis || o.vis.m !== d.vm || o.vis.c !== d.vc)) { o.vis = { m: d.vm, n: d.vn, c: d.vc }; o.visNovo = true; }
     if (o.visNovo && performance.now() - (o.visT || -1e9) > 3000) { o.visNovo = false; o.visT = performance.now(); try { visConstroi(o); } catch (e) { console.warn('visual mp', e); } }
     const NA = typeof NACOES !== 'undefined' && NACOES[d.na]; if (NA && !o.anelNa) { o.anelNa = new T3.Mesh(new T3.RingGeometry(0.45, 0.6, 28), new T3.MeshBasicMaterial({ color: NA.cor, transparent: true, opacity: 0.85, side: T3.DoubleSide, toneMapped: false })); o.anelNa.rotation.x = -Math.PI / 2; o.anelNa.position.y = 0.04; o.c.add(o.anelNa); } if (o.anelNa) o.anelNa.visible = d.z === 'nacao';
@@ -2280,10 +2280,10 @@
     const disp = (e, p) => (hs[e] || []).forEach(f => { try { f({ payload: p }); } catch (er) {} });
     const ch = { on(t, f, cb) { (hs[f.event] = hs[f.event] || []).push(cb); return ch; },
       send(m) { const pl = JSON.parse(JSON.stringify(m.payload || {}));
-        if (m.event === 'p') { const r = raiz.child('p/' + MP.id); if (!pd) { pd = true; r.onDisconnect().remove(); } pl._t = TS; r.set(pl); }
+        if (m.event === 'p') { const r = raiz.child('p/' + MP.id); if (!pd) { pd = true; r.onDisconnect().update({ a: 'afk' }); } pl._t = TS; r.set(pl); }
         else if (m.event === 'sai') raiz.child('p/' + MP.id).remove();
         else { const r = raiz.child('ev').push({ e: m.event, p: pl, de: MP.id, _t: TS }); r.onDisconnect().remove(); setTimeout(() => r.remove(), 8000); } },
-      subscribe(cb) { const pr = raiz.child('p'), fp = sn => { const v = sn.val(); if (v && v.id && v.id !== MP.id && !(v._t && Date.now() - v._t > 60000)) disp('p', v); };
+      subscribe(cb) { const pr = raiz.child('p'), fp = sn => { const v = sn.val(); if (!v || !v.id || v.id === MP.id) return; const idade = v._t ? Date.now() - v._t : 0; if (idade > 36e5) { sn.ref.remove(); return; } if (idade < 600000) disp('p', v); };
         pr.on('child_added', fp); pr.on('child_changed', fp); pr.on('child_removed', sn => { const v = sn.val(); if (v && v.id) disp('sai', { id: v.id }); });
         raiz.child('ev').orderByChild('_t').startAt(Date.now() - 8000).on('child_added', sn => { const v = sn.val(); if (v && v.de !== MP.id) disp(v.e, v.p); });
         db.ref('.info/connected').on('value', sn => cb(sn.val() ? 'SUBSCRIBED' : 'CHANNEL_ERROR')); return ch; },
@@ -2292,7 +2292,7 @@
   function mpLiga() { if (MP.ch || !MP.srv) return; MP.desde = performance.now();
     try { if (MP.srv === 2) { if (typeof firebase === 'undefined' || !firebase.database) { MP.erro = 'Firebase indisponível'; return; } MP.ch = mpCanalFB(); }
       else { if (typeof guildClient === 'undefined') { MP.erro = 'Supabase indisponível'; return; } MP.ch = guildClient.channel('aetherion-mundo', { config: { broadcast: { self: false, ack: false } } }); }
-      MP.ch.on('broadcast', { event: 'p' }, m => mpRecebe(m.payload)).on('broadcast', { event: 'sai' }, m => { const o = m.payload && MP.outros[m.payload.id]; if (o) o.t = 0; })
+      MP.ch.on('broadcast', { event: 'p' }, m => mpRecebe(m.payload)).on('broadcast', { event: 'sai' }, m => { const o = m.payload && MP.outros[m.payload.id]; if (o) o.t = -1e9; })
         ; if (window.__mpOn) window.__mpOn(MP.ch); MP.ch.subscribe(st => { MP.ok = st === 'SUBSCRIBED'; if (MP.ok) MP.erro = ''; else if (st) MP.erro = 'sem conexão'; }); } catch (e) { MP.ch = null; MP.erro = String(e.message || e).slice(0, 40); } }
   function mpDesliga() { const ch = MP.ch; MP.ch = null; MP.ok = false; MP.ult = '';
     try { if (ch) { ch.send({ type: 'broadcast', event: 'sai', payload: { id: MP.id } }); if (ch.sai) ch.sai(); else guildClient.removeChannel(ch); } } catch (e) {}
@@ -2306,18 +2306,19 @@
   let srvPedido = false;
   function srvAuto() { if (MP.srv || srvPedido) return; const cr = $('criar'); if (window.__entrou === false || (cr && !cr.hidden) || conversa || cenaQ) return;
     let s = 0; try { s = +sessionStorage.getItem('aetherion-srv') || 0; } catch (e) {} srvPedido = true; if (s) mpEscolhe(s); else srvAbre(); }
-  window.addEventListener('pagehide', () => { try { MP.ch && MP.ch.send({ type: 'broadcast', event: 'sai', payload: { id: MP.id } }); } catch (e) {} });
+  function mpAusente() { try { if (MP.ch && MP.ok) { const e = mpEstado(heroi.position); e.a = 'afk'; MP.ch.send({ type: 'broadcast', event: 'p', payload: e }); MP.ult = ''; } } catch (e) {} }
+  window.addEventListener('pagehide', mpAusente); document.addEventListener('visibilitychange', () => { if (document.hidden) mpAusente(); else MP.ult = ''; });
   function mpEstado(p) { const G = typeof guildState !== 'undefined' && guildState && guildState.guild; const TT = tituloAtual(); return { id: MP.id, u: window.CONTA && CONTA.usuario ? CONTA.usuario.uid : '', n: (AR.visual && AR.visual.nome) || 'Leonardo', t: TT.nome, tr: TT.r, lv: AR.nv, g: G ? G.name : '', ge: G && typeof emblemIcon === 'function' ? emblemIcon(G.emblem) : '', st: meuCargo(), z: zona, dn: dentro ? 1 : 0, x: +p.x.toFixed(2), y: +p.y.toFixed(2), zz: +p.z.toFixed(2), r: +facing.toFixed(2), a: voando ? (voPitch > 0.6 ? 'voa' : 'paira') : !noChao ? 'pulo' : atkT < 0.3 ? 'atk' : vel > 4.2 ? 'corre' : vel > 0.4 ? 'anda' : 'para', w: AR.arma, na: AR.nacao || '', ...mpVisCampos() }; }
   function mpFrame(dt, p) { srvAuto(); mpLiga(); MP.envT -= dt;
     if (MP.ok && MP.envT <= 0) { const e = mpEstado(p); const s = JSON.stringify(e); if (s !== MP.ult || performance.now() - (MP.ultT || 0) > 2000) { MP.ult = s; MP.ultT = performance.now(); MP.envT = MP.srv === 2 ? 0.25 : 0.15; try { MP.ch.send({ type: 'broadcast', event: 'p', payload: e }); } catch (er) {} } else MP.envT = 0.15; }
     const agora = performance.now(); let n = 0;
-    Object.keys(MP.outros).forEach(id => { const o = MP.outros[id]; if (agora - o.t > 8000) { world.remove(o.c); o.tag.remove(); delete MP.outros[id]; return; }
+    Object.keys(MP.outros).forEach(id => { const o = MP.outros[id]; if (agora - o.t > 600000) { world.remove(o.c); o.tag.remove(); delete MP.outros[id]; return; } const afk = o.a === 'afk' || agora - o.t > 8000; if (afk !== !!o.afk) { o.afk = afk; o.tag.classList.toggle('afk', afk); }
       const mesma = o.d.z === zona && !!o.d.dn === !!dentro && !dentro; o.c.visible = mesma; if (!mesma) { o.tag.hidden = true; return; } n++;
       const k = clamp(dt * 8); o.x += (o.tx - o.x) * k; o.z += (o.tz - o.z) * k; o.y += (o.ty - o.y) * k; let dr = o.tr - o.r; while (dr > Math.PI) dr -= Math.PI * 2; while (dr < -Math.PI) dr += Math.PI * 2; o.r += dr * clamp(dt * 10);
       o.c.position.set(o.x, o.y, o.z); o.c.rotation.y = o.r;
       o.c.rotation.order = 'YXZ'; o.c.rotation.x += ((o.a === 'voa' ? 1.3 : o.a === 'paira' ? 0.12 : 0) - o.c.rotation.x) * clamp(dt * 5);
       const P = o.c.userData.P; if (o.a === 'voa') pose(o.c, gT, { mood: 'smile', arms: { shL: [-2.95, 0, -0.12], shR: [-2.95, 0, 0.12], elL: [0, 0, 0], elR: [0, 0, 0] }, legs: { thL: 0.08, knL: 0.12, thR: -0.04, knR: 0.18 } }); else if (o.a === 'paira') pose(o.c, gT, { mood: 'smile', arms: { shL: [-0.35, 0, -0.55], shR: [-0.35, 0, 0.55], elL: [-0.5, 0, 0], elR: [-0.5, 0, 0] }, legs: { thL: -0.25, knL: 0.5, thR: 0.1, knR: 0.35 } }); else if (o.a === 'pulo') pose(o.c, gT, { mood: 'smile', arms: { shL: [-2.6, 0, -0.3], shR: [-2.6, 0, 0.3], elL: [-0.3, 0, 0], elR: [-0.3, 0, 0] }, legs: { thL: -0.9, knL: 1.4, thR: -0.3, knR: 0.6 } });
-      else if (o.a === 'corre' || o.a === 'anda') pose(o.c, gT + o.ph, o.a === 'corre' ? { run: true, mood: 'smile' } : { walk: true, mood: 'neutral' }); else pose(o.c, gT, { mood: 'neutral' });
+      else if (!o.afk && (o.a === 'corre' || o.a === 'anda')) pose(o.c, gT + o.ph, o.a === 'corre' ? { run: true, mood: 'smile' } : { walk: true, mood: 'neutral' }); else pose(o.c, gT, { mood: 'neutral' });
       if (o.a === 'atk') { P.shR.rotation.x = -1.6 + Math.sin(gT * 18) * 0.9; }
       const dd = Math.hypot(o.x - p.x, o.z - p.z); if (dd > 22) { o.tag.hidden = true; return; } guildPosition(o.tag, o.c, 1.75); o.tag.style.transform = 'translate(-50%,-100%) scale(' + clamp(1.15 - dd / 22, 0.5, 1).toFixed(2) + ')'; o.tag.style.zIndex = String(100 - Math.round(dd)); });
     mpCont.hidden = !MP.srv; mpCont.classList.toggle('off', !MP.ok); mpCont.textContent = MP.ok ? '🌐 S' + MP.srv + ' · Online: ' + (n + 1) : (performance.now() - (MP.desde || 0) > 6000 || MP.erro ? '⚠️ S' + MP.srv + ' sem conexão · trocar' : '⏳ Conectando S' + MP.srv); }
