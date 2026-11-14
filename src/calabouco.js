@@ -16,7 +16,7 @@
     { id: 'trono', nome: 'Trono do Dragão', nv: 90, cor: '#4a1a10', fog: '#1a0602', luz: '#ff6a2a', pool: ['troll', 'esqueleto', 'gosma'], elite: 'troll', mini: ['dragao', 'Dragonete Vermelho'], boss: ['dragao', 'Ignarok, Dragão Ancestral'], raro: ['dragao', 'Dragão Albino'] },
     { id: 'vazio', nome: 'Vazio Eterno (secreto)', nv: 100, secreto: 'trono', cor: '#100818', fog: '#000000', luz: '#ff3aff', pool: ['espectro', 'troll', 'aranha', 'esqueleto'], elite: 'troll', mini: ['dragao', 'Arauto do Vazio'], boss: ['golem', 'O Devorador de Mundos'], raro: ['espectro', 'Eco do Rei'], superboss: true }];
   const TORRE_POOL = [['rato', 'goblin', 'lobo'], ['goblin', 'lobo', 'javali'], ['esqueleto', 'bandido', 'lobo'], ['aranha', 'cogumelo', 'esqueleto'], ['bandido', 'gosma', 'espectro'], ['gosma', 'troll', 'aranha'], ['espectro', 'troll', 'esqueleto'], ['troll', 'espectro', 'gosma'], ['troll', 'aranha', 'espectro']];
-  AR.dg = AR.dg || {}; AR.torre = AR.torre || 0; AR.bmLib = AR.bmLib || (AR.nv >= 12 ? [1, 1, 1] : AR.nv >= 5 ? [1, 1, 0] : [1, 0, 0]);
+  AR.dg = AR.dg || {}; AR.torre = AR.torre || 0; AR.bmLib = AR.bmLib || (AR.nv >= 12 ? [1, 1, 1] : AR.nv >= 5 ? [1, 1, 0] : [0, 0, 0]); /* novo jogador: o Modo I vem da missão da história com o Mestre Ryuken */
   var CAL = { on: false, d: null, feras: [], onda: 0, ondas: [], fim: false, torre: 0, espera: 0, boss: null };
   // ---------- a arena (uma só, muda de cor por DG) ----------
   const CALG = grp(world, CAL_X, 0, CAL_Z); CALG.visible = false; const CALCOL = [];

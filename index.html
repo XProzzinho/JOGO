@@ -562,6 +562,10 @@
 #sim-feed{position:fixed;right:calc(12px + env(safe-area-inset-right,0px));top:120px;z-index:30;display:flex;flex-direction:column;gap:4px;pointer-events:none;font:900 12px var(--fonte);color:#fff}#sim-feed div{background:rgba(12,10,20,.65);border-radius:10px;padding:3px 10px;text-shadow:0 1px 2px #000;animation:simIn .3s ease-out}@keyframes simIn{from{opacity:0;transform:translateX(20px)}}
 .sim-tag .sim-hp{display:block;width:56px;height:5px;margin:2px auto 0;background:rgba(0,0,0,.6);border-radius:3px;overflow:hidden;border:1px solid rgba(255,255,255,.5)}.sim-tag .sim-hp i{display:block;height:100%}.sim-tag em.sim-ok{color:#9affb0;font-size:11px}
 #sim-res{position:fixed;inset:0;z-index:300;background:rgba(10,6,20,.78);display:flex;align-items:center;justify-content:center}#sim-res[hidden]{display:none}#sim-res .box{width:min(560px,94vw);max-height:92vh;overflow:auto;background:#141020;border:2px solid rgba(255,255,255,.25);border-radius:20px;padding:14px 16px;color:#fff;font-family:var(--fonte);text-align:center}#sim-res h2{margin:2px 0 6px;font-size:20px}.sim-pl{font:900 30px var(--fonte)}.sim-v{font-size:14px;line-height:1.5}.sim-v img{width:44px;height:48px;object-fit:contain;vertical-align:middle}#sim-res table{width:100%;border-collapse:collapse;font-size:13px;margin:6px 0 10px}#sim-res td,#sim-res th{padding:4px 6px;border-bottom:1px solid rgba(255,255,255,.12)}#sim-res td:nth-child(2){text-align:left;font-weight:900}#sim-res .cb{min-width:140px}
+
+#hist-hud{position:fixed;left:calc(12px + env(safe-area-inset-left,0px));top:calc(150px + env(safe-area-inset-top,0px));z-index:7;max-width:260px;padding:7px 11px;border-radius:14px;background:rgba(14,18,34,.72);border:1.5px solid rgba(122,232,255,.55);color:#fff;font:800 12px var(--fonte);line-height:1.45}#hist-hud[hidden]{display:none}#hist-hud b{display:block;color:#7ae8ff;font-size:13px;margin-bottom:2px}#hist-hud .ok{color:#9affb0}#hist-hud .nx{opacity:.6}
+#hist-p{position:fixed;inset:0;z-index:70;background:rgba(10,8,24,.72);display:flex;align-items:center;justify-content:center}#hist-p[hidden]{display:none}#hist-p .box{width:min(620px,94vw);max-height:90vh;display:flex;flex-direction:column;background:#fffaf0;border:3px solid #2b2340;border-radius:20px;box-shadow:0 6px 0 #2b2340;color:#2b2340;font-family:var(--fonte)}#hist-p .hd{display:flex;align-items:center;padding:10px 14px;border-bottom:2px solid #efe4cc;font-size:18px}#hist-p .x{margin-left:auto;border:0;background:#2b2340;color:#fff;border-radius:10px;width:34px;height:34px;font-weight:900}#hist-p .lst{overflow:auto;padding:10px 12px}
+#hist-p .cap{border:2px solid #e6d9bc;border-radius:16px;padding:10px 12px;margin-bottom:10px;background:#fff}#hist-p .cap.ativa{border-color:#3ab8e8;box-shadow:0 0 0 3px rgba(58,184,232,.2)}#hist-p .cap.feita{opacity:.75}#hist-p .t{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 8px}#hist-p .t small{width:100%;color:#8a7a60;font-weight:800}#hist-p .t b{font-size:17px}#hist-p .st{margin-left:auto;font-size:12px;font-weight:900;padding:2px 8px;border-radius:999px;background:#efe4cc}#hist-p .st.ok{background:#d6f5dc;color:#1f7a34}#hist-p .st.at{background:#d6efff;color:#1a6a9a}#hist-p .st.nv{background:#fff1c8;color:#9a6a00}#hist-p p{margin:6px 0;font-size:13px;line-height:1.4}#hist-p .meta{font-size:12px;color:#6a5a44;font-weight:800}#hist-p ul{margin:6px 0;padding-left:4px;list-style:none;font-size:13px;font-weight:700}#hist-p li.ok{color:#1f7a34}#hist-p .rec{font-size:13px;font-weight:900;color:#9a6a00}
 </style>
 </head>
 <body>
@@ -1793,7 +1797,7 @@ ${_}`}class A extends Error{constructor({message:e,code:t,cause:r,name:s}){var n
     if (e.estado === 'anda' || e.estado === 'volta') { e.estado = 'caca'; }
     if (e.vida <= 0) morre(e); }
   function congelar(e, s) { if (e.morto) return; e.congela = Math.max(e.congela, e.T.chefe ? s * 0.35 : s); }
-  function morre(e) { somEm(SOM_MORTE[e.tipo], e.g.position, 1, 0.02); e.morto = true; e.mortoT = 0; e.hp.style.display = 'none'; const p = e.g.position; const [a, b] = e.T.moedas; solta_loot(p.x, p.z, 'moedas', a + Math.floor(Math.random() * (b - a + 1)));
+  function morre(e) { if (e.hist && typeof histMorte === 'function') { somEm(SOM_MORTE[e.tipo], e.g.position, 1, 0.02); histMorte(e); ganhaXp(60, true); return; } somEm(SOM_MORTE[e.tipo], e.g.position, 1, 0.02); e.morto = true; e.mortoT = 0; e.hp.style.display = 'none'; const p = e.g.position; const [a, b] = e.T.moedas; solta_loot(p.x, p.z, 'moedas', a + Math.floor(Math.random() * (b - a + 1)));
     e.T.itens.forEach(([it, ch]) => { if (Math.random() < ch) solta_loot(p.x + (Math.random() - .5), p.z + (Math.random() - .5), it, 1); });
     AR.abates[e.tipo] = (AR.abates[e.tipo] || 0) + 1; if (e.tipo === 'goblin') goblinMorto(); mqMorte(e); calMorte(e); if (e.T.zona === 'masmorra') mmMorte(e); enche(e.T.chefe ? 60 : 12); ganhaXp(XP_TIPO[e.tipo] || 10, true); const tot = Object.values(AR.abates).reduce((s, v) => s + v, 0); salvaAR();
     if (e.tipo === 'morcego') { ganha('morcego1', 3, 'derrotou o Morcego Gigante'); aviso('🏆 O MORCEGO GIGANTE CAIU! Pegue as 🦇 Asas de Morcego no chão.', '#c8a8ff'); }
@@ -2277,12 +2281,12 @@ ${_}`}class A extends Error{constructor({message:e,code:t,cause:r,name:s}){var n
   function tituloFrame(dt) { fugaT -= dt; const p = heroi.position; FERAS.forEach(e => { if (!e.T.chefe || e.morto) { e._caca = false; return; } const caca = e.estado === 'caca' || e.estado === 'ataque';
       if (e._caca && !caca && vida > 0 && Math.hypot(p.x - e.g.position.x, p.z - e.g.position.z) > 16) feito('fugitivo'); e._caca = caca; }); }
   document.querySelectorAll('#perfil .aba').forEach(b => tapBtn(b, () => { abaPerfil = b.dataset.a; desenhaPerfil(); }));
-  const menuR = document.createElement('div'); menuR.id = 'menu-r'; menuR.hidden = true; menuR.innerHTML = '<button data-m="perfil"><span>👤</span>Perfil e equipamento</button><button data-m="bolsa"><span>🎒</span>Inventário</button><button data-m="arv"><span>🌳</span>Árvore de habilidades<b id="menu-pts" hidden></b></button><button data-m="cfg"><span>⚙️</span>Configurações</button>'; document.body.appendChild(menuR);
+  const menuR = document.createElement('div'); menuR.id = 'menu-r'; menuR.hidden = true; menuR.innerHTML = '<button data-m="hist"><span>📖</span>Modo História</button><button data-m="perfil"><span>👤</span>Perfil e equipamento</button><button data-m="bolsa"><span>🎒</span>Inventário</button><button data-m="arv"><span>🌳</span>Árvore de habilidades<b id="menu-pts" hidden></b></button><button data-m="cfg"><span>⚙️</span>Configurações</button>'; document.body.appendChild(menuR);
   const menuDot = document.createElement('span'); menuDot.id = 'menu-dot'; menuDot.hidden = true; $('perfil-btn').appendChild(menuDot);
   function menuPts() { const a = $('arv-pts'), on = a && !a.hidden; menuDot.hidden = !on; const m = $('menu-pts'); m.hidden = !on; if (on) m.textContent = a.textContent; }
   if ($('arv-pts')) new MutationObserver(menuPts).observe($('arv-pts'), { attributes: true, childList: true, characterData: true, subtree: true }); setTimeout(menuPts, 500);
   menuR.querySelectorAll('button').forEach(b => tapBtn(b, () => { menuR.hidden = true; const k = b.dataset.m; if (conversa || cenaQ) return;
-    if (k === 'perfil') abrirPerfil(); else if (k === 'bolsa') abrirBolsa(); else if (k === 'arv') abrirArvore(); else if (k === 'cfg') { $('cfg').hidden = false; configDesenha(); } }));
+    if (k === 'hist') histAbre(); else if (k === 'perfil') abrirPerfil(); else if (k === 'bolsa') abrirBolsa(); else if (k === 'arv') abrirArvore(); else if (k === 'cfg') { $('cfg').hidden = false; configDesenha(); } }));
   window.addEventListener('pointerdown', e => { if (!menuR.hidden && !menuR.contains(e.target) && !$('perfil-btn').contains(e.target)) menuR.hidden = true; }, true);
   tapBtn($('perfil-btn'), () => { if (conversa || cenaQ) return; menuR.hidden = !menuR.hidden; menuPts(); }); tapBtn($('pf-fecha'), () => { $('perfil').hidden = true; });
   let previaT = 0; function perfilFrame(dt) { if ($('perfil').hidden || !$('previa')) return; previaT += dt; if (previaT > 0.06) { fazPrevia(previaT); previaT = 0; } }
@@ -3475,7 +3479,7 @@ const glowA = cv(128, (x) => { const g = x.createRadialGradient(64, 64, 0, 64, 6
     const el = $('lvup'); el.innerHTML = `<small>MODO DE BATALHA ${['I', 'II', 'III'][n - 1]}</small>${M.nome}<em>${bmTexto(M)} · ${BM_DUR[n - 1]} s</em>`; el.style.color = M.cor; el.classList.remove('on'); void el.offsetWidth; el.classList.add('on'); }
   function bmTexto(M) { const t = []; if (M.atk) t.push('+' + Math.round((M.atk - 1) * 100) + '% ataque'); if (M.def) t.push('+' + M.def + '% defesa'); if (M.atkVel) t.push('ataque ' + Math.round((1 / M.atkVel - 1) * 100) + '% mais rápido'); if (M.vel) t.push('+' + Math.round((M.vel - 1) * 100) + '% velocidade'); if (M.crit) t.push('+' + Math.round(M.crit * 100) + '% crítico'); if (M.esq) t.push('+' + Math.round(M.esq * 100) + '% esquiva'); if (M.roubo) t.push('rouba ' + Math.round(M.roubo * 100) + '% de vida'); if (M.espelho) t.push('devolve ' + Math.round(M.espelho * 100) + '% do dano'); if (M.regen) t.push('vida volta sozinha');
     const A = { area: 'golpes acertam tudo em volta', tripla: 'tiros triplos', proj: 'golpes disparam runas', explode: 'tiros explodem', marca: 'golpes enfraquecem', empurra: 'golpes empurram', fura: 'tiros atravessam' }[M.ataque]; if (A) t.push(A); if (M.orbes && M.orbes.dano) t.push((M.orbes.n) + ' ' + { lamina: 'lâminas', chakram: 'chakrams', torre: 'torretas', folha: 'folhas', arcano: 'orbes', runa: 'runas', sombra: 'sombras' }[M.orbes.tipo] + ' girando'); return t.join(' · '); }
-  function modoBatalha(n) { if (conversa || cenaQ || desmaiado) return; const c = CLA(); if (!c) return; if (AR.nv < BM_NV[n - 1]) { aviso('Modo de Batalha ' + ['I', 'II', 'III'][n - 1] + ' libera no nível ' + BM_NV[n - 1] + '.', '#ff6a6a'); return; } if (!bmLib(n)) { aviso('🔒 Modo de Batalha ' + ['I', 'II', 'III'][n - 1] + ': fale com o Mestre Kaelen na Praça dos Aventureiros (portão leste).', '#ffb03a'); return; }
+  function modoBatalha(n) { if (conversa || cenaQ || desmaiado) return; const c = CLA(); if (!c) return; if (AR.nv < BM_NV[n - 1]) { aviso('Modo de Batalha ' + ['I', 'II', 'III'][n - 1] + ' libera no nível ' + BM_NV[n - 1] + '.', '#ff6a6a'); return; } if (!bmLib(n)) { aviso(n === 1 ? '🔒 Modo de Batalha I: complete a missão da história "Despertar da Postura Rúnica" com o Mestre Ryuken (Santuário da Praça, nível 5).' : '🔒 Modo de Batalha ' + ['I', 'II', 'III'][n - 1] + ': fale com o Mestre Kaelen na Praça dos Aventureiros (portão leste).', '#ffb03a'); return; }
     if (BM) { aviso('Já está no modo ' + BM.nome + ' (' + Math.ceil(despT) + ' s).', '#8a9aba'); return; } if (desp < BM_CUSTO[n - 1]) { aviso('Lute pra encher a barra: ' + Math.floor(desp) + '% de ' + BM_CUSTO[n - 1] + '%.', '#ffd23c'); return; } bmLiga(n); }
   [1, 2, 3].forEach(n => tapBtn($('bm' + n), () => modoBatalha(n))); window.addEventListener('keydown', e => { if (e.code === 'KeyR') modoBatalha(1); if (e.code === 'KeyT' && !e.repeat && false) {} if (e.code === 'KeyG') modoBatalha(2); if (e.code === 'KeyH') modoBatalha(3); });
   function bmFrame(dt, p) { bmaFrame();
@@ -4154,7 +4158,7 @@ const glowA = cv(128, (x) => { const g = x.createRadialGradient(64, 64, 0, 64, 6
     { id: 'trono', nome: 'Trono do Dragão', nv: 90, cor: '#4a1a10', fog: '#1a0602', luz: '#ff6a2a', pool: ['troll', 'esqueleto', 'gosma'], elite: 'troll', mini: ['dragao', 'Dragonete Vermelho'], boss: ['dragao', 'Ignarok, Dragão Ancestral'], raro: ['dragao', 'Dragão Albino'] },
     { id: 'vazio', nome: 'Vazio Eterno (secreto)', nv: 100, secreto: 'trono', cor: '#100818', fog: '#000000', luz: '#ff3aff', pool: ['espectro', 'troll', 'aranha', 'esqueleto'], elite: 'troll', mini: ['dragao', 'Arauto do Vazio'], boss: ['golem', 'O Devorador de Mundos'], raro: ['espectro', 'Eco do Rei'], superboss: true }];
   const TORRE_POOL = [['rato', 'goblin', 'lobo'], ['goblin', 'lobo', 'javali'], ['esqueleto', 'bandido', 'lobo'], ['aranha', 'cogumelo', 'esqueleto'], ['bandido', 'gosma', 'espectro'], ['gosma', 'troll', 'aranha'], ['espectro', 'troll', 'esqueleto'], ['troll', 'espectro', 'gosma'], ['troll', 'aranha', 'espectro']];
-  AR.dg = AR.dg || {}; AR.torre = AR.torre || 0; AR.bmLib = AR.bmLib || (AR.nv >= 12 ? [1, 1, 1] : AR.nv >= 5 ? [1, 1, 0] : [1, 0, 0]);
+  AR.dg = AR.dg || {}; AR.torre = AR.torre || 0; AR.bmLib = AR.bmLib || (AR.nv >= 12 ? [1, 1, 1] : AR.nv >= 5 ? [1, 1, 0] : [0, 0, 0]); /* novo jogador: o Modo I vem da missão da história com o Mestre Ryuken */
   var CAL = { on: false, d: null, feras: [], onda: 0, ondas: [], fim: false, torre: 0, espera: 0, boss: null };
   // ---------- a arena (uma só, muda de cor por DG) ----------
   const CALG = grp(world, CAL_X, 0, CAL_Z); CALG.visible = false; const CALCOL = [];
@@ -10687,6 +10691,141 @@ const ArcaneWingSystem = (function () {
       <table><tr><th>#</th><th>Guerreiro</th><th>⚔️</th><th>💀</th></tr>${lista.slice(0, 8).map((l, i) => `<tr><td>${i === 0 ? '👑' : i + 1}</td><td style="color:${NACOES[l.na].cor}">${l.n}</td><td>${l.a}</td><td>${l.m}</td></tr>`).join('')}</table>
       <button class="cb" id="sim-ok">Fechar</button></div>`; simRes.hidden = false; tapBtn($('sim-ok'), () => { simRes.hidden = true; }); }, zona === 'nacao' ? 4500 : 600); }
   function nacaoPremioVoo() { if (AR.vooNacao) { aviso('🪽 Sua nação venceu! Você continua com o direito de voar.', '#c8f0ff'); return; } AR.vooNacao = true; salvaAR(); flash('rgba(160,220,255,.4)'); som('missao_ok', 1, 1.1); aviso('🪽 Sua nação venceu! Você ganhou o DIREITO DE VOAR! Equipe umas asas e toque 2x em PULAR.', '#c8f0ff'); }
+  // ===================== MODO HISTÓRIA (missões principais em ordem; cada uma no formato do criador) =====================
+  const HISTORIA = [
+    {
+      id: "mq_05",
+      levelReq: 5,
+      title: "Despertar da Postura Rúnica",
+      npc: "Mestre Ryuken",
+      location: "Santuário da Praça",
+      description: "Seu corpo já suporta a energia do Obelisco. Concentre sua mana no círculo rúnico e prove seu domínio em combate.",
+      objectives: [
+        { type: "INTERACT", target: "circulo_runico_praca", count: 1 },
+        { type: "KILL", target: "guardiao_treino", count: 1 }
+      ],
+      rewards: {
+        xp: 900,
+        gold: 600,
+        unlockFeature: "MODO_BATALHA_1"
+      },
+      // falas do mestre (opcional)
+      falas: ['Então você é o aventureiro de quem o Obelisco fala... Sinto sua mana pulsando daqui.', 'Seu corpo já suporta a energia do Obelisco. Agora precisa aprender a domá-la.', 'Vá até o círculo rúnico do santuário e concentre sua mana nele. Ele vai despertar um guardião de treino.', 'Derrote o guardião e prove seu domínio em combate. Só então a Postura Rúnica vai despertar em você.'],
+      fim: ['Eu senti o círculo tremer daqui! Você domou a energia e venceu o guardião.', 'A partir de hoje, a fúria rúnica responde ao seu chamado. Esse é o Modo de Batalha I.', 'Use com sabedoria: encha a barra lutando e toque no I ao lado da sua vida.']
+    }
+  ];
+  // nomes que aparecem pro jogador para cada alvo das missões
+  const HIST_ALVOS = { circulo_runico_praca: { INTERACT: 'Concentrar mana no Círculo Rúnico', ic: '🔵' }, guardiao_treino: { KILL: 'Derrotar o Guardião de Treino', ic: '🗿' } };
+  // o que cada "unlockFeature" libera
+  const HIST_LIBERA = {
+    MODO_BATALHA_1: { nome: '⚡ Modo de Batalha I', fn: () => { AR.bmLib = AR.bmLib || [0, 0, 0]; AR.bmLib[0] = 1; } }
+  };
+  AR.hist = AR.hist || { feitas: [], at: null, libs: {} }; AR.hist.libs = AR.hist.libs || {};
+  // quem já tinha o Modo I antes do Modo História continua com ele
+  if (AR.bmLib && AR.bmLib[0]) AR.hist.libs.MODO_BATALHA_1 = 1;
+  function histQ(id) { return HISTORIA.find(q => q.id === id); }
+  function histFeita(id) { return AR.hist.feitas.includes(id); }
+  function histProxima() { return HISTORIA.find(q => !histFeita(q.id)); }
+  function histObjTxt(o) { const A = HIST_ALVOS[o.target] || {}; return (A[o.type] || (o.type === 'KILL' ? 'Derrotar ' : 'Interagir com ') + o.target) + (o.count > 1 ? ' (' + o.count + ')' : ''); }
+  function histAtual() { const a = AR.hist.at; return a ? histQ(a.id) : null; }
+  function histObjAtual() { const q = histAtual(); if (!q) return -1; const p = AR.hist.at.prog; return q.objectives.findIndex((o, i) => (p[i] || 0) < o.count); }
+  function histCompleta() { return !!histAtual() && histObjAtual() < 0; }
+  function histProgresso(tipo, alvo) { const q = histAtual(); if (!q) return false; const i = histObjAtual(); if (i < 0) return false; const o = q.objectives[i]; if (o.type !== tipo || o.target !== alvo) return false;
+    AR.hist.at.prog[i] = (AR.hist.at.prog[i] || 0) + 1; salvaAR(); som('missao_ok', 0.8, 1.2);
+    if (histObjAtual() < 0) setTimeout(() => aviso('📖 ' + q.title + ': objetivos completos! Volte para o ' + q.npc + '.', '#7ad87a'), 700); else aviso('✅ ' + histObjTxt(o) + ' · próximo: ' + histObjTxt(q.objectives[histObjAtual()]), '#7ad87a');
+    histHud(); return true; }
+  // ---------- SANTUÁRIO DA PRAÇA: plataforma, círculo rúnico e o Mestre Ryuken ----------
+  function santLugar() { // procura um lugar livre perto da praça: longe da estrada, da muralha e de outras coisas
+    for (const r of [26, 30, 34, 38]) for (let k = 0; k < 24; k++) { const a = Math.PI / 2 + (k % 2 ? 1 : -1) * Math.ceil(k / 2) * (Math.PI / 12); const x = PRACA.x + Math.cos(a) * r, z = PRACA.z + Math.sin(a) * r;
+      if (naEstrada(x, z, 10)) continue; if (Math.hypot(x - MW.x, z - MW.z) < MW.r + 12) continue; if (COL.some(c => c.x !== undefined && Math.hypot(c.x - x, c.z - z) < (c.r || Math.max(c.hw || 1, c.hd || 1) * 1.2) + 7)) continue; return [x, z]; }
+    return [PRACA.x - 2, PRACA.z + 25]; }
+  const SANT = (() => { const [x, z] = santLugar(), g = grp(world, x, 0, z);
+    const pedra = new T3.Mesh(new T3.CylinderGeometry(5.2, 5.6, 0.3, 40), new T3.MeshToonMaterial({ color: '#8f8a9a', gradientMap: GRAD })); pedra.position.y = 0.15; pedra.receiveShadow = true; g.add(pedra);
+    const borda = new T3.Mesh(new T3.TorusGeometry(5.25, 0.12, 8, 48), new T3.MeshToonMaterial({ color: '#e2c27a', gradientMap: GRAD })); borda.rotation.x = Math.PI / 2; borda.position.y = 0.31; g.add(borda);
+    // textura do círculo rúnico (desenhada aqui, original)
+    const runas = 'ᚠᚢᚦᚨᚱᚲᚷᚹᚺᚾᛁᛃᛇᛈᛉᛊᛏᛒᛖᛗᛚᛜᛞᛟ';
+    const tx = canvasTex(512, 512, (c, w, h) => { c.clearRect(0, 0, w, h); c.translate(w / 2, h / 2); c.strokeStyle = '#7ae8ff'; c.fillStyle = '#7ae8ff'; c.shadowColor = '#3ad8ff'; c.shadowBlur = 14;
+      [236, 214, 150, 70].forEach((r, i) => { c.lineWidth = i === 0 ? 8 : 4; c.beginPath(); c.arc(0, 0, r, 0, Math.PI * 2); c.stroke(); });
+      c.font = 'bold 26px serif'; c.textAlign = 'center'; c.textBaseline = 'middle'; for (let i = 0; i < 24; i++) { const a = i / 24 * Math.PI * 2; c.save(); c.rotate(a); c.fillText(runas[i], 0, -225); c.restore(); }
+      c.lineWidth = 4; c.beginPath(); for (let i = 0; i <= 6; i++) { const a = i / 6 * Math.PI * 2 * 2 - Math.PI / 2; const px = Math.cos(a) * 150, py = Math.sin(a) * 150; i ? c.lineTo(px, py) : c.moveTo(px, py); } c.stroke();
+      c.beginPath(); for (let i = 0; i <= 3; i++) { const a = i / 3 * Math.PI * 2 + Math.PI / 2; c.lineTo(Math.cos(a) * 150, Math.sin(a) * 150); } c.stroke(); c.beginPath(); for (let i = 0; i <= 3; i++) { const a = i / 3 * Math.PI * 2 - Math.PI / 2; c.lineTo(Math.cos(a) * 150, Math.sin(a) * 150); } c.stroke();
+      for (let i = 0; i < 6; i++) { const a = i / 6 * Math.PI * 2; c.beginPath(); c.arc(Math.cos(a) * 182, Math.sin(a) * 182, 14, 0, Math.PI * 2); c.stroke(); }
+      c.beginPath(); c.arc(0, 0, 28, 0, Math.PI * 2); c.fill(); });
+    const cm = new T3.MeshBasicMaterial({ map: tx, transparent: true, depthWrite: false, toneMapped: false, opacity: 0.75, blending: T3.AdditiveBlending });
+    const circ = new T3.Mesh(new T3.PlaneGeometry(6.4, 6.4), cm); circ.rotation.x = -Math.PI / 2; circ.position.y = 0.33; g.add(circ);
+    const luz = glowSpr(g, 0, 0.6, 0, 6, '#3ad8ff', 0.35);
+    // coluna de luz (aparece ao concentrar)
+    const colM = new T3.MeshBasicMaterial({ color: '#7ae8ff', transparent: true, opacity: 0, depthWrite: false, toneMapped: false, blending: T3.AdditiveBlending, side: T3.DoubleSide });
+    const col = new T3.Mesh(new T3.CylinderGeometry(2.6, 3.1, 16, 32, 1, true), colM); col.position.y = 8.3; g.add(col);
+    // 4 pilares com braseiros azuis
+    for (let k = 0; k < 4; k++) { const a = k / 4 * Math.PI * 2 + Math.PI / 4, px = Math.cos(a) * 4.5, pz = Math.sin(a) * 4.5; part(g, BOX, '#6a6478', px, 1.3, pz, 0.55, 2.3, 0.55); part(g, BOX, '#e2c27a', px, 2.5, pz, 0.75, 0.18, 0.75); part(g, CONE, '#5ae8ff', px, 2.95, pz, 0.22, 0.6, 0.22, 0, true); glowSpr(g, px, 3, pz, 1.6, '#3ad8ff', 0.7); COL.push({ t: 'c', x: x + px, z: z + pz, r: 0.42 }); }
+    // placa
+    const pl = canvasTex(512, 96, (c, w, h) => { c.fillStyle = '#1a1628'; c.fillRect(0, 0, w, h); c.strokeStyle = '#e2c27a'; c.lineWidth = 6; c.strokeRect(4, 4, w - 8, h - 8); c.fillStyle = '#ffe8a0'; c.font = 'bold 42px serif'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText('Santuário da Praça', w / 2, h / 2); });
+    const pg = grp(g, 0, 0, -5.9); tb(pg, -1.3, 0.9, 0, 0.14, 1.8, 0.14, '#5a3a24'); tb(pg, 1.3, 0.9, 0, 0.14, 1.8, 0.14, '#5a3a24'); const pc = new T3.Mesh(new T3.PlaneGeometry(2.9, 0.55), new T3.MeshBasicMaterial({ map: pl, toneMapped: false, side: T3.DoubleSide })); pc.position.y = 1.65; pg.add(pc);
+    // partículas que sobem
+    const parts = []; for (let i = 0; i < 26; i++) { const s = new T3.Sprite(new T3.SpriteMaterial({ color: '#9af0ff', transparent: true, opacity: 0, depthWrite: false, toneMapped: false, blending: T3.AdditiveBlending })); s.scale.setScalar(0.18); g.add(s); parts.push({ s, a: Math.random() * 6.28, r: 0.5 + Math.random() * 2.6, k: Math.random() }); }
+    return { x, z, g, circ, cm, luz, col, colM, parts, canal: 0, pulso: 0 }; })();
+  const ryuken = makeChar({ skin: '#e2b48c', hairStyle: 'bald', hairC: '#d8d8e0', top: '#e8e4dc', top2: '#2a3a6a', pants: '#2a3a6a', shoe: '#1a1a24', iris: '#3ad8ff', s: 1.05, ph: 7.7 });
+  { const P = ryuken.userData.P; part(P.hips, CONE, '#e8e4dc', 0, -0.42, 0, 0.36, 0.98, 0.36, 0.03); part(P.head, SPH, '#d8d8e0', 0, -0.2, 0.12, 0.14, 0.2, 0.08); tb(P.spine, 0, 0.12, 0.14, 0.42, 0.06, 0.02, '#3ad8ff'); }
+  const RYU = npcPraca(ryuken, 'Mestre Ryuken · Modo História', SANT.x - PRACA.x + 4.6, SANT.z - PRACA.z - 3.2, () => histFala());
+  RYU.marca = new T3.Sprite(new T3.SpriteMaterial({ map: marcaT('!', '#ffd23c'), transparent: true, depthWrite: false, toneMapped: false })); RYU.marca.scale.set(0.45, 0.6, 1); world.add(RYU.marca);
+  const RYU_M = { '!': RYU.marca.material.map };
+  // ---------- GUARDIÃO DE TREINO ----------
+  const GUARD = (() => { const e = fera('troll'); const B = TIPOS.troll; e.T = Object.assign({}, B, { nome: 'Guardião de Treino', vida: 900, dano: 12, vel: 2.0, aggro: 16, alc: 2.2, cd: 2.4, raio: 0.9, alt: 2.6, moedas: [0, 0], itens: [], zona: 'vila', chefe: false, volta: 1e12 });
+    e.g.scale.setScalar(0.9); e.g.traverse(o => { if (o.isMesh && o.material && o.material.color && o.material.toneMapped !== false) { o.material = o.material.clone(); o.material.color.lerp(new T3.Color('#7a8aa8'), 0.45); } }); e.hist = 'guardiao_treino'; e.home = [SANT.x, SANT.z + 0.5]; e.ry = 0;
+    glowSpr(e.g, 0, 2.6, 0, 5, '#3ad8ff', 0.35); reseta(e); e.morto = true; e.mortoT = 99; e.g.visible = false; e.hp.style.display = 'none'; FERAS.push(e); return e; })();
+  function guardiaoInvoca() { const e = GUARD; if (!e.morto) return; reseta(e); e.estado = 'caca'; e.g.position.y = -3; e.surge = 1.6; fx('luz', [SANT.x, 0, SANT.z], 1); tremor = 0.5; som('magia', 1, 0.6); aviso('🗿 O Guardião de Treino despertou! Derrote-o!', '#7ae8ff'); }
+  function histMorte(e) { if (e !== GUARD) return false; e.morto = true; e.mortoT = 0; e.hp.style.display = 'none'; fx('luz', [e.g.position.x, 0, e.g.position.z], 0.8); histProgresso('KILL', 'guardiao_treino'); return true; }
+  // ---------- fala do mestre ----------
+  function histFala() { const N = 'Mestre Ryuken', q = histAtual();
+    if (q && q.npc === N) { if (histCompleta()) { falar({ nome: N, falas: q.fim || ['Muito bem! Você completou: ' + q.title + '.'], fim: () => histConclui(q) }); return; }
+      const o = q.objectives[histObjAtual()]; falar({ nome: N, falas: ['Ainda não terminou. Agora: ' + histObjTxt(o).toLowerCase() + '.' + (o.target === 'guardiao_treino' && GUARD.morto ? ' Concentre sua mana no círculo de novo para chamar o guardião.' : '')] }); return; }
+    const p = histProxima(); if (!p) { falar({ nome: N, falas: ['Você já percorreu todo o caminho que os pergaminhos revelam por enquanto. Volte quando o Obelisco mostrar o próximo capítulo.'] }); return; }
+    if (p.npc !== N) { falar({ nome: N, falas: ['Seu próximo passo está com ' + p.npc + ', em ' + p.location + '.'] }); return; }
+    if (AR.nv < p.levelReq) { falar({ nome: N, falas: ['Sinto potencial em você... mas seu corpo ainda não aguenta a energia do Obelisco.', 'Volte quando chegar ao nível ' + p.levelReq + '. Você está no nível ' + AR.nv + '.'] }); return; }
+    falar({ nome: N, falas: p.falas || [p.description], escolhas: () => [{ t: '📖 <b>Aceitar: ' + p.title + '</b><small>Recompensa: ' + histRecTxt(p) + '</small>', fn: () => histAceita(p) }, { t: 'Agora não', fn: null }] }); }
+  function histRecTxt(q) { const r = q.rewards || {}; return [r.xp ? '+' + r.xp + ' XP' : '', r.gold ? '+' + r.gold + ' 💰' : '', r.unlockFeature ? (HIST_LIBERA[r.unlockFeature] ? HIST_LIBERA[r.unlockFeature].nome : r.unlockFeature) : ''].filter(Boolean).join(' · '); }
+  function histAceita(q) { AR.hist.at = { id: q.id, prog: q.objectives.map(() => 0) }; salvaAR(); som('missao', 1, 1); aviso('📖 Missão da história aceita: ' + q.title, '#ffd23c'); histHud(); }
+  function histConclui(q) { const r = q.rewards || {}; AR.hist.feitas.push(q.id); AR.hist.at = null;
+    if (r.gold) { AR.inv.moedas = (AR.inv.moedas || 0) + r.gold; atualizaInv(); numero(heroi.position, '+' + r.gold + ' 💰', '#ffd23c', 2.4); }
+    if (r.unlockFeature) { AR.hist.libs[r.unlockFeature] = 1; const L = HIST_LIBERA[r.unlockFeature]; if (L) L.fn(); }
+    salvaAR(); if (r.xp) ganhaXp(r.xp, true); flash('rgba(120,230,255,.45)'); som('missao_ok', 1, 1); fx('luz', [heroi.position.x, 0, heroi.position.z], 1);
+    aviso('🏆 ' + q.title + ' concluída! ' + histRecTxt(q), '#ffd23c'); histHud(); }
+  // ---------- HUD da missão ----------
+  const histHudEl = document.createElement('div'); histHudEl.id = 'hist-hud'; histHudEl.hidden = true; document.body.appendChild(histHudEl);
+  tapBtn(histHudEl, () => histAbre());
+  function histHud() { const q = histAtual(); histHudEl.hidden = !q; if (!q) return; const done = histCompleta(), cur = histObjAtual();
+    histHudEl.innerHTML = `<b>📖 ${q.title}</b>` + (done ? `<div class="ok">✅ Volte para o ${q.npc}</div>` : q.objectives.map((o, i) => { const n = AR.hist.at.prog[i] || 0, ok = n >= o.count; return `<div class="${ok ? 'ok' : i === cur ? 'cur' : 'nx'}">${ok ? '✅' : i === cur ? '▸' : '◻️'} ${histObjTxt(o)}${o.count > 1 ? ' ' + Math.min(n, o.count) + '/' + o.count : ''}</div>`; }).join('')); }
+  // ---------- painel do Modo História (menu da foto) ----------
+  const histP = document.createElement('div'); histP.id = 'hist-p'; histP.hidden = true; document.body.appendChild(histP);
+  function histAbre() { const at = histAtual(), prox = histProxima();
+    histP.innerHTML = `<div class="box"><div class="hd"><b>📖 Modo História</b><button class="x" id="hist-x">✕</button></div><div class="lst">` + HISTORIA.map((q, i) => { const feita = histFeita(q.id), ativa = at && at.id === q.id, trava = !feita && !ativa && (q !== prox || AR.nv < q.levelReq);
+      const st = feita ? '<span class="st ok">✅ Concluída</span>' : ativa ? '<span class="st at">▸ Em andamento</span>' : trava ? `<span class="st tr">🔒 ${AR.nv < q.levelReq ? 'Nível ' + q.levelReq : 'Complete a anterior'}</span>` : '<span class="st nv">❗ Disponível</span>';
+      return `<div class="cap ${feita ? 'feita' : ''} ${ativa ? 'ativa' : ''}"><div class="t"><small>Capítulo ${i + 1} · Nível ${q.levelReq}</small><b>${q.title}</b>${st}</div><p>${q.description}</p><div class="meta">👤 ${q.npc} · 📍 ${q.location}</div><ul>${q.objectives.map((o, k) => { const ok = feita || (ativa && (at.prog[k] || 0) >= o.count); return `<li class="${ok ? 'ok' : ''}">${ok ? '✅' : '◻️'} ${histObjTxt(o)}</li>`; }).join('')}</ul><div class="rec">🎁 ${histRecTxt(q)}</div></div>`; }).join('') + `</div></div>`;
+    histP.hidden = false; tapBtn($('hist-x'), () => { histP.hidden = true; }); }
+  // ---------- quadro a quadro: círculo, marcador do mestre, guardião surgindo ----------
+  function historiaFrame(dt, p) { const naVila = zona === 'vila' && !dentro;
+    // marcador acima do mestre
+    const q = histAtual(), prox = histProxima(); let m = null; if (q && q.npc === 'Mestre Ryuken' && histCompleta()) m = '?'; else if (!q && prox && prox.npc === 'Mestre Ryuken' && AR.nv >= prox.levelReq) m = '!';
+    RYU.marca.visible = !!m && naVila; if (m) { RYU.marca.material.map = marcaT(m, '#ffd23c'); RYU.marca.position.set(RYU.x, 2.85 + Math.sin(gT * 3) * 0.1, RYU.z); }
+    // guardião subindo do chão
+    if (GUARD.surge > 0) { GUARD.surge -= dt; GUARD.g.position.y = -Math.max(0, GUARD.surge) * 1.9; }
+    // círculo: brilho e canalização
+    const obj = q && histObjAtual() >= 0 ? q.objectives[histObjAtual()] : null, quer = !!obj && obj.type === 'INTERACT' && obj.target === 'circulo_runico_praca';
+    const precisaGuarda = !!obj && obj.type === 'KILL' && obj.target === 'guardiao_treino' && GUARD.morto;
+    SANT.circ.rotation.z += dt * (SANT.canal > 0 ? 2.2 : 0.25); const alvoOp = SANT.canal > 0 ? 1 : (quer || precisaGuarda) ? 0.75 + Math.sin(gT * 3) * 0.2 : 0.4; SANT.cm.opacity += (alvoOp - SANT.cm.opacity) * clamp(dt * 4);
+    SANT.colM.opacity += ((SANT.canal > 0 ? 0.22 : SANT.pulso > 0 ? 0.35 : 0) - SANT.colM.opacity) * clamp(dt * 5); SANT.pulso -= dt;
+    SANT.parts.forEach(o => { o.k = (o.k + dt * (SANT.canal > 0 ? 0.9 : 0.25)) % 1; o.a += dt * 0.8; o.s.position.set(Math.cos(o.a) * o.r, 0.4 + o.k * (SANT.canal > 0 ? 7 : 2.5), Math.sin(o.a) * o.r); o.s.material.opacity = (quer || precisaGuarda || SANT.canal > 0 ? 0.9 : 0.25) * Math.sin(o.k * Math.PI); });
+    const d = Math.hypot(p.x - SANT.x, p.z - SANT.z);
+    if (SANT.canal > 0) { if (d > 3.4) { SANT.canal = 0; aviso('A concentração foi quebrada. Fique dentro do círculo.', '#ff9a6a'); return null; } SANT.canal -= dt; mana = Math.max(0, mana - dt * 8); if (Math.random() < dt * 6) numero(heroi.position, '✦', '#7ae8ff', 1.6);
+      if (SANT.canal <= 0) { SANT.pulso = 1.2; flash('rgba(120,230,255,.35)'); tremor = 0.35; som('magia', 1, 1.2); if (quer) histProgresso('INTERACT', 'circulo_runico_praca'); const o2 = histAtual() && histObjAtual() >= 0 ? histAtual().objectives[histObjAtual()] : null; if (o2 && o2.type === 'KILL' && o2.target === 'guardiao_treino') setTimeout(guardiaoInvoca, 900); } return null; }
+    if (!naVila || d > 3) return null;
+    return { rot: quer || precisaGuarda ? 'CONCENTRAR' : 'VER', x: SANT.x, y: 1.4, z: SANT.z, acao: () => {
+      if (!(quer || precisaGuarda)) { falar({ nome: 'Círculo Rúnico', falas: [{ n: 'Círculo Rúnico', t: histFeita('mq_05') ? 'As runas brilham calmas. A energia daqui já despertou em você.' : 'Runas antigas brilham no chão. Talvez o Mestre Ryuken saiba o que fazer com elas.' }] }); return; }
+      if (mana < 20) { aviso('Você precisa de pelo menos 20 de mana pra concentrar no círculo.', '#ff9a6a'); return; }
+      SANT.canal = 2.6; som('magia', 0.8, 0.8); aviso('🔵 Concentrando mana... fique no círculo!', '#7ae8ff'); } }; }
+  setTimeout(histHud, 300);
+  window.__hist = { GUARD, SANT, RYU, histFala, histAbre, get at() { return AR.hist; } };
 
   window.__dbg = { get NAC() { return NAC; }, SIM, simCria, simGuerra, simPara, temVoo, nacaoEntra: () => nacaoEntra(), voaTeste: on => { vooLiberado = true; voa(on); }, setZona: z => { zona = z; dentro = false; }, aroMostra: s => aroMostra(s), get NPCS() { return NPCS; }, divVeste: k => divVeste(k), get ARC() { return ARC; }, get _in() { return [input.x, input.y, vel, facing, dashT, Object.keys(keys).join()]; }, danoHeroi, abrirLoja, aprimora, falar, dano, CAL, DGS, calEntra, MIS, abreMural, get PRACA() { return PRACA; }, staffArmas, equipaArma, MONT3D, PET3D, get MONT() { return MONT; }, montar, petChama, MQ, set GMB(v) { GMB = v; gmHud(); }, gmPct, ASAT, COSM, vesteCosm, CB_LISTA, abrirLivros, trocaPag, get mana() { return mana; }, set mana(v) { mana = v; }, ARMAG, T3, vesteCosm, voa, get voando() { return voando; }, input, mpRecebe, entraMasmorra, saiMasmorra, MM, mmFaseAtual, mmMorte, setaFrame, equipaArma, abrirGuilda, arthurNPC, vestePeca, atualizaPecas, PECAS, BLOCOS, modoBatalha, bmLiga, bmDesliga, BMS, ORB, get BM() { return BM; }, get hora() { return hora; }, set hora(v) { hora = v; }, usarHab2: id => classePoder2(id), BUFF, abrirCriar, aplicaClasse, CLASSES, get desp() { return desp; }, set desp(v) { desp = v; }, usarHab: id => classePoder(id), renderer, scene, world, ganhaXp, vesteFantasia, abrirPerfil, fazRetrato, irValdren, Q, heroi, ativo, AR, FERAS, golem, atacar, get vida() { return vida; }, set vida(v) { vida = v; }, abrirLoja, usarPoder: id => usarPoder(PW[id]), acao: () => acao(), get alvo() { return alvo; } };
   // ---------- laço do jogo ----------
@@ -10731,7 +10870,7 @@ const ArcaneWingSystem = (function () {
     elyAura.visible = !dentro && zona === 'vila'; heroi.visible = true; const alV = valdrenFrame(dt, p); if (zona === 'valdren') alvo = alV; $('tit').textContent = (zona === 'valdren' ? 'VALDREN' : zona === 'masmorra' ? 'MASMORRA' : zona === 'calab' ? 'CALABOUÇO' : zona === 'leilao' ? 'CASA DE LEILÕES' : zona === 'nacao' ? 'BATALHA DE NAÇÃO' : 'BRUMAFRIA') + ' · ' + (modo === 'noite' ? '🌙 ' : '☀️ ') + String(Math.floor(hora)).padStart(2, '0') + ':' + String(Math.floor((hora % 1) * 6) * 10).padStart(2, '0');
     if (dentro) { OBJS.forEach(o => { const d = Math.hypot(p.x - o.x, p.z - o.z); if (d < 1.9 && d < melhor) { melhor = d; alvo = o; } }); if (Math.hypot(p.x - (IX - 1), p.z - 4.4) < 1.3) alvo = { tipo: 'sair' }; }
     else if (zona === 'vila') { const dp = casaFamilia.localToWorld(new T3.Vector3(casaFamilia.userData.door[0], 0, casaFamilia.userData.door[1] - 0.6)); if (Math.hypot(p.x - dp.x, p.z - dp.z) < 1.3) alvo = { tipo: 'entrar' }; }
-    { const alM = mmFrame(dt, p); if (alM) alvo = alM; const alC = calFrame(dt, p); if (alC) alvo = alC; const alL = typeof leilaoFrame === 'function' ? leilaoFrame(dt, p) : null; if (alL) alvo = alL; if (typeof aroFrame === 'function') aroFrame(dt); if (typeof pilaresFrame === 'function') pilaresFrame(dt); if (typeof guardiasFrame === 'function') guardiasFrame(dt); if (typeof katanaFrame === 'function') katanaFrame(dt); if (typeof geloFrame === 'function') geloFrame(dt); if (typeof nacaoFrame === 'function') nacaoFrame(dt, p); if (typeof nacaoCeuFrame === 'function') nacaoCeuFrame(dt); if (typeof abismoFrame === 'function') abismoFrame(dt); if (zona === 'vila' && !dentro && Math.hypot(p.x - (MM_ENT.x + 1.5), p.z - MM_ENT.z) < 3.2) alvo = { rot: 'ENTRAR', acao: entraMasmorra }; setaFrame(p); $('voar').hidden = !voando && !(ASAS.visible && !dentro && temVoo()); }
+    { const alM = mmFrame(dt, p); if (alM) alvo = alM; const alC = calFrame(dt, p); if (alC) alvo = alC; const alL = typeof leilaoFrame === 'function' ? leilaoFrame(dt, p) : null; if (alL) alvo = alL; const alH = typeof historiaFrame === 'function' ? historiaFrame(dt, p) : null; if (alH) alvo = alH; if (typeof aroFrame === 'function') aroFrame(dt); if (typeof pilaresFrame === 'function') pilaresFrame(dt); if (typeof guardiasFrame === 'function') guardiasFrame(dt); if (typeof katanaFrame === 'function') katanaFrame(dt); if (typeof geloFrame === 'function') geloFrame(dt); if (typeof nacaoFrame === 'function') nacaoFrame(dt, p); if (typeof nacaoCeuFrame === 'function') nacaoCeuFrame(dt); if (typeof abismoFrame === 'function') abismoFrame(dt); if (zona === 'vila' && !dentro && Math.hypot(p.x - (MM_ENT.x + 1.5), p.z - MM_ENT.z) < 3.2) alvo = { rot: 'ENTRAR', acao: entraMasmorra }; setaFrame(p); $('voar').hidden = !voando && !(ASAS.visible && !dentro && temVoo()); }
     if (!conversa) { const alC = combateAlvo(p); if (alC) alvo = alC; }
     const btn = $('acao'); btn.hidden = !alvo || !!conversa || !!cenaQ; if (alvo) { const tx = alvo.rot || (alvo.tipo === 'entrar' ? 'ENTRAR' : alvo.tipo === 'sair' ? 'SAIR' : alvo.falas && !alvo.c ? 'VER' : 'FALAR'); const ic = tx === 'FALAR' ? '💬 ' : tx === 'VER' ? '👁️ ' : tx === 'ENTRAR' ? '🚪 ' : tx === 'SAIR' ? '🚪 ' : tx === 'TELEPORTE' ? '✨ ' : '✋ '; if (btn.dataset.t !== tx) { btn.dataset.t = tx; btn.textContent = ic + tx.charAt(0) + tx.slice(1).toLowerCase(); } acaoPosiciona(alvo, p, btn); }
     // ambiente
