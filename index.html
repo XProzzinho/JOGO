@@ -10979,10 +10979,15 @@ const ArcaneWingSystem = (function () {
     const auraM = new T3.MeshBasicMaterial({ color: GPAL.roxaB, transparent: true, opacity: 0, depthWrite: false, side: T3.DoubleSide, toneMapped: false }); const aura = new T3.Mesh(gMain, auraM); aura.scale.set(1.08, 1.08, 1.6); g.add(aura);
     g.userData = { nuc, auraM, aura }; g.visible = false; return g; })();
   const gMao = grp(heroi.userData.P.elR, 0, -0.36, 0.06); const GCHK_ESC = 0.42;
-  function chkNaMao() { if (GCHK.parent !== gMao) gMao.add(GCHK); GCHK.position.set(0, 0, 0.08); GCHK.rotation.set(0.25, Math.PI / 2, 0); GCHK.scale.setScalar(GCHK_ESC); }
-  function chkSolto() { if (GCHK.parent !== world) world.add(GCHK); GCHK.scale.setScalar(GCHK_ESC * 1.25); }
+  // a arma usada é a SUA arma equipada (chakram da mão); o modelo ornamental fica só de reserva
+  function gArma() { const A = typeof ARMAG !== 'undefined' && ARMAG[AR.arma]; return A || GCHK; }
+  function chkNaMao() { const W = GL.W || gArma(); if (W === GCHK) { if (GCHK.parent !== gMao) gMao.add(GCHK); GCHK.position.set(0, 0, 0.08); GCHK.rotation.set(0.25, Math.PI / 2, 0); GCHK.scale.setScalar(GCHK_ESC); return; }
+    const H = W.userData.casa; if (!H) return; if (W.parent !== H.pai) H.pai.add(W); W.position.copy(H.pos); W.rotation.copy(H.rot); W.scale.copy(H.esc); }
+  function chkSolto() { const W = GL.W; if (!W) return; if (W.parent === world) return; if (W !== GCHK && !W.userData.casa) W.userData.casa = { pai: W.parent, pos: W.position.clone(), rot: W.rotation.clone(), esc: W.scale.clone() };
+    const ws = new T3.Vector3(); W.getWorldScale(ws); world.add(W); W.scale.copy(ws).multiplyScalar(1.35); }
+
   function chkMundo(v) { gMao.updateMatrixWorld(true); return gMao.localToWorld(v.set(0, 0, 0.1)); }
-  chkNaMao();
+  gMao.add(GCHK); GCHK.scale.setScalar(GCHK_ESC); GCHK.rotation.set(0.25, Math.PI / 2, 0);
   // ---------- efeitos ----------
   const gmat = (c, op, add) => new T3.MeshBasicMaterial({ color: c, transparent: true, opacity: op, side: T3.DoubleSide, depthWrite: false, toneMapped: false, blending: add ? T3.AdditiveBlending : T3.NormalBlending });
   const GGEO = { onda: new T3.RingGeometry(0.25, 0.55, 40), part: new T3.OctahedronGeometry(0.11, 0), pedra: new T3.DodecahedronGeometry(0.18, 0) }; const GPEDRA = new T3.MeshStandardMaterial({ color: GPAL.rocha, roughness: 0.9 });
@@ -11009,75 +11014,89 @@ const ArcaneWingSystem = (function () {
   function gBate(x, z, r, k, efeito) { const l = lendArea(x, z, r); lendHit(l, k, null); l.forEach(e => { if (efeito) efeito(e); }); return l.length; }
   function gEmpurra(x, z, e, f) { const dx = e.g.position.x - x, dz = e.g.position.z - z, d = Math.hypot(dx, dz) || 1; try { empurra(e, dx / d, dz / d, f); } catch (er) {} }
   function gAnda(dx, dz) { const p = heroi.position; p.x += dx; p.z += dz; }
-  function gTerm() { if (GL.ativo === 'gl_base') GL.baseFim = gT; GL.ativo = null; GL.spin = 0; GL.flip = 0; GL.pose = null; chkNaMao(); GCHK.visible = false; GCHK.userData.auraM.opacity = 0; GCHK.scale.setScalar(GCHK_ESC); maoG.visible = true; }
-  function gInicia(id) { if (GL.ativo) return false; GL.ativo = id; GL.t = 0; GL.f = {}; maoG.visible = false; chkNaMao(); GCHK.visible = true; GCHK.userData.auraM.opacity = 0.6; const e = gAlvo(); GL.alvo = e; if (e) facing = Math.atan2(e.g.position.x - heroi.position.x, e.g.position.z - heroi.position.z); return true; }
+  function gTerm() { if (GL.ativo === 'gl_base') GL.baseFim = gT; if (GL.W && GL.W.userData.casa) chkNaMao(); GL.ativo = null; GL.spin = 0; GL.flip = 0; GL.pose = null; GL.W = null; GCHK.visible = false; GCHK.userData.auraM.opacity = 0; }
+  function gInicia(id) { if (GL.ativo) return false; GL.ativo = id; GL.t = 0; GL.f = {}; GL.y0 = heroi.position.y; GL.W = gArma(); if (GL.W === GCHK) { chkNaMao(); GCHK.visible = true; GCHK.userData.auraM.opacity = 0.6; } else { GL.W.visible = true; if (!GL.W.userData.casa) GL.W.userData.casa = { pai: GL.W.parent, pos: GL.W.position.clone(), rot: GL.W.rotation.clone(), esc: GL.W.scale.clone() }; }
+    const e = gAlvo(); GL.alvo = e; if (e) facing = Math.atan2(e.g.position.x - heroi.position.x, e.g.position.z - heroi.position.z); return true; }
+  function gAltura(h) { heroi.position.y = GL.y0 + Math.max(0, h); vy = 0; }
   // poses do herói durante as habilidades
   const GPOSE = {
+    guarda: { mood: 'smile', arms: { shL: [-0.45, 0, -0.35], shR: [-0.65, 0, 0.35], elL: [-0.5, 0, 0], elR: [-0.5, 0, 0] } },
     preparo: { mood: 'smile', arms: { shL: [-0.7, 0, -0.5], shR: [-1.3, 0, 0.85], elL: [-0.5, 0, 0], elR: [-0.6, 0, 0] }, legs: { thL: -0.3, knL: 0.4, thR: 0.25, knR: 0.2 } },
     arremesso: { mood: 'smile', arms: { shL: [-0.5, 0, -0.5], shR: [-1.6, 0, -0.2], elL: [-0.4, 0, 0], elR: [-0.1, 0, 0] }, legs: { thL: -0.4, knL: 0.3, thR: 0.3, knR: 0.2 } },
-    corteD: { mood: 'smile', arms: { shL: [-0.5, 0, -0.6], shR: [-1.5, 0, 1.1], elL: [-0.4, 0, 0], elR: [-0.2, 0, 0] }, legs: { thL: -0.35, knL: 0.35, thR: 0.4, knR: 0.2 } },
-    corteE: { mood: 'smile', arms: { shL: [-0.6, 0, -0.5], shR: [-1.5, 0, -1.1], elL: [-0.4, 0, 0], elR: [-0.2, 0, 0] }, legs: { thL: 0.38, knL: 0.2, thR: -0.38, knR: 0.35 } },
-    alto: { mood: 'smile', arms: { shL: [-2.6, 0, -0.3], shR: [-2.8, 0, 0.3], elL: [-0.2, 0, 0], elR: [-0.2, 0, 0] }, legs: { thL: -0.55, knL: 0.8, thR: 0.45, knR: 0.5 } },
-    baixo: { mood: 'smile', arms: { shL: [-0.7, 0, -0.3], shR: [-0.6, 0, 0.3], elL: [-0.3, 0, 0], elR: [-0.3, 0, 0] }, legs: { thL: -0.6, knL: 1.0, thR: 0.5, knR: 0.6 } },
-    giro: { mood: 'smile', arms: { shL: [-1.5, 0, -1.4], shR: [-1.5, 0, 1.4], elL: [0, 0, 0], elR: [0, 0, 0] }, legs: { thL: -0.2, knL: 0.2, thR: 0.2, knR: 0.2 } },
-    investida: { mood: 'smile', lean: 0.4, arms: { shL: [0.65, 0, -0.3], shR: [-1.55, 0, 0], elL: [-0.3, 0, 0], elR: [0, 0, 0] } },
-    mortal: { mood: 'smile', arms: { shL: [-1.4, 0, -0.4], shR: [-1.4, 0, 0.4], elL: [-0.8, 0, 0], elR: [-0.8, 0, 0] }, legs: { thL: -1.2, knL: 1.8, thR: -1.2, knR: 1.8 } },
-    escudo: { mood: 'smile', arms: { shL: [-1.35, 0, -0.9], shR: [-1.35, 0, 0.9], elL: [-0.6, 0, 0], elR: [-0.6, 0, 0] } } };
+    corteD: { mood: 'smile', arms: { shL: [-0.5, 0, -0.6], shR: [-1.45, 0, 1.2], elL: [-0.4, 0, 0], elR: [-0.2, 0, 0] }, legs: { thL: -0.35, knL: 0.35, thR: 0.4, knR: 0.2 } },
+    corteE: { mood: 'smile', arms: { shL: [-0.6, 0, -0.5], shR: [-1.45, 0, -1.2], elL: [-0.4, 0, 0], elR: [-0.2, 0, 0] }, legs: { thL: 0.38, knL: 0.2, thR: -0.38, knR: 0.35 } },
+    alto: { mood: 'smile', arms: { shL: [-2.8, 0, -0.25], shR: [-2.9, 0, 0.2], elL: [-0.2, 0, 0], elR: [-0.2, 0, 0] }, legs: { thL: -0.55, knL: 0.8, thR: 0.45, knR: 0.5 } },
+    baixo: { mood: 'smile', arms: { shL: [-0.4, 0, -0.25], shR: [-0.35, 0, 0.2], elL: [-0.3, 0, 0], elR: [-0.3, 0, 0] }, legs: { thL: -0.6, knL: 1.0, thR: 0.5, knR: 0.6 } },
+    giro: { mood: 'smile', arms: { shL: [-1.5, 0, -1.35], shR: [-1.55, 0, 1.4], elL: [0, 0, 0], elR: [0, 0, 0] }, legs: { thL: -0.2, knL: 0.2, thR: 0.2, knR: 0.2 } },
+    investida: { mood: 'smile', lean: 0.42, arms: { shL: [0.65, 0, -0.3], shR: [-1.55, 0, 0], elL: [-0.3, 0, 0], elR: [0, 0, 0] } },
+    mortal: { mood: 'smile', arms: { shL: [-1.4, 0, -0.4], shR: [-1.4, 0, 0.4], elL: [-0.8, 0, 0], elR: [-0.8, 0, 0] }, legs: { thL: -1.1, knL: 1.8, thR: -1.1, knR: 1.8 } },
+    pega: { mood: 'smile', arms: { shL: [-0.5, 0, -0.4], shR: [-2.5, 0, 0.25], elL: [-0.4, 0, 0], elR: [-0.1, 0, 0] } },
+    escudo: { mood: 'smile', arms: { shL: [-1.3, 0, -0.9], shR: [-1.3, 0, 0.9], elL: [-0.6, 0, 0], elR: [-0.6, 0, 0] } } };
   function gladPose() { if (!GL.ativo || !GL.pose) return false; const P = GPOSE[GL.pose] || GPOSE.preparo; pose(heroi, gT, GL.pose === 'investida' ? Object.assign({ run: true }, P) : P); heroi.rotation.y = facing + GL.spin; heroi.rotation.x = GL.flip; return true; }
-  // ---------- as 7 habilidades (máquinas de estado por tempo) ----------
+  // ---------- alvo: o inimigo mais perto (ou 4 m na frente) ----------
+  function gAlvoPos() { const p = heroi.position, A = GL.alvo && feraAtiva(GL.alvo) ? GL.alvo : null; if (A) { facing = Math.atan2(A.g.position.x - p.x, A.g.position.z - p.z); return [A.g.position.x, A.g.position.z]; } if (!GL.f.alvoFixo) GL.f.alvoFixo = gFrente(4); return GL.f.alvoFixo; }
+  function gVaiAte(x, z, falta, vel, dt) { const p = heroi.position, dx = x - p.x, dz = z - p.z, d = Math.hypot(dx, dz); if (d <= falta) return; const s = Math.min(d - falta, vel * dt); p.x += dx / d * s; p.z += dz / d * s; }
+  // ---------- arma voando: arremesso em curva (o lado é relativo a quem olha) ----------
+  function gVoo(ini, ax, az, u, lado, alt, giro) { const W = GL.W, arc = Math.sin(u * Math.PI), cv = Math.sin(u * Math.PI * 2) * lado, sx = Math.sin(facing), sz = Math.cos(facing);
+    W.position.set(ini.x + (ax - ini.x) * arc + sz * cv, alt, ini.z + (az - ini.z) * arc - sx * cv); W.rotation.set(Math.PI / 2, giro, 0); gRastro(W.position, true); }
+  // ---------- COMBO BÁSICO: 10 etapas (Dança do Chakram) ----------
+  const GFASES = [['arr1', 0.72], ['c1', 0.28], ['c2', 0.28], ['c3', 0.32], ['c4', 0.42], ['c5', 0.45], ['arr2', 0.85], ['ceu', 1.05], ['fim', 0.58], ['guarda', 0.35]];
+  function gDanca(dt, fase, pt, dur, KM) { const u = Math.min(1, pt / dur), p = heroi.position, [ax, az] = gAlvoPos();
+    const once = (k, fn) => { if (!GL.f[fase + k]) { GL.f[fase + k] = 1; fn(); } }; const bate = (x, z, r, k, ef) => gBate(x, z, r, k * KM, ef);
+    if (fase === 'arr1' || fase === 'arr2') { GL.pose = 'arremesso'; once('solta', () => { chkSolto(); chkMundo(gv); GL.f.ini = gv.clone(); });
+      if (fase === 'arr1') { gVoo(GL.f.ini, ax, az, u, 1.45, 1.35, u * Math.PI * 16); if (u > 0.48) once('h', () => { tremor = 0.15; gCorte(ax, 1.35, az, 2.2, GPAL.roxaB, 0.25); gParts(gv.set(ax, 1.3, az), 8, GPAL.luz, 3.6, 2.6, 1); bate(ax, az, 2.3, 1.2); }); }
+      else { gVoo(GL.f.ini, ax, az, u, 2.6, 1.45, -u * Math.PI * 20); if (u > 0.48) once('h', () => { tremor = 0.2; gCorte(ax, 1.4, az, 2.8, GPAL.dourada, 0.4); gParts(gv.set(ax, 1.4, az), 10, GPAL.roxaB, 4, 2.8, 1.05); bate(ax, az, 3, 1.65, null); }); }
+      if (u >= 1) chkNaMao(); }
+    else if (fase === 'c1') { chkNaMao(); GL.pose = 'corteD'; gVaiAte(ax, az, 1.6, 9, dt); chkMundo(gv); gRastro(gv, false); if (u > 0.5) once('h', () => { const [fx, fz] = gFrente(0.9); tremor = 0.14; gCorte(fx, 1.32, fz, 2.7, GPAL.roxaB, 0.2); gParts(gv.set(ax, 1.3, az), 8, GPAL.dourada, 3.8, 2.5, 0.95); bate(ax, az, 2.4, 0.95); }); }
+    else if (fase === 'c2') { GL.pose = 'corteE'; chkMundo(gv); gRastro(gv, false); if (u > 0.5) once('h', () => { const [fx, fz] = gFrente(0.9); tremor = 0.15; gCorte(fx, 1.38, fz, 2.8, GPAL.dourada, -0.3); gParts(gv.set(ax, 1.3, az), 8, GPAL.luz, 4, 2.8, 1); bate(ax, az, 2.4, 1.05); }); }
+    else if (fase === 'c3') { GL.pose = u < 0.4 ? 'alto' : 'baixo'; chkMundo(gv); gRastro(gv, false); if (u > 0.52) once('h', () => { tremor = 0.2; gOnda(ax, az, GPAL.dourada, 3.6, 14); gParts(gv.set(ax, 1.3, az), 10, GPAL.dourada, 4.2, 3.4, 1.05); bate(ax, az, 2.4, 1.3); }); }
+    else if (fase === 'c4') { GL.pose = 'giro'; GL.spin = u * Math.PI * 2; chkMundo(gv); gRastro(gv, true); if (u > 0.5) once('h', () => { tremor = 0.22; gCorte(p.x, 1.3, p.z, 3.2, GPAL.roxaB, 0); gOnda(p.x, p.z, GPAL.roxa, 4.4, 14); gParts(gv.set(ax, 1.3, az), 10, GPAL.roxaB, 4.6, 3.2, 1.1); bate(ax, az, 2.6, 1.5); }); }
+    else if (fase === 'c5') { GL.spin = 0; GL.pose = u < 0.45 ? 'alto' : 'baixo'; gAltura(Math.sin(u * Math.PI) * 0.65); chkMundo(gv); gRastro(gv, true); if (u > 0.55) once('h', () => { tremor = 0.34; gCratera(ax, az, 0.85, 3.2); gPedras(ax, az, 6, 6.2); gOnda(ax, az, GPAL.dourada, 5.2, 16); gOnda(ax, az, GPAL.roxaB, 4, 14, 0.14); gParts(gv.set(ax, 1.3, az), 14, GPAL.luz, 5.2, 4.6, 1.2); bate(ax, az, 2.6, 2.1); }); }
+    else if (fase === 'ceu') { const R = GL.f.raiz || (GL.f.raiz = p.clone()); once('solta', () => { chkSolto(); gOnda(p.x, p.z, GPAL.roxaB, 3.4, 12); gParts(gv.set(p.x, 0.2, p.z), 10, GPAL.luz, 3.5, 3.5, 1.1); });
+      const W = GL.W, sx = Math.sin(facing), sz = Math.cos(facing);
+      if (u < 0.72) { const up = Math.sin(u / 0.72 * Math.PI / 2); W.position.set(R.x - sx * 0.5, GL.y0 + 1.8 + up * 4.8, R.z - sz * 0.5); } else { const m = new T3.Vector3(); chkMundo(m); W.position.lerpVectors(gv.set(R.x - sx * 0.5, GL.y0 + 6.6, R.z - sz * 0.5), m, (u - 0.72) / 0.28); }
+      W.rotation.set(Math.PI / 2, u * Math.PI * 26, 0); gRastro(W.position, true);
+      if (u >= 0.15 && u <= 0.78) { const f = (u - 0.15) / 0.63; GL.pose = 'mortal'; gAltura(Math.sin(f * Math.PI) * 2.4); GL.flip = f * Math.PI * 2; const v = -2.6 * dt; gAnda(sx * v, sz * v); }
+      else if (u > 0.78) { GL.flip = 0; gAltura(0); GL.pose = 'pega'; once('aterra', () => { tremor = 0.22; gOnda(p.x, p.z, GPAL.dourada, 3.8, 14); gParts(gv.set(p.x, 0.2, p.z), 10, GPAL.aura, 3.2, 2.2, 1.6, 0.5); }); } else GL.pose = 'alto';
+      if (u >= 1) chkNaMao(); }
+    else if (fase === 'fim') { chkNaMao(); GL.flip = 0; GL.pose = 'giro'; GL.spin = u * Math.PI * 2; chkMundo(gv); gRastro(gv, true);
+      if (u > 0.5) once('b', () => { tremor = 0.4; flash('rgba(255,210,90,.3)'); gCorte(p.x, 1.25, p.z, 4.2, GPAL.dourada, 0); gCorte(p.x, 1.32, p.z, 3.6, GPAL.roxaB, 1.2); gOnda(p.x, p.z, GPAL.dourada, 8.2, 17); gOnda(p.x, p.z, GPAL.roxa, 6.8, 15, 0.15); gParts(gv.set(p.x, 0.5, p.z), 14, GPAL.negra, 6.5, 3.2, 2.1, 0.75); gParts(gv.set(p.x, 0.8, p.z), 14, GPAL.luz, 7, 4.5, 1.2); gPedras(p.x, p.z, 8, 7); bate(p.x, p.z, 4.5, 2.8, e => gEmpurra(p.x, p.z, e, 1.6)); }); }
+    else if (fase === 'guarda') { GL.spin = 0; GL.pose = 'guarda'; } }
+  // ---------- as 6 habilidades + a dança completa ----------
   const GSKILL = {
-    gl_devastador(dt, t) { const D = 1.05; if (t < 0.44) { GL.pose = 'alto'; if (!GL.f.pulo) { GL.f.pulo = 1; vy = 9.5; } const v = 7.5 * dt; gAnda(Math.sin(facing) * v, Math.cos(facing) * v); }
-      else { GL.pose = 'baixo'; if (!GL.f.imp && t > 0.6) { GL.f.imp = 1; const [x, z] = gFrente(1.3); tremor = 0.55; gCratera(x, z, 1.15, 3.6); gPedras(x, z, 10, 7.5); gOnda(x, z, GPAL.dourada, 6.8, 18); gOnda(x, z, GPAL.roxa, 5.2, 14, 0.12); gCorte(x, 1.3, z, 2.9, GPAL.roxaB, 0); gParts(gv.set(x, 0.3, z), 18, GPAL.luz, 6.5, 5.5, 1.25); gParts(gv.set(x, 0.4, z), 12, GPAL.negra, 4.5, 2.8, 1.8, 0.7); gBate(x, z, 3.4, 4.2, e => { e.stun = Math.max(e.stun || 0, 1.5); gEmpurra(x, z, e, 1.5); }); } }
+    gl_danca(dt, t) { let acc = 0; for (const [n, d] of GFASES) { if (t < acc + d) { gDanca(dt, n, t - acc, d, 1); return false; } acc += d; } return true; },
+    gl_base(dt, t) { const [fase, dur] = GFASES[GL.baseI]; if (t >= dur) return true; gDanca(dt, fase, t, dur, 0.55); return false; },
+    gl_devastador(dt, t) { const D = 0.85, u = Math.min(1, t / D), [ax, az] = gAlvoPos(); GL.pose = u < 0.55 ? 'alto' : 'baixo'; gAltura(Math.sin(u * Math.PI) * 2.2); gVaiAte(ax, az, 1.5, 12, dt); chkMundo(gv); if (u > 0.4) gRastro(gv, true);
+      if (u >= 0.65) once2('imp', () => { const x = ax, z = az; tremor = 0.55; gCratera(x, z, 1.15, 3.6); gPedras(x, z, 10, 7.5); gOnda(x, z, GPAL.dourada, 6.8, 18); gOnda(x, z, GPAL.roxa, 5.2, 14, 0.12); gCorte(x, 1.3, z, 2.9, GPAL.roxaB, 0); gParts(gv.set(x, 0.3, z), 18, GPAL.luz, 6.5, 5.5, 1.25); gParts(gv.set(x, 0.4, z), 12, GPAL.negra, 4.5, 2.8, 1.8, 0.7); gBate(x, z, 3.4, 4.2, e => { e.stun = Math.max(e.stun || 0, 1.5); gEmpurra(x, z, e, 1.5); }); });
       return t >= D; },
-    gl_investida(dt, t) { const D = 0.95; if (t < 0.75) { GL.pose = 'investida'; const v = 10 * dt; gAnda(Math.sin(facing) * v, Math.cos(facing) * v); chkMundo(gv); gRastro(gv, true); const p = heroi.position;
-        if (!GL.f.o1 && t > 0.15) { GL.f.o1 = 1; gOnda(p.x, p.z, GPAL.roxa, 3.6, 14); }
-        lendArea(p.x, p.z, 1.6).forEach(e => { GL.f.hit = GL.f.hit || new Set(); if (GL.f.hit.has(e)) return; GL.f.hit.add(e); lendHit([e], 3.4, null); gEmpurra(p.x, p.z, e, 2.2); gParts(gv.set(e.g.position.x, 1, e.g.position.z), 10, GPAL.luz, 5, 3, 1.1); });
-        if (!GL.f.fim && t > 0.7) { GL.f.fim = 1; const [x, z] = gFrente(1.1); tremor = 0.38; gCorte(x, 1.35, z, 2.8, GPAL.roxaB, 0.35); gOnda(x, z, GPAL.dourada, 5.5, 16, 0.12); gParts(gv.set(x, 1.3, z), 16, GPAL.luz, 6.2, 4, 1.15); } }
-      else GL.pose = 'preparo'; return t >= D; },
-    gl_furia(dt, t) { const D = 1.35, u = t / D; GL.pose = 'giro'; GL.spin = u * Math.PI * 2 * 4; GCHK.rotation.z += dt * 24; chkMundo(gv); gRastro(gv, true); const p = heroi.position; if (Math.random() < 0.2) gPedras(p.x, p.z, 1, 4.5);
-      [[0.22, 1.65, GPAL.roxaB, 3.6], [0.52, 1.85, GPAL.dourada, 3.8], [0.8, 2.3, GPAL.roxaB, 4.1]].forEach(([q, k, c, r], i) => { if (!GL.f['s' + i] && u > q) { GL.f['s' + i] = 1; tremor = 0.22 + i * 0.06; gCorte(p.x, 1.25, p.z, r, c, 0); gOnda(p.x, p.z, i === 1 ? GPAL.dourada : GPAL.roxa, 5.2 + i * 0.8, 16); gBate(p.x, p.z, 3.8, k, i === 2 ? e => gEmpurra(p.x, p.z, e, 1.6) : null); if (i === 2) gParts(gv.set(p.x, 1.2, p.z), 18, GPAL.luz, 6, 4.2, 1.2); } });
+    gl_investida(dt, t) { const D = 0.75, u = Math.min(1, t / D), [ax, az] = gAlvoPos(), p = heroi.position; GL.pose = u < 0.7 ? 'investida' : 'guarda'; if (u < 0.7) { gVaiAte(ax, az, 1.4, 16, dt); chkMundo(gv); gRastro(gv, true); once2('o1', () => gOnda(p.x, p.z, GPAL.roxa, 3.6, 14));
+        lendArea(p.x, p.z, 1.6).forEach(e => { GL.f.hit = GL.f.hit || new Set(); if (GL.f.hit.has(e)) return; GL.f.hit.add(e); lendHit([e], 1.2, null); gEmpurra(p.x, p.z, e, 1.5); }); }
+      if (u >= 0.7) once2('fim', () => { const [x, z] = gFrente(1.1); tremor = 0.38; gCorte(x, 1.35, z, 2.8, GPAL.roxaB, 0.35); gOnda(x, z, GPAL.dourada, 5.5, 16, 0.12); gParts(gv.set(x, 1.3, z), 16, GPAL.luz, 6.2, 4, 1.15); gParts(gv.set(x, 0.8, z), 10, GPAL.negra, 4.8, 2.5, 1.7, 0.65); gBate(x, z, 2.6, 3.8, e => gEmpurra(x, z, e, 2.2)); });
       return t >= D; },
-    gl_sismo(dt, t) { const D = 1.15; if (t < 0.38) { GL.pose = 'alto'; if (!GL.f.pulo) { GL.f.pulo = 1; vy = 6.5; } const v = 4.5 * dt; gAnda(Math.sin(facing) * v, Math.cos(facing) * v); }
-      else { GL.pose = 'baixo'; if (!GL.f.q && t > 0.5) { GL.f.q = 1; const [x, z] = gFrente(1.25); tremor = 0.7; flash('rgba(255,200,60,.3)'); gCratera(x, z, 1.45, 4.2); gPedras(x, z, 14, 9.2); gOnda(x, z, GPAL.dourada, 8.8, 18, 0.12); gOnda(x, z, GPAL.roxa, 7.2, 15, 0.16); gOnda(x, z, GPAL.negra, 6, 12, 0.25); gParts(gv.set(x, 0.2, z), 20, GPAL.luz, 7.5, 6.5, 1.3, 0.6); gParts(gv.set(x, 0.3, z), 14, GPAL.roxaB, 6.5, 4.5, 1.4); gBate(x, z, 4.6, 4.8, e => { e.stun = Math.max(e.stun || 0, 2); gEmpurra(x, z, e, 1.8); }); } }
+    gl_furia(dt, t) { const D = 1.25, u = Math.min(1, t / D), p = heroi.position; GL.pose = 'giro'; GL.spin += dt * 24; GL.W.rotation.z += dt * 32; chkMundo(gv); gRastro(gv, true); if (Math.random() < 0.2) gPedras(p.x, p.z, 1, 4.5);
+      if (u > 0.22) once2('a', () => { gCorte(p.x, 1.25, p.z, 3.6, GPAL.roxaB, 0); gOnda(p.x, p.z, GPAL.roxa, 5.2, 16); });
+      if (u >= 0.5) once2('h', () => { tremor = 0.34; gCorte(p.x, 1.2, p.z, 4.1, GPAL.dourada, -0.15); gOnda(p.x, p.z, GPAL.dourada, 6.8, 18, 0.12); gParts(gv.set(p.x, 1.2, p.z), 18, GPAL.luz, 6, 4.2, 1.2); gBate(p.x, p.z, 4, 4.9, e => gEmpurra(p.x, p.z, e, 1.6)); });
       return t >= D; },
-    gl_egide(dt, t) { const D = 1.1; GL.pose = 'escudo'; if (!GL.f.on) { GL.f.on = 1; GL.egide = 4; } const p = heroi.position;
-      if (!GL.f.b && t > 0.35) { GL.f.b = 1; tremor = 0.3; gOnda(p.x, p.z, GPAL.roxaB, 6.5, 16, 0.14); gOnda(p.x, p.z, GPAL.dourada, 5, 14, 0.12); gParts(gv.set(p.x, 1.1, p.z), 18, GPAL.negra, 5.5, 3.8, 2, 0.75); gParts(gv.set(p.x, 1.2, p.z), 14, GPAL.roxaB, 5, 4.2, 1.2); gBate(p.x, p.z, 3.6, 2.1, e => gEmpurra(p.x, p.z, e, 3)); }
+    gl_sismo(dt, t) { const D = 0.9, u = Math.min(1, t / D); GL.pose = u > 0.45 ? 'baixo' : 'alto';
+      if (u >= 0.5) once2('q', () => { const p = heroi.position, [x, z] = gFrente(1.25); tremor = 0.7; flash('rgba(255,200,60,.3)'); gCratera(x, z, 1.45, 4.2); gPedras(x, z, 14, 9.2); gOnda(x, z, GPAL.dourada, 8.8, 18, 0.12); gOnda(x, z, GPAL.roxa, 7.2, 15, 0.16); gOnda(x, z, GPAL.negra, 6, 12, 0.25); gParts(gv.set(x, 0.2, z), 20, GPAL.luz, 7.5, 6.5, 1.3, 0.6); gParts(gv.set(x, 0.3, z), 14, GPAL.roxaB, 6.5, 4.5, 1.4); gBate(p.x, p.z, 4.6, 4.4, e => { e.stun = Math.max(e.stun || 0, 2); gEmpurra(p.x, p.z, e, 1.8); }); });
       return t >= D; },
-    gl_julgamento(dt, t) { const D = 1.65; if (t < 0.9) { const u = t / 0.9; GL.pose = 'alto'; const s = 1 + u * 1.2; GCHK.scale.set(GCHK_ESC * s, GCHK_ESC * s * 1.3, GCHK_ESC * s); GCHK.userData.auraM.opacity = 0.9; if (!GL.f.pulo) { GL.f.pulo = 1; vy = 4; } chkMundo(gv); if (Math.random() < 0.7) gRastro(gv, true); }
-      else { GL.pose = 'baixo'; const u = (t - 0.9) / 0.75; GCHK.scale.setScalar(GCHK_ESC * (2.2 - u * 1.2));
-        if (!GL.f.ult && u > 0.14) { GL.f.ult = 1; tremor = 0.8; flash('rgba(255,230,140,.4)'); const p = heroi.position, sx = Math.sin(facing), sz = Math.cos(facing); for (let k = 1; k <= 4; k++) { const x = p.x + sx * k * 1.45, z = p.z + sz * k * 1.45; gCratera(x, z, 0.95 + k * 0.12, 3.8); gPedras(x, z, 5, 8.2); gOnda(x, z, k % 2 ? GPAL.dourada : GPAL.roxaB, 6.2, 16, 0.12); gParts(gv.set(x, 0.4, z), 12, GPAL.luz, 6.5, 6, 1.35, 0.6); }
-          const [cx, cz] = gFrente(2.2); gCorte(cx, 1.5, cz, 4.4, GPAL.dourada, Math.PI / 2);
-          const l = FERAS.filter(e => { if (!feraAtiva(e)) return false; const ex = e.g.position.x - p.x, ez = e.g.position.z - p.z, ao = ex * sx + ez * sz, lat = Math.abs(ex * sz - ez * sx); return ao > -0.5 && ao < 7 && lat < 2 + e.T.raio; }); lendHit(l, 8.9, null); l.forEach(e => { e.stun = Math.max(e.stun || 0, 1.5); }); } }
+    gl_egide(dt, t) { const D = 0.95, u = Math.min(1, t / D), p = heroi.position; GL.pose = 'escudo'; once2('on', () => { GL.egide = 4; });
+      if (u >= 0.35) once2('b', () => { tremor = 0.3; gOnda(p.x, p.z, GPAL.roxaB, 6.5, 16, 0.14); gOnda(p.x, p.z, GPAL.dourada, 5, 14, 0.12); gParts(gv.set(p.x, 1.1, p.z), 18, GPAL.negra, 5.5, 3.8, 2, 0.75); gParts(gv.set(p.x, 1.2, p.z), 14, GPAL.roxaB, 5, 4.2, 1.2); gBate(p.x, p.z, 3.6, 2.2, e => gEmpurra(p.x, p.z, e, 3)); });
       return t >= D; },
-    gl_danca(dt, t) { // combo: arremesso → 5 cortes → arremesso em órbita → mortal com o chakram no céu → giro final
-      let acc = 0, fase = null, pt = 0, dur = 0; for (const [n, d] of GFASES) { if (t < acc + d) { fase = n; pt = t - acc; dur = d; break; } acc += d; } if (!fase) return true; gDanca(dt, fase, pt, dur, 1); return false; },
-    gl_base(dt, t) { // ataque básico com chakram: só UMA etapa da dança por toque no ATACAR
-      const [fase, dur] = GFASES[GL.baseI]; if (t >= dur) return true; gDanca(dt, fase, t, dur, 0.55); return false; } };
-  const GFASES = [['arr1', 0.78], ['c1', 0.27], ['c2', 0.27], ['c3', 0.3], ['c4', 0.38], ['c5', 0.42], ['arr2', 0.88], ['ceu', 1.28], ['fim', 0.62]];
-  function gDanca(dt, fase, pt, dur, KM) { const t = pt; const gBateK = (x, z, r, k, ef) => gBate(x, z, r, k * KM, ef);
-      const u = pt / dur, p = heroi.position, A = GL.alvo && feraAtiva(GL.alvo) ? GL.alvo : null, [ax, az] = A ? [A.g.position.x, A.g.position.z] : gFrente(3.2); if (A) facing = Math.atan2(ax - p.x, az - p.z);
-      const once = (k, fn) => { if (!GL.f[fase + k]) { GL.f[fase + k] = 1; fn(); } };
-      if (fase === 'arr1' || fase === 'arr2') { GL.pose = u < 0.18 ? 'preparo' : 'arremesso'; if (u >= 0.18) { const fu = (u - 0.18) / 0.82; chkSolto(); chkMundo(gv); const ini = gv.clone();
-          if (fase === 'arr1') { const c = Math.sin(fu * Math.PI); GCHK.position.set(ini.x + (ax - ini.x) * c + Math.sin(fu * Math.PI * 2) * 0.95, 1.35 * c + ini.y * (1 - c), ini.z + (az - ini.z) * c); GCHK.rotation.set(Math.PI / 2, 0, pt * 36); if (fu > 0.38) once('h1', () => { tremor = 0.15; gCorte(ax, 1.35, az, 2.2, GPAL.roxaB, 0.25); gParts(gv.set(ax, 1.3, az), 8, GPAL.luz, 3.6, 2.6, 1); gBateK(ax, az, 2.2, 0.85); }); if (fu > 0.64) once('h2', () => gBateK(ax, az, 2.2, 0.75)); }
-          else { const a = fu * Math.PI * 2, sx = Math.sin(facing), sz = Math.cos(facing), fr = (1 - Math.cos(a)) * 0.5 * 5.2, la = Math.sin(a) * 2.65; GCHK.position.set(ini.x + sx * fr + sz * la, 1.4 * Math.sin(fu * Math.PI) + 1, ini.z + sz * fr - sx * la); GCHK.rotation.set(Math.PI / 2, 0, -pt * 44); if (fu > 0.34) once('h1', () => { gCorte(ax, 1.4, az, 2.8, GPAL.roxaB, -0.4); gBateK(ax, az, 3, 1.1); }); if (fu > 0.66) once('h2', () => { tremor = 0.2; gCorte(ax, 1.4, az, 2.8, GPAL.dourada, 0.4); gBateK(ax, az, 3, 1.25); }); }
-          gRastro(GCHK.position, true); } else chkNaMao(); }
-      else if (fase[0] === 'c' && fase.length === 2) { chkNaMao(); const n = +fase[1]; GL.pose = n === 1 || n === 3 ? 'corteD' : n === 2 ? 'corteE' : n === 4 ? 'giro' : 'alto'; GL.spin = n === 4 ? u * Math.PI * 2 : 0; if (n === 1) { const v = 5 * dt; gAnda(Math.sin(facing) * v, Math.cos(facing) * v); } chkMundo(gv); gRastro(gv, n >= 4);
-        if (u > 0.48) once('h', () => { const [fx, fz] = gFrente(0.9); const k = [0, 0.9, 1.0, 1.15, 1.3, 1.75][n]; tremor = 0.14 + n * 0.04; if (n === 3) gOnda(ax, az, GPAL.dourada, 3.6, 14); if (n === 4) { gCorte(p.x, 1.3, p.z, 3.2, GPAL.roxaB, 0); gOnda(p.x, p.z, GPAL.roxa, 4.4, 14); } else if (n === 5) { gCratera(ax, az, 0.85, 3.2); gPedras(ax, az, 6, 6.2); gOnda(ax, az, GPAL.dourada, 5.2, 16); } else gCorte(fx, 1.32, fz, 2.7, n === 2 ? GPAL.dourada : GPAL.roxaB, n === 2 ? -0.3 : 0.2); gParts(gv.set(ax, 1.3, az), 8, GPAL.luz, 4, 2.6, 1); gBateK(n === 4 ? p.x : ax, n === 4 ? p.z : az, n === 4 ? 3.4 : 2.4, k); }); }
-      else if (fase === 'ceu') { GL.pose = u < 0.18 ? 'alto' : 'mortal'; if (u >= 0.18) { const au = (u - 0.18) / 0.82, fl = Math.min(1, au / 0.82); once('j', () => { vy = 8.5; chkMundo(gv); GL.f.lan = gv.clone(); chkSolto(); gOnda(p.x, p.z, GPAL.roxaB, 3.4, 12); gParts(gv.set(p.x, 0.2, p.z), 10, GPAL.luz, 3.5, 3.5, 1.1); });
-          GL.flip = fl < 0.85 ? -fl * Math.PI * 2 : 0; const v = -2.2 * dt; gAnda(Math.sin(facing) * v, Math.cos(facing) * v); const L0 = GL.f.lan, ap = gv.set(L0.x, L0.y + 5, L0.z);
-          if (au < 0.32) GCHK.position.lerpVectors(L0, ap, 1 - Math.pow(1 - au / 0.32, 2)); else if (au < 0.72) { GCHK.position.copy(ap); GCHK.position.y += Math.sin((au - 0.32) / 0.4 * Math.PI) * 0.45; } else { const m = new T3.Vector3(); chkMundo(m); GCHK.position.lerpVectors(ap.clone(), m, Math.pow((au - 0.72) / 0.28, 1.6)); }
-          GCHK.rotation.set(Math.PI / 2, 0, pt * 48); gRastro(GCHK.position, true); if (fl >= 0.85) once('aterra', () => { tremor = 0.22; gOnda(p.x, p.z, GPAL.dourada, 3.8, 14); gParts(gv.set(p.x, 0.2, p.z), 10, GPAL.aura, 3.2, 2.2, 1.6, 0.5); }); } }
-      else if (fase === 'fim') { chkNaMao(); GL.flip = 0; GL.pose = 'giro'; GL.spin = Math.min(1, u / 0.72) * Math.PI * 2; chkMundo(gv); gRastro(gv, true);
-        if (u > 0.36) once('b', () => { tremor = 0.4; flash('rgba(255,210,90,.3)'); gCorte(p.x, 1.25, p.z, 4.2, GPAL.dourada, 0); gCorte(p.x, 1.32, p.z, 3.6, GPAL.roxaB, 1.2); gOnda(p.x, p.z, GPAL.dourada, 8.2, 17); gOnda(p.x, p.z, GPAL.roxa, 6.8, 15, 0.15); gParts(gv.set(p.x, 0.5, p.z), 16, GPAL.negra, 6.5, 3.2, 2.1, 0.75); gParts(gv.set(p.x, 0.8, p.z), 16, GPAL.luz, 7, 4.5, 1.2); gPedras(p.x, p.z, 8, 7); gBateK(p.x, p.z, 4.5, 2.9, e => gEmpurra(p.x, p.z, e, 1.6)); }); }
-  }
+    gl_julgamento(dt, t) { const D = 1.35, u = Math.min(1, t / D), [ax, az] = gAlvoPos(); GL.pose = u < 0.5 ? 'alto' : 'baixo'; gAltura(u < 0.4 ? u / 0.4 * 1.4 : Math.max(0, (1 - u) * 2.3)); const H = GL.W.userData.casa, sc = u < 0.58 ? 1 + u / 0.58 * 0.95 : 1.95 - (u - 0.58) / 0.42 * 0.95; if (H) GL.W.scale.copy(H.esc).multiplyScalar(sc); chkMundo(gv); if (u < 0.6) gRastro(gv, true);
+      if (u >= 0.58) once2('ult', () => { tremor = 0.8; flash('rgba(255,230,140,.4)'); const p = heroi.position, sx = Math.sin(facing), sz = Math.cos(facing); for (let k = 1; k <= 4; k++) { const x = p.x + sx * k * 1.45, z = p.z + sz * k * 1.45; gCratera(x, z, 0.95 + k * 0.12, 3.8); gPedras(x, z, 5, 8.2); gOnda(x, z, k % 2 ? GPAL.dourada : GPAL.roxaB, 6.2, 16, 0.12); gParts(gv.set(x, 0.4, z), 12, GPAL.luz, 6.5, 6, 1.35, 0.6); }
+        const [cx, cz] = gFrente(2.2); gCorte(cx, 1.5, cz, 4.4, GPAL.dourada, Math.PI / 2);
+        const l = FERAS.filter(e => { if (!feraAtiva(e)) return false; const ex = e.g.position.x - p.x, ez = e.g.position.z - p.z, ao = ex * sx + ez * sz, lat = Math.abs(ex * sz - ez * sx); return ao > -0.5 && ao < 7 && lat < 2 + e.T.raio; }); lendHit(l, 8.9, null); l.forEach(e => { e.stun = Math.max(e.stun || 0, 1.5); }); });
+      if (u >= 1 && H) GL.W.scale.copy(H.esc); return t >= D; } };
+  function once2(k, fn) { if (!GL.f[k]) { GL.f[k] = 1; fn(); } }
   GLAD.forEach(L => { LEND_CRIA[L.id] = () => { gInicia(L.id); }; });
   function gladFrame(dt) { gVfxFrame(dt); GCHK.userData.nuc.scale.setScalar(1 + Math.sin(gT * 10) * 0.18);
     if (GL.egide > 0) { GL.egide -= dt; const p = heroi.position; EGIDE.g.visible = true; EGIDE.g.position.set(p.x, p.y, p.z); EGIDE.an[0].rotation.z += dt * 2.2; EGIDE.an[1].rotation.z -= dt * 3.1; EGIDE.esf.scale.setScalar(1 + Math.sin(gT * 8) * 0.04); if (GL.egide <= 0) EGIDE.g.visible = false; }
-    if (!GL.ativo) return; if (desmaiado || zona === 'leilao') { gTerm(); return; } GL.t += dt; let acabou = false; try { acabou = GSKILL[GL.ativo](dt, GL.t); } catch (e) { console.warn(e); acabou = true; } if (acabou) gTerm(); }
+    if (!GL.ativo) return; if (desmaiado || zona === 'leilao') { gTerm(); return; } if (GL.W === GCHK) {}  GL.t += dt; let acabou = false; try { acabou = GSKILL[GL.ativo](dt, GL.t); } catch (e) { console.warn(e); acabou = true; } if (acabou) gTerm(); }
   // botão ATACAR com chakram na mão: cada toque faz a próxima etapa da dança (volta pro começo se ficar parado)
   GL.baseI = -1; GL.baseFim = 0;
   function gladBase() { if (!ARMA_ROTA.glad.ok(AR.arma)) return false; if (GL.ativo) return true; const agora = gT; GL.baseI = agora - GL.baseFim > 2.2 ? 0 : (GL.baseI + 1) % GFASES.length;
-    if (!gInicia('gl_base')) return true; GCHK.userData.auraM.opacity = 0.35; const n = GL.baseI; som(n === 0 || n === 6 ? 'tiro' : 'espada', 0.6, n === 8 ? 0.8 : null); return true; }
+    if (!gInicia('gl_base')) return true; const n = GL.baseI; if (n !== 9) som(n === 0 || n === 6 ? 'tiro' : 'espada', 0.6, n === 8 ? 0.8 : null); return true; }
   function gladReduz(n) { return GL.egide > 0 ? n * 0.4 : n; }
   window.__glad = { GL, equipa: k => equipaArma(k), cast: id => { LEND_CD[id] = 0; GL.ativo = null; usarPoder(PW[id]); } };
   // ===================== ÁRVORE DE HABILIDADES EM REDE (sem classe: qualquer um segue qualquer rota) =====================
