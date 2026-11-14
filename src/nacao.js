@@ -12,7 +12,7 @@
   setInterval(nacaoPergunta, 2500);
   // ---------- horário (Brasília = UTC-3) ----------
   function brHora(ms) { const d = new Date(ms - 3 * 3600 * 1000); return { h: d.getUTCHours(), m: d.getUTCMinutes(), dia: d.toISOString().slice(0, 10) }; }
-  function nacaoJanela(agora) { if (NAC.cfg && NAC.cfg.ate > agora) return { id: 'm' + NAC.cfg.ini, ate: NAC.cfg.ate };
+  function nacaoJanela(agora) { if (typeof SIM !== 'undefined' && SIM.cfg && SIM.cfg.ate > agora) return { id: 'sim' + SIM.cfg.ini, ate: SIM.cfg.ate }; if (NAC.cfg && NAC.cfg.ate > agora) return { id: 'm' + NAC.cfg.ini, ate: NAC.cfg.ate };
     if (NAC.cfg && NAC.cfg.parou && agora - NAC.cfg.parou < 25 * 60 * 1000) return null;
     const b = brHora(agora); if ((b.h === 12 || b.h === 20) && b.m < 20) { const ini = agora - (b.m * 60 + new Date(agora).getUTCSeconds()) * 1000 - new Date(agora).getUTCMilliseconds(); return { id: b.dia + '-' + b.h, ate: ini + 20 * 60 * 1000 }; } return null; }
   // ADM: liga/desliga na hora (Firestore config/batalha)
@@ -25,7 +25,7 @@
       .on('broadcast', { event: 'nm' }, m => nacaoMorteRecebe(m.payload))
       .on('broadcast', { event: 'npq' }, m => { if (m.payload && m.payload.b === NAC.bid) nacEnvia('npr', { b: NAC.bid, p: NAC.placar }); })
       .on('broadcast', { event: 'npr' }, m => { const d = m.payload; if (!d || d.b !== NAC.bid || !d.p) return; ['vermelha', 'azul'].forEach(k => NAC.placar[k] = Math.max(NAC.placar[k], d.p[k] | 0)); }); };
-  function nacaoMorteRecebe(d) { if (!d || d.b !== NAC.bid) return; const ganhou = d.na === 'vermelha' ? 'azul' : 'vermelha'; NAC.placar[ganhou]++;
+  function nacaoMorteRecebe(d) { if (!d || d.b !== NAC.bid) return; const ganhou = d.na === 'vermelha' ? 'azul' : 'vermelha'; NAC.placar[ganhou]++; if (String(d.porId || '').startsWith('bot') && typeof simAbateBot === 'function') { simAbateBot(d.porId, d.nome); return; }
     if (d.porId === MP.id) { NAC.abates++; ganhaXp(60, true); AR.inv.moedas = (AR.inv.moedas || 0) + 150; if (typeof atualizaInv === 'function') atualizaInv(); salvaAR(); aviso('⚔️ Você derrotou ' + String(d.nome || '?').slice(0, 20) + '! +150 moedas · +60 XP', NACOES[AR.nacao] ? NACOES[AR.nacao].cor : '#ffd86a'); som('missao_ok', 0.7, 1.2); }
     else if (zona === 'nacao') aviso((NACOES[ganhou] ? NACOES[ganhou].ic : '') + ' ' + String(d.por || '?').slice(0, 20) + ' derrotou ' + String(d.nome || '?').slice(0, 20), NACOES[ganhou] ? NACOES[ganhou].cor : '#fff'); }
   // ---------- labirinto (igual pra todo mundo: semente fixa) ----------
@@ -59,7 +59,7 @@
       glowSpr(G, bx, 1.2, bz, 7, N.cor, 0.35); });
     // centro: arena com cristal
     const cc = [x0 + 7.5 * NCEL, z0 + 7.5 * NCEL]; const cri = new T3.Mesh(new T3.OctahedronGeometry(1.2, 0), new T3.MeshStandardMaterial({ color: '#ffd86a', emissive: '#ffb020', emissiveIntensity: 0.9, flatShading: true })); cri.position.set(cc[0], 3.2, cc[1]); G.add(cri); glowSpr(G, cc[0], 3.2, cc[1], 6, '#ffd86a', 0.45);
-    return { G, W, bases, x0, z0, L, cri }; })();
+    return { G, W, V, bases, x0, z0, L, cri }; })();
   function nacaoLimita(p) { const r = 0.4; if (p.y < 4.1) LAB.W.forEach(w => { const dx = p.x - w.x, dz = p.z - w.z; if (Math.abs(dx) > w.hw + r || Math.abs(dz) > w.hd + r) return; const px = w.hw + r - Math.abs(dx), pz = w.hd + r - Math.abs(dz); if (px < pz) p.x += Math.sign(dx || 1) * px; else p.z += Math.sign(dz || 1) * pz; });
     p.x = clamp(p.x, LAB.x0 - 140, LAB.x0 + LAB.L + 140); p.z = clamp(p.z, LAB.z0 - 140, LAB.z0 + LAB.L + 140); }
   // ---------- entrar / sair ----------
@@ -68,12 +68,13 @@
     if (typeof CAL !== 'undefined' && CAL.on) { calLimpa(); CAL.on = false; CALG.visible = false; } if (montado) montar(false); if (voando) voa(false);
     cena([{ t: '⚔️ Indo para o Labirinto da Batalha de Nação...', v: null }], () => { dentro = false; zona = 'nacao'; const [x, z] = nacaoBase(); heroi.position.set(x, 0, z); facing = AR.nacao === 'azul' ? Math.PI * 1.25 : Math.PI * 0.25; camYaw = 0; cam.position.set(x + Math.sin(facing) * -4, 4, z + Math.cos(facing) * -4); vida = VIDA_MAX; mana = MANA_MAX; som('portal', 0.9, 0.9); mostrarLugar('Labirinto da Batalha de Nação'); nacEnvia('npq', { b: NAC.bid }); aviso(NACOES[AR.nacao].ic + ' Derrote os jogadores da outra nação! Cada abate vale 1 ponto.', NACOES[AR.nacao].cor); }); }
   function nacaoSai(fim) { if (zona !== 'nacao') return; zona = 'vila'; dentro = false; heroi.position.set(PRACA.x, 0, PRACA.z + 8); facing = Math.PI; camYaw = 0; vida = VIDA_MAX; if (fim) { const p = NAC.placar, v = p.vermelha === p.azul ? null : p.vermelha > p.azul ? 'vermelha' : 'azul';
-      cena([{ t: '🏁 Fim da Batalha de Nação!  🔴 ' + p.vermelha + ' x ' + p.azul + ' 🔵', v: null }, { t: v ? NACOES[v].ic + ' Vitória do ' + NACOES[v].nome + '!' + (v === AR.nacao ? ' Sua nação venceu! +500 moedas' : '') : 'Empate! As duas nações lutaram com honra.', v: null }], () => { if (v && v === AR.nacao) { AR.inv.moedas = (AR.inv.moedas || 0) + 500; salvaAR(); if (typeof atualizaInv === 'function') atualizaInv(); } mostrarLugar('Praça dos Aventureiros'); }); } }
+      cena([{ t: '🏁 Fim da Batalha de Nação!  🔴 ' + p.vermelha + ' x ' + p.azul + ' 🔵', v: null }, { t: v ? NACOES[v].ic + ' Vitória do ' + NACOES[v].nome + '!' + (v === AR.nacao ? ' Sua nação venceu! +500 moedas e 🪽 direito de voar' : '') : 'Empate! As duas nações lutaram com honra.', v: null }], () => { if (v && v === AR.nacao) { AR.inv.moedas = (AR.inv.moedas || 0) + 500; salvaAR(); if (typeof atualizaInv === 'function') atualizaInv(); if (!SIM.on) nacaoPremioVoo(); } mostrarLugar('Praça dos Aventureiros'); }); } }
   function nacaoMorre() { const u = NAC.ult; NAC.mortes++; nacEnvia('nm', { b: NAC.bid, na: AR.nacao, nome: trNome(), por: u ? u.nome : '', porId: u ? u.de : '' }); nacaoMorteRecebe({ b: NAC.bid, na: AR.nacao, nome: trNome(), por: u ? u.nome : '?', porId: u ? u.de : '' });
     NAC.ult = null; flash('rgba(0,0,0,.6)'); som('desmaio', 0.8, 1); const [x, z] = nacaoBase(); heroi.position.set(x, 0, z); vida = VIDA_MAX; mana = MANA_MAX; aviso('💀 Você caiu! Voltou pra base da sua nação.', '#ff8a8a'); }
   // ataque em outro jogador (quando você ataca no labirinto)
   function nacaoAtk() { if (zona !== 'nacao' || !AR.nacao) return; const A = ARMAS[AR.arma] || ARMAS.punho, p = heroi.position, alc = A.longe ? 16 : 3.2; let alvo = null, md = alc;
     Object.keys(MP.outros).forEach(id => { const o = MP.outros[id]; if (!o.d || o.d.z !== 'nacao' || !o.d.na || o.d.na === AR.nacao) return; const d = Math.hypot(o.x - p.x, o.z - p.z); if (d < md) { md = d; alvo = { id, o }; } });
+    const sb = typeof simAlvoHeroi === 'function' ? simAlvoHeroi(p, md) : null; if (sb) { const b = sb.b; facing = Math.atan2(b.x - p.x, b.z - p.z); const cr = critico(); const n = Math.round(((A.dano || 10) * atkMult() * (cr ? 1.8 : 1)) * 0.5); setTimeout(() => simDano(b, n, 'hero'), A.longe ? 250 : 120); return; }
     if (!alvo) return; facing = Math.atan2(alvo.o.x - p.x, alvo.o.z - p.z); const cr = critico(); const n = Math.round(((A.dano || 10) * atkMult() * (cr ? 1.8 : 1)) * 0.5);
     setTimeout(() => { nacEnvia('nh', { de: MP.id, para: alvo.id, dano: n, nome: trNome() }); numero(alvo.o.c.position, (cr ? '💥' : '') + n, cr ? '#ffd23c' : '#ffffff', 2); fx('luz', [alvo.o.x, 1.2, alvo.o.z], 0.25); }, A.longe ? 250 : 120); }
   // ---------- HUD ----------
@@ -81,20 +82,22 @@
   const nacConv = document.createElement('div'); nacConv.id = 'nacao-conv'; nacConv.hidden = true; nacConv.innerHTML = '<b>⚔️ A Batalha de Nação começou!</b><small>Labirinto gigante: Reino Carmesim 🔴 x 🔵 Reino Safira</small><div><button class="sim">Entrar</button><button class="nao">Agora não</button></div>'; document.body.appendChild(nacConv);
   tapBtn(nacConv.querySelector('.sim'), () => { nacConv.hidden = true; nacaoEntra(); }); tapBtn(nacConv.querySelector('.nao'), () => { nacConv.hidden = true; });
   let nacT = 0;
-  function nacaoFrame(dt, p) { LAB.G.visible = zona === 'nacao'; if (zona === 'nacao') { LAB.cri.rotation.y += dt; (LAB.G.userData.bandeiras || []).forEach((b, i) => { b.rotation.y = Math.sin(gT * 1.6 + i) * 0.12; }); } nacT -= dt; if (nacT > 0) return; nacT = 0.5; nacaoCfgOuve();
+  function nacaoFrame(dt, p) { simFrame(dt, p); LAB.G.visible = zona === 'nacao'; if (zona === 'nacao') { LAB.cri.rotation.y += dt; (LAB.G.userData.bandeiras || []).forEach((b, i) => { b.rotation.y = Math.sin(gT * 1.6 + i) * 0.12; }); } nacT -= dt; if (nacT > 0) return; nacT = 0.5; nacaoCfgOuve();
     const agora = Date.now(), J = nacaoJanela(agora), antes = NAC.aberta; NAC.aberta = !!J;
     if (J && J.id !== NAC.bid) { NAC.bid = J.id; NAC.placar = { vermelha: 0, azul: 0 }; NAC.abates = 0; NAC.mortes = 0; }
     if (J) NAC.ate = J.ate;
     if (NAC.aberta && !antes && zona !== 'nacao' && AR.nacao && NAC.convidou !== NAC.bid) { NAC.convidou = NAC.bid; nacConv.hidden = false; som('missao', 0.9, 1); }
     if (!NAC.aberta && antes) { nacConv.hidden = true; if (zona === 'nacao') nacaoSai(true); }
     if (!NAC.aberta && zona === 'nacao') nacaoSai(false);
-    nacHud.hidden = zona !== 'nacao'; if (!nacHud.hidden) { const s = Math.max(0, Math.floor((NAC.ate - agora) / 1000)); nacHud.innerHTML = `<span class="v">🔴 ${NAC.placar.vermelha}</span><span class="t">⏳ ${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}</span><span class="a">${NAC.placar.azul} 🔵</span><small>Seus abates: ${NAC.abates}</small>`; } }
+    nacHud.hidden = zona !== 'nacao' && !(SIM.on && SIM.guerra); if (!nacHud.hidden) { const s = Math.max(0, Math.floor((NAC.ate - agora) / 1000)); nacHud.innerHTML = `<span class="v">🔴 ${NAC.placar.vermelha}</span><span class="t">⏳ ${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}</span><span class="a">${NAC.placar.azul} 🔵</span><small>Seus abates: ${NAC.abates}</small>`; } }
   // ---------- Mestre Kaelen: Batalha de Nação ----------
   function falaKaelenNacao() { const N = 'Mestre Kaelen'; const na = NACOES[AR.nacao]; const prox = (() => { const b = brHora(Date.now()); return b.h < 12 ? '12h' : b.h < 20 ? '20h' : '12h de amanhã'; })();
     falar({ nome: N, falas: [{ n: N, t: NAC.aberta ? '⚔️ A Batalha de Nação está acontecendo agora! O labirinto espera por você.' : 'A Batalha de Nação acontece às 12h e às 20h (Brasília). A próxima é às ' + prox + '.' }],
       escolhas: () => [NAC.aberta ? { t: '⚔️ <b>Entrar na Batalha</b><small>' + (na ? na.ic + ' ' + na.nome : 'Escolha sua nação') + '</small>', fn: nacaoEntra } : null, { t: '⚡ <b>Modos de Batalha</b><small>Liberar os modos II e III</small>', fn: falaKaelen },
         !AR.nacao ? { t: '🏳️ <b>Escolher minha nação</b>', fn: () => { nacP.hidden = false; } } : null,
-        souAdmin() ? (NAC.aberta ? { t: '🛑 <b>Encerrar a batalha agora</b><small>Só administrador</small>', fn: () => nacaoAdm(false) } : { t: '🟢 <b>Iniciar batalha agora</b><small>Só administrador · 20 minutos</small>', fn: () => nacaoAdm(true) }) : null, { t: 'Agora não', fn: null }].filter(Boolean) }); }
+        souAdmin() ? (NAC.aberta ? { t: '🛑 <b>Encerrar a batalha agora</b><small>Só administrador</small>', fn: () => nacaoAdm(false) } : { t: '🟢 <b>Iniciar batalha agora</b><small>Só administrador · 20 minutos</small>', fn: () => nacaoAdm(true) }) : null, souAdmin() ? (SIM.guerra ? { t: '🛑 <b>Encerrar guerra de teste</b><small>Simulação · mostra o resultado</small>', fn: simPara } : SIM.on ? { t: '⚔️ <b>Abrir guerra de teste</b><small>Simulação 10 x 10 · escolha o tempo</small>', fn: () => falar({ nome: N, falas: [{ n: N, t: 'Quanto tempo de guerra?' }], escolhas: () => [{ t: '⏱️ <b>3 minutos</b>', fn: () => simGuerra(3) }, { t: '⏱️ <b>5 minutos</b>', fn: () => simGuerra(5) }, { t: '⏱️ <b>10 minutos</b>', fn: () => simGuerra(10) }, { t: 'Voltar', fn: null }] }) } : { t: '🧪 <b>Simulação 10 x 10</b><small>Só administrador · 20 jogadores de teste na praça</small>', fn: simCria }) : null,
+        souAdmin() && SIM.on && !SIM.guerra ? { t: '🧹 <b>Remover simulação</b>', fn: () => { simLimpa(); SIM.cfg = null; aviso('🧹 Jogadores de teste removidos.', '#ffd86a'); } } : null,
+        { t: 'Agora não', fn: null }].filter(Boolean) }); }
   // ---------- céu estrelado do labirinto ----------
   const NAC_CEU = (() => { const W = 2048, H = 1024, c = document.createElement('canvas'); c.width = W; c.height = H; const x = c.getContext('2d');
     const g = x.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#02030c'); g.addColorStop(0.35, '#070a24'); g.addColorStop(0.5, '#14183e'); g.addColorStop(0.56, '#1a1640'); g.addColorStop(1, '#05040e'); x.fillStyle = g; x.fillRect(0, 0, W, H);
