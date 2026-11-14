@@ -259,7 +259,7 @@
     return [{ id: 'vila', nome: 'Brumafria', ic: '🏠', x: 0, z: 4.2, cor: '#ffd23c' }, { id: 'praca', nome: 'Praça dos Aventureiros', ic: '🏰', x: PRACA.x, z: PRACA.z + 8, cor: '#ff5a3a', sub: 'Calabouços, Torre, Missões' },
       { id: 'guilda', nome: 'Salão das Guildas', ic: '🛡️', x: sx, z: sz, cor: '#5ab8ff' }, { id: 'masmorra', nome: 'Masmorra', ic: '💀', x: MM_ENT.x + 4, z: MM_ENT.z, cor: '#a07aff' },
       { id: 'goblin', nome: 'Floresta Goblin', ic: '👺', x: GBX - 10, z: GBZ + 10, cor: '#4ab84a' }, { id: 'ponte', nome: 'Ponte do Rio', ic: '🌉', x: RIO.ponte[0] - 9, z: RIO.ponte[1], cor: '#4aa8e8' },
-      { id: 'pousada', nome: 'Pousada do Meio', ic: '🏡', x: POUSADA[0], z: POUSADA[1] + 4, cor: '#e8a040' }, { id: 'colosso', nome: 'Colosso (chefe de mundo)', ic: '🌋', x: 205, z: -48, cor: '#ff6a2a' }, { id: 'leilao', nome: 'Praça do Leilão', ic: '🔨', x: 15 + 3.2, z: 150 + 26 + 3.6, cor: '#e8a040', sub: 'Palanque do leiloeiro' },
+      { id: 'pousada', nome: 'Pousada do Meio', ic: '🏡', x: POUSADA[0], z: POUSADA[1] + 4, cor: '#e8a040' }, { id: 'colosso', nome: 'Colosso (chefe de mundo)', ic: '🌋', x: 205, z: -48, cor: '#ff6a2a' }, { id: 'leilao', nome: 'Praça do Leilão', ic: '🔨', x: 15 + 3.2, z: 150 - 26 - 3.0, cor: '#e8a040', sub: 'Palanque do leiloeiro' },
       { id: 'valdren', nome: 'Valdren', ic: '🏛️', x: VX, z: 40, cor: '#ffe8a0', trava: !lib, sub: lib ? 'A capital' : '🔒 Fale com o Professor' }]; }
   function vaiPara(L) { $('mapa').hidden = true; if (Q.naCarroca || conversa) return; if (L.trava) { aviso(L.sub, '#ff6a6a'); return; } if (L.id === 'valdren') { viajar('valdren'); return; }
     if (CAL.on) { calLimpa(); CAL.on = false; CALG.visible = false; } if (montado) montar(false); if (voando) voa(false);

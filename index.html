@@ -4519,7 +4519,7 @@ const glowA = cv(128, (x) => { const g = x.createRadialGradient(64, 64, 0, 64, 6
     return [{ id: 'vila', nome: 'Brumafria', ic: '🏠', x: 0, z: 4.2, cor: '#ffd23c' }, { id: 'praca', nome: 'Praça dos Aventureiros', ic: '🏰', x: PRACA.x, z: PRACA.z + 8, cor: '#ff5a3a', sub: 'Calabouços, Torre, Missões' },
       { id: 'guilda', nome: 'Salão das Guildas', ic: '🛡️', x: sx, z: sz, cor: '#5ab8ff' }, { id: 'masmorra', nome: 'Masmorra', ic: '💀', x: MM_ENT.x + 4, z: MM_ENT.z, cor: '#a07aff' },
       { id: 'goblin', nome: 'Floresta Goblin', ic: '👺', x: GBX - 10, z: GBZ + 10, cor: '#4ab84a' }, { id: 'ponte', nome: 'Ponte do Rio', ic: '🌉', x: RIO.ponte[0] - 9, z: RIO.ponte[1], cor: '#4aa8e8' },
-      { id: 'pousada', nome: 'Pousada do Meio', ic: '🏡', x: POUSADA[0], z: POUSADA[1] + 4, cor: '#e8a040' }, { id: 'colosso', nome: 'Colosso (chefe de mundo)', ic: '🌋', x: 205, z: -48, cor: '#ff6a2a' }, { id: 'leilao', nome: 'Praça do Leilão', ic: '🔨', x: 15 + 3.2, z: 150 + 26 + 3.6, cor: '#e8a040', sub: 'Palanque do leiloeiro' },
+      { id: 'pousada', nome: 'Pousada do Meio', ic: '🏡', x: POUSADA[0], z: POUSADA[1] + 4, cor: '#e8a040' }, { id: 'colosso', nome: 'Colosso (chefe de mundo)', ic: '🌋', x: 205, z: -48, cor: '#ff6a2a' }, { id: 'leilao', nome: 'Praça do Leilão', ic: '🔨', x: 15 + 3.2, z: 150 - 26 - 3.0, cor: '#e8a040', sub: 'Palanque do leiloeiro' },
       { id: 'valdren', nome: 'Valdren', ic: '🏛️', x: VX, z: 40, cor: '#ffe8a0', trava: !lib, sub: lib ? 'A capital' : '🔒 Fale com o Professor' }]; }
   function vaiPara(L) { $('mapa').hidden = true; if (Q.naCarroca || conversa) return; if (L.trava) { aviso(L.sub, '#ff6a6a'); return; } if (L.id === 'valdren') { viajar('valdren'); return; }
     if (CAL.on) { calLimpa(); CAL.on = false; CALG.visible = false; } if (montado) montar(false); if (voando) voa(false);
@@ -7545,7 +7545,7 @@ const glowA = cv(128, (x) => { const g = x.createRadialGradient(64, 64, 0, 64, 6
   function pedraVai(o, l) { if (o.id === 'leilao') { leilaoEntra(); return; } if (o.id === 'valdren') { viajar('valdren'); return; } if (l && l.id) vaiPara(l); }
   // ===================== CASA DE LEILÕES (só o salão por dentro) =====================
   // ===================== PRAÇA DO LEILÃO (ao ar livre, no mapa principal, ao sul da vila) =====================
-  const LEI = (() => { const G = grp(world, HX, 0, HZ); const R0 = 26;
+  const LEI = (() => { const G = grp(world, HX, 0, HZ); G.rotation.y = Math.PI; /* palanque no sul, entrada virada pra cidade (norte) */ const R0 = 26;
     const tx = (w, h, f) => { const c = document.createElement('canvas'); c.width = w; c.height = h; f(c.getContext('2d'), w, h); const t = new T3.CanvasTexture(c); t.colorSpace = T3.SRGBColorSpace; return t; };
     const banner = tx(1024, 512, (x, w, h) => { const g = x.createLinearGradient(0, 0, 0, h); g.addColorStop(0, '#8a1424'); g.addColorStop(1, '#5a0a18'); x.fillStyle = g; x.fillRect(0, 0, w, h);
       x.strokeStyle = '#ffcf5a'; x.lineWidth = 14; x.strokeRect(18, 18, w - 36, h - 36); x.lineWidth = 3; x.strokeRect(40, 40, w - 80, h - 80); x.textAlign = 'center'; x.fillStyle = '#ffd86a'; x.shadowColor = '#000'; x.shadowBlur = 10;
@@ -7554,7 +7554,7 @@ const glowA = cv(128, (x) => { const g = x.createRadialGradient(64, 64, 0, 64, 6
     pedraT.wrapS = pedraT.wrapT = T3.RepeatWrapping; pedraT.repeat.set(9, 9);
     const M = (c, o) => new T3.MeshStandardMaterial(Object.assign({ color: c, roughness: 0.75 }, o || {}));
     const ouro = M('#d8a840', { metalness: 0.6, roughness: 0.35 }), madeira = M('#5a3420'), creme = M('#efe2c8'), tapete = M('#9a1a2e', { roughness: 0.95 }), ferro = M('#2a2a34', { metalness: 0.5, roughness: 0.5 });
-    const box = (par, m, x, y, z, sx, sy, sz, col) => { const b = new T3.Mesh(BOX, m); b.position.set(x, y, z); b.scale.set(sx, sy, sz); b.castShadow = true; b.receiveShadow = true; par.add(b); if (col) COL.push({ t: 'b', x: HX + x, z: HZ + z, hw: sx / 2, hd: sz / 2, ry: 0 }); return b; };
+    const box = (par, m, x, y, z, sx, sy, sz, col) => { const b = new T3.Mesh(BOX, m); b.position.set(x, y, z); b.scale.set(sx, sy, sz); b.castShadow = true; b.receiveShadow = true; par.add(b); if (col) COL.push({ t: 'b', x: HX - x, z: HZ - z, hw: sx / 2, hd: sz / 2, ry: 0 }); return b; };
     // chão de pedra redondo + meio-fio
     const chao = new T3.Mesh(new T3.CircleGeometry(R0, 64), new T3.MeshStandardMaterial({ map: pedraT, roughness: 0.9 })); chao.rotation.x = -Math.PI / 2; chao.position.y = 0.03; chao.receiveShadow = true; G.add(chao);
     const borda = new T3.Mesh(new T3.TorusGeometry(R0, 0.35, 6, 80), M('#8a8274')); borda.rotation.x = Math.PI / 2; borda.position.y = 0.08; G.add(borda);
@@ -7577,7 +7577,7 @@ const glowA = cv(128, (x) => { const g = x.createRadialGradient(64, 64, 0, 64, 6
     for (let i = 0; i < 9; i++) { const f = new T3.Mesh(new T3.ConeGeometry(0.35, 0.8, 3), new T3.MeshBasicMaterial({ color: i % 2 ? '#ffd86a' : '#c8202a', toneMapped: false })); f.rotation.x = Math.PI; f.position.set(-7 + i * 1.75, 7.45, -11.8); G.add(f); }
     // vitrines com itens girando
     const vit = []; const cores = ['#ff6a8a', '#5ae8ff', '#ffd86a', '#a07aff', '#7aff9a', '#ff9a3a'];
-    [-1, 1].forEach(s => { for (let i = 0; i < 3; i++) { const z = -6 + i * 7, x = s * 14; const pe = new T3.Mesh(new T3.CylinderGeometry(0.55, 0.7, 1.2, 8), creme); pe.position.set(x, 0.6, z); pe.castShadow = true; G.add(pe); COL.push({ t: 'c', x: HX + x, z: HZ + z, r: 0.8 });
+    [-1, 1].forEach(s => { for (let i = 0; i < 3; i++) { const z = -6 + i * 7, x = s * 14; const pe = new T3.Mesh(new T3.CylinderGeometry(0.55, 0.7, 1.2, 8), creme); pe.position.set(x, 0.6, z); pe.castShadow = true; G.add(pe); COL.push({ t: 'c', x: HX - x, z: HZ - z, r: 0.8 });
       const tp2 = new T3.Mesh(new T3.CylinderGeometry(0.62, 0.62, 0.1, 8), ouro); tp2.position.set(x, 1.22, z); G.add(tp2); const cor = cores[(i + (s > 0 ? 3 : 0)) % 6];
       const it = new T3.Mesh(i % 2 ? new T3.OctahedronGeometry(0.35, 0) : new T3.IcosahedronGeometry(0.33, 0), new T3.MeshBasicMaterial({ color: cor, toneMapped: false })); it.position.set(x, 1.9, z); G.add(it); glowSpr(G, x, 1.9, z, 1.6, cor, 0.5);
       const cup = new T3.Mesh(new T3.SphereGeometry(0.75, 16, 12, 0, Math.PI * 2, 0, Math.PI / 2), new T3.MeshBasicMaterial({ color: '#cfefff', transparent: true, opacity: 0.18, depthWrite: false })); cup.position.set(x, 1.27, z); G.add(cup); vit.push(it); } });
@@ -7585,11 +7585,11 @@ const glowA = cv(128, (x) => { const g = x.createRadialGradient(64, 64, 0, 64, 6
     [-1, 1].forEach(s => { for (let i = 0; i < 3; i++) { const z = -4 + i * 4.5; box(G, madeira, s * 6.5, 0.45, z, 5, 0.25, 1.1, true); box(G, madeira, s * 6.5, 0.9, z + 0.5, 5, 0.7, 0.15); [-2.2, 2.2].forEach(dx => box(G, ferro, s * 6.5 + dx, 0.2, z, 0.15, 0.4, 0.9)); } });
     // postes de luz em volta e arco da entrada
     const lus = []; for (let i = 0; i < 10; i++) { const a = i / 10 * Math.PI * 2 + 0.31; if (Math.abs(Math.sin(a)) > 0.93 && Math.cos(a) < 0) continue; const x = Math.sin(a) * (R0 - 1.4), z = Math.cos(a) * (R0 - 1.4); if (z < -12 && Math.abs(x) < 10) continue;
-      box(G, ferro, x, 2.1, z, 0.18, 4.2, 0.18); const l = grp(G, x, 4.3, z); part(l, SPH, '#fff2c0', 0, 0, 0, 0.32, 0.38, 0.32, 0, true); glowSpr(l, 0, 0, 0, 2.6, '#ffd890', 0.45); lus.push(l); COL.push({ t: 'c', x: HX + x, z: HZ + z, r: 0.3 }); }
+      box(G, ferro, x, 2.1, z, 0.18, 4.2, 0.18); const l = grp(G, x, 4.3, z); part(l, SPH, '#fff2c0', 0, 0, 0, 0.32, 0.38, 0.32, 0, true); glowSpr(l, 0, 0, 0, 2.6, '#ffd890', 0.45); lus.push(l); COL.push({ t: 'c', x: HX - x, z: HZ - z, r: 0.3 }); }
     { const ar = new T3.Mesh(new T3.TorusGeometry(3.2, 0.3, 8, 24, Math.PI), ouro); ar.position.set(0, 5.2, R0 - 0.6); G.add(ar); [-1, 1].forEach(s => { box(G, creme, s * 3.2, 2.6, R0 - 0.6, 0.7, 5.2, 0.7, true); });
       const pl = new T3.Mesh(new T3.PlaneGeometry(5, 1.2), new T3.MeshBasicMaterial({ map: tx(512, 128, (x, w, h) => { x.fillStyle = '#5a0a18'; x.fillRect(0, 0, w, h); x.strokeStyle = '#ffcf5a'; x.lineWidth = 8; x.strokeRect(6, 6, w - 12, h - 12); x.fillStyle = '#ffd86a'; x.font = 'bold 64px serif'; x.textAlign = 'center'; x.fillText('🔨 LEILÃO', w / 2, 88); }), toneMapped: false, side: T3.DoubleSide })); pl.position.set(0, 6.4, R0 - 0.6); G.add(pl); }
     // caminho de terra da porta sul da vila até a praça
-    { const ax = 0, az = 58, bx = 0, bz = R0 - 1, dx = HX + bx - ax, dz = HZ + bz - az, L = Math.hypot(dx, dz); const c = new T3.Mesh(new T3.PlaneGeometry(4.2, L), new T3.MeshToonMaterial({ color: '#d9bf86', gradientMap: GRAD })); c.rotation.x = -Math.PI / 2; c.rotation.z = Math.atan2(dx, dz); c.position.set(ax + dx / 2, 0.025, az + dz / 2); c.receiveShadow = true; world.add(c); LEI_CAMINHO.push(c); }
+    { const ax = 0, az = 58, bx = 0, bz = -(R0 - 1), dx = HX + bx - ax, dz = HZ + bz - az, L = Math.hypot(dx, dz); const c = new T3.Mesh(new T3.PlaneGeometry(4.2, L), new T3.MeshToonMaterial({ color: '#d9bf86', gradientMap: GRAD })); c.rotation.x = -Math.PI / 2; c.rotation.z = Math.atan2(dx, dz); c.position.set(ax + dx / 2, 0.025, az + dz / 2); c.receiveShadow = true; world.add(c); LEI_CAMINHO.push(c); }
     // o leiloeiro em cima do palanque
     const npc = makeChar({ skin: '#e8c0a0', hairStyle: 'short', hairC: '#c8c8d0', top: '#7a1424', top2: '#ffd86a', pants: '#2a1a24', shoe: '#1a1010', iris: '#5a3a1a', s: 1.08, ph: 4.4 }); npc.position.set(0, 1.25, -13.8); G.add(npc);
     { const P = npc.userData.P; part(P.head, CYL, '#1a1018', 0, 0.36, 0, 0.2, 0.28, 0.2, 0.03); part(P.head, CYL, '#1a1018', 0, 0.23, 0, 0.3, 0.03, 0.3, 0.03); part(P.head, CYL, '#c8202a', 0, 0.27, 0, 0.205, 0.05, 0.205); }
@@ -7597,11 +7597,11 @@ const glowA = cv(128, (x) => { const g = x.createRadialGradient(64, 64, 0, 64, 6
     return { G, lus, vit, npc, R0 }; })();
   function leilaoLimita(p) { p.x = clamp(p.x, HX - 21.6, HX + 21.6); p.z = clamp(p.z, HZ - 9.6, HZ + 16.8); [-1, 1].forEach(s => { for (let i = 0; i < 5; i++) { const cx = HX + s * 19.5, cz = HZ - 14 + i * 7.2, d = Math.hypot(p.x - cx, p.z - cz); if (d < 1.0) { p.x = cx + (p.x - cx) / d * 1.0; p.z = cz + (p.z - cz) / d * 1.0; } } }); }
   function leilaoEntra() { if (Q.naCarroca || conversa) return; if (CAL.on) { calLimpa(); CAL.on = false; CALG.visible = false; } if (montado) montar(false); if (voando) voa(false);
-    cena([{ t: '✨ Teleportando para a Praça do Leilão...', v: null }], () => { dentro = false; zona = 'vila'; heroi.position.set(HX, 0, HZ + 12); facing = Math.PI; camYaw = 0; cam.position.set(HX, 4, HZ + 18); fx('luz', [HX, 0, HZ + 12], 1); som('portal', 0.8, 1); mostrarLugar('Praça do Leilão'); }); }
-  function leilaoFrame(dt, p) { if (!PED_FEITAS) pedrasMonta(); if (zona === 'leilao') { zona = 'vila'; heroi.position.set(HX, 0, HZ + 12); }
+    cena([{ t: '✨ Teleportando para a Praça do Leilão...', v: null }], () => { dentro = false; zona = 'vila'; heroi.position.set(HX, 0, HZ - 12); facing = 0; camYaw = Math.PI; cam.position.set(HX, 4, HZ - 18); fx('luz', [HX, 0, HZ - 12], 1); som('portal', 0.8, 1); mostrarLugar('Praça do Leilão'); }); }
+  function leilaoFrame(dt, p) { if (!PED_FEITAS) pedrasMonta(); if (zona === 'leilao') { zona = 'vila'; heroi.position.set(HX, 0, HZ - 12); }
     const naVila = zona === 'vila' && !dentro; LEI.G.visible = naVila; LEI_CAMINHO.forEach(c => c.visible = naVila); let al = pedrasFrame(dt, p); if (!naVila || Math.hypot(p.x - HX, p.z - HZ) > 70) return al;
     LEI.vit.forEach((v, i) => { v.rotation.y += dt * 1.2; v.position.y = 1.9 + Math.sin(gT * 2 + i) * 0.1; });
-    const n = LEI.npc, nx = HX, nz = HZ - 13.8, d = Math.hypot(p.x - nx, p.z - nz); n.rotation.y += ((d < 14 ? Math.atan2(p.x - nx, p.z - nz) : 0) - n.rotation.y) * clamp(dt * 4);
+    const n = LEI.npc, nx = HX, nz = HZ + 13.8, d = Math.hypot(p.x - nx, p.z - nz); n.rotation.y += ((d < 14 ? Math.atan2(p.x - nx, p.z - nz) - Math.PI : 0) - n.rotation.y) * clamp(dt * 4);
     pose(n, gT, { mood: d < 9 ? 'smile' : 'neutral', arms: { shR: [-0.5 + Math.sin(gT * 1.5) * 0.08, 0, 0.2], elR: [-0.9, 0, 0] } }); n.position.y = 1.25;
     if (d < 5.2 && !al) al = { rot: 'LEILÃO', c: n, acao: leilaoAbre }; return al; }
   // ===================== LEILÕES (Firestore: leiloes/{id}) =====================
