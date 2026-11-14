@@ -10950,23 +10950,21 @@ const ArcaneWingSystem = (function () {
   const ARV_PAS = { atk: { nome: 'Força', ic: '💪', txt: '+3% de ataque', v: 0.03 }, crit: { nome: 'Precisão', ic: '🎯', txt: '+2% de crítico', v: 0.02 }, vida: { nome: 'Vigor', ic: '❤️', txt: '+15 de vida máxima', v: 15 }, mana: { nome: 'Essência', ic: '🔷', txt: '+12 de mana máxima', v: 12 }, def: { nome: 'Couraça', ic: '🛡️', txt: '+3% de defesa', v: 3 } };
   // só as 6 magias novas; os nós passivos ligam uma à outra
   const ROTAS = [
-    { id: 'arcana', nome: 'Rota Arcana', sub: 'Eclipse e Abismo', ic: '🔮', cor: '#b46aff', etapas: ['P:mana', 'lg_eclipse', ['P:atk', 'P:crit'], 'P:mana', 'lg_abismo'] },
-    { id: 'infernal', nome: 'Rota Infernal', sub: 'Meteoros e Dragão', ic: '🔥', cor: '#ff7a3a', etapas: ['P:atk', 'lg_meteoros', ['P:vida', 'P:crit'], 'P:atk', 'lg_dragao'] },
-    { id: 'tempestade', nome: 'Rota da Tempestade', sub: 'Trovão e Glacial', ic: '⚡', cor: '#3ab8ff', etapas: ['P:def', 'lg_trovao', ['P:mana', 'P:vida'], 'P:def', 'lg_glacial'] }];
-  const PONTES = [['arcana', 3, 'infernal', 3], ['infernal', 3, 'tempestade', 3]]; // ligações entre rotas
+    { id: 'mago', nome: 'Rota do Mago', sub: 'As 6 magias lendárias', ic: '🧙', cor: '#b46aff', etapas: ['P:mana', ['lg_trovao', 'lg_glacial'], 'P:atk', ['P:mana', 'P:crit'], 'P:vida', ['lg_eclipse', 'lg_meteoros'], 'P:atk', ['P:mana', 'P:def'], 'P:crit', ['lg_dragao', 'lg_abismo']] }];
+  const PONTES = [];
   const ARV = { nos: {}, lig: {}, W: 0, H: 0 };
   AR.arvP = AR.arvP || [];
-  (() => { const DX = 92, Y0 = 46, DY = 96, OFF = 26, X0 = 110; const no = (id, x, y, rota, col) => { ARV.nos[id] = { id, x, y, rota, col }; ARV.lig[id] = ARV.lig[id] || new Set(); return id; };
+  (() => { const DX = 84, Y0 = 135, DY = 96, OFF = 62, X0 = 120; const no = (id, x, y, rota, col) => { ARV.nos[id] = { id, x, y, rota, col }; ARV.lig[id] = ARV.lig[id] || new Set(); return id; };
     const liga = (a, b) => { ARV.lig[a].add(b); ARV.lig[b].add(a); };
-    no('raiz', 38, Y0 + DY, null, -1); ARV.nos.raiz.raiz = true;
+    no('raiz', 44, Y0 + (ROTAS.length - 1) / 2 * DY, null, -1); ARV.nos.raiz.raiz = true;
     ROTAS.forEach((R, ri) => { let ant = ['raiz']; R.ids = [];
       R.etapas.forEach((et, ci) => { const lista = Array.isArray(et) ? et : [et]; const atual = [];
         lista.forEach((k, j) => { if (!k.startsWith('P:') && !PW[k]) { console.warn('árvore: habilidade não existe', k); return; } const id = k.startsWith('P:') ? 'P:' + R.id + ':' + ci + ':' + k.slice(2) : k; const y = Y0 + ri * DY + (lista.length > 1 ? (j ? OFF : -OFF) : 0); no(id, X0 + ci * DX, y, R.id, ci); atual.push(id); R.ids.push(id);
-          if (!k.startsWith('P:')) { const pw = PW[k]; const seg = ci >= 3; pw.preco = seg ? 4 : 2; pw.nvMin = seg ? 15 : 5; pw.arv = R.id; } });
+          if (!k.startsWith('P:')) { const pw = PW[k]; const tier = ci < 3 ? 0 : ci < 7 ? 1 : 2; pw.preco = [2, 3, 4][tier]; pw.nvMin = [5, 10, 15][tier]; pw.arv = R.id; } });
         if (!atual.length) return; ant.forEach(a => atual.forEach(b => liga(a, b))); ant = atual; R.col = R.col || []; R.col[ci] = atual; });
       R.fimX = X0 + R.etapas.length * DX; });
     PONTES.forEach(([ra, ca, rb, cb]) => { const A = ROTAS.find(r => r.id === ra).col[ca], B = ROTAS.find(r => r.id === rb).col[cb]; if (A && B) liga(A[A.length - 1], B[0]); });
-    ARV.W = Math.max(...ROTAS.map(r => r.fimX)) + 170; ARV.H = Y0 * 2 + DY * 2; })();
+    ARV.W = Math.max(...ROTAS.map(r => r.fimX)) + 170; ARV.H = Y0 * 2 + DY * (ROTAS.length - 1); })();
   function arvTem(id) { return !!ARV.nos[id] && !id.startsWith('P:'); }
   function arvPossui(id) { if (id === 'raiz') return true; if (id.startsWith('P:')) return (AR.arvP || []).includes(id); return AR.tem.includes(id); }
   function arvLiga(id) { const pw = PW[id]; if (pw && pw.nvMin && AR.nv < pw.nvMin && !souAdmin()) return false; return [...(ARV.lig[id] || [])].some(arvPossui); }
