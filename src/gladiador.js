@@ -27,16 +27,26 @@
     g.userData = { nuc, auraM, aura }; g.visible = false; return g; })();
   const gMao = grp(heroi.userData.P.elR, 0, -0.36, 0.06); const GCHK_ESC = 0.42;
   // a arma usada é a SUA arma equipada (chakram da mão); o modelo ornamental fica só de reserva
-  function gArma() { const A = typeof ARMAG !== 'undefined' && ARMAG[AR.arma]; return A || GCHK; }
-  function chkNaMao() { const W = GL.W || gArma(); if (W === GCHK) { if (GCHK.parent !== gMao) gMao.add(GCHK); GCHK.position.set(0, 0, 0.08); GCHK.rotation.set(0.25, Math.PI / 2, 0); GCHK.scale.setScalar(GCHK_ESC); return; }
+  function gArma() { if (AR.arma === 'chakram') return GCHK; const A = typeof ARMAG !== 'undefined' && ARMAG[AR.arma]; return A || GCHK; }
+  function chkNaMao() { const W = GL.W || gArma(); if (W === GCHK) { gPoe(GCHK, gMao, BAINHA.mao.R); return; }
     const H = W.userData.casa; if (!H) return; if (W.parent !== H.pai) H.pai.add(W); W.position.copy(H.pos); W.rotation.copy(H.rot); W.scale.copy(H.esc); }
   function chkSolto() { const W = GL.W; if (!W) return; if (W.parent === world) return; if (W !== GCHK && !W.userData.casa) W.userData.casa = { pai: W.parent, pos: W.position.clone(), rot: W.rotation.clone(), esc: W.scale.clone() };
     const ws = new T3.Vector3(); W.getWorldScale(ws); world.add(W); W.scale.copy(ws).multiplyScalar(1.35); }
 
   function chkMundo(v) { gMao.updateMatrixWorld(true); return gMao.localToWorld(v.set(0, 0, 0.1)); }
-  // o SEU chakram ornamental vira a arma "Chakrams": um só, na mão direita (sem cópia na mão esquerda, sem duplicar malhas)
-  (() => { const G = ARMAG.chakram; if (!G) { gMao.add(GCHK); GCHK.scale.setScalar(GCHK_ESC); return; } [...G.children].forEach(c => G.remove(c)); G.add(GCHK); GCHK.position.set(0, -0.04, 0.1); GCHK.rotation.set(0.25, Math.PI / 2, 0); GCHK.scale.setScalar(GCHK_ESC); GCHK.visible = true;
-    GCHK.traverse(o => { if (o.isMesh) o.castShadow = true; }); if (ARMAE.chakram) [...ARMAE.chakram.children].forEach(c => ARMAE.chakram.remove(c)); })();
+  // ===== BAINHA DO GLADIADOR: 2 chakrams (mesmas malhas, sem duplicar geometria) — nas costas como asas quando guardados, nos antebraços em combate =====
+  const GCHK_E = GCHK.clone(); // clone do Three reaproveita as mesmas geometrias e materiais
+  const HP = heroi.userData.P, LADO_R = Math.sign(HP.shR.position.x) || -1;
+  const gMaoE = grp(HP.elL, 0, -0.36, 0.06), costasR = grp(HP.spine, 0, 0, 0), costasL = grp(HP.spine, 0, 0, 0);
+  const BAINHA = {
+    costas: { R: { pos: [0.3 * LADO_R, 0.5, -0.2], rot: [0.18, LADO_R > 0 ? Math.PI : 0, -0.55], esc: 0.27 }, L: { pos: [-0.3 * LADO_R, 0.5, -0.2], rot: [0.18, LADO_R > 0 ? 0 : Math.PI, -0.55], esc: 0.27 } },
+    mao: { R: { pos: [0, -0.04, 0.1], rot: [0.25, Math.PI / 2, 0], esc: GCHK_ESC }, L: { pos: [0, -0.04, 0.1], rot: [0.25, -Math.PI / 2, 0], esc: GCHK_ESC } } };
+  function gPoe(m, pai, t) { if (m.parent !== pai) pai.add(m); m.position.set(...t.pos); m.rotation.set(...t.rot); m.scale.setScalar(t.esc); }
+  GL.combate = 0; GL.bainha = null;
+  function gBainha(estado) { GL.bainha = estado; if (estado === 'mao') { if (GL.W !== GCHK || GCHK.parent !== world) gPoe(GCHK, gMao, BAINHA.mao.R); gPoe(GCHK_E, gMaoE, BAINHA.mao.L); } else { gPoe(GCHK, costasR, BAINHA.costas.R); gPoe(GCHK_E, costasL, BAINHA.costas.L); } }
+  (() => { if (ARMAG.chakram) [...ARMAG.chakram.children].forEach(c => ARMAG.chakram.remove(c)); if (ARMAE.chakram) [...ARMAE.chakram.children].forEach(c => ARMAE.chakram.remove(c)); [GCHK, GCHK_E].forEach(m => m.traverse(o => { if (o.isMesh) o.castShadow = true; })); gBainha('costas'); })();
+  function gBainhaFrame(dt) { const tem = AR.arma === 'chakram'; GCHK.visible = GCHK_E.visible = tem; if (!tem) return; GL.combate -= dt; const quer = GL.ativo || GL.combate > 0 ? 'mao' : 'costas';
+    if (quer !== GL.bainha && !(GL.W === GCHK && GCHK.parent === world)) { gBainha(quer); if (quer === 'mao') som('espada', 0.35, 1.4); } }
   // ---------- efeitos ----------
   const gmat = (c, op, add) => new T3.MeshBasicMaterial({ color: c, transparent: true, opacity: op, side: T3.DoubleSide, depthWrite: false, toneMapped: false, blending: add ? T3.AdditiveBlending : T3.NormalBlending });
   const GGEO = { onda: new T3.RingGeometry(0.25, 0.55, 40), part: new T3.OctahedronGeometry(0.11, 0), pedra: new T3.DodecahedronGeometry(0.18, 0) }; const GPEDRA = new T3.MeshStandardMaterial({ color: GPAL.rocha, roughness: 0.9 });
@@ -63,8 +73,8 @@
   function gBate(x, z, r, k, efeito) { const l = lendArea(x, z, r); lendHit(l, k, null); l.forEach(e => { if (efeito) efeito(e); }); return l.length; }
   function gEmpurra(x, z, e, f) { const dx = e.g.position.x - x, dz = e.g.position.z - z, d = Math.hypot(dx, dz) || 1; try { empurra(e, dx / d, dz / d, f); } catch (er) {} }
   function gAnda(dx, dz) { const p = heroi.position; p.x += dx; p.z += dz; }
-  function gTerm() { if (GL.ativo === 'gl_base') GL.baseFim = gT; if (GL.W && GL.W.userData.casa) chkNaMao(); GL.ativo = null; GL.spin = 0; GL.flip = 0; GL.pose = null; GL.W = null; if (GCHK.parent === gMao) GCHK.visible = false; GCHK.userData.auraM.opacity = 0; }
-  function gInicia(id) { if (GL.ativo) return false; GL.ativo = id; GL.t = 0; GL.f = {}; GL.y0 = heroi.position.y; GL.W = gArma(); if (GL.W === GCHK) { chkNaMao(); GCHK.visible = true; GCHK.userData.auraM.opacity = 0.6; } else { if (GL.W === ARMAG.chakram) GCHK.userData.auraM.opacity = 0.45; GL.W.visible = true; if (!GL.W.userData.casa) GL.W.userData.casa = { pai: GL.W.parent, pos: GL.W.position.clone(), rot: GL.W.rotation.clone(), esc: GL.W.scale.clone() }; }
+  function gTerm() { if (GL.ativo === 'gl_base') GL.baseFim = gT; if (GL.W && GL.W !== GCHK && GL.W.userData.casa) chkNaMao(); GL.ativo = null; GL.spin = 0; GL.flip = 0; GL.pose = null; const eraG = GL.W === GCHK; GL.W = null; GL.combate = 5; if (eraG) gPoe(GCHK, gMao, BAINHA.mao.R); GCHK.userData.auraM.opacity = 0; }
+  function gladInicia(id) { if (GL.ativo) return false; GL.ativo = id; GL.t = 0; GL.f = {}; GL.y0 = heroi.position.y; GL.W = gArma(); GL.combate = 5; if (GL.W === GCHK) { gBainha('mao'); GCHK.visible = GCHK_E.visible = true; GCHK.userData.auraM.opacity = 0.5; } else { GL.W.visible = true; if (!GL.W.userData.casa) GL.W.userData.casa = { pai: GL.W.parent, pos: GL.W.position.clone(), rot: GL.W.rotation.clone(), esc: GL.W.scale.clone() }; }
     const e = gAlvo(); GL.alvo = e; if (e) facing = Math.atan2(e.g.position.x - heroi.position.x, e.g.position.z - heroi.position.z); return true; }
   function gAltura(h) { heroi.position.y = GL.y0 + Math.max(0, h); vy = 0; }
   // poses do herói durante as habilidades
@@ -138,13 +148,13 @@
         const l = FERAS.filter(e => { if (!feraAtiva(e)) return false; const ex = e.g.position.x - p.x, ez = e.g.position.z - p.z, ao = ex * sx + ez * sz, lat = Math.abs(ex * sz - ez * sx); return ao > -0.5 && ao < 7 && lat < 2 + e.T.raio; }); lendHit(l, 8.9, null); l.forEach(e => { e.stun = Math.max(e.stun || 0, 1.5); }); });
       if (u >= 1 && H) GL.W.scale.copy(H.esc); return t >= D; } };
   function once2(k, fn) { if (!GL.f[k]) { GL.f[k] = 1; fn(); } }
-  GLAD.forEach(L => { LEND_CRIA[L.id] = () => { gInicia(L.id); }; });
-  function gladFrame(dt) { gVfxFrame(dt); GCHK.userData.nuc.scale.setScalar(1 + Math.sin(gT * 10) * 0.18);
+  GLAD.forEach(L => { LEND_CRIA[L.id] = () => { gladInicia(L.id); }; });
+  function gladFrame(dt) { gVfxFrame(dt); gBainhaFrame(dt); GCHK.userData.nuc.scale.setScalar(1 + Math.sin(gT * 10) * 0.18);
     if (GL.egide > 0) { GL.egide -= dt; const p = heroi.position; EGIDE.g.visible = true; EGIDE.g.position.set(p.x, p.y, p.z); EGIDE.an[0].rotation.z += dt * 2.2; EGIDE.an[1].rotation.z -= dt * 3.1; EGIDE.esf.scale.setScalar(1 + Math.sin(gT * 8) * 0.04); if (GL.egide <= 0) EGIDE.g.visible = false; }
     if (!GL.ativo) return; if (desmaiado || zona === 'leilao') { gTerm(); return; } if (GL.W === GCHK) {}  GL.t += dt; let acabou = false; try { acabou = GSKILL[GL.ativo](dt, GL.t); } catch (e) { console.warn(e); acabou = true; } if (acabou) gTerm(); }
   // botão ATACAR com chakram na mão: cada toque faz a próxima etapa da dança (volta pro começo se ficar parado)
   GL.baseI = -1; GL.baseFim = 0;
   function gladBase() { if (!ARMA_ROTA.glad.ok(AR.arma)) return false; if (GL.ativo) return true; const agora = gT; GL.baseI = agora - GL.baseFim > 2.2 ? 0 : (GL.baseI + 1) % GFASES.length;
-    if (!gInicia('gl_base')) return true; const n = GL.baseI; if (n !== 9) som(n === 0 || n === 6 ? 'tiro' : 'espada', 0.6, n === 8 ? 0.8 : null); return true; }
+    if (!gladInicia('gl_base')) return true; const n = GL.baseI; if (n !== 9) som(n === 0 || n === 6 ? 'tiro' : 'espada', 0.6, n === 8 ? 0.8 : null); return true; }
   function gladReduz(n) { return GL.egide > 0 ? n * 0.4 : n; }
-  window.__glad = { GL, equipa: k => equipaArma(k), cast: id => { LEND_CD[id] = 0; GL.ativo = null; usarPoder(PW[id]); } };
+  window.__glad = { GL, R: GCHK, L: GCHK_E, BAINHA, equipa: k => equipaArma(k), cast: id => { LEND_CD[id] = 0; GL.ativo = null; usarPoder(PW[id]); } };
