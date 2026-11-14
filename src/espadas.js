@@ -37,7 +37,7 @@
  return E;}
   const ESP_MOD = fazEspadas(T3);
   const ESP_DEF = { esp_suprema: [1, '#ff3a2a', 'rgba(255,90,60,.45)', ''], esp_corrompida: [2, '#3aff7a', 'rgba(60,255,120,.45)', ''], esp_celestial: [3, '#ffe08a', 'rgba(255,230,150,.5)', ''], esp_dragao_real: [4, '#ff8a1a', 'rgba(255,140,40,.5)', ''], esp_executora: [5, '#b45aff', 'rgba(180,90,255,.5)', ''],
-    esp_adm: [1, '#ff2a3a', 'rgba(255,60,60,.55)', 'ADM'], esp_gm: [5, '#2ad8ff', 'rgba(60,200,255,.55)', 'GM'] };
+    esp_adm: [1, '#ff2a3a', 'rgba(255,60,60,.55)', 'ADM'], esp_gm: [5, '#2ad8ff', 'rgba(60,200,255,.55)', 'GM'], memorial: [1, '#ffc81e', 'rgba(255,200,60,.55)', ''] };
   Object.keys(ESP_DEF).forEach(k => { const [n, c, c2, sig] = ESP_DEF[k]; const G = grp(maoG); const inner = ESP_MOD[n](sig, c, c2); inner.position.y = 0.32; G.add(inner); G.rotation.x = Math.PI / 2; G.scale.setScalar(0.55); G.visible = false; G.traverse(o => { if (o.isMesh) o.castShadow = true; }); ARMAG[k] = G; });
   // ---- PLACAS DE ADM / GM (arma grande; o Painel ADM manda pros ADM/GM) ----
   function fazPlaca(k, cor, brilho) { const T = T3, g = new T.Group(), env = { envMap: ENV, envMapIntensity: 1.2 };

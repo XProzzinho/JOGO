@@ -1452,6 +1452,7 @@ ${_}`}class A extends Error{constructor({message:e,code:t,cause:r,name:s}){var n
     gl_ceifador: { nome: 'Ceifador Roxo GL', icone: '🌙', dano: 74, alc: 2.8, cd: 0.32, giro: true, braco: true, soClasse: 'gladiador', preco: 1600, esp: 'cel', desc: 'Só Gladiador. Acerta tudo em volta. Especial: cada golpe recupera 3% da sua vida.' },
     gl_sangrenta: { nome: 'Lua Sangrenta GL', icone: '🌙', dano: 80, alc: 2.8, cd: 0.32, giro: true, braco: true, soClasse: 'gladiador', preco: 2000, fogo: true, esp: 'drag', desc: 'Só Gladiador. Acerta tudo em volta. Especial: queima e o 3º golpe explode em fogo.' },
     gl_prata: { nome: 'Lua de Prata GL', icone: '🌙', dano: 90, alc: 2.9, cd: 0.32, giro: true, braco: true, soClasse: 'gladiador', preco: 2600, esp: 'exec', desc: 'Só Gladiador. Acerta tudo em volta. Especial: dano x2,5 em quem tem pouca vida e o 3º golpe dispara uma lâmina.' },
+    memorial: { nome: 'Arma Memorial', icone: '🏅', dano: 66, alc: 2.6, cd: 0.32, drop: true, desc: 'Prêmio da Batalha de Nação: só quem leva a nação à vitória ganha. O modelo final ainda vai ser revelado.' },
     punho: { nome: 'Mãos vazias', icone: '👊', dano: 6, alc: 1.6, cd: 0.38, oculta: true, desc: 'Sem arma equipada: soco.' },
   };
   const ITENS = { moedas: '💰', pele: '🐺', carne: '🍖', coracao: '💎', asas: '🦇', espdragao: '🐉' };
@@ -2416,7 +2417,7 @@ ${_}`}class A extends Error{constructor({message:e,code:t,cause:r,name:s}){var n
  return E;}
   const ESP_MOD = fazEspadas(T3);
   const ESP_DEF = { esp_suprema: [1, '#ff3a2a', 'rgba(255,90,60,.45)', ''], esp_corrompida: [2, '#3aff7a', 'rgba(60,255,120,.45)', ''], esp_celestial: [3, '#ffe08a', 'rgba(255,230,150,.5)', ''], esp_dragao_real: [4, '#ff8a1a', 'rgba(255,140,40,.5)', ''], esp_executora: [5, '#b45aff', 'rgba(180,90,255,.5)', ''],
-    esp_adm: [1, '#ff2a3a', 'rgba(255,60,60,.55)', 'ADM'], esp_gm: [5, '#2ad8ff', 'rgba(60,200,255,.55)', 'GM'] };
+    esp_adm: [1, '#ff2a3a', 'rgba(255,60,60,.55)', 'ADM'], esp_gm: [5, '#2ad8ff', 'rgba(60,200,255,.55)', 'GM'], memorial: [1, '#ffc81e', 'rgba(255,200,60,.55)', ''] };
   Object.keys(ESP_DEF).forEach(k => { const [n, c, c2, sig] = ESP_DEF[k]; const G = grp(maoG); const inner = ESP_MOD[n](sig, c, c2); inner.position.y = 0.32; G.add(inner); G.rotation.x = Math.PI / 2; G.scale.setScalar(0.55); G.visible = false; G.traverse(o => { if (o.isMesh) o.castShadow = true; }); ARMAG[k] = G; });
   // ---- PLACAS DE ADM / GM (arma grande; o Painel ADM manda pros ADM/GM) ----
   function fazPlaca(k, cor, brilho) { const T = T3, g = new T.Group(), env = { envMap: ENV, envMapIntensity: 1.2 };
@@ -10478,6 +10479,13 @@ const ArcaneWingSystem = (function () {
   const NACOES = { vermelha: { nome: 'Reino Carmesim', curto: 'Carmesim', cor: '#ff3a4a', cor2: '#7a0a14', ic: '🔴' }, azul: { nome: 'Reino Safira', curto: 'Safira', cor: '#3a8aff', cor2: '#0a2a7a', ic: '🔵' } };
   const NX = 0, NZ = -1400, NCEL = 9, NTAM = 15; // labirinto 15x15 células de 9 m (135 m de lado)
   const NAC = { bid: null, ate: 0, placar: { vermelha: 0, azul: 0 }, cfg: null, aberta: false, convidou: null, ult: null, mortes: 0, abates: 0 };
+  // ---------- prêmio da nação vencedora (o ADM escolhe no app do administrador ou com o Mestre Kaelen) ----------
+  const PREMIOS = { voo: '🪽 Direito de voar', moedas: '💰 Moedas', arma: '🏅 Arma Memorial' };
+  function premioTxt(pr) { pr = pr || { tipo: 'voo' }; return pr.tipo === 'moedas' ? '💰 ' + (pr.valor | 0 || 1000) + ' moedas' : PREMIOS[pr.tipo] || PREMIOS.voo; }
+  function nacaoPremioAtual() { const c = NAC.cfg, agora = Date.now(); if (String(NAC.bid).startsWith('sim')) return SIM.premio || { tipo: 'voo' }; if (c && !c.sim && c.ate > agora && c.premio) return c.premio; return (c && c.premioAuto) || { tipo: 'voo' }; }
+  function nacaoDaPremio(pr) { pr = pr || { tipo: 'voo' }; if (pr.tipo === 'moedas') { const v = pr.valor | 0 || 1000; AR.inv.moedas = (AR.inv.moedas || 0) + v; salvaAR(); if (typeof atualizaInv === 'function') atualizaInv(); som('missao_ok', 1, 1.1); aviso('💰 Sua nação venceu! Prêmio: +' + v + ' moedas!', '#ffd86a'); return; }
+    if (pr.tipo === 'arma') { if (AR.armas.includes('memorial')) { AR.inv.moedas = (AR.inv.moedas || 0) + 500; salvaAR(); aviso('🏅 Sua nação venceu! Você já tem a Arma Memorial, então ganhou +500 moedas.', '#ffd86a'); return; } AR.armas.push('memorial'); salvaAR(); if (typeof mostraArma === 'function') mostraArma(); flash('rgba(255,210,80,.4)'); som('missao_ok', 1, 1.1); aviso('🏅 Sua nação venceu! Você ganhou a ARMA MEMORIAL! Toque no botão de trocar arma pra usar.', '#ffd86a'); return; }
+    nacaoPremioVoo(); }
   // ---------- escolher nação ----------
   const nacP = document.createElement('div'); nacP.id = 'nacao-p'; nacP.hidden = true;
   nacP.innerHTML = '<div class="box"><h2>⚔️ Escolha sua Nação</h2><p>Duas vezes por dia (12h e 20h, horário de Brasília) as nações se enfrentam na <b>Batalha de Nação</b>, num labirinto gigante. Escolha bem: a escolha é pra sempre!</p><div class="nac-cards">' +
@@ -10488,12 +10496,15 @@ const ArcaneWingSystem = (function () {
   setInterval(nacaoPergunta, 2500);
   // ---------- horário (Brasília = UTC-3) ----------
   function brHora(ms) { const d = new Date(ms - 3 * 3600 * 1000); return { h: d.getUTCHours(), m: d.getUTCMinutes(), dia: d.toISOString().slice(0, 10) }; }
-  function nacaoJanela(agora) { if (typeof SIM !== 'undefined' && SIM.cfg && SIM.cfg.ate > agora) return { id: 'sim' + SIM.cfg.ini, ate: SIM.cfg.ate }; if (NAC.cfg && NAC.cfg.ate > agora) return { id: 'm' + NAC.cfg.ini, ate: NAC.cfg.ate };
+  function nacaoJanela(agora) { if (typeof SIM !== 'undefined' && SIM.cfg && SIM.cfg.ate > agora) return { id: 'sim' + SIM.cfg.ini, ate: SIM.cfg.ate }; if (NAC.cfg && NAC.cfg.sim) { const b = brHora(agora); if ((b.h === 12 || b.h === 20) && b.m < 20) { const ini = agora - (b.m * 60 + new Date(agora).getUTCSeconds()) * 1000 - new Date(agora).getUTCMilliseconds(); return { id: b.dia + '-' + b.h, ate: ini + 20 * 60 * 1000 }; } return null; } if (NAC.cfg && NAC.cfg.ate > agora) return { id: 'm' + NAC.cfg.ini, ate: NAC.cfg.ate };
     if (NAC.cfg && NAC.cfg.parou && agora - NAC.cfg.parou < 25 * 60 * 1000) return null;
     const b = brHora(agora); if ((b.h === 12 || b.h === 20) && b.m < 20) { const ini = agora - (b.m * 60 + new Date(agora).getUTCSeconds()) * 1000 - new Date(agora).getUTCMilliseconds(); return { id: b.dia + '-' + b.h, ate: ini + 20 * 60 * 1000 }; } return null; }
   // ADM: liga/desliga na hora (Firestore config/batalha)
-  function nacaoCfgOuve() { if (NAC.cfgOuv || !window.CONTA || !CONTA.db || !CONTA.usuario) return; NAC.cfgOuv = true; CONTA.db.collection('config').doc('batalha').onSnapshot(d => { NAC.cfg = d.exists ? d.data() : null; }, () => {}); }
-  function nacaoAdm(liga) { if (!souAdmin() || !window.CONTA || !CONTA.db) return; const now = Date.now(); CONTA.db.collection('config').doc('batalha').set(liga ? { ini: now, ate: now + 20 * 60 * 1000, por: trNome() } : { ate: 0, parou: now }, { merge: false }).then(() => aviso(liga ? '⚔️ Batalha de Nação iniciada por 20 minutos!' : '🛑 Batalha de Nação encerrada.', '#ffd86a')).catch(e => aviso('⚠️ ' + (e.code || e.message), '#ff6a6a')); }
+  function nacaoCfgOuve() { if (NAC.cfgOuv || !window.CONTA || !CONTA.db || !CONTA.usuario) return; NAC.cfgOuv = true; CONTA.db.collection('config').doc('batalha').onSnapshot(d => { NAC.cfg = d.exists ? d.data() : null; nacaoSimCfg(); }, () => {}); }
+  // simulação iniciada pelo app do administrador: só roda no aparelho de quem é ADM
+  function nacaoSimCfg() { const c = NAC.cfg, agora = Date.now(); if (!c) return; if (c.sim && c.ate > agora && souAdmin() && (!SIM.cfg || SIM.cfg.ini !== c.ini)) { if (!SIM.on) simCria(); SIM.cfg = { ini: c.ini, ate: c.ate }; SIM.premio = c.premio || { tipo: 'voo' }; SIM.entrou = false; aviso('🧪 Simulação 10 x 10 iniciada pelo app do administrador! Prêmio: ' + premioTxt(SIM.premio), '#ffd86a'); }
+    if (SIM.cfg && SIM.cfg.ate > agora && c.parou && c.parou > SIM.cfg.ini) SIM.cfg.ate = agora - 1; }
+  function nacaoAdm(liga, premio) { if (!souAdmin() || !window.CONTA || !CONTA.db) return; const now = Date.now(); CONTA.db.collection('config').doc('batalha').set(liga ? { ini: now, ate: now + 20 * 60 * 1000, por: trNome(), sim: false, parou: 0, premio: premio || { tipo: 'voo' } } : { ate: 0, parou: now }, { merge: true }).then(() => aviso(liga ? '⚔️ Batalha de Nação iniciada por 20 minutos! Prêmio: ' + premioTxt(premio) : '🛑 Batalha de Nação encerrada.', '#ffd86a')).catch(e => aviso('⚠️ ' + (e.code || e.message), '#ff6a6a')); }
   // ---------- rede (mesmo canal do multiplayer) ----------
   function nacEnvia(ev, payload) { try { if (MP.ok && MP.ch) MP.ch.send({ type: 'broadcast', event: ev, payload }); } catch (e) {} }
   window.__mpOn = ch => {
@@ -10544,7 +10555,7 @@ const ArcaneWingSystem = (function () {
     if (typeof CAL !== 'undefined' && CAL.on) { calLimpa(); CAL.on = false; CALG.visible = false; } if (montado) montar(false); if (voando) voa(false);
     cena([{ t: '⚔️ Indo para o Labirinto da Batalha de Nação...', v: null }], () => { dentro = false; zona = 'nacao'; const [x, z] = nacaoBase(); heroi.position.set(x, 0, z); facing = AR.nacao === 'azul' ? Math.PI * 1.25 : Math.PI * 0.25; camYaw = 0; cam.position.set(x + Math.sin(facing) * -4, 4, z + Math.cos(facing) * -4); vida = VIDA_MAX; mana = MANA_MAX; som('portal', 0.9, 0.9); mostrarLugar('Labirinto da Batalha de Nação'); nacEnvia('npq', { b: NAC.bid }); aviso(NACOES[AR.nacao].ic + ' Derrote os jogadores da outra nação! Cada abate vale 1 ponto.', NACOES[AR.nacao].cor); }); }
   function nacaoSai(fim) { if (zona !== 'nacao') return; zona = 'vila'; dentro = false; heroi.position.set(PRACA.x, 0, PRACA.z + 8); facing = Math.PI; camYaw = 0; vida = VIDA_MAX; if (fim) { const p = NAC.placar, v = p.vermelha === p.azul ? null : p.vermelha > p.azul ? 'vermelha' : 'azul';
-      cena([{ t: '🏁 Fim da Batalha de Nação!  🔴 ' + p.vermelha + ' x ' + p.azul + ' 🔵', v: null }, { t: v ? NACOES[v].ic + ' Vitória do ' + NACOES[v].nome + '!' + (v === AR.nacao ? ' Sua nação venceu! +500 moedas e 🪽 direito de voar' : '') : 'Empate! As duas nações lutaram com honra.', v: null }], () => { if (v && v === AR.nacao) { AR.inv.moedas = (AR.inv.moedas || 0) + 500; salvaAR(); if (typeof atualizaInv === 'function') atualizaInv(); if (!SIM.on) nacaoPremioVoo(); } mostrarLugar('Praça dos Aventureiros'); }); } }
+      cena([{ t: '🏁 Fim da Batalha de Nação!  🔴 ' + p.vermelha + ' x ' + p.azul + ' 🔵', v: null }, { t: v ? NACOES[v].ic + ' Vitória do ' + NACOES[v].nome + '!' + (v === AR.nacao ? ' Sua nação venceu! Prêmio: ' + premioTxt(NAC.premio) : '') : 'Empate! As duas nações lutaram com honra.', v: null }], () => { if (v && v === AR.nacao && !String(NAC.bid).startsWith('sim')) nacaoDaPremio(NAC.premio); mostrarLugar('Praça dos Aventureiros'); }); } }
   function nacaoMorre() { const u = NAC.ult; NAC.mortes++; nacEnvia('nm', { b: NAC.bid, na: AR.nacao, nome: trNome(), por: u ? u.nome : '', porId: u ? u.de : '' }); nacaoMorteRecebe({ b: NAC.bid, na: AR.nacao, nome: trNome(), por: u ? u.nome : '?', porId: u ? u.de : '' });
     NAC.ult = null; flash('rgba(0,0,0,.6)'); som('desmaio', 0.8, 1); const [x, z] = nacaoBase(); heroi.position.set(x, 0, z); vida = VIDA_MAX; mana = MANA_MAX; aviso('💀 Você caiu! Voltou pra base da sua nação.', '#ff8a8a'); }
   // ataque em outro jogador (quando você ataca no labirinto)
@@ -10555,25 +10566,26 @@ const ArcaneWingSystem = (function () {
     setTimeout(() => { nacEnvia('nh', { de: MP.id, para: alvo.id, dano: n, nome: trNome() }); numero(alvo.o.c.position, (cr ? '💥' : '') + n, cr ? '#ffd23c' : '#ffffff', 2); fx('luz', [alvo.o.x, 1.2, alvo.o.z], 0.25); }, A.longe ? 250 : 120); }
   // ---------- HUD ----------
   const nacHud = document.createElement('div'); nacHud.id = 'nacao-hud'; nacHud.hidden = true; document.body.appendChild(nacHud);
-  const nacConv = document.createElement('div'); nacConv.id = 'nacao-conv'; nacConv.hidden = true; nacConv.innerHTML = '<b>⚔️ A Batalha de Nação começou!</b><small>Labirinto gigante: Reino Carmesim 🔴 x 🔵 Reino Safira</small><div><button class="sim">Entrar</button><button class="nao">Agora não</button></div>'; document.body.appendChild(nacConv);
+  const nacConv = document.createElement('div'); nacConv.id = 'nacao-conv'; nacConv.hidden = true; nacConv.innerHTML = '<b>⚔️ A Batalha de Nação começou!</b><small>Labirinto gigante: Reino Carmesim 🔴 x 🔵 Reino Safira</small><small class="pr"></small><div><button class="sim">Entrar</button><button class="nao">Agora não</button></div>'; document.body.appendChild(nacConv);
   tapBtn(nacConv.querySelector('.sim'), () => { nacConv.hidden = true; nacaoEntra(); }); tapBtn(nacConv.querySelector('.nao'), () => { nacConv.hidden = true; });
   let nacT = 0;
-  function nacaoFrame(dt, p) { simFrame(dt, p); LAB.G.visible = zona === 'nacao'; if (zona === 'nacao') { LAB.cri.rotation.y += dt; (LAB.G.userData.bandeiras || []).forEach((b, i) => { b.rotation.y = Math.sin(gT * 1.6 + i) * 0.12; }); } nacT -= dt; if (nacT > 0) return; nacT = 0.5; nacaoCfgOuve();
+  function nacaoFrame(dt, p) { simFrame(dt, p); LAB.G.visible = zona === 'nacao'; if (zona === 'nacao') { LAB.cri.rotation.y += dt; (LAB.G.userData.bandeiras || []).forEach((b, i) => { b.rotation.y = Math.sin(gT * 1.6 + i) * 0.12; }); } nacT -= dt; if (nacT > 0) return; nacT = 0.5; nacaoCfgOuve(); nacaoSimCfg();
     const agora = Date.now(), J = nacaoJanela(agora), antes = NAC.aberta; NAC.aberta = !!J;
-    if (J && J.id !== NAC.bid) { NAC.bid = J.id; NAC.placar = { vermelha: 0, azul: 0 }; NAC.abates = 0; NAC.mortes = 0; }
+    if (J && J.id !== NAC.bid) { NAC.bid = J.id; NAC.placar = { vermelha: 0, azul: 0 }; NAC.abates = 0; NAC.mortes = 0; NAC.premio = nacaoPremioAtual(); }
     if (J) NAC.ate = J.ate;
-    if (NAC.aberta && !antes && zona !== 'nacao' && AR.nacao && NAC.convidou !== NAC.bid) { NAC.convidou = NAC.bid; nacConv.hidden = false; som('missao', 0.9, 1); }
+    if (NAC.aberta && !antes && zona !== 'nacao' && AR.nacao && NAC.convidou !== NAC.bid) { NAC.convidou = NAC.bid; nacConv.querySelector('.pr').textContent = 'Prêmio da nação vencedora: ' + premioTxt(NAC.premio); nacConv.hidden = false; som('missao', 0.9, 1); }
     if (!NAC.aberta && antes) { nacConv.hidden = true; if (zona === 'nacao') nacaoSai(true); }
     if (!NAC.aberta && zona === 'nacao') nacaoSai(false);
-    nacHud.hidden = zona !== 'nacao' && !(SIM.on && SIM.guerra); if (!nacHud.hidden) { const s = Math.max(0, Math.floor((NAC.ate - agora) / 1000)); nacHud.innerHTML = `<span class="v">🔴 ${NAC.placar.vermelha}</span><span class="t">⏳ ${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}</span><span class="a">${NAC.placar.azul} 🔵</span><small>Seus abates: ${NAC.abates}</small>`; } }
+    nacHud.hidden = zona !== 'nacao' && !(SIM.on && SIM.guerra); if (!nacHud.hidden) { const s = Math.max(0, Math.floor((NAC.ate - agora) / 1000)); nacHud.innerHTML = `<span class="v">🔴 ${NAC.placar.vermelha}</span><span class="t">⏳ ${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}</span><span class="a">${NAC.placar.azul} 🔵</span><small>Seus abates: ${NAC.abates} · Prêmio: ${premioTxt(NAC.premio)}</small>`; } }
   // ---------- Mestre Kaelen: Batalha de Nação ----------
   function falaKaelenNacao() { const N = 'Mestre Kaelen'; const na = NACOES[AR.nacao]; const prox = (() => { const b = brHora(Date.now()); return b.h < 12 ? '12h' : b.h < 20 ? '20h' : '12h de amanhã'; })();
     falar({ nome: N, falas: [{ n: N, t: NAC.aberta ? '⚔️ A Batalha de Nação está acontecendo agora! O labirinto espera por você.' : 'A Batalha de Nação acontece às 12h e às 20h (Brasília). A próxima é às ' + prox + '.' }],
       escolhas: () => [NAC.aberta ? { t: '⚔️ <b>Entrar na Batalha</b><small>' + (na ? na.ic + ' ' + na.nome : 'Escolha sua nação') + '</small>', fn: nacaoEntra } : null, { t: '⚡ <b>Modos de Batalha</b><small>Liberar os modos II e III</small>', fn: falaKaelen },
         !AR.nacao ? { t: '🏳️ <b>Escolher minha nação</b>', fn: () => { nacP.hidden = false; } } : null,
-        souAdmin() ? (NAC.aberta ? { t: '🛑 <b>Encerrar a batalha agora</b><small>Só administrador</small>', fn: () => nacaoAdm(false) } : { t: '🟢 <b>Iniciar batalha agora</b><small>Só administrador · 20 minutos</small>', fn: () => nacaoAdm(true) }) : null, souAdmin() ? (SIM.guerra ? { t: '🛑 <b>Encerrar guerra de teste</b><small>Simulação · mostra o resultado</small>', fn: simPara } : SIM.on ? { t: '⚔️ <b>Abrir guerra de teste</b><small>Simulação 10 x 10 · escolha o tempo</small>', fn: () => falar({ nome: N, falas: [{ n: N, t: 'Quanto tempo de guerra?' }], escolhas: () => [{ t: '⏱️ <b>3 minutos</b>', fn: () => simGuerra(3) }, { t: '⏱️ <b>5 minutos</b>', fn: () => simGuerra(5) }, { t: '⏱️ <b>10 minutos</b>', fn: () => simGuerra(10) }, { t: 'Voltar', fn: null }] }) } : { t: '🧪 <b>Simulação 10 x 10</b><small>Só administrador · 20 jogadores de teste na praça</small>', fn: simCria }) : null,
+        souAdmin() ? (NAC.aberta ? { t: '🛑 <b>Encerrar a batalha agora</b><small>Só administrador</small>', fn: () => nacaoAdm(false) } : { t: '🟢 <b>Iniciar batalha agora</b><small>Só administrador · 20 minutos · escolha o prêmio</small>', fn: () => kaelenPremio(pr => nacaoAdm(true, pr)) }) : null, souAdmin() ? (SIM.guerra ? { t: '🛑 <b>Encerrar guerra de teste</b><small>Simulação · mostra o resultado</small>', fn: simPara } : SIM.on ? { t: '⚔️ <b>Abrir guerra de teste</b><small>Simulação 10 x 10 · escolha o tempo</small>', fn: () => falar({ nome: N, falas: [{ n: N, t: 'Quanto tempo de guerra?' }], escolhas: () => [3, 5, 10].map(m => ({ t: '⏱️ <b>' + m + ' minutos</b>', fn: () => kaelenPremio(pr => simGuerra(m, pr)) })).concat([{ t: 'Voltar', fn: null }]) }) } : { t: '🧪 <b>Simulação 10 x 10</b><small>Só administrador · 20 jogadores de teste na praça</small>', fn: simCria }) : null,
         souAdmin() && SIM.on && !SIM.guerra ? { t: '🧹 <b>Remover simulação</b>', fn: () => { simLimpa(); SIM.cfg = null; aviso('🧹 Jogadores de teste removidos.', '#ffd86a'); } } : null,
         { t: 'Agora não', fn: null }].filter(Boolean) }); }
+  function kaelenPremio(cb) { const N = 'Mestre Kaelen'; falar({ nome: N, falas: [{ n: N, t: 'Qual vai ser o prêmio da nação vencedora?' }], escolhas: () => [{ t: '🪽 <b>Direito de voar</b>', fn: () => cb({ tipo: 'voo' }) }, { t: '💰 <b>1000 moedas</b>', fn: () => cb({ tipo: 'moedas', valor: 1000 }) }, { t: '💰 <b>3000 moedas</b>', fn: () => cb({ tipo: 'moedas', valor: 3000 }) }, { t: '🏅 <b>Arma Memorial</b>', fn: () => cb({ tipo: 'arma' }) }, { t: 'Voltar', fn: null }] }); }
   // ---------- céu estrelado do labirinto ----------
   const NAC_CEU = (() => { const W = 2048, H = 1024, c = document.createElement('canvas'); c.width = W; c.height = H; const x = c.getContext('2d');
     const g = x.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#02030c'); g.addColorStop(0.35, '#070a24'); g.addColorStop(0.5, '#14183e'); g.addColorStop(0.56, '#1a1640'); g.addColorStop(1, '#05040e'); x.fillStyle = g; x.fillRect(0, 0, W, H);
@@ -10606,8 +10618,8 @@ const ArcaneWingSystem = (function () {
       const [x, z] = simCasa(n++); const lv = 20 + (h % 60); SIM.bots.push({ id, nome: SIM_NOMES[na][k], na, lv, c, tag, x, z, y: 0, r: Math.random() * 6, home: [x, z], tx: x, tz: z, loc: 'vila', hpMax: 110 + lv, hp: 110 + lv, dano: 8 + (h % 7), vel: 4 + (h % 9) / 10, cd: 0, morto: 0, abates: 0, mortes: 0, a: 'parado', aT: 0, path: [], pT: 0, alvo: null, obj: null, indo: 0, voa: false, cora: (h % 3) === 0, ph: (h % 100) / 10 }); } });
     aviso('🧪 Simulação criada: 10 🔴 x 10 🔵 na praça! Fale com o Mestre Kaelen pra abrir a guerra de teste.', '#ffd86a'); }
   function simLimpa() { SIM.bots.forEach(b => { world.remove(b.c); b.tag.remove(); }); SIM.bots = []; SIM.on = false; SIM.guerra = false; simFeedEl.hidden = true; }
-  function simGuerra(min) { if (!SIM.on) simCria(); const now = Date.now(); SIM.cfg = { ini: now, ate: now + min * 60000 }; SIM.entrou = false; aviso('⚔️ Guerra de teste aberta por ' + min + ' minutos! Os jogadores estão sendo convidados.', '#ffd86a'); }
-  function simPara() { if (SIM.cfg) SIM.cfg.ate = Date.now() - 1; }
+  function simGuerra(min, premio) { if (!SIM.on) simCria(); const now = Date.now(); SIM.cfg = { ini: now, ate: now + min * 60000 }; SIM.premio = premio || { tipo: 'voo' }; SIM.entrou = false; aviso('⚔️ Guerra de teste aberta por ' + min + ' minutos! Prêmio: ' + premioTxt(SIM.premio), '#ffd86a'); }
+  function simPara() { if (SIM.cfg) SIM.cfg.ate = Date.now() - 1; try { if (NAC.cfg && NAC.cfg.sim && NAC.cfg.ate > Date.now() && window.CONTA && CONTA.db) CONTA.db.collection('config').doc('batalha').set({ ate: 0, parou: Date.now() }, { merge: true }); } catch (e) {} }
   function simFeed(txt) { SIM.feed.unshift(txt); SIM.feed.length = Math.min(SIM.feed.length, 4); simFeedEl.innerHTML = SIM.feed.map(t => '<div>' + t + '</div>').join(''); }
   function simNome(o) { return o === 'hero' ? trNome() : o.nome; }
   function simNa(o) { return o === 'hero' ? AR.nacao : o.na; }
@@ -10620,18 +10632,18 @@ const ArcaneWingSystem = (function () {
   // o herói procura o bot inimigo mais perto pra atacar
   function simAlvoHeroi(p, alc) { let r = null, md = alc; if (!SIM.on) return null; SIM.bots.forEach(b => { if (b.loc !== 'nacao' || b.morto > 0 || b.na === AR.nacao) return; const d = Math.hypot(b.x - p.x, b.z - p.z); if (d < md) { md = d; r = { b, d }; } }); return r; }
   function simTag(b) { const N = NACOES[b.na], hp = b.loc === 'nacao' ? `<span class="sim-hp"><i style="width:${Math.max(0, b.hp / b.hpMax * 100).toFixed(0)}%;background:${N.cor}"></i></span>` : '';
-    const em = b.indo > 0 ? '<em class="sim-ok">✅ Aceitou a batalha!</em>' : b.voa ? '<em class="sim-ok">🪽 Direito de voar</em>' : '';
+    const em = b.indo > 0 ? '<em class="sim-ok">✅ Aceitou a batalha!</em>' : b.voa ? '<em class="sim-ok">' + premioTxt(NAC.premio) + '</em>' : '';
     const k = em + b.nome + b.lv + hp; if (b.tag.dataset.k === k) return; b.tag.dataset.k = k; b.tag.innerHTML = `${em}<b style="color:${N.cor}">${b.nome} <i>Nv ${b.lv}</i></b>${hp}`; }
   function simAnda(b, tx, tz, vel, dt) { const dx = tx - b.x, dz = tz - b.z, d = Math.hypot(dx, dz); if (d < 0.05) return d; const s = Math.min(d, vel * dt); b.x += dx / d * s; b.z += dz / d * s; b.r = Math.atan2(dx, dz); return d; }
   function simFrame(dt, p) { if (!SIM.on) return; const guerra = NAC.aberta;
-    if (guerra && !SIM.guerra) { SIM.guerra = true; NAC.placar = NAC.placar || { vermelha: 0, azul: 0 }; SIM.bots.forEach((b, i) => { b.voa = false; b.indo = 0.8 + i * 0.22 + Math.random() * 1.6; }); simFeedEl.hidden = false; SIM.feed = []; simFeedEl.innerHTML = ''; }
+    if (guerra && !SIM.guerra) { SIM.guerra = true; NAC.placar = NAC.placar || { vermelha: 0, azul: 0 }; SIM.bots.forEach((b, i) => { b.voa = b.flutua = false; b.indo = 0.8 + i * 0.22 + Math.random() * 1.6; }); simFeedEl.hidden = false; SIM.feed = []; simFeedEl.innerHTML = ''; }
     if (!guerra && SIM.guerra) simFim();
     if (zona === 'nacao' && SIM.guerra) SIM.entrou = true;
     const inimigosDe = na => { const L = SIM.bots.filter(o => o.loc === 'nacao' && o.morto <= 0 && o.na !== na); return L; };
     SIM.bots.forEach(b => { b.aT -= dt; b.hitT = (b.hitT || 0) - dt;
       if (b.loc === 'vila') {
         if (b.indo > 0) { b.indo -= dt; b.a = 'parado'; if (b.indo <= 0) { if (zona === 'vila' && b.c.visible) fx('luz', [b.x, 0, b.z], 0.5); const [x, z] = simBase(b.na); b.x = x; b.z = z; b.loc = 'nacao'; b.hp = b.hpMax; b.morto = 0; b.path = []; b.alvo = null; b.obj = null; } }
-        else if (b.voa) { b.a = 'paira'; b.y = 1.3 + Math.sin(gT * 1.5 + b.ph) * 0.25; b.r += dt * 0.3; }
+        else if (b.flutua) { b.a = 'paira'; b.y = 1.3 + Math.sin(gT * 1.5 + b.ph) * 0.25; b.r += dt * 0.3; }
         else { if (Math.hypot(b.tx - b.x, b.tz - b.z) < 0.3) { if (Math.random() < dt * 0.4) { b.tx = b.home[0] + (Math.random() - 0.5) * 6; b.tz = b.home[1] + (Math.random() - 0.5) * 6; } b.a = 'parado'; } else { simAnda(b, b.tx, b.tz, 1.4, dt); b.a = 'anda'; } b.y = 0; }
       } else if (b.loc === 'nacao') {
         if (b.morto > 0) { b.morto -= dt; if (b.morto <= 0) { const [x, z] = simBase(b.na); b.x = x; b.z = z; b.hp = b.hpMax; b.path = []; b.alvo = null; } }
@@ -10664,11 +10676,11 @@ const ArcaneWingSystem = (function () {
       const dd = Math.hypot(b.x - p.x, b.z - p.z); if (dd > 26) { b.tag.hidden = true; return; } simTag(b); guildPosition(b.tag, b.c, 1.75); b.tag.style.transform = 'translate(-50%,-100%) scale(' + clamp(1.15 - dd / 26, 0.5, 1).toFixed(2) + ')'; b.tag.style.zIndex = String(100 - Math.round(dd)); });
     simFeedEl.hidden = !SIM.guerra || !SIM.feed.length; }
   function simFim() { SIM.guerra = false; const pl = NAC.placar, v = pl.vermelha === pl.azul ? null : pl.vermelha > pl.azul ? 'vermelha' : 'azul';
-    SIM.bots.forEach((b, i) => { b.loc = 'vila'; b.indo = 0; b.morto = 0; b.hp = b.hpMax; const [x, z] = simCasa(i); b.x = b.tx = x; b.z = b.tz = z; b.home = [x, z]; b.voa = !!v && b.na === v; });
+    SIM.bots.forEach((b, i) => { b.loc = 'vila'; b.indo = 0; b.morto = 0; b.hp = b.hpMax; const [x, z] = simCasa(i); b.x = b.tx = x; b.z = b.tz = z; b.home = [x, z]; b.voa = !!v && b.na === v; b.flutua = b.voa && (!NAC.premio || NAC.premio.tipo === 'voo'); });
     const lista = SIM.bots.map(b => ({ n: b.nome, na: b.na, a: b.abates, m: b.mortes })); if (SIM.entrou && AR.nacao) lista.push({ n: trNome() + ' (você)', na: AR.nacao, a: NAC.abates, m: NAC.mortes });
-    lista.sort((a, b) => b.a - a.a || a.m - b.m); const ganhei = v && v === AR.nacao && SIM.entrou; if (ganhei) nacaoPremioVoo();
+    lista.sort((a, b) => b.a - a.a || a.m - b.m); const ganhei = v && v === AR.nacao && SIM.entrou; if (ganhei) nacaoDaPremio(NAC.premio);
     setTimeout(() => { simRes.innerHTML = `<div class="box"><h2>🏁 Resultado da Batalha de Nação</h2><div class="sim-pl"><span style="color:${NACOES.vermelha.cor}">🔴 ${pl.vermelha}</span> x <span style="color:${NACOES.azul.cor}">${pl.azul} 🔵</span></div>
-      <p class="sim-v">${v ? `<img src="icones/nac_${v}_br.png" alt=""> Vitória do <b style="color:${NACOES[v].cor}">${NACOES[v].nome}</b>!<br>🪽 Prêmio: <b>direito de voar</b> para os guerreiros do ${NACOES[v].curto}${ganhei ? ' — inclusive você!' : ''}` : 'Empate! Ninguém levou o direito de voar desta vez.'}</p>
+      <p class="sim-v">${v ? `<img src="icones/nac_${v}_br.png" alt=""> Vitória do <b style="color:${NACOES[v].cor}">${NACOES[v].nome}</b>!<br>🏆 Prêmio: <b>${premioTxt(NAC.premio)}</b> para os guerreiros do ${NACOES[v].curto}${ganhei ? ' — inclusive você!' : ''}` : 'Empate! Ninguém levou o prêmio desta vez: ' + premioTxt(NAC.premio) + '.'}</p>
       <table><tr><th>#</th><th>Guerreiro</th><th>⚔️</th><th>💀</th></tr>${lista.slice(0, 8).map((l, i) => `<tr><td>${i === 0 ? '👑' : i + 1}</td><td style="color:${NACOES[l.na].cor}">${l.n}</td><td>${l.a}</td><td>${l.m}</td></tr>`).join('')}</table>
       <button class="cb" id="sim-ok">Fechar</button></div>`; simRes.hidden = false; tapBtn($('sim-ok'), () => { simRes.hidden = true; }); }, zona === 'nacao' ? 4500 : 600); }
   function nacaoPremioVoo() { if (AR.vooNacao) { aviso('🪽 Sua nação venceu! Você continua com o direito de voar.', '#c8f0ff'); return; } AR.vooNacao = true; salvaAR(); flash('rgba(160,220,255,.4)'); som('missao_ok', 1, 1.1); aviso('🪽 Sua nação venceu! Você ganhou o DIREITO DE VOAR! Equipe umas asas e toque 2x em PULAR.', '#c8f0ff'); }

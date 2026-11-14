@@ -691,6 +691,7 @@
     gl_ceifador: { nome: 'Ceifador Roxo GL', icone: '🌙', dano: 74, alc: 2.8, cd: 0.32, giro: true, braco: true, soClasse: 'gladiador', preco: 1600, esp: 'cel', desc: 'Só Gladiador. Acerta tudo em volta. Especial: cada golpe recupera 3% da sua vida.' },
     gl_sangrenta: { nome: 'Lua Sangrenta GL', icone: '🌙', dano: 80, alc: 2.8, cd: 0.32, giro: true, braco: true, soClasse: 'gladiador', preco: 2000, fogo: true, esp: 'drag', desc: 'Só Gladiador. Acerta tudo em volta. Especial: queima e o 3º golpe explode em fogo.' },
     gl_prata: { nome: 'Lua de Prata GL', icone: '🌙', dano: 90, alc: 2.9, cd: 0.32, giro: true, braco: true, soClasse: 'gladiador', preco: 2600, esp: 'exec', desc: 'Só Gladiador. Acerta tudo em volta. Especial: dano x2,5 em quem tem pouca vida e o 3º golpe dispara uma lâmina.' },
+    memorial: { nome: 'Arma Memorial', icone: '🏅', dano: 66, alc: 2.6, cd: 0.32, drop: true, desc: 'Prêmio da Batalha de Nação: só quem leva a nação à vitória ganha. O modelo final ainda vai ser revelado.' },
     punho: { nome: 'Mãos vazias', icone: '👊', dano: 6, alc: 1.6, cd: 0.38, oculta: true, desc: 'Sem arma equipada: soco.' },
   };
   const ITENS = { moedas: '💰', pele: '🐺', carne: '🍖', coracao: '💎', asas: '🦇', espdragao: '🐉' };

@@ -19,8 +19,8 @@
       const [x, z] = simCasa(n++); const lv = 20 + (h % 60); SIM.bots.push({ id, nome: SIM_NOMES[na][k], na, lv, c, tag, x, z, y: 0, r: Math.random() * 6, home: [x, z], tx: x, tz: z, loc: 'vila', hpMax: 110 + lv, hp: 110 + lv, dano: 8 + (h % 7), vel: 4 + (h % 9) / 10, cd: 0, morto: 0, abates: 0, mortes: 0, a: 'parado', aT: 0, path: [], pT: 0, alvo: null, obj: null, indo: 0, voa: false, cora: (h % 3) === 0, ph: (h % 100) / 10 }); } });
     aviso('🧪 Simulação criada: 10 🔴 x 10 🔵 na praça! Fale com o Mestre Kaelen pra abrir a guerra de teste.', '#ffd86a'); }
   function simLimpa() { SIM.bots.forEach(b => { world.remove(b.c); b.tag.remove(); }); SIM.bots = []; SIM.on = false; SIM.guerra = false; simFeedEl.hidden = true; }
-  function simGuerra(min) { if (!SIM.on) simCria(); const now = Date.now(); SIM.cfg = { ini: now, ate: now + min * 60000 }; SIM.entrou = false; aviso('⚔️ Guerra de teste aberta por ' + min + ' minutos! Os jogadores estão sendo convidados.', '#ffd86a'); }
-  function simPara() { if (SIM.cfg) SIM.cfg.ate = Date.now() - 1; }
+  function simGuerra(min, premio) { if (!SIM.on) simCria(); const now = Date.now(); SIM.cfg = { ini: now, ate: now + min * 60000 }; SIM.premio = premio || { tipo: 'voo' }; SIM.entrou = false; aviso('⚔️ Guerra de teste aberta por ' + min + ' minutos! Prêmio: ' + premioTxt(SIM.premio), '#ffd86a'); }
+  function simPara() { if (SIM.cfg) SIM.cfg.ate = Date.now() - 1; try { if (NAC.cfg && NAC.cfg.sim && NAC.cfg.ate > Date.now() && window.CONTA && CONTA.db) CONTA.db.collection('config').doc('batalha').set({ ate: 0, parou: Date.now() }, { merge: true }); } catch (e) {} }
   function simFeed(txt) { SIM.feed.unshift(txt); SIM.feed.length = Math.min(SIM.feed.length, 4); simFeedEl.innerHTML = SIM.feed.map(t => '<div>' + t + '</div>').join(''); }
   function simNome(o) { return o === 'hero' ? trNome() : o.nome; }
   function simNa(o) { return o === 'hero' ? AR.nacao : o.na; }
@@ -33,18 +33,18 @@
   // o herói procura o bot inimigo mais perto pra atacar
   function simAlvoHeroi(p, alc) { let r = null, md = alc; if (!SIM.on) return null; SIM.bots.forEach(b => { if (b.loc !== 'nacao' || b.morto > 0 || b.na === AR.nacao) return; const d = Math.hypot(b.x - p.x, b.z - p.z); if (d < md) { md = d; r = { b, d }; } }); return r; }
   function simTag(b) { const N = NACOES[b.na], hp = b.loc === 'nacao' ? `<span class="sim-hp"><i style="width:${Math.max(0, b.hp / b.hpMax * 100).toFixed(0)}%;background:${N.cor}"></i></span>` : '';
-    const em = b.indo > 0 ? '<em class="sim-ok">✅ Aceitou a batalha!</em>' : b.voa ? '<em class="sim-ok">🪽 Direito de voar</em>' : '';
+    const em = b.indo > 0 ? '<em class="sim-ok">✅ Aceitou a batalha!</em>' : b.voa ? '<em class="sim-ok">' + premioTxt(NAC.premio) + '</em>' : '';
     const k = em + b.nome + b.lv + hp; if (b.tag.dataset.k === k) return; b.tag.dataset.k = k; b.tag.innerHTML = `${em}<b style="color:${N.cor}">${b.nome} <i>Nv ${b.lv}</i></b>${hp}`; }
   function simAnda(b, tx, tz, vel, dt) { const dx = tx - b.x, dz = tz - b.z, d = Math.hypot(dx, dz); if (d < 0.05) return d; const s = Math.min(d, vel * dt); b.x += dx / d * s; b.z += dz / d * s; b.r = Math.atan2(dx, dz); return d; }
   function simFrame(dt, p) { if (!SIM.on) return; const guerra = NAC.aberta;
-    if (guerra && !SIM.guerra) { SIM.guerra = true; NAC.placar = NAC.placar || { vermelha: 0, azul: 0 }; SIM.bots.forEach((b, i) => { b.voa = false; b.indo = 0.8 + i * 0.22 + Math.random() * 1.6; }); simFeedEl.hidden = false; SIM.feed = []; simFeedEl.innerHTML = ''; }
+    if (guerra && !SIM.guerra) { SIM.guerra = true; NAC.placar = NAC.placar || { vermelha: 0, azul: 0 }; SIM.bots.forEach((b, i) => { b.voa = b.flutua = false; b.indo = 0.8 + i * 0.22 + Math.random() * 1.6; }); simFeedEl.hidden = false; SIM.feed = []; simFeedEl.innerHTML = ''; }
     if (!guerra && SIM.guerra) simFim();
     if (zona === 'nacao' && SIM.guerra) SIM.entrou = true;
     const inimigosDe = na => { const L = SIM.bots.filter(o => o.loc === 'nacao' && o.morto <= 0 && o.na !== na); return L; };
     SIM.bots.forEach(b => { b.aT -= dt; b.hitT = (b.hitT || 0) - dt;
       if (b.loc === 'vila') {
         if (b.indo > 0) { b.indo -= dt; b.a = 'parado'; if (b.indo <= 0) { if (zona === 'vila' && b.c.visible) fx('luz', [b.x, 0, b.z], 0.5); const [x, z] = simBase(b.na); b.x = x; b.z = z; b.loc = 'nacao'; b.hp = b.hpMax; b.morto = 0; b.path = []; b.alvo = null; b.obj = null; } }
-        else if (b.voa) { b.a = 'paira'; b.y = 1.3 + Math.sin(gT * 1.5 + b.ph) * 0.25; b.r += dt * 0.3; }
+        else if (b.flutua) { b.a = 'paira'; b.y = 1.3 + Math.sin(gT * 1.5 + b.ph) * 0.25; b.r += dt * 0.3; }
         else { if (Math.hypot(b.tx - b.x, b.tz - b.z) < 0.3) { if (Math.random() < dt * 0.4) { b.tx = b.home[0] + (Math.random() - 0.5) * 6; b.tz = b.home[1] + (Math.random() - 0.5) * 6; } b.a = 'parado'; } else { simAnda(b, b.tx, b.tz, 1.4, dt); b.a = 'anda'; } b.y = 0; }
       } else if (b.loc === 'nacao') {
         if (b.morto > 0) { b.morto -= dt; if (b.morto <= 0) { const [x, z] = simBase(b.na); b.x = x; b.z = z; b.hp = b.hpMax; b.path = []; b.alvo = null; } }
@@ -77,11 +77,11 @@
       const dd = Math.hypot(b.x - p.x, b.z - p.z); if (dd > 26) { b.tag.hidden = true; return; } simTag(b); guildPosition(b.tag, b.c, 1.75); b.tag.style.transform = 'translate(-50%,-100%) scale(' + clamp(1.15 - dd / 26, 0.5, 1).toFixed(2) + ')'; b.tag.style.zIndex = String(100 - Math.round(dd)); });
     simFeedEl.hidden = !SIM.guerra || !SIM.feed.length; }
   function simFim() { SIM.guerra = false; const pl = NAC.placar, v = pl.vermelha === pl.azul ? null : pl.vermelha > pl.azul ? 'vermelha' : 'azul';
-    SIM.bots.forEach((b, i) => { b.loc = 'vila'; b.indo = 0; b.morto = 0; b.hp = b.hpMax; const [x, z] = simCasa(i); b.x = b.tx = x; b.z = b.tz = z; b.home = [x, z]; b.voa = !!v && b.na === v; });
+    SIM.bots.forEach((b, i) => { b.loc = 'vila'; b.indo = 0; b.morto = 0; b.hp = b.hpMax; const [x, z] = simCasa(i); b.x = b.tx = x; b.z = b.tz = z; b.home = [x, z]; b.voa = !!v && b.na === v; b.flutua = b.voa && (!NAC.premio || NAC.premio.tipo === 'voo'); });
     const lista = SIM.bots.map(b => ({ n: b.nome, na: b.na, a: b.abates, m: b.mortes })); if (SIM.entrou && AR.nacao) lista.push({ n: trNome() + ' (você)', na: AR.nacao, a: NAC.abates, m: NAC.mortes });
-    lista.sort((a, b) => b.a - a.a || a.m - b.m); const ganhei = v && v === AR.nacao && SIM.entrou; if (ganhei) nacaoPremioVoo();
+    lista.sort((a, b) => b.a - a.a || a.m - b.m); const ganhei = v && v === AR.nacao && SIM.entrou; if (ganhei) nacaoDaPremio(NAC.premio);
     setTimeout(() => { simRes.innerHTML = `<div class="box"><h2>🏁 Resultado da Batalha de Nação</h2><div class="sim-pl"><span style="color:${NACOES.vermelha.cor}">🔴 ${pl.vermelha}</span> x <span style="color:${NACOES.azul.cor}">${pl.azul} 🔵</span></div>
-      <p class="sim-v">${v ? `<img src="icones/nac_${v}_br.png" alt=""> Vitória do <b style="color:${NACOES[v].cor}">${NACOES[v].nome}</b>!<br>🪽 Prêmio: <b>direito de voar</b> para os guerreiros do ${NACOES[v].curto}${ganhei ? ' — inclusive você!' : ''}` : 'Empate! Ninguém levou o direito de voar desta vez.'}</p>
+      <p class="sim-v">${v ? `<img src="icones/nac_${v}_br.png" alt=""> Vitória do <b style="color:${NACOES[v].cor}">${NACOES[v].nome}</b>!<br>🏆 Prêmio: <b>${premioTxt(NAC.premio)}</b> para os guerreiros do ${NACOES[v].curto}${ganhei ? ' — inclusive você!' : ''}` : 'Empate! Ninguém levou o prêmio desta vez: ' + premioTxt(NAC.premio) + '.'}</p>
       <table><tr><th>#</th><th>Guerreiro</th><th>⚔️</th><th>💀</th></tr>${lista.slice(0, 8).map((l, i) => `<tr><td>${i === 0 ? '👑' : i + 1}</td><td style="color:${NACOES[l.na].cor}">${l.n}</td><td>${l.a}</td><td>${l.m}</td></tr>`).join('')}</table>
       <button class="cb" id="sim-ok">Fechar</button></div>`; simRes.hidden = false; tapBtn($('sim-ok'), () => { simRes.hidden = true; }); }, zona === 'nacao' ? 4500 : 600); }
   function nacaoPremioVoo() { if (AR.vooNacao) { aviso('🪽 Sua nação venceu! Você continua com o direito de voar.', '#c8f0ff'); return; } AR.vooNacao = true; salvaAR(); flash('rgba(160,220,255,.4)'); som('missao_ok', 1, 1.1); aviso('🪽 Sua nação venceu! Você ganhou o DIREITO DE VOAR! Equipe umas asas e toque 2x em PULAR.', '#c8f0ff'); }
