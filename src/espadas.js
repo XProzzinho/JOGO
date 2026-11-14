@@ -593,4 +593,4 @@ const glowA = cv(128, (x) => { const g = x.createRadialGradient(64, 64, 0, 64, 6
  const G={};P.forEach((c,i)=>G[i+1]=()=>fazer(c));return G;}
   const GAR_MOD = fazGarras(T3); const GL_K = ['gl_eclipse', 'gl_abismo', 'gl_ceifador', 'gl_sangrenta', 'gl_prata'];
   GL_K.forEach((k, i) => { [[maoG, ARMAG, 1], [maoE, ARMAE, -1]].forEach(([mao, LST, sx]) => { const G = grp(mao); const m = GAR_MOD[i + 1](); m.position.set(0, 0.33, -0.05); m.scale.setScalar(0.8); m.scale.x *= sx; G.add(m); G.visible = false; G.traverse(o => { if (o.isMesh) o.castShadow = true; }); LST[k] = G; }); });
-  function podeArma(k) { const A = ARMAS[k]; if (!A) return true; if (A.placa && staffPronto && !(souAdmin() || (A.staff === 'adm' ? souADMc : souGM))) return false; return !A.soClasse || AR.classe === A.soClasse; }
+  function podeArma(k) { const A = ARMAS[k]; if (!A) return true; if (A.placa && staffPronto && !(souAdmin() || (A.staff === 'adm' ? souADMc : souGM))) return false; return true; }

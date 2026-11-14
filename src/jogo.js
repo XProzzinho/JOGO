@@ -352,7 +352,7 @@
   function nivelHab(id) { return AR.nivHab[id] || 1; }
   function potHab(id) { return 1 + (nivelHab(id) - 1) * 0.2; }
   function custoDe(pw) { return Math.max(1, Math.round(pw.custo * (1 - (nivelHab(pw.id) - 1) * 0.06))); }
-  function usarPoder(pw) { if (conversa || cenaQ) return; if (pw && pw.cabal && !cbPode(pw)) return; potAtual = potHab(pw.id); try { usarPoder0(pw); } finally { potAtual = 1; } }
+  function usarPoder(pw) { if (conversa || cenaQ) return; if (pw && pw.cabal && !cbPode(pw)) return; if (pw && pw.lend && !lendPode(pw)) return; potAtual = potHab(pw.id); try { usarPoder0(pw); } finally { potAtual = 1; } }
   function usarPoder0(pw) {
     if (pw.tipo === 'liga') { ativo[pw.id] = !ativo[pw.id]; if (ativo[pw.id]) som(SOM_PODER[pw.id] || 'magia', 0.7); else som('clique', 0.5, 1); if (ativo[pw.id] && pw.custo && mana < 5) { ativo[pw.id] = false; aviso('Sem mana! Espera ela voltar.', '#ff6a6a'); return; } marca(pw, 'on', !!ativo[pw.id]); if (ativo[pw.id]) aviso(pw.desc, pw.id === 'memoria' ? '#ffd23c' : '#5ab8ff'); else if (pw.id !== 'memoria') aviso(pw.nome + ' desligado.', '#8a9aba'); return; }
     if (mana < custoDe(pw)) { aviso('Sem mana! Precisa de ' + custoDe(pw) + '.', '#ff6a6a'); marca(pw, 'erro', true); setTimeout(() => marca(pw, 'erro', false), 400); return; }
@@ -368,7 +368,7 @@
     if (pw.id === 'dardo') { const d = glowSpr(world, p.x, p.y + 1.3, p.z, 0.9, '#bfe8ff', 1); dardos.push({ s: d, t: 0, dx: Math.sin(facing), dz: Math.cos(facing), dano: 25 * atkMult() }); }
     if (pw.id === 'clarao') { flash('rgba(255,255,255,.95)'); fx('luz', [p.x, p.y, p.z], 1.2); tremor = 0.25; aviso('CLARÃO! Quem estava olhando ficou vendo estrelas.', '#fff3a0'); }
     if (pw.id === 'impulso') { dashT = 0.28; dashVel = 22; dashAng = facing; fx('vento', [p.x, p.y, p.z], 0.8); }
-    combatePoder(pw.id); classePoder(pw.id); classePoder2(pw.id); cabalPoder(pw); }
+    combatePoder(pw.id); classePoder(pw.id); classePoder2(pw.id); cabalPoder(pw); if (pw.lend) lendPoder(pw); }
   function flash(cor) { const f = $('flash'); f.style.transition = 'none'; f.style.background = cor; f.style.opacity = 1; requestAnimationFrame(() => requestAnimationFrame(() => { f.style.transition = 'opacity .9s'; f.style.opacity = 0; })); }
   // partículas de efeito (vapor, cura, fogo, fumaça, luz, vento)
   const FXC = { vapor: ['#ffffff', 0.14, 'sobe'], cura: ['#7aff9a', 0.07, 'espiral'], fogo: ['#ff8a2a', 0.16, 'explode'], fumo: ['#6a625a', 0.3, 'nuvem'], luz: ['#fff6c0', 0.12, 'explode'], vento: ['#dff2ff', 0.06, 'anel'], chama: ['#ff8a2a', 0.14, 'jato'], gelo: ['#bff2ff', 0.1, 'explode'] };
@@ -391,10 +391,11 @@
 
   // ---------- ÁRVORE DE HABILIDADES ----------
   let selArv = null;
-  function prereq(pw) { if (!pw.ramo || pw.nivel <= 1) return true; return PODERES.some(o => o.ramo === pw.ramo && o.cls === pw.cls && o.nivel === pw.nivel - 1 && AR.tem.includes(o.id)); }
+  function prereq(pw) { if (typeof arvLiga === 'function' && arvTem(pw.id)) return arvLiga(pw.id); if (!pw.ramo || pw.nivel <= 1) return true; return PODERES.some(o => o.ramo === pw.ramo && o.cls === pw.cls && o.nivel === pw.nivel - 1 && AR.tem.includes(o.id)); }
   function abrirArvore() { if (conversa || cenaQ) return; selArv = selArv || null; desenhaArvore(); $('arvore').hidden = false; }
   function desenhaArvore() { const col = $('arv-ramos'); col.innerHTML = ''; $('arv-pts-txt').textContent = AR.pts + (AR.pts === 1 ? ' ponto' : ' pontos');
-    const cl0 = CLASSES && CLASSES[AR.classe]; (cl0 ? [{ id: 'classe', nome: cl0.nome.replace(' Arcano', ''), icone: cl0.icone, cor: cl0.cor }, ...RAMOS] : RAMOS).forEach(r => { const c = document.createElement('div'); c.className = 'ramo'; c.style.setProperty('--rc', r.cor); c.innerHTML = `<div class="rt">${r.icone} ${r.nome}</div>`;
+    if (typeof arvRede === 'function') { arvRede(col); if (arvDetalhe($('arv-det'))) return; }
+    const cl0 = CLASSES && CLASSES[AR.classe]; (typeof arvRede === 'function' ? [] : cl0 ? [{ id: 'classe', nome: cl0.nome.replace(' Arcano', ''), icone: cl0.icone, cor: cl0.cor }, ...RAMOS] : RAMOS).forEach(r => { const c = document.createElement('div'); c.className = 'ramo'; c.style.setProperty('--rc', r.cor); c.innerHTML = `<div class="rt">${r.icone} ${r.nome}</div>`;
       PODERES.filter(pw => pw.ramo === r.id && (!pw.cls || pw.cls === AR.classe)).sort((a, b) => a.nivel - b.nivel).forEach((pw, j) => { if (j) { const l = document.createElement('div'); l.className = 'liga' + (AR.tem.includes(pw.id) ? ' ok' : ''); c.appendChild(l); }
         const tem = AR.tem.includes(pw.id), pode = !tem && prereq(pw) && AR.pts >= pw.preco, trava = !tem && !prereq(pw); const naBarra = AR.barra.indexOf(pw.id);
         const b = document.createElement('button'); b.className = 'no' + (tem ? ' tem' : pode ? ' pode' : trava ? ' trava' : ' caro') + (selArv === pw.id ? ' sel' : '');
@@ -404,19 +405,20 @@
     // painel do detalhe
     const det = $('arv-det'); const pw = selArv && PW[selArv]; if (!pw) { det.innerHTML = '<p class="vz">Toque numa habilidade pra ver o que ela faz. Ganhe pontos derrotando bichos, falando com as pessoas, lendo as dicas da 🧠 Memória e avançando nas missões.</p>'; return; }
     const tem = AR.tem.includes(pw.id); const custo = pw.tipo === 'liga' ? custoDe(pw) + ' mana/s' : custoDe(pw) + ' mana'; const nh = nivelHab(pw.id);
-    det.innerHTML = `<div class="dt"><span class="ic">${pw.icone}</span><div><b>${pw.nome}${tem ? ' <em class="nvh">Nv ' + nh + '/' + HAB_MAX + '</em>' : ''}</b><small>${pw.tipo === 'liga' ? 'Liga/desliga' : 'Uso rápido'} · ${custo}${tem && nh > 1 ? ' · força ' + Math.round(potHab(pw.id) * 100) + '%' : ''}</small></div></div><p>${pw.desc}</p><div id="arv-evo"></div><div id="arv-acoes"></div>`;
+    det.innerHTML = `<button class="arv-x" id="arv-x">✕</button><div class="dt"><span class="ic">${pw.icone}</span><div><b>${pw.nome}${tem ? ' <em class="nvh">Nv ' + nh + '/' + HAB_MAX + '</em>' : ''}</b><small>${pw.tipo === 'liga' ? 'Liga/desliga' : 'Uso rápido'} · ${custo}${tem && nh > 1 ? ' · força ' + Math.round(potHab(pw.id) * 100) + '%' : ''}</small></div></div><p>${pw.desc}</p><div id="arv-evo"></div><div id="arv-acoes"></div>`;
     if (tem) { const ev = $('arv-evo'); if (nh >= HAB_MAX) ev.innerHTML = '<div class="evo max">★★★★★ Nível máximo!</div>'; else { const pr = nh; const b = document.createElement('button'); b.className = 'ab evo'; b.disabled = AR.pts < pr; b.innerHTML = `⬆️ Evoluir pro Nv ${nh + 1} (${pr} pt)<small>+20% de força${pw.tipo === 'liga' ? '' : ', mais duração'} e -6% de mana</small>`; if (AR.pts >= pr) tapBtn(b, () => { AR.pts -= pr; AR.nivHab[pw.id] = nh + 1; salvaAR(); atualizaPts(); montaBarra(); aviso(pw.icone + ' ' + pw.nome + ' evoluiu pro nível ' + (nh + 1) + '!', '#ffd23c'); fx('luz', [heroi.position.x, 0, heroi.position.z], 0.6); desenhaArvore(); }); ev.appendChild(b); } }
+    if ($('arv-x')) tapBtn($('arv-x'), () => { selArv = null; desenhaArvore(); });
     const ac = $('arv-acoes');
-    if (!tem) { const b = document.createElement('button'); b.className = 'ab'; const ok = prereq(pw) && AR.pts >= pw.preco; b.disabled = !ok; b.textContent = !prereq(pw) ? '🔒 Aprenda a anterior primeiro' : AR.pts < pw.preco ? `Faltam ${pw.preco - AR.pts} ponto(s)` : `Aprender (${pw.preco} pt)`;
-      if (ok) tapBtn(b, () => { AR.pts -= pw.preco; AR.tem.push(pw.id); const v = AR.barra.indexOf(null, 3); if (v >= 3) AR.barra[v] = pw.id; salvaAR(); atualizaPts(); montaBarra(); aviso('Nova habilidade: ' + pw.icone + ' ' + pw.nome + (v >= 3 ? ' (slot ' + (v + 1) + ')' : ''), '#7ad87a'); desenhaArvore(); });
+    if (!tem) { const b = document.createElement('button'); b.className = 'ab'; const ok = prereq(pw) && AR.pts >= pw.preco; b.disabled = !ok; b.textContent = !prereq(pw) ? (pw.nvMin && AR.nv < pw.nvMin && !souAdmin() ? '🔒 Precisa do nível ' + pw.nvMin : '🔒 Aprenda uma habilidade ligada a ela primeiro') : AR.pts < pw.preco ? `Faltam ${pw.preco - AR.pts} ponto(s)` : `Aprender (${pw.preco} pt)`;
+      if (ok) tapBtn(b, () => { AR.pts -= pw.preco; AR.tem.push(pw.id); const v = AR.barra.indexOf(null, 2); if (v >= 2) AR.barra[v] = pw.id; salvaAR(); atualizaPts(); montaBarra(); aviso('Nova habilidade: ' + pw.icone + ' ' + pw.nome + (v >= 2 ? ' (slot ' + (v + 1) + ')' : ''), '#7ad87a'); desenhaArvore(); });
       ac.appendChild(b); return; }
-    { const fx0 = AR.barra.indexOf(pw.id); if (fx0 >= 0 && fx0 < 3) { const t = document.createElement('div'); t.className = 'qs'; t.textContent = '🔒 Habilidade fixa da classe (slot ' + (fx0 + 1) + ').'; ac.appendChild(t); return; } }
+    { const fx0 = AR.barra.indexOf(pw.id); if (fx0 >= 0 && fx0 < 2) { const t = document.createElement('div'); t.className = 'qs'; t.textContent = '🔒 Habilidade fixa (slot ' + (fx0 + 1) + ').'; ac.appendChild(t); return; } }
     const t = document.createElement('div'); t.className = 'qs'; t.textContent = 'Colocar no slot (troca o que estiver lá):'; ac.appendChild(t);
     const row = document.createElement('div'); row.className = 'slotsel';
-    for (let i = 3; i < NSLOTS; i++) { const o = AR.barra[i] && PW[AR.barra[i]]; const b = document.createElement('button'); b.className = 'ss' + (AR.barra[i] === pw.id ? ' aqui' : ''); b.innerHTML = `<small>${i + 1}</small>${o ? o.icone : '＋'}`;
-      tapBtn(b, () => { if (AR.barra[i] === pw.id) return; const j = AR.barra.indexOf(pw.id); const velho = AR.barra[i]; if (velho && ativo[velho]) ativo[velho] = false; if (j >= 3) AR.barra[j] = null; AR.barra[i] = pw.id; salvaAR(); montaBarra(); aviso(pw.icone + ' ' + pw.nome + ' no slot ' + (i + 1) + (velho && velho !== pw.id ? ' (saiu ' + PW[velho].nome + ')' : ''), '#7ad87a'); desenhaArvore(); }); row.appendChild(b); }
+    for (let i = 2; i < NSLOTS; i++) { const o = AR.barra[i] && PW[AR.barra[i]]; const b = document.createElement('button'); b.className = 'ss' + (AR.barra[i] === pw.id ? ' aqui' : ''); b.innerHTML = `<small>${i + 1}</small>${o ? o.icone : '＋'}`;
+      tapBtn(b, () => { if (AR.barra[i] === pw.id) return; const j = AR.barra.indexOf(pw.id); const velho = AR.barra[i]; if (velho && ativo[velho]) ativo[velho] = false; if (j >= 2) AR.barra[j] = null; AR.barra[i] = pw.id; salvaAR(); montaBarra(); aviso(pw.icone + ' ' + pw.nome + ' no slot ' + (i + 1) + (velho && velho !== pw.id ? ' (saiu ' + PW[velho].nome + ')' : ''), '#7ad87a'); desenhaArvore(); }); row.appendChild(b); }
     ac.appendChild(row);
-    if (AR.barra.indexOf(pw.id) >= 3) { const b = document.createElement('button'); b.className = 'ab tira'; b.textContent = 'Tirar da barra'; tapBtn(b, () => { const j = AR.barra.indexOf(pw.id); AR.barra[j] = null; ativo[pw.id] = false; salvaAR(); montaBarra(); desenhaArvore(); }); ac.appendChild(b); } }
+    if (AR.barra.indexOf(pw.id) >= 2) { const b = document.createElement('button'); b.className = 'ab tira'; b.textContent = 'Tirar da barra'; tapBtn(b, () => { const j = AR.barra.indexOf(pw.id); AR.barra[j] = null; ativo[pw.id] = false; salvaAR(); montaBarra(); desenhaArvore(); }); ac.appendChild(b); } }
   tapBtn($('arv-btn'), abrirArvore); tapBtn($('arv-fecha'), () => { $('arvore').hidden = true; });
   montaBarra(); atualizaPts();
   // fórmulas girando em volta da cabeça
@@ -973,7 +975,7 @@
       b.innerHTML = `<span class="ic">${A.icone}</span><div class="tx"><b>${A.nome}</b><small>${A.longe ? 'De longe' : 'Corpo a corpo'} · dano ${A.dano}</small><small>${A.desc}</small></div>`;
       const bt = document.createElement('button'); bt.className = 'cb';
       if (tem) { bt.textContent = AR.arma === k ? 'Equipada' : 'Equipar'; bt.disabled = AR.arma === k; tapBtn(bt, () => { if (AR.arma === k) return; equipaArma(k); abrirLoja(); }); }
-      else if (A.soClasse && AR.classe !== A.soClasse) { bt.innerHTML = '🔒 Só ' + CLASSES[A.soClasse].nome; bt.disabled = true; } else { const ok = AR.inv.moedas >= A.preco && (!A.precisa || AR.inv[A.precisa] > 0); bt.innerHTML = preco; bt.disabled = !ok; tapBtn(bt, () => { if (!ok) return; AR.inv.moedas -= A.preco; som('compra', 0.8, 1); if (A.precisa) AR.inv[A.precisa]--; AR.armas.push(k); equipaArma(k); atualizaInv(); aviso('Nova arma: ' + A.icone + ' ' + A.nome + '!', '#ffd23c'); abrirLoja(); }); }
+      else { const ok = AR.inv.moedas >= A.preco && (!A.precisa || AR.inv[A.precisa] > 0); bt.innerHTML = preco; bt.disabled = !ok; tapBtn(bt, () => { if (!ok) return; AR.inv.moedas -= A.preco; som('compra', 0.8, 1); if (A.precisa) AR.inv[A.precisa]--; AR.armas.push(k); equipaArma(k); atualizaInv(); aviso('Nova arma: ' + A.icone + ' ' + A.nome + '!', '#ffd23c'); abrirLoja(); }); }
       b.appendChild(bt); L.appendChild(b); });
     const sec = t => { const h = document.createElement('div'); h.className = 'loja-sec'; h.innerHTML = limpaIco(t); L.appendChild(h); };
     { const ap = AR.armas.filter(k => ARMAS[k] && k !== 'punho' && !ARMAS[k].oculta); if (ap.length) { sec('✨ Aprimorar armas · ' + ITEM_INFO.cristal_baixo[0] + ' ' + (AR.inv.cristal_baixo || 0) + '  ' + ITEM_INFO.cristal_alto[0] + ' ' + (AR.inv.cristal_alto || 0) + '  ' + ITEM_INFO.cristal_altissimo[0] + ' ' + (AR.inv.cristal_altissimo || 0));
@@ -1536,6 +1538,7 @@
     espadachim: { nome: 'Espadachim Arcano', icone: '✴️', papel: 'Espada e magia', cor: '#b46aff', roupa: '#4a2a6a', vida: 105, mana: 120, atk: 1.1, def: 10, vel: 1.05, crit: 0.12, esq: 0.05, arma: 'runica', hab: 'runa', desc: 'Híbrido de espada e magia. Enfraquece os inimigos pra eles tomarem mais dano.' },
     gladiador: { nome: 'Gladiador', icone: '🌀', papel: 'Área de perto', cor: '#ff8a3a', roupa: '#8a4a1a', vida: 125, mana: 85, atk: 1.1, def: 15, vel: 1.0, crit: 0.08, esq: 0.03, arma: 'chakram', hab: 'tufao', desc: 'Chakrams que acertam tudo em volta. Muito resistente e fácil de jogar.' },
     atirador: { nome: 'Atirador Arcano', icone: '🔫', papel: 'Tiro de longe', cor: '#ffe04a', roupa: '#3a3a2a', vida: 90, mana: 110, atk: 1.15, def: 5, vel: 1.05, crit: 0.15, esq: 0.05, arma: 'arcana', hab: 'carregado', desc: 'Arma de fogo arcana: alcance enorme e tiros rápidos sem parar.' },
+    aventureiro: { nome: 'Aventureiro', icone: '🌟', papel: 'Rota livre', cor: '#3ad8ff', roupa: '#3a5a8a', vida: 115, mana: 115, atk: 1.12, def: 8, vel: 1.03, crit: 0.08, esq: 0.04, arma: null, hab: null, desc: 'Sem classe fixa: você monta seu estilo escolhendo as rotas da árvore de habilidades.' },
     magonegro: { nome: 'Mago Negro', icone: '🌑', papel: 'Magia sombria', cor: '#a050ff', roupa: '#1a1424', vida: 95, mana: 140, atk: 1.3, def: 10, vel: 1.0, crit: 0.1, esq: 0, arma: 'sombrio', hab: 'drenar', desc: 'Uma das classes mais fortes no fim do jogo. Rouba a vida dos inimigos pra se curar.' },
   };
   const HABS = [
@@ -1845,9 +1848,9 @@
   function CLA() { return CLASSES[AR.classe] || null; }
   function atkMult() { const c = CLA(); return (1 + attrV('for') * 0.006) * (c ? c.atk : 1) * potAtual * (BM && BM.atk ? BM.atk : 1) * (BUFF.furia > 0 ? 1.4 : 1) * (BUFF.pacto > 0 ? 1.5 : 1) * (1 + cbPas('atk')) * (BUFF.cb_atk > 0 ? 1.25 : 1) * (BUFF.cb_tudo > 0 ? 1.15 : 1) * asaB('dano') * (1 + gmPct('forca')) * (1 + aprimNv(AR.arma) * APRIM_PCT) * (1 + titB('atk')) * (BUFF.arauto > 0 ? 1.3 : 1) * (BUFF.katana > 0 ? 1.3 : 1) * (BUFF.sol > 0 ? 1.25 : 1); }
   function critico() { const c = CLA(); return Math.random() < (c ? c.crit : 0.05) + attrV('agi') * 0.0008 + (BUFF.sol > 0 ? 0.15 : 0) + (BM && BM.crit ? BM.crit : 0) + cbPas('crit') + (BUFF.cb_crit > 0 ? 0.15 : 0) + (BUFF.cb_tudo > 0 ? 0.05 : 0) + (ARMAS[AR.arma] && ARMAS[AR.arma].esp === 'sup' ? 0.15 : 0); }
-  function aplicaClasse(id) { if (typeof bmDesliga === 'function') bmDesliga(); const c = CLASSES[id]; AR.classe = id; if (!AR.armas.includes(c.arma)) AR.armas.push(c.arma); AR.arma = c.arma;
-    const v = AR.barra[2]; if (v && !(PW[v] && PW[v].classe)) { const k = AR.barra.indexOf(null, 3); if (k >= 3 && !AR.barra.slice(3).includes(v)) AR.barra[k] = v; }
-    AR.barra[2] = c.hab; if (!AR.tem.includes(c.hab)) AR.tem.push(c.hab); HABS.forEach(h => { const i = AR.barra.indexOf(h.id); if (i > 2) AR.barra[i] = null; });
+  function aplicaClasse(id) { if (typeof bmDesliga === 'function') bmDesliga(); const c = CLASSES[id]; AR.classe = id; if (c.arma) { if (!AR.armas.includes(c.arma)) AR.armas.push(c.arma); AR.arma = c.arma; }
+    const v = AR.barra[2]; if (c.hab && v && !(PW[v] && PW[v].classe)) { const k = AR.barra.indexOf(null, 3); if (k >= 3 && !AR.barra.slice(3).includes(v)) AR.barra[k] = v; }
+    if (c.hab) { AR.barra[2] = c.hab; if (!AR.tem.includes(c.hab)) AR.tem.push(c.hab); HABS.forEach(h => { const i = AR.barra.indexOf(h.id); if (i > 2) AR.barra[i] = null; }); }
     aplicaNivel(); vida = VIDA_MAX; mana = MANA_MAX; salvaAR(); montaBarra(); mostraArma(); aplicaVisual(); setTimeout(fazRetrato, 100); }
 
   // ---- habilidades das classes ----
@@ -1893,8 +1896,8 @@
 
   // ---- tela de criação: classe + aparência ----
   let crSel = null, crTrava = false;
-  function abrirCriar(passo, trava) { crTrava = !!trava; crSel = AR.classe || crSel || 'guerreiro'; $('criar').hidden = false; desenhaCriar(passo || 1); }
-  function previewClasse(id) { crSel = id; const c = CLASSES[id]; Object.keys(ARMAG).forEach(k => ARMAG[k].visible = k === c.arma); Object.keys(ARMAE).forEach(k => ARMAE[k].visible = k === c.arma); aplicaVisual(id); }
+  function abrirCriar(passo, trava) { crTrava = true; passo = 2; crSel = 'aventureiro'; $('criar').hidden = false; desenhaCriar(passo || 1); }
+  function previewClasse(id) { crSel = id; const c = CLASSES[id]; if (c.arma) { Object.keys(ARMAG).forEach(k => ARMAG[k].visible = k === c.arma); Object.keys(ARMAE).forEach(k => ARMAE[k].visible = k === c.arma); } aplicaVisual(id); }
   function barraStat(n, v, max) { return `<div class="cst"><small>${n}</small><i><b style="width:${Math.min(100, v / max * 100)}%"></b></i></div>`; }
   function desenhaCriar(passo) { $('cr-p1').hidden = passo !== 1; $('cr-p2').hidden = passo !== 2; $('cr-volta').hidden = crTrava; previewClasse(crSel); const c = CLASSES[crSel]; $('cr-cls-nome').innerHTML = `${c.icone} ${c.nome}<small>${c.papel}</small>`;
     if (passo === 1) { const G = $('cr-grade'); G.innerHTML = ''; Object.keys(CLASSES).forEach(k => { const C = CLASSES[k]; const b = document.createElement('button'); b.className = 'ccl' + (k === crSel ? ' on' : ''); b.style.setProperty('--c', C.cor); b.innerHTML = `<span>${C.icone}</span><b>${C.nome}</b>`; tapBtn(b, () => { crSel = k; desenhaCriar(1); }); G.appendChild(b); });
@@ -1906,7 +1909,7 @@
   ['keydown', 'keyup'].forEach(t => $('criar').addEventListener(t, e => e.stopPropagation()));
   tapBtn($('cr-prox'), () => desenhaCriar(2)); tapBtn($('cr-volta'), () => desenhaCriar(1));
   tapBtn($('cr-fim'), () => { if (!crSel || !CLASSES[crSel]) return; AR.visual.nome = ($('cr-nome').value.trim() || 'Leonardo').slice(0, 16); const nova = AR.classe !== crSel; if (nova) aplicaClasse(crSel); else { mostraArma(); aplicaVisual(); salvaAR(); setTimeout(fazRetrato, 100); } $('criar').hidden = true;
-    if (nova) { const c = CLASSES[crSel]; aviso(c.icone + ' Você agora é ' + c.nome + '! Habilidade no slot 3 e os Modos de Batalha I, II e III ao lado da vida.', c.cor); } });
+    if (nova) aviso('🌳 Sua aventura começou! Abra a árvore de habilidades (toque na sua foto) e siga a rota que quiser.', '#3ad8ff'); });
   let criarT = 0; function criarFrame(dt) { if ($('criar').hidden) return; criarT += dt; if (criarT > 0.06) { fazPrevia(criarT, $('cr-previa')); criarT = 0; } }
   // ===================== HABILIDADES PRÓPRIAS DE CADA CLASSE (ramo da classe na árvore) =====================
   const HABS2 = {
@@ -1975,6 +1978,10 @@
   // extras: asas, chifres, coroa, espinhos, duplo (arma na outra mão) · orbes: coisas girando em volta que atacam · ataque: efeito nos golpes
   const BM_CUSTO = [35, 65, 100], BM_NV = [1, 5, 12], BM_DUR = [20, 18, 16];
   const BMS = {
+    aventureiro: [
+      { nome: 'Postura Rúnica', cor: '#3ad8ff', atk: 1.3, atkVel: 0.8, def: 10, armaEsc: 1.2, armaGlow: '#7ae8ff', extras: ['espinhos'] },
+      { nome: 'Avatar Rúnico', cor: '#5ab8ff', atk: 1.5, def: 20, crit: 0.15, escala: 1.2, armaEsc: 1.35, armaGlow: '#9ad8ff', flutua: 0.2, orbes: { tipo: 'arcano', n: 4, dano: 10, raio: 2.2 } },
+      { nome: 'Ascensão Rúnica', cor: '#c8f0ff', atk: 1.9, def: 30, crit: 0.25, vel: 1.25, escala: 1.4, armaEsc: 1.6, armaGlow: '#e8faff', extras: ['asas', 'coroa'], ataque: 'area', orbes: { tipo: 'arcano', n: 6, dano: 14, raio: 2.6 } }],
     guerreiro: [
       { nome: 'Fúria Rubra', cor: '#ff3a2a', atk: 1.3, atkVel: 0.85, armaEsc: 1.3, armaGlow: '#ff6a3a', extras: ['espinhos'] },
       { nome: 'Colosso', cor: '#ff6a2a', atk: 1.45, def: 30, escala: 1.3, armaEsc: 1.4, armaGlow: '#ffb04a', extras: ['espinhos', 'chifres'], ataque: 'empurra' },
@@ -2133,7 +2140,8 @@
     [1, 2, 3].forEach(n => { const d = $('bm' + n); const c = CLA(); const cu = BM_CUSTO[n - 1]; d.style.setProperty('--c', c ? c.cor : '#ffd23c'); d.classList.toggle('trava', !c || AR.nv < BM_NV[n - 1] || !bmLib(n)); d.classList.toggle('ativo', bmN === n); d.classList.toggle('pronto', !BM && desp >= cu && !!c && AR.nv >= BM_NV[n - 1]);
       d.style.setProperty('--p', bmN === n ? despT / BM_DUR[n - 1] * 100 : BM ? 0 : Math.min(100, desp / cu * 100)); d.querySelector('span').textContent = bmN === n ? Math.ceil(despT) : ['I', 'II', 'III'][n - 1]; }); }
   if (AR.classe && !CLASSES[AR.classe]) AR.classe = null;
-  aplicaNivel(); aplicaVisual(); if (AR.classe) { const v = AR.barra[2]; if (v !== CLASSES[AR.classe].hab) aplicaClasse(AR.classe); else { montaBarra(); mostraArma(); } } else setTimeout(() => abrirCriar(1), 300);
+  const novoHeroi = !AR.classe; if (AR.classe && AR.classe !== 'aventureiro') { if (AR.visual && AR.visual.roupa === 'classe') AR.visual.roupa = CLASSES[AR.classe].roupa; AR.classeAntiga = AR.classe; } if (AR.classe !== 'aventureiro') { AR.classe = 'aventureiro'; salvaAR(); }
+  aplicaNivel(); aplicaVisual(); montaBarra(); mostraArma(); if (novoHeroi) setTimeout(() => abrirCriar(2), 300);
   setTimeout(fazRetrato, 900);
   // ===================== MODO BLOCOS (visual estilo Pixel Piece: cubos + texturas pixel art) =====================
   let BLOCOS = VISUAL_BLOCOS;
@@ -2370,7 +2378,7 @@
     elyAura.visible = !dentro && zona === 'vila'; heroi.visible = true; const alV = valdrenFrame(dt, p); if (zona === 'valdren') alvo = alV; $('tit').textContent = (zona === 'valdren' ? 'VALDREN' : zona === 'masmorra' ? 'MASMORRA' : zona === 'calab' ? 'CALABOUÇO' : zona === 'leilao' ? 'CASA DE LEILÕES' : zona === 'nacao' ? 'BATALHA DE NAÇÃO' : 'BRUMAFRIA') + ' · ' + (modo === 'noite' ? '🌙 ' : '☀️ ') + String(Math.floor(hora)).padStart(2, '0') + ':' + String(Math.floor((hora % 1) * 6) * 10).padStart(2, '0');
     if (dentro) { OBJS.forEach(o => { const d = Math.hypot(p.x - o.x, p.z - o.z); if (d < 1.9 && d < melhor) { melhor = d; alvo = o; } }); if (Math.hypot(p.x - (IX - 1), p.z - 4.4) < 1.3) alvo = { tipo: 'sair' }; }
     else if (zona === 'vila') { const dp = casaFamilia.localToWorld(new T3.Vector3(casaFamilia.userData.door[0], 0, casaFamilia.userData.door[1] - 0.6)); if (Math.hypot(p.x - dp.x, p.z - dp.z) < 1.3) alvo = { tipo: 'entrar' }; }
-    { const alM = mmFrame(dt, p); if (alM) alvo = alM; const alC = calFrame(dt, p); if (alC) alvo = alC; const alL = typeof leilaoFrame === 'function' ? leilaoFrame(dt, p) : null; if (alL) alvo = alL; const alH = typeof historiaFrame === 'function' ? historiaFrame(dt, p) : null; if (alH) alvo = alH; if (typeof aroFrame === 'function') aroFrame(dt); if (typeof pilaresFrame === 'function') pilaresFrame(dt); if (typeof guardiasFrame === 'function') guardiasFrame(dt); if (typeof katanaFrame === 'function') katanaFrame(dt); if (typeof geloFrame === 'function') geloFrame(dt); if (typeof nacaoFrame === 'function') nacaoFrame(dt, p); if (typeof nacaoCeuFrame === 'function') nacaoCeuFrame(dt); if (typeof abismoFrame === 'function') abismoFrame(dt); if (zona === 'vila' && !dentro && Math.hypot(p.x - (MM_ENT.x + 1.5), p.z - MM_ENT.z) < 3.2) alvo = { rot: 'ENTRAR', acao: entraMasmorra }; setaFrame(p); $('voar').hidden = !voando && !(ASAS.visible && !dentro && temVoo()); }
+    { const alM = mmFrame(dt, p); if (alM) alvo = alM; const alC = calFrame(dt, p); if (alC) alvo = alC; const alL = typeof leilaoFrame === 'function' ? leilaoFrame(dt, p) : null; if (alL) alvo = alL; const alH = typeof historiaFrame === 'function' ? historiaFrame(dt, p) : null; if (alH) alvo = alH; if (typeof aroFrame === 'function') aroFrame(dt); if (typeof pilaresFrame === 'function') pilaresFrame(dt); if (typeof guardiasFrame === 'function') guardiasFrame(dt); if (typeof katanaFrame === 'function') katanaFrame(dt); if (typeof geloFrame === 'function') geloFrame(dt); if (typeof nacaoFrame === 'function') nacaoFrame(dt, p); if (typeof nacaoCeuFrame === 'function') nacaoCeuFrame(dt); if (typeof abismoFrame === 'function') abismoFrame(dt); if (typeof lendFrame === 'function') lendFrame(dt); if (zona === 'vila' && !dentro && Math.hypot(p.x - (MM_ENT.x + 1.5), p.z - MM_ENT.z) < 3.2) alvo = { rot: 'ENTRAR', acao: entraMasmorra }; setaFrame(p); $('voar').hidden = !voando && !(ASAS.visible && !dentro && temVoo()); }
     if (!conversa) { const alC = combateAlvo(p); if (alC) alvo = alC; }
     const btn = $('acao'); btn.hidden = !alvo || !!conversa || !!cenaQ; if (alvo) { const tx = alvo.rot || (alvo.tipo === 'entrar' ? 'ENTRAR' : alvo.tipo === 'sair' ? 'SAIR' : alvo.falas && !alvo.c ? 'VER' : 'FALAR'); const ic = tx === 'FALAR' ? '💬 ' : tx === 'VER' ? '👁️ ' : tx === 'ENTRAR' ? '🚪 ' : tx === 'SAIR' ? '🚪 ' : tx === 'TELEPORTE' ? '✨ ' : '✋ '; if (btn.dataset.t !== tx) { btn.dataset.t = tx; btn.textContent = ic + tx.charAt(0) + tx.slice(1).toLowerCase(); } acaoPosiciona(alvo, p, btn); }
     // ambiente

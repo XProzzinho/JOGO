@@ -26,13 +26,12 @@
   AR.cbt = (AR.cbt || []).filter(id => CB_PW[id]); for (let i = 3; i < NSLOTS; i++) if (/^cb_/.test(AR.barra[i] || '') && !CB_PW[AR.barra[i]]) AR.barra[i] = null;
   (AR.pags || []).forEach(pg => pg && pg.forEach((id, i) => { if (/^cb_/.test(id || '') && !CB_PW[id]) pg[i] = null; }));
   function cbTem(id) { const s = CB_PW && CB_PW[id]; if (s && s.divino) return !!(typeof DIVINOS !== 'undefined' && DIVINOS[AR.divino] && DIVINOS[AR.divino].habs.includes(id)); return (AR.cbt || []).includes(id); }
-  function cbPas(k) { let v = 0; if (!CB_PW || AR.classe !== 'guerreiro') return v; (AR.cbt || []).forEach(id => { const s = CB_PW[id]; if (!s || !s.passiva) return; const t = s.t;
+  function cbPas(k) { let v = 0; if (typeof arvB === 'function') v += arvB(k); if (!CB_PW) return v; (AR.cbt || []).forEach(id => { const s = CB_PW[id]; if (!s || !s.passiva) return; const t = s.t;
       if (k === 'atk') v += t === 'p_atk' ? 0.04 : t === 'p_tudo' ? 0.05 : 0; if (k === 'def') v += t === 'p_def' ? 3 : t === 'p_tudo' ? 4 : 0; if (k === 'crit') v += t === 'p_crit' ? 0.02 : t === 'p_tudo' ? 0.03 : 0;
       if (k === 'vida') v += t === 'p_vida' ? 15 : t === 'p_tudo' ? 20 : 0; if (k === 'mana') v += t === 'p_mana' ? 10 : 0; }); return v; }
   function cbB(k) { return typeof BUFF !== 'undefined' && BUFF[k] > 0; }
   function cbPode(s) { if (s.req && (s.req === '*' ? !(AR.cosm && ASAT[AR.cosm]) : AR.cosm !== s.req)) { aviso(s.nome + ': precisa vestir ' + (s.req === '*' ? 'umas asas' : 'a ' + COSM[s.req].nome) + '.', '#ff6a6a'); return false; }
     if ((s.t === 'impulso' || s.t === 'teleg') && !voando) { aviso(s.nome + ': só funciona voando.', '#ff6a6a'); return false; }
-    if (s.cls && AR.classe !== s.cls) { aviso(s.icone + ' ' + s.nome + ': só ' + CLASSES[s.cls].nome + ' pode usar.', '#ff6a6a'); return false; }
     if (s.passiva) { aviso(s.icone + ' ' + s.nome + ' é passiva: já está sempre ativa.', '#ffd23c'); return false; }
     if (s.divino) { const at = divAtiva(); if (at && at[0] !== s.id) { aviso('⛔ ' + CB_PW[at[0]].nome + ' está ativa' + (at[2] === '' ? '' : ' (' + Math.ceil(at[1]) + (at[2] || ' s') + ')') + '. Só uma habilidade divina por vez!', '#ffb040'); return false; } }
     if ((s.t === 'gm' || s.t === 'gm_mal') && !souAdmin()) { aviso('Só o Administrador pode usar ' + s.nome + '.', '#ff6a6a'); return false; }
@@ -142,7 +141,7 @@
     CB_LISTA.filter(s => !s.divino).forEach(s => { const tem = cbTem(s.id); const d = document.createElement('div'); d.className = 'li' + (tem ? ' tem' : '') + (s.lendaria ? ' lend' : '');
       const req = s.req === '*' ? 'Precisa de asas' : s.req ? 'Precisa da ' + COSM[s.req].nome : '';
       d.innerHTML = `<span class="ic">${s.icone}</span><div class="tx"><b>${s.lendaria ? '<i class="lendtag">✦ LENDÁRIA</i> ' : ''}${s.nome}</b><small>${s.passiva ? 'Passiva' : 'Mana ' + s.custo + ' · recarga ' + s.cdS + ' s'}${req ? ' · ' + req : ''}</small><small>${s.desc}</small></div><div class="ac"></div>`; const ac = d.querySelector('.ac');
-      if (s.cls && AR.classe !== s.cls) ac.innerHTML = '<span class="trava">🔒 Só ' + CLASSES[s.cls].nome + '</span>';
+      if (false) ac.innerHTML = '';
       else if (tem) { for (let i = 3; i < NSLOTS; i++) ac.appendChild(livBtn(String(i + 1), 'sl' + (AR.barra[i] === s.id ? ' aqui' : ''), (i => () => { const j = AR.barra.indexOf(s.id); if (j >= 3) AR.barra[j] = null; if (j !== i) AR.barra[i] = s.id; salvaAR(); montaBarra(); desenhaLivros(); })(i))); }
       else { const caro = !adm && (AR.inv.moedas || 0) < s.preco; ac.appendChild(livBtn(adm ? 'Aprender (ADM)' : s.preco ? 'Aprender · ' + s.preco + ' 💰' : 'Aprender · grátis', 'cp', () => { if (!adm) AR.inv.moedas -= s.preco; AR.cbt = AR.cbt || []; AR.cbt.push(s.id); const v = AR.barra.indexOf(null, 3); if (v >= 3) AR.barra[v] = s.id;
           salvaAR(); montaBarra(); atualizaInv(); som('compra', 0.8, 1); aviso('Aprendeu: ' + s.icone + ' ' + s.nome + '!', '#ffd23c'); desenhaLivros(); }, caro)); }
