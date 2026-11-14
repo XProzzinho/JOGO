@@ -954,17 +954,20 @@ ${_}`}class A extends Error{constructor({message:e,code:t,cause:r,name:s}){var n
   window.addEventListener('keyup', e => { keys[e.code] = false; });
   const joy = $('joy'), knob = $('knob');
   let joyId = null, joyC = [0, 0], camId = null, camLast = [0, 0];
-  let camYaw = 0, camPitch = 0.3, camDist = 5.6;
+  let camYaw = 0, camPitch = 0.3, camDist = 5.6; const CAM_MIN = 2.6, CAM_MAX = 12, CAM_P0 = 0.03, CAM_P1 = 1.25; let pinchId = null, pinchPos = null, pinchD0 = 0, pinchC0 = 0;
   function joyMove(px, py) { const R = 60; let dx = px - joyC[0], dy = py - joyC[1]; const d = Math.hypot(dx, dy); if (d > R) { dx *= R / d; dy *= R / d; } knob.style.transform = `translate(${dx}px, ${dy}px)`; input.x = dx / R; input.y = dy / R; }
   function onDown(e) { for (const t of e.changedTouches || [e]) { const id = t.identifier ?? 'm';
       if (t.clientX < window.innerWidth * 0.5 && joyId === null) { joyId = id; joyC = [t.clientX, t.clientY]; joy.style.left = (t.clientX - 70) + 'px'; joy.style.top = (t.clientY - 70) + 'px'; joy.style.bottom = 'auto'; joy.classList.add('on'); joyMove(t.clientX, t.clientY); }
-      else if (camId === null) { camId = id; camLast = [t.clientX, t.clientY]; } } }
+      else if (camId === null) { camId = id; camLast = [t.clientX, t.clientY]; }
+      else if (pinchId === null && id !== joyId) { pinchId = id; pinchPos = [t.clientX, t.clientY]; pinchD0 = Math.hypot(pinchPos[0] - camLast[0], pinchPos[1] - camLast[1]) || 1; pinchC0 = camDist; } } }
   function onMove(e) { for (const t of e.changedTouches || [e]) { const id = t.identifier ?? 'm'; if (id === joyId) joyMove(t.clientX, t.clientY);
-      else if (id === camId) { camYaw -= (t.clientX - camLast[0]) * 0.008; camPitch = clamp(camPitch + (t.clientY - camLast[1]) * 0.005, 0.05, 1.1); camLast = [t.clientX, t.clientY]; } } if (e.cancelable) e.preventDefault(); }
-  function onUp(e) { for (const t of e.changedTouches || [e]) { const id = t.identifier ?? 'm'; if (id === joyId) { joyId = null; input.x = input.y = 0; knob.style.transform = ''; joy.classList.remove('on'); } if (id === camId) camId = null; } }
+      else if (id === camId) { if (pinchId === null) { camYaw -= (t.clientX - camLast[0]) * 0.008; camPitch = clamp(camPitch + (t.clientY - camLast[1]) * 0.005, CAM_P0, CAM_P1); } camLast = [t.clientX, t.clientY]; }
+      else if (id === pinchId) pinchPos = [t.clientX, t.clientY];
+      if (pinchId !== null && (id === camId || id === pinchId)) { const d = Math.hypot(pinchPos[0] - camLast[0], pinchPos[1] - camLast[1]) || 1; camDist = clamp(pinchC0 * pinchD0 / d, CAM_MIN, CAM_MAX); } } if (e.cancelable) e.preventDefault(); }
+  function onUp(e) { for (const t of e.changedTouches || [e]) { const id = t.identifier ?? 'm'; if (id === joyId) { joyId = null; input.x = input.y = 0; knob.style.transform = ''; joy.classList.remove('on'); } if (id === camId) { camId = null; if (pinchId !== null) { camId = pinchId; camLast = pinchPos; pinchId = null; } } else if (id === pinchId) pinchId = null; } }
   cv.addEventListener('touchstart', onDown, { passive: false }); cv.addEventListener('touchmove', onMove, { passive: false }); cv.addEventListener('touchend', onUp); cv.addEventListener('touchcancel', onUp);
   cv.addEventListener('mousedown', onDown); window.addEventListener('mousemove', e => { if (joyId === 'm' || camId === 'm') onMove(e); }); window.addEventListener('mouseup', onUp);
-  cv.addEventListener('wheel', e => { camDist = clamp(camDist + e.deltaY * 0.005, 3, 14); }, { passive: true });
+  cv.addEventListener('wheel', e => { camDist = clamp(camDist + e.deltaY * 0.005, CAM_MIN, CAM_MAX); }, { passive: true });
   const SEM_CLIQUE = ['atacar', 'pular', 'correr', 'acao', 'fala', 'cena', 'arma'];
   const tapBtn = (el, fn) => { const f0 = fn; fn = () => { if (!el.classList.contains('slot') && !SEM_CLIQUE.includes(el.id)) som('clique', 0.4, 1); f0(); }; el.addEventListener('touchstart', e => { e.stopPropagation(); if (rolavel(el)) { const t = e.touches[0]; el._t0 = [t.clientX, t.clientY, Date.now()]; el._mov = false; return; } fn(); e.preventDefault(); }, { passive: false });
     el.addEventListener('touchmove', e => { if (!el._t0) return; const t = e.touches[0]; if (Math.hypot(t.clientX - el._t0[0], t.clientY - el._t0[1]) > 10) el._mov = true; }, { passive: true });
@@ -10739,9 +10742,9 @@ const ArcaneWingSystem = (function () {
     fogoL.intensity = dentro ? 3.2 + Math.sin(gT * 13) * 0.4 : 0; chamas.forEach((f, i) => f.scale.y = 0.5 * (1 + Math.sin(gT * 15 + i * 2) * 0.2));
     poderesFrame(dt, p); combateFrame(dt, p); classeFrame(dt, p); habsFrame(dt); bmFrame(dt, p); perfilFrame(dt); criarFrame(dt); miniT += dt; if (miniT > 0.08) { miniT = 0; desenhaMini(p); }
     // câmera
-    if (camId === null && vel > 0.5 && !dentro) { let d = (facing + Math.PI) - camYaw; while (d > Math.PI) d -= Math.PI * 2; while (d < -Math.PI) d += Math.PI * 2; camYaw += d * clamp(dt * 0.9); }
+    if (false && camId === null && vel > 0.5 && !dentro) { let d = (facing + Math.PI) - camYaw; while (d > Math.PI) d -= Math.PI * 2; while (d < -Math.PI) d += Math.PI * 2; camYaw += d * clamp(dt * 0.9); }
     const cd = dentro ? Math.min(camDist, 3.8) : camDist; const cp = dentro ? Math.max(camPitch, 0.45) : camPitch;
-    let cx = p.x + Math.sin(camYaw) * Math.cos(cp) * cd, cz = p.z + Math.cos(camYaw) * Math.cos(cp) * cd; const cy = p.y + 1.0 + Math.sin(cp) * cd;
+    let cx = p.x + Math.sin(camYaw) * Math.cos(cp) * cd, cz = p.z + Math.cos(camYaw) * Math.cos(cp) * cd; const cy = Math.max(p.y + 1.0 + Math.sin(cp) * cd, (zona === 'calab' || voando ? -1e9 : 0.35));
     if (dentro) { cx = clamp(cx, IX - 4.7, IX + 4.7); cz = clamp(cz, -4.7, 4.7); }
     if (cam.position.distanceTo(tmp.set(cx, cy, cz)) > 30) cam.position.copy(tmp); else cam.position.lerp(tmp, clamp(dt * 10));
     if (tremor > 0) { tremor -= dt; cam.position.x += (Math.random() - .5) * tremor; cam.position.y += (Math.random() - .5) * tremor; }
