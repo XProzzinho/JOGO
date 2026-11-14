@@ -118,14 +118,16 @@
   const histHudEl = document.createElement('div'); histHudEl.id = 'hist-hud'; histHudEl.hidden = true; document.body.appendChild(histHudEl);
   tapBtn(histHudEl, () => histAbre());
   function histHud() { const q = histAtual(); histHudEl.hidden = !q; if (!q) return; const done = histCompleta(), cur = histObjAtual();
-    histHudEl.innerHTML = `<b>📖 ${q.title}</b><small class="dist"></small>` + (done ? `<div class="ok">✅ Volte para o ${q.npc}</div>` : q.objectives.map((o, i) => { const n = AR.hist.at.prog[i] || 0, ok = n >= o.count; return `<div class="${ok ? 'ok' : i === cur ? 'cur' : 'nx'}">${ok ? '✅' : i === cur ? '▸' : '◻️'} ${histObjTxt(o)}${o.count > 1 ? ' ' + Math.min(n, o.count) + '/' + o.count : ''}</div>`; }).join('')); }
+    histHudEl.innerHTML = `<b>📖 ${q.title}</b><small class="dist"></small>` + (done ? `<div class="ok">✅ Volte para o ${q.npc}</div>` : q.objectives.map((o, i) => { const n = AR.hist.at.prog[i] || 0, ok = n >= o.count; return `<div class="${ok ? 'ok' : i === cur ? 'cur' : 'nx'}">${ok ? '✅' : i === cur ? '▸' : '◻️'} ${histObjTxt(o)}${o.count > 1 ? ' ' + Math.min(n, o.count) + '/' + o.count : ''}</div>`; }).join('')) + '<button class="abd" id="hist-abd">✕</button>'; botaoAbandona($('hist-abd'), q.title, histAbandona); }
+  function histAbandona() { AR.hist.at = null; AR.hist.auto = false; salvaAR(); histHud(); try { Q.alvoQ = null; } catch (e) {} }
   // ---------- painel do Modo História (menu da foto) ----------
   const histP = document.createElement('div'); histP.id = 'hist-p'; histP.hidden = true; document.body.appendChild(histP);
   function histAbre() { const at = histAtual(), prox = histProxima();
     histP.innerHTML = `<div class="box"><div class="hd"><b>📖 Modo História</b><button class="x" id="hist-x">✕</button></div><div class="lst">` + HISTORIA.map((q, i) => { const feita = histFeita(q.id), ativa = at && at.id === q.id, trava = !feita && !ativa && (q !== prox || AR.nv < q.levelReq);
       const st = feita ? '<span class="st ok">✅ Concluída</span>' : ativa ? '<span class="st at">▸ Em andamento</span>' : trava ? `<span class="st tr">🔒 ${AR.nv < q.levelReq ? 'Nível ' + q.levelReq : 'Complete a anterior'}</span>` : '<span class="st nv">❗ Disponível</span>';
-      return `<div class="cap ${feita ? 'feita' : ''} ${ativa ? 'ativa' : ''}"><div class="t"><small>Capítulo ${i + 1} · Nível ${q.levelReq}</small><b>${q.title}</b>${st}</div><p>${q.description}</p><div class="meta">👤 ${q.npc} · 📍 ${q.location}</div><ul>${q.objectives.map((o, k) => { const ok = feita || (ativa && (at.prog[k] || 0) >= o.count); return `<li class="${ok ? 'ok' : ''}">${ok ? '✅' : '◻️'} ${histObjTxt(o)}</li>`; }).join('')}</ul><div class="rec">🎁 ${histRecTxt(q)}</div></div>`; }).join('') + `</div></div>`;
-    histP.hidden = false; tapBtn($('hist-x'), () => { histP.hidden = true; }); }
+      return `<div class="cap ${feita ? 'feita' : ''} ${ativa ? 'ativa' : ''}"><div class="t"><small>Capítulo ${i + 1} · Nível ${q.levelReq}</small><b>${q.title}</b>${st}</div><p>${q.description}</p><div class="meta">👤 ${q.npc} · 📍 ${q.location}</div><ul>${q.objectives.map((o, k) => { const ok = feita || (ativa && (AR.hist.at.prog[k] || 0) >= o.count); return `<li class="${ok ? 'ok' : ''}">${ok ? '✅' : '◻️'} ${histObjTxt(o)}</li>`; }).join('')}</ul><div class="rec">🎁 ${histRecTxt(q)}</div>${ativa ? '<button class="hbt ab" data-h="ab">🚫 Abandonar missão</button>' : (!feita && !trava && !at) ? '<button class="hbt ac" data-h="ac">✅ Aceitar missão</button>' : ''}</div>`; }).join('') + `</div></div>`;
+    histP.hidden = false; tapBtn($('hist-x'), () => { histP.hidden = true; });
+    histP.querySelectorAll('.hbt').forEach(b => tapBtn(b, () => { if (b.dataset.h === 'ac') { const p = histProxima(); if (p && AR.nv >= p.levelReq) { AR.hist.auto = true; histAceita(p); } } else { if (!b.dataset.arm) { b.dataset.arm = 1; b.textContent = '⚠️ Toque de novo para confirmar'; return; } histAbandona(); aviso('🚫 Missão abandonada. Aceite de novo aqui no Modo História quando quiser.', '#ff6b6b'); } histAbre(); })); }
   // ---------- quadro a quadro: círculo, marcador do mestre, guardião surgindo ----------
   function historiaFrame(dt, p) { histGuia(dt); const naVila = zona === 'vila' && !dentro;
     // marcador acima do mestre
@@ -155,7 +157,7 @@
   function histFim(q) { falar({ nome: q.npc, falas: q.fim || ['Muito bem!'], fim: () => histConclui(q) }); }
   function histSegue() { if (AR.hist.at) return; const p = histProxima(); if (!p) return; if (AR.nv < p.levelReq) { aviso('📖 Próxima missão da história: ' + p.title + ' (libera no nível ' + p.levelReq + ').', '#ffd23c'); return; } histAceita(p); }
   let histIni = false;
-  function histComeca() { AR.hist.auto = true; if (histIni) return; histIni = true; setTimeout(() => { if (!AR.hist.at && !AR.hist.feitas.length) histAceita(HISTORIA[0]); }, 1200); }
+  function histComeca() { if (AR.hist.auto === false || histIni) return; AR.hist.auto = true; histIni = true; setTimeout(() => { if (!AR.hist.at && !AR.hist.feitas.length) histAceita(HISTORIA[0]); }, 1200); }
   // quem já passou do nível 5 pula as missões de começo
   if (!AR.hist.feitas.length && !AR.hist.at && AR.nv >= 5) { AR.hist.feitas.push('mq_01', 'mq_02', 'mq_03', 'mq_04'); salvaAR(); }
   else if (!AR.hist.feitas.length && !AR.hist.at) { const iv = setInterval(() => { const cr = $('criar'); if ((!cr || cr.hidden) && !conversa && !cenaQ && window.__entrou !== false) { clearInterval(iv); histComeca(); } }, 1000); }
