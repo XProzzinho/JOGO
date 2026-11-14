@@ -5,6 +5,8 @@ service cloud.firestore {
     // Progresso salvo: cada jogador só lê e grava o próprio
     match /jogadores/{uid} {
       allow read, create, update: if request.auth != null && request.auth.uid == uid;
+      // ADM lê os saves pra calcular o Ranking de Poder de todos (inclusive offline)
+      allow read: if souAdm();
       allow delete: if false;
     }
 
@@ -13,6 +15,8 @@ service cloud.firestore {
     match /perfis/{uid} {
       allow read: if request.auth != null;
       allow create, update: if request.auth != null && request.auth.uid == uid;
+      // ADM grava o poder do ranking no perfil de quem está offline
+      allow create, update: if souAdm();
       allow delete: if false;
     }
 

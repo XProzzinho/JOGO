@@ -11308,8 +11308,11 @@ const ArcaneWingSystem = (function () {
     volta += (AR.arvP || []).length; AR.arvP = []; AR.pts = (AR.pts || 0) + volta; AR.arvV = 2; salvaAR(); if (volta) setTimeout(() => aviso('🌳 A árvore de habilidades mudou! Você recebeu ' + volta + ' pontos de volta pra gastar nas novas magias.', '#ffd23c'), 2500); try { montaBarra(); } catch (e) {} })();
   // ===================== RANKING DE PODER (top 10) + MONUMENTO DOS TOP 3 NA VILA =====================
   // Cada jogador grava o próprio poder (e o visual) no perfil público (perfis/{uid}); o ranking lê os 10 maiores.
-  function meuPoder() { try { const A = ARMAS[AR.arma] || {}, dano = (A.dano || 10) * (1 + attrV('for') * 0.006);
-    return Math.round(dano * 15 + VIDA_MAX * 3 + MANA_MAX * 1.5 + defesa() * 30 + (AR.nv || 1) * 45 + (AR.divino ? 900 : 0)); } catch (e) { return (AR.nv || 1) * 45; } }
+  // poder calculado só com o que fica salvo (arma, atributos, roupa, nível, divino): assim o painel do ADM calcula igual pra quem está offline
+  function poderDe(A) { A = A || {}; const at = A.attr || {}, W = ARMAS[A.arma] || {}, F = FANT[A.fantasia] || {};
+    const dano = (W.dano || 10) * (1 + (at.for || 0) * 0.006), vida = 115 + (at.vit || 0) * 2, mana = 115 + (at.int || 0) * 2, def = Math.min(85, (F.def || 0) + (at.def || 0) * 0.08);
+    return Math.round(dano * 15 + vida * 3 + mana * 1.5 + def * 30 + (A.nv || 1) * 45 + (A.divino ? 900 : 0)); }
+  function meuPoder() { try { return poderDe(AR); } catch (e) { return (AR.nv || 1) * 45; } }
   function rankDia() { return new Date(Date.now() - 3 * 3600e3).toISOString().slice(0, 10); } // dia em Brasília: o ranking vira à meia-noite
   const rkChave = () => 'aetherion-rank-dia-' + (window.CONTA && CONTA.usuario ? CONTA.usuario.uid : '');
   function rankCampos() { const o = { poder: meuPoder(), na: AR.nacao || '', st: typeof meuCargo === 'function' ? meuCargo() : '' }; const d = rankDia();
@@ -11325,7 +11328,15 @@ const ArcaneWingSystem = (function () {
     } catch (e) { RK.erro = e.code || e.message; } monuAtualiza(); return RK.lista; }
   // atualização manual pelo painel do ADM (config/ranking.forcar): quem está online tira a foto do dia de novo e o pódio troca
   let rkOuv = false; function rankOuve() { if (rkOuv || !(window.CONTA && CONTA.db && CONTA.usuario)) return; rkOuv = true;
-    CONTA.db.collection('config').doc('ranking').onSnapshot(d => { const f = d.exists && d.data().forcar || 0; if (f && f !== RK.forcar) { const novo = RK.forcar !== undefined; RK.forcar = f; if (novo || Date.now() - f < 10 * 60 * 1000) { setTimeout(() => { rankBusca(); }, 400 + Math.random() * 1500); setTimeout(() => { RK.t = -1e9; }, 8000); } } else if (!f) RK.forcar = 0; }, () => { rkOuv = false; }); }
+    CONTA.db.collection('config').doc('ranking').onSnapshot(d => { const cf = d.exists ? d.data() : {}; if (souAdmin() && (cf.todosDia !== rankDia() || (cf.forcar || 0) > (cf.todosEm || 0))) setTimeout(() => rankTodos(), 2000 + Math.random() * 3000); const f = cf.forcar || 0; if (f && f !== RK.forcar) { const novo = RK.forcar !== undefined; RK.forcar = f; if (novo || Date.now() - f < 10 * 60 * 1000) { setTimeout(() => { rankBusca(); }, 400 + Math.random() * 1500); setTimeout(() => { RK.t = -1e9; }, 8000); } } else if (!f) RK.forcar = 0; }, () => { rkOuv = false; }); }
+  // ---------- ranking de TODOS (inclusive offline): quem é ADM lê os saves de todo mundo e grava o poder no perfil público ----------
+  async function rankTodos(motivo) { if (!(window.CONTA && CONTA.db && CONTA.usuario) || !souAdmin() || RK.todosRodando) return; RK.todosRodando = true; const db = CONTA.db, hoje = rankDia();
+    try { const q = await db.collection('jogadores').get(); let b = db.batch(), n = 0, tot = 0;
+      for (const d of q.docs) { const x = d.data(); let A = null; try { A = typeof x.arvore === 'string' ? JSON.parse(x.arvore) : x.arvore; } catch (e) {} if (!A || !A.nv) continue;
+        const nome = String((A.visual && A.visual.nome) || x.nome || 'Jogador').slice(0, 20), pd = poderDe(A);
+        b.set(db.collection('perfis').doc(d.id), { poder: pd, poderDia: pd, nomeDia: nome, nvDia: A.nv | 0, naDia: A.nacao || '', dia: hoje }, { merge: true }); n++; tot++; if (n >= 400) { await b.commit(); b = db.batch(); n = 0; } }
+      if (n) await b.commit(); await db.collection('config').doc('ranking').set({ todosDia: hoje, todosEm: Date.now(), todosN: tot }, { merge: true }); RK.t = -1e9; if (motivo) aviso('🏆 Ranking recalculado com ' + tot + ' jogadores.', '#ffd86a');
+    } catch (e) { if (motivo) aviso('⚠️ Ranking: ' + (e.code || e.message) + (e.code === 'permission-denied' ? ' (atualize as regras do Firebase)' : ''), '#ff6a6a'); } RK.todosRodando = false; }
   // ---------- painel ----------
   const rkP = document.createElement('div'); rkP.id = 'rank-p'; rkP.hidden = true; document.body.appendChild(rkP);
   const fmtN = n => (n | 0).toLocaleString('pt-BR');
@@ -11334,7 +11345,7 @@ const ArcaneWingSystem = (function () {
     rkP.innerHTML = `<div class="box"><div class="hd"><b>🏆 Ranking de Poder · Top 10</b><button class="x">✕</button></div>
       <div class="meu"><span>Seu poder</span><b>⚡ ${fmtN(meuPoder())}</b><small>${logado ? (RK.pos > 0 ? 'Sua posição: ' + RK.pos + 'º' : RK.pos < 0 ? 'Você está fora do top 10' : 'Carregando posição...') : 'Entre com uma conta pra aparecer no ranking'}</small></div>
       <div class="ls">${logado ? (lin || (RK.erro ? '<p>Não deu pra carregar o ranking agora (' + RK.erro + ').</p>' : '<p>Carregando...</p>')) : '<p>O ranking é entre jogadores com conta.</p>'}</div>
-      <small class="dc">🕛 O ranking e as estátuas atualizam todo dia à meia-noite, com o poder e o visual (roupa, arma, divino...) que cada um estava usando. O poder soma arma, força, vida, mana, defesa, nível e divino.</small></div>`;
+      <small class="dc">🕛 O ranking e as estátuas atualizam todo dia à meia-noite e entram todos os jogadores, até quem está offline. O poder soma arma, força, vida, mana, defesa, nível e divino.</small></div>`;
     tapBtn(rkP.querySelector('.x'), () => { rkP.hidden = true; }); }
   function rankAbre() { rkP.hidden = false; rankDesenha(); rankBusca().then(() => { if (!rkP.hidden) rankDesenha(); }); }
   // ---------- monumento: 3 pedestais com estátuas dos 3 mais fortes, no centro da vila ----------
@@ -11369,7 +11380,7 @@ const ArcaneWingSystem = (function () {
   function monuAtualiza() { const L = RK.lista; MONU.P.forEach((slot, i) => { const x = L[i] || null, ch = x ? x.uid + '|' + (x.vis ? x.vis.k.length + x.vis.c : '') + '|' + x.poder + '|' + x.nome : 'vazio';
       if (slot.chave === ch) return; slot.chave = ch; monuPlaca(slot.placa, i, x); slot.placa.position.y = slot.h + 4.6; monuEstatua(slot, i, x); }); }
   let monuT = 3; function rankFrame(dt) { rankOuve(); MONU.P.forEach(s => { s.aura.rotation.z += dt * 0.6; }); try { pracaVFrame(dt); } catch (e) {} monuT -= dt; if (monuT > 0) return; monuT = 1; if (!MONU.P[0].chave) monuAtualiza();
-    if (RK.dia && RK.dia !== rankDia()) { RK.t = -1e9; RK.dia = rankDia(); }
+    if (RK.dia && RK.dia !== rankDia()) { RK.t = -1e9; RK.dia = rankDia(); if (souAdmin()) setTimeout(() => rankTodos(), 3000 + Math.random() * 5000); }
     const p = heroi.position; if (zona === 'vila' && !dentro && Math.hypot(p.x - MONU.X, p.z - MONU.Z) < 60 && performance.now() - RK.t > 120000) rankBusca(); }
   // ===================== PRAÇA DOS CAMPEÕES (centro da vila, em volta do pódio) =====================
   const PRV = (() => { const CX = -0.1, CZ = 5.5, R = 17; const G = grp(vil, CX, 0, CZ); const anim = { fontes: [], chamas: [], brilhos: [], bandeiras: [] };
