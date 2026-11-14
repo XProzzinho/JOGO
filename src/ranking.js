@@ -57,6 +57,57 @@
     try { pose(c, 0, { mood: 'smile', arms: i === 0 ? { shR: [-2.8, 0, 0.25], shL: [-0.3, 0, -0.35], elR: [0, 0, 0], elL: [-0.6, 0, 0] } : i === 1 ? { shR: [-0.7, 0, 0.4], shL: [-0.7, 0, -0.4], elR: [-1.2, 0, 0], elL: [-1.2, 0, 0] } : { shR: [0, 0, 0.5], shL: [-1.4, 0, -0.2], elR: [0, 0, 0], elL: [-0.4, 0, 0] } }); } catch (e) {} }
   function monuAtualiza() { const L = RK.lista; MONU.P.forEach((slot, i) => { const x = L[i] || null, ch = x ? x.uid + '|' + (x.vis ? x.vis.k.length + x.vis.c : '') + '|' + x.poder + '|' + x.nome : 'vazio';
       if (slot.chave === ch) return; slot.chave = ch; monuPlaca(slot.placa, i, x); slot.placa.position.y = slot.h + 4.6; monuEstatua(slot, i, x); }); }
-  let monuT = 3; function rankFrame(dt) { MONU.P.forEach(s => { s.aura.rotation.z += dt * 0.6; }); monuT -= dt; if (monuT > 0) return; monuT = 1; if (!MONU.P[0].chave) monuAtualiza();
+  let monuT = 3; function rankFrame(dt) { MONU.P.forEach(s => { s.aura.rotation.z += dt * 0.6; }); try { pracaVFrame(dt); } catch (e) {} monuT -= dt; if (monuT > 0) return; monuT = 1; if (!MONU.P[0].chave) monuAtualiza();
     if (RK.dia && RK.dia !== rankDia()) { RK.t = -1e9; RK.dia = rankDia(); }
     const p = heroi.position; if (zona === 'vila' && !dentro && Math.hypot(p.x - MONU.X, p.z - MONU.Z) < 60 && performance.now() - RK.t > 120000) rankBusca(); }
+  // ===================== PRAÇA DOS CAMPEÕES (centro da vila, em volta do pódio) =====================
+  const PRV = (() => { const CX = -0.1, CZ = 5.5, R = 17; const G = grp(vil, CX, 0, CZ); const anim = { fontes: [], chamas: [], brilhos: [], bandeiras: [] };
+    const tx = (w, h, f) => { const c = document.createElement('canvas'); c.width = w; c.height = h; f(c.getContext('2d'), w, h); const t = new T3.CanvasTexture(c); t.colorSpace = T3.SRGBColorSpace; return t; };
+    const M = (c, o) => new T3.MeshStandardMaterial(Object.assign({ color: c, roughness: 0.7 }, o || {}));
+    const ouro = M('#e0b040', { metalness: 0.7, roughness: 0.3 }), pedraC = M('#d8d2c4'), pedraE = M('#8e8778'), ferro = M('#2a2a34', { metalness: 0.5, roughness: 0.5 }), madeira = M('#6a4426'), verde = M('#3f8a3a', { roughness: 0.9 }), agua = new T3.MeshStandardMaterial({ color: '#5ac8ff', roughness: 0.15, metalness: 0.2, transparent: true, opacity: 0.85 });
+    const col = (x, z, r) => COL.push({ t: 'c', x: CX + x, z: CZ + z, r }); const add = (m, x, y, z) => { m.position.set(x, y, z); m.castShadow = true; m.receiveShadow = true; G.add(m); return m; };
+    // chão: mosaico radial de pedra com anéis dourados e estrela
+    const chaoT = tx(1024, 1024, (g, w) => { const c = w / 2; g.fillStyle = '#cfc7b6'; g.fillRect(0, 0, w, w);
+      for (let r = 40; r < c; r += 34) { const n = Math.round(r * 0.32); for (let i = 0; i < n; i++) { const a0 = i / n * Math.PI * 2, a1 = (i + 1) / n * Math.PI * 2; g.beginPath(); g.arc(c, c, r + 32, a0, a1); g.arc(c, c, r, a1, a0, true); g.closePath(); g.fillStyle = ['#d9d1c0', '#c4bba8', '#e2dbcc', '#bdb39f'][(i + Math.round(r)) % 4]; g.fill(); g.strokeStyle = 'rgba(90,80,60,.35)'; g.lineWidth = 2; g.stroke(); } }
+      [[c - 6, 10, '#d8a840'], [c * 0.62, 8, '#c8202a'], [c * 0.6, 4, '#d8a840'], [150, 7, '#d8a840']].forEach(([r, lw, cor]) => { g.strokeStyle = cor; g.lineWidth = lw; g.beginPath(); g.arc(c, c, r, 0, 7); g.stroke(); });
+      g.fillStyle = 'rgba(216,168,64,.55)'; for (let k = 0; k < 2; k++) { g.beginPath(); for (let i = 0; i < 16; i++) { const a = i / 16 * Math.PI * 2 + k * Math.PI / 8, rr = i % 2 ? 60 : 140; i ? g.lineTo(c + Math.cos(a) * rr, c + Math.sin(a) * rr) : g.moveTo(c + Math.cos(a) * rr, c + Math.sin(a) * rr); } g.closePath(); g.fill(); } });
+    const chao = new T3.Mesh(new T3.CircleGeometry(R, 72), new T3.MeshStandardMaterial({ map: chaoT, roughness: 0.85 })); chao.rotation.x = -Math.PI / 2; chao.position.y = 0.028; chao.receiveShadow = true; G.add(chao);
+    const meio = new T3.Mesh(new T3.TorusGeometry(R, 0.4, 6, 96), pedraE); meio.rotation.x = Math.PI / 2; meio.position.y = 0.1; G.add(meio);
+    // tapete vermelho da entrada sul até o pódio
+    const tp = new T3.Mesh(new T3.PlaneGeometry(3, 12.5), M('#9a1a2e', { roughness: 0.95 })); tp.rotation.x = -Math.PI / 2; tp.position.set(0, 0.035, 9.6); tp.receiveShadow = true; G.add(tp);
+    [-1, 1].forEach(s => { const b = new T3.Mesh(new T3.PlaneGeometry(0.2, 12.5), new T3.MeshBasicMaterial({ color: '#e8b84a' })); b.rotation.x = -Math.PI / 2; b.position.set(s * 1.6, 0.038, 9.6); G.add(b); });
+    // postes de luz em volta + bandeirolas entre eles
+    const postes = []; const NP = 12; for (let i = 0; i < NP; i++) { const a = (i + 0.5) / NP * Math.PI * 2, x = Math.sin(a) * (R - 1.2), z = Math.cos(a) * (R - 1.2); if (Math.abs(x) < 3 && z > 0) continue;
+      add(new T3.Mesh(new T3.CylinderGeometry(0.1, 0.14, 4.4, 8), ferro), x, 2.2, z); add(new T3.Mesh(new T3.CylinderGeometry(0.28, 0.32, 0.25, 8), ferro), x, 0.12, z);
+      const l = grp(G, x, 4.55, z); part(l, SPH, '#fff2c0', 0, 0, 0, 0.3, 0.36, 0.3, 0, true); part(l, CONE, '#2a2a34', 0, 0.38, 0, 0.36, 0.25, 0.36); glowSpr(l, 0, 0, 0, 2.8, '#ffd890', 0.5); postes.push([x, z]); col(x, z, 0.3); }
+    const corB = ['#c8202a', '#ffd86a', '#3a8aff', '#3fbf5a', '#ff7ab8', '#ffffff']; const tri = new T3.ConeGeometry(0.22, 0.5, 3);
+    for (let i = 0; i < postes.length; i++) { const [ax, az] = postes[i], [bx, bz] = postes[(i + 1) % postes.length]; if (Math.hypot(bx - ax, bz - az) > 12) continue; const n = 9;
+      for (let k = 1; k < n; k++) { const u = k / n, y = 4.15 - Math.sin(u * Math.PI) * 0.9; const f = new T3.Mesh(tri, new T3.MeshBasicMaterial({ color: corB[(i + k) % corB.length], toneMapped: false, side: T3.DoubleSide })); f.position.set(ax + (bx - ax) * u, y, az + (bz - az) * u); f.rotation.x = Math.PI; f.rotation.y = Math.atan2(bx - ax, bz - az); G.add(f); anim.bandeiras.push(f); } }
+    // fontes dos dois lados do pódio
+    [-1, 1].forEach(s => { const x = s * 9.5, z = 3; add(new T3.Mesh(new T3.CylinderGeometry(2.2, 2.4, 0.7, 24), pedraC), x, 0.35, z); const ag = new T3.Mesh(new T3.CylinderGeometry(1.95, 1.95, 0.05, 24), agua); ag.position.set(x, 0.62, z); G.add(ag);
+      add(new T3.Mesh(new T3.CylinderGeometry(0.3, 0.45, 1.6, 10), pedraC), x, 1.1, z); add(new T3.Mesh(new T3.CylinderGeometry(0.9, 0.6, 0.3, 16), pedraC), x, 1.95, z); const ag2 = new T3.Mesh(new T3.CylinderGeometry(0.78, 0.78, 0.04, 16), agua); ag2.position.set(x, 2.08, z); G.add(ag2);
+      add(new T3.Mesh(new T3.SphereGeometry(0.22, 12, 10), ouro), x, 2.4, z); const gotas = []; for (let k = 0; k < 14; k++) { const g = new T3.Mesh(new T3.SphereGeometry(0.07, 6, 5), new T3.MeshBasicMaterial({ color: '#c8f0ff', transparent: true, opacity: 0.85 })); G.add(g); gotas.push({ g, f: k / 14, a: k / 14 * Math.PI * 2 }); }
+      anim.fontes.push({ x, z, gotas }); col(x, z, 2.4); });
+    // canteiros de flores
+    const FL = ['#ff5a7a', '#ffd23c', '#ff8a3a', '#c86aff', '#ffffff', '#5ab8ff']; const flG = new T3.SphereGeometry(0.12, 6, 5);
+    [[-13, 10], [13, 10], [-7, 13], [7, 13], [-12.5, -2], [12.5, -2]].forEach(([x, z], j) => { add(new T3.Mesh(new T3.CylinderGeometry(1.25, 1.35, 0.45, 16), pedraE), x, 0.22, z); const t = new T3.Mesh(new T3.CylinderGeometry(1.15, 1.15, 0.06, 16), M('#5a3a20')); t.position.set(x, 0.46, z); G.add(t);
+      for (let k = 0; k < 26; k++) { const a = Math.random() * 6.28, r = Math.sqrt(Math.random()) * 1.0; const st = new T3.Mesh(BOX, verde); st.position.set(x + Math.cos(a) * r, 0.62, z + Math.sin(a) * r); st.scale.set(0.05, 0.3, 0.05); G.add(st); const f = new T3.Mesh(flG, new T3.MeshBasicMaterial({ color: FL[(k + j) % FL.length], toneMapped: false })); f.position.set(st.position.x, 0.8, st.position.z); G.add(f); }
+      if (j < 2) { const tr = grp(G, x, 0.45, z); part(tr, CYL, '#6a4426', 0, 0.9, 0, 0.12, 0.9, 0.12); part(tr, SPH, '#4aa84a', 0, 2.1, 0, 0.9, 0.8, 0.9); part(tr, SPH, '#5ac85a', 0.3, 2.5, 0.2, 0.6, 0.55, 0.6); } col(x, z, 1.4); });
+    // cerca viva atrás do pódio
+    for (let i = -4; i <= 4; i++) { const h = new T3.Mesh(BOX, verde); h.position.set(i * 1.25, 0.6, -6.3 + Math.abs(i) * 0.25); h.scale.set(1.2, 1.2, 0.9); h.castShadow = true; G.add(h); }
+    // mastros com bandeiras das nações
+    [[-6.5, -4.5, '#ff3a4a'], [6.5, -4.5, '#3a8aff'], [-11.5, -6.5, '#ffd23c'], [11.5, -6.5, '#ffd23c']].forEach(([x, z, c]) => { add(new T3.Mesh(new T3.CylinderGeometry(0.07, 0.09, 6, 8), ouro), x, 3, z); add(new T3.Mesh(new T3.SphereGeometry(0.16, 10, 8), ouro), x, 6.05, z);
+      const b = new T3.Mesh(new T3.PlaneGeometry(1.6, 1.0, 6, 2), new T3.MeshStandardMaterial({ color: c, side: T3.DoubleSide, roughness: 0.8 })); b.position.set(x + 0.82, 5.4, z); G.add(b); anim.bandeiras.push(b); b.userData.mastro = true; col(x, z, 0.2); });
+    // braseiros com fogo na frente do pódio
+    [[-5.2, -0.6], [5.2, -0.6]].forEach(([x, z]) => { add(new T3.Mesh(new T3.CylinderGeometry(0.12, 0.18, 1.2, 8), ferro), x, 0.6, z); add(new T3.Mesh(new T3.CylinderGeometry(0.5, 0.25, 0.4, 12), ouro), x, 1.35, z);
+      const f1 = new T3.Mesh(new T3.ConeGeometry(0.35, 0.9, 10), new T3.MeshBasicMaterial({ color: '#ff6a1a', transparent: true, opacity: 0.85, blending: T3.AdditiveBlending, toneMapped: false })); f1.position.set(x, 1.95, z); G.add(f1); glowSpr(G, x, 1.9, z, 2.4, '#ff9a3a', 0.6); anim.chamas.push(f1); col(x, z, 0.4); });
+    // bancos virados pro pódio
+    [[-6, 9, 0.5], [6, 9, -0.5], [-10, 6, 1.0], [10, 6, -1.0]].forEach(([x, z, ry]) => { const b = grp(G, x, 0, z); b.rotation.y = ry; [[0, 0.45, 0, 2.6, 0.14, 0.7], [0, 0.85, -0.32, 2.6, 0.6, 0.1]].forEach(([a, y, c, sx, sy, sz]) => { const m = new T3.Mesh(BOX, madeira); m.position.set(a, y, c); m.scale.set(sx, sy, sz); m.castShadow = true; b.add(m); }); [-1.1, 1.1].forEach(a => { const m = new T3.Mesh(BOX, ferro); m.position.set(a, 0.22, 0); m.scale.set(0.1, 0.44, 0.6); b.add(m); }); col(x, z, 1.1); });
+    // brilhos flutuando em volta do pódio
+    for (let i = 0; i < 18; i++) { const s = new T3.Sprite(new T3.SpriteMaterial({ map: glowTex, color: ['#ffe08a', '#ff8ab8', '#8ad8ff'][i % 3], transparent: true, depthWrite: false, blending: T3.AdditiveBlending, toneMapped: false, opacity: 0.8 })); s.scale.setScalar(0.25); G.add(s); anim.brilhos.push({ s, a: Math.random() * 6.28, r: 4 + Math.random() * 3, y: 1 + Math.random() * 6, v: 0.2 + Math.random() * 0.4 }); }
+    return { G, anim, CX, CZ, R }; })();
+  function pracaVFrame(dt) { if (!vil.visible) return; const A = PRV.anim, t = gT;
+    A.fontes.forEach(F => F.gotas.forEach(d => { d.f = (d.f + dt * 0.7) % 1; const r = 0.15 + d.f * 1.1, y = 2.45 + Math.sin(d.f * Math.PI) * 0.9 - d.f * 0.6; d.g.position.set(F.x + Math.cos(d.a) * r, y, F.z + Math.sin(d.a) * r); }));
+    A.chamas.forEach((f, i) => { const k = 0.85 + Math.sin(t * 14 + i * 2) * 0.15; f.scale.set(k, 0.9 + Math.cos(t * 17 + i) * 0.2, k); });
+    A.bandeiras.forEach((b, i) => { if (b.userData.mastro) b.rotation.y = Math.sin(t * 2.2 + i) * 0.25; else b.rotation.z = Math.sin(t * 3 + i * 0.7) * 0.25; });
+    A.brilhos.forEach(b => { b.a += dt * b.v; b.y += dt * 0.35; if (b.y > 8) b.y = 1; b.s.position.set(Math.cos(b.a) * b.r, b.y, -2.8 + Math.sin(b.a) * b.r * 0.5); b.s.material.opacity = 0.4 + Math.sin(t * 3 + b.a) * 0.35; }); }
