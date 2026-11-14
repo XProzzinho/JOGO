@@ -24,11 +24,12 @@
   const lmat = (c, op) => new T3.MeshBasicMaterial({ color: c, transparent: true, opacity: (op === undefined ? 1 : op) * 0.85, blending: T3.NormalBlending, side: T3.DoubleSide, depthWrite: false, toneMapped: false });
   const LG = { ico: new T3.IcosahedronGeometry(1, 1), cone: new T3.ConeGeometry(1, 1, 7), cone4: new T3.ConeGeometry(1, 1, 4), esf: new T3.SphereGeometry(1, 10, 8), part: new T3.SphereGeometry(0.06, 5, 4) };
   function lendAlvo(alc) { const p = heroi.position; let best = null, bd = alc; FERAS.forEach(e => { if (!feraAtiva(e)) return; const d = Math.hypot(e.g.position.x - p.x, e.g.position.z - p.z); if (d < bd) { bd = d; best = e; } }); if (best) { facing = Math.atan2(best.g.position.x - p.x, best.g.position.z - p.z); return [best.g.position.x, best.g.position.z]; } return [p.x + Math.sin(facing) * 6, p.z + Math.cos(facing) * 6]; }
-  function lendArea(x, z, r) { return FERAS.filter(e => feraAtiva(e) && Math.hypot(e.g.position.x - x, e.g.position.z - z) < r + e.T.raio); }
+  let LEND_REM = false, LEND_POS = null;
+  function lendArea(x, z, r) { if (LEND_REM) return []; return FERAS.filter(e => feraAtiva(e) && Math.hypot(e.g.position.x - x, e.g.position.z - z) < r + e.T.raio); }
   function lendBase() { const A = ARMAS[AR.arma] || {}; return Math.max(18, (A.dano || 12)) * atkMult() * (1 + Math.min(AR.nv, 200) * 0.02); }
-  function lendHit(lista, k, tipo) { const b = lendBase(); lista.forEach(e => { const cr = critico(); dano(e, b * k * (cr ? 1.8 : 1), tipo || 'magia', cr); }); }
+  function lendHit(lista, k, tipo) { if (LEND_REM) return; const b = lendBase(); lista.forEach(e => { const cr = critico(); dano(e, b * k * (cr ? 1.8 : 1), tipo || 'magia', cr); }); }
   // base comum: selo no chão + anéis + onda de choque + partículas subindo
-  function lendNovo(L, x, z, dur, cor) { const g = grp(world, x, 0, z); const fx = { L, g, t: 0, dur, cor, anim: [], parts: [], tick: 0, x, z };
+  function lendNovo(L, x, z, dur, cor) { const g = grp(world, x, 0, z); const fx = { L, g, t: 0, dur, cor, anim: [], parts: [], tick: 0, x, z, remoto: LEND_REM, pos: LEND_POS };
     const selo = new T3.Mesh(new T3.PlaneGeometry(8.8, 8.8), new T3.MeshBasicMaterial({ map: LEND_SELO, color: cor, transparent: true, opacity: 0.95, blending: T3.NormalBlending, depthWrite: false, toneMapped: false })); selo.rotation.x = -Math.PI / 2; selo.position.y = 0.06; g.add(selo); fx.anim.push(() => { selo.rotation.z -= 0.012; });
     [[2.0, '#ffffff', 0.025], [3.3, cor, -0.025], [4.3, cor, 0.018]].forEach(([r, c, v], i) => { const m = new T3.Mesh(new T3.TorusGeometry(r, 0.055, 8, 72), lmat(c)); m.rotation.x = Math.PI / 2; m.position.y = 0.12 + i * 0.02; g.add(m); fx.anim.push(() => { m.rotation.z += v; }); });
     const onda = new T3.Mesh(new T3.RingGeometry(0.2, 0.55, 64), lmat('#ffffff', 0.9)); onda.rotation.x = -Math.PI / 2; onda.position.y = 0.1; g.add(onda); fx.anim.push(() => { const k = Math.min(fx.t / 1.0, 1); onda.scale.setScalar(1 + k * 14); onda.material.opacity = Math.max(0, 0.9 * (1 - k)); });
@@ -49,7 +50,7 @@
       for (let i = 0; i < 22; i++) { const m = new T3.Mesh(LG.ico, lmat('#ff5500')); m.scale.setScalar(0.25 + Math.random() * 0.45); m.position.set((Math.random() - 0.5) * 13, 12 + Math.random() * 14, (Math.random() - 0.5) * 13); m.userData.v = 9 + Math.random() * 7; fx.g.add(m); pedras.push(m); }
       lendParts(fx, 70, '#ff8b19', 15);
       fx.passo = dt => { pedras.forEach(m => { if (!m.visible) return; m.position.y -= m.userData.v * dt; m.rotation.x += 0.08; m.rotation.z += 0.07; if (m.position.y <= 0) { const wx = x + m.position.x, wz = z + m.position.z; lendHit(lendArea(wx, wz, 1.9), 1.1, 'fogo'); fx_luz(wx, wz, 0.35); if (fx.t < 3.3) { m.position.set((Math.random() - 0.5) * 13, 12 + Math.random() * 6, (Math.random() - 0.5) * 13); } else m.visible = false; } }); }; },
-    lg_trovao(L, x, z) { const p = heroi.position, ang = Math.atan2(x - p.x, z - p.z); const fx = lendNovo(L, p.x, p.z, 1.8, L.cor); fx.g.rotation.y = ang;
+    lg_trovao(L, x, z) { const p = (LEND_POS || heroi.position), ang = Math.atan2(x - p.x, z - p.z); const fx = lendNovo(L, p.x, p.z, 1.8, L.cor); fx.g.rotation.y = ang;
       lendEsfera(fx, 0.8, '#00aaff', 0, 2, 0); const ponta = new T3.Mesh(LG.cone, lmat('#22cfff')); ponta.scale.set(0.65, 7, 0.65); ponta.rotation.x = Math.PI / 2; ponta.position.set(0, 2, 2); fx.g.add(ponta);
       const raios = []; for (let j = 0; j < 9; j++) { const pts = []; let rx = 0, ry = 2, rz = 0; for (let i = 0; i < 12; i++) { pts.push(new T3.Vector3(rx, ry, rz)); rx += (Math.random() - 0.5) * 1.5; ry = clamp(ry + (Math.random() - 0.5) * 1.5, 0.4, 4); rz += 1.25; } const l = new T3.Line(new T3.BufferGeometry().setFromPoints(pts), lmat('#9cfaff')); fx.g.add(l); raios.push(l); }
       lendParts(fx, 50, '#22cfff', 10); let bateu = false;
@@ -89,8 +90,10 @@
         fx.tick -= dt; if (fx.tick <= 0 && fx.t < 4.8) { fx.tick = 0.5; lendHit(lendArea(x, z, 4.5), 0.6, 'magia'); } };
       fx.fim = () => { lendHit(lendArea(x, z, 5), 2.2); flash('rgba(90,0,160,.4)'); fx_luz(x, z, 1.2); }; } };
   function fx_luz(x, z, k) { try { fx('luz', [x, 0, z], k); } catch (e) {} }
-  function lendPoder(pw) { const L = pw && pw.lend; if (!L) return; LEND_CD[L.id] = Date.now() + L.cd * 1000; const [x, z] = lendAlvo(16); LEND_CRIA[L.id](L, x, z); aviso('✨ ' + L.titulo + '!', L.cor); }
-  function lendFrame(dt) { for (let i = LEND_FX.length - 1; i >= 0; i--) { const f = LEND_FX[i]; f.t += dt; f.g.visible = zona !== 'leilao'; f.anim.forEach(fn => fn()); f.parts.forEach(s => { s.position.y += s.userData.v * dt; if (s.position.y > 11) s.position.y = 0; }); if (f.passo) f.passo(dt);
+  function lendPoder(pw) { const L = pw && pw.lend; if (!L) return; LEND_CD[L.id] = Date.now() + L.cd * 1000; const [x, z] = lendAlvo(16); LEND_CRIA[L.id](L, x, z); try { mpFx('lend', [L.id, x, z]); } catch (e) {} aviso('✨ ' + L.titulo + '!', L.cor); }
+  function lendFrame(dt) { for (let i = LEND_FX.length - 1; i >= 0; i--) { const f = LEND_FX[i]; LEND_REM = !!f.remoto; LEND_POS = f.pos || null; f.t += dt; f.g.visible = zona !== 'leilao'; f.anim.forEach(fn => fn()); f.parts.forEach(s => { s.position.y += s.userData.v * dt; if (s.position.y > 11) s.position.y = 0; }); if (f.passo) f.passo(dt);
       const fade = f.t > f.dur - 0.5 ? Math.max(0, (f.dur - f.t) / 0.5) : 1; f.g.scale.setScalar(f.t < 0.25 ? 0.4 + f.t / 0.25 * 0.6 : 1); if (fade < 1) f.g.traverse(o => { if (o.material && o.material.transparent) { o.material.userData.op0 = o.material.userData.op0 ?? o.material.opacity; o.material.opacity = o.material.userData.op0 * fade; } });
-      if (f.t >= f.dur) { if (f.fim) f.fim(); world.remove(f.g); f.g.traverse(o => { if (o.geometry && !Object.values(LG).includes(o.geometry)) o.geometry.dispose(); if (o.material) o.material.dispose(); }); LEND_FX.splice(i, 1); } } }
+      if (f.t >= f.dur) { if (f.fim) f.fim(); world.remove(f.g); f.g.traverse(o => { if (o.geometry && !Object.values(LG).includes(o.geometry)) o.geometry.dispose(); if (o.material) o.material.dispose(); }); LEND_FX.splice(i, 1); } } LEND_REM = false; LEND_POS = null; }
   window.__lend = { cast: id => { LEND_CD[id] = 0; usarPoder(PW[id]); }, FX: LEND_FX, F: FERAS, ativa: e => feraAtiva(e) };
+
+  function lendRemoto(id, x, z, px, pz) { const pw = PW[id], L = pw && pw.lend; if (!L || !LEND_CRIA[id]) return; LEND_REM = true; LEND_POS = { x: px, y: 0, z: pz }; try { LEND_CRIA[id](L, x, z); } catch (e) {} LEND_REM = false; LEND_POS = null; }

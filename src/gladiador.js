@@ -158,3 +158,6 @@
     if (!gladInicia('gl_base')) return true; const n = GL.baseI; if (n !== 9) som(n === 0 || n === 6 ? 'tiro' : 'espada', 0.6, n === 8 ? 0.8 : null); return true; }
   function gladReduz(n) { return GL.egide > 0 ? n * 0.4 : n; }
   window.__glad = { GL, R: GCHK, L: GCHK_E, BAINHA, equipa: k => equipaArma(k), cast: id => { LEND_CD[id] = 0; GL.ativo = null; usarPoder(PW[id]); } };
+
+  // efeitos do gladiador também aparecem pros outros jogadores
+  gOnda = mpEnvolve('gOnda', gOnda); gCorte = mpEnvolve('gCorte', gCorte); gCratera = mpEnvolve('gCratera', gCratera); gPedras = mpEnvolve('gPedras', gPedras); gParts = mpEnvolve('gParts', gParts, 0.35);
