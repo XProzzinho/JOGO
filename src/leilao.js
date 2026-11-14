@@ -1,5 +1,5 @@
   // ===================== PEDRAS DE TELEPORTE + CASA DE LEILÕES =====================
-  const HX = VX + Math.sin(-2.4) * 72, HZ = VZ + Math.cos(-2.4) * 72; /* bairro noroeste da capital */ const LROT = Math.atan2(VX - HX, VZ - HZ); /* entrada virada pro centro */ const LEI_CAMINHO = []; const lw = (x, z) => [HX + x * Math.cos(LROT) + z * Math.sin(LROT), HZ - x * Math.sin(LROT) + z * Math.cos(LROT)]; // Praça do Leilão: ao ar livre, ao sul de Brumafria (mapa principal)
+  const HX = VX + Math.sin(-2.62) * 80, HZ = VZ + Math.cos(-2.62) * 80; /* bairro noroeste da capital */ const LROT = Math.atan2(VX - HX, VZ - HZ); /* entrada virada pro centro */ const LEI_CAMINHO = []; const lw = (x, z) => [HX + x * Math.cos(LROT) + z * Math.sin(LROT), HZ - x * Math.sin(LROT) + z * Math.cos(LROT)]; // Praça do Leilão: ao ar livre, ao sul de Brumafria (mapa principal)
   // ---- textura do círculo de runas no chão das pedras ----
   const PED_TEX = (() => { const c = document.createElement('canvas'); c.width = c.height = 256; const x = c.getContext('2d'); x.translate(128, 128);
     x.strokeStyle = '#bff4ff'; x.shadowColor = '#3ad8ff'; x.shadowBlur = 14; x.lineWidth = 6; x.beginPath(); x.arc(0, 0, 118, 0, 7); x.stroke(); x.lineWidth = 2.5; x.beginPath(); x.arc(0, 0, 100, 0, 7); x.stroke(); x.beginPath(); x.arc(0, 0, 58, 0, 7); x.stroke();
