@@ -1,0 +1,30 @@
+name: Publicar site
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['index.html', 'src/**', 'three.min.js', 'vozes/**', 'sons/**', 'icones/**']
+permissions:
+  contents: write
+jobs:
+  site:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Montar o jogo
+        run: python3 build.py
+      - name: Montar a pasta do site
+        run: |
+          mkdir -p site/firebase
+          for f in firebase-app-compat.js firebase-auth-compat.js firebase-firestore-compat.js; do curl -fsSL "https://cdn.jsdelivr.net/npm/firebase@10.12.2/$f" -o "site/firebase/$f"; done
+          cp -r index.html three.min.js vozes sons icones site/
+          touch site/.nojekyll
+      - name: Enviar pro branch gh-pages
+        run: |
+          cd site
+          git init -q -b gh-pages
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          git add -A
+          git commit -qm "Site do jogo"
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" gh-pages
