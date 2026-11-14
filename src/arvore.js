@@ -3,19 +3,23 @@
   // 'P:atk' / 'P:crit' / 'P:vida' / 'P:mana' / 'P:def' são nós passivos (bônus de atributo).
   const ARV_PAS = { atk: { nome: 'Força', ic: '💪', txt: '+3% de ataque', v: 0.03 }, crit: { nome: 'Precisão', ic: '🎯', txt: '+2% de crítico', v: 0.02 }, vida: { nome: 'Vigor', ic: '❤️', txt: '+15 de vida máxima', v: 15 }, mana: { nome: 'Essência', ic: '🔷', txt: '+12 de mana máxima', v: 12 }, def: { nome: 'Couraça', ic: '🛡️', txt: '+3% de defesa', v: 3 } };
   // só as 6 magias novas; os nós passivos ligam uma à outra
+  // fila: cada magia só libera depois da anterior; os bônus ficam pendurados em cima e embaixo de cada magia
   const ROTAS = [
-    { id: 'mago', nome: 'Rota do Mago', sub: 'As 6 magias lendárias', ic: '🧙', cor: '#b46aff', etapas: ['P:mana', ['lg_trovao', 'lg_glacial'], 'P:atk', ['P:mana', 'P:crit'], 'P:vida', ['lg_eclipse', 'lg_meteoros'], 'P:atk', ['P:mana', 'P:def'], 'P:crit', ['lg_dragao', 'lg_abismo']] }];
+    { id: 'mago', nome: 'Rota do Mago', sub: 'As 6 magias lendárias, uma depois da outra', ic: '🧙', cor: '#b46aff', etapas: ['lg_trovao', 'lg_glacial', 'lg_eclipse', 'lg_meteoros', 'lg_dragao', 'lg_abismo'],
+      lados: [['mana', 'vida'], ['atk', 'def'], ['crit', 'mana'], ['atk', 'vida'], ['crit', 'def'], ['atk', 'mana']], preco: [2, 2, 3, 3, 4, 4], nv: [5, 8, 11, 14, 17, 20] }];
   const PONTES = [];
   const ARV = { nos: {}, lig: {}, W: 0, H: 0 };
   AR.arvP = AR.arvP || [];
-  (() => { const DX = 84, Y0 = 135, DY = 96, OFF = 62, X0 = 120; const no = (id, x, y, rota, col) => { ARV.nos[id] = { id, x, y, rota, col }; ARV.lig[id] = ARV.lig[id] || new Set(); return id; };
+  (() => { const DX = 150, Y0 = 135, DY = 96, OFF = 70, X0 = 140; const no = (id, x, y, rota, col) => { ARV.nos[id] = { id, x, y, rota, col }; ARV.lig[id] = ARV.lig[id] || new Set(); return id; };
     const liga = (a, b) => { ARV.lig[a].add(b); ARV.lig[b].add(a); };
     no('raiz', 44, Y0 + (ROTAS.length - 1) / 2 * DY, null, -1); ARV.nos.raiz.raiz = true;
     ROTAS.forEach((R, ri) => { let ant = ['raiz']; R.ids = [];
       R.etapas.forEach((et, ci) => { const lista = Array.isArray(et) ? et : [et]; const atual = [];
         lista.forEach((k, j) => { if (!k.startsWith('P:') && !PW[k]) { console.warn('árvore: habilidade não existe', k); return; } const id = k.startsWith('P:') ? 'P:' + R.id + ':' + ci + ':' + k.slice(2) : k; const y = Y0 + ri * DY + (lista.length > 1 ? (j ? OFF : -OFF) : 0); no(id, X0 + ci * DX, y, R.id, ci); atual.push(id); R.ids.push(id);
-          if (!k.startsWith('P:')) { const pw = PW[k]; const tier = ci < 3 ? 0 : ci < 7 ? 1 : 2; pw.preco = [2, 3, 4][tier]; pw.nvMin = [5, 10, 15][tier]; pw.arv = R.id; } });
+          if (!k.startsWith('P:')) { const pw = PW[k]; pw.preco = R.preco[ci]; pw.nvMin = R.nv[ci]; pw.arv = R.id; } });
         if (!atual.length) return; ant.forEach(a => atual.forEach(b => liga(a, b))); ant = atual; R.col = R.col || []; R.col[ci] = atual; });
+      // bônus dos lados (ligados só à magia daquela coluna)
+      (R.lados || []).forEach((par, ci) => { const m = R.col[ci] && R.col[ci][0]; if (!m) return; const M = ARV.nos[m]; par.forEach((st, k) => { const id = 'P:' + R.id + ':' + ci + ':' + st; no(id, M.x + 46, M.y + (k ? OFF : -OFF), R.id, ci); liga(m, id); R.ids.push(id); }); });
       R.fimX = X0 + R.etapas.length * DX; });
     PONTES.forEach(([ra, ca, rb, cb]) => { const A = ROTAS.find(r => r.id === ra).col[ca], B = ROTAS.find(r => r.id === rb).col[cb]; if (A && B) liga(A[A.length - 1], B[0]); });
     ARV.W = Math.max(...ROTAS.map(r => r.fimX)) + 170; ARV.H = Y0 * 2 + DY * (ROTAS.length - 1); })();
