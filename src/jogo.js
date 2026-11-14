@@ -2264,26 +2264,28 @@
   function visLista() { const R = visRosto(), out = new Set(); (function anda(o, vis) { vis = vis && o.visible; if (vis && visDesenha(o) && !R.has(o)) out.add(visChave(o)); o.children.forEach(c => anda(c, vis)); })(heroi, true);
     const arr = [...out].sort((x, y) => x - y), u8 = new Uint8Array(arr.length * 4); arr.forEach((v, i) => { u8[i * 4] = v >>> 24; u8[i * 4 + 1] = (v >>> 16) & 255; u8[i * 4 + 2] = (v >>> 8) & 255; u8[i * 4 + 3] = v & 255; });
     let str = ''; for (let i = 0; i < u8.length; i++) str += String.fromCharCode(u8[i]); return btoa(str); }
-  function visAtual() { const agora = performance.now(); if (agora - VIS.t > 2000) { VIS.t = agora; const k = visLista(); const c = ['pele', 'cab', 'olho', 'top', 'top2', 'calca'].map(x => '#' + MH[x].color.getHexString()).join(','); if (k !== VIS.k || c !== VIS.c) { VIS.k = k; VIS.c = c; VIS.mud = true; } } return VIS; }
+  function visAtual() { const agora = performance.now(); if (agora - VIS.t > 800) { VIS.t = agora; const k = visLista(); const c = ['pele', 'cab', 'olho', 'top', 'top2', 'calca'].map(x => '#' + MH[x].color.getHexString()).join(','); if (k !== VIS.k || c !== VIS.c) { VIS.k = k; VIS.c = c; VIS.mud = true; } } return VIS; }
   function visEnvia() { if (!MP.ok || !MP.ch) return; const V = visAtual(); if (!V.k) return; const agora = performance.now(); if (V.mud || agora - V.env > (MP.srv === 2 ? 60000 : 6000)) { V.mud = false; V.env = agora; try { MP.ch.send({ type: 'broadcast', event: 'vis', payload: { id: MP.id, k: V.k, c: V.c } }); } catch (e) {} } }
   function visRecebe(d) { if (!d || d.id === MP.id || !d.k) return; const o = MP.outros[d.id]; if (!o) { MP.visPend = MP.visPend || {}; MP.visPend[d.id] = d; return; } if (o.vis && o.vis.k === d.k && o.vis.c === d.c) return; o.vis = { k: d.k, c: d.c }; o.visNovo = true; }
   function visConstroi(o) { const d = o.vis; if (!d || !d.k) return; let bin; try { bin = atob(d.k); } catch (e) { return; } const K = new Set(); for (let i = 0; i + 3 < bin.length; i += 4) K.add(((bin.charCodeAt(i) << 24) | (bin.charCodeAt(i + 1) << 16) | (bin.charCodeAt(i + 2) << 8) | bin.charCodeAt(i + 3)) >>> 0);
-    const R = visRosto(), A = [], keys = []; heroi.traverse(x => { A.push(x); keys.push(visDesenha(x) && !R.has(x) ? visChave(x) : null); });
-    const c = heroi.clone(true), B = []; c.traverse(x => B.push(x)); if (B.length !== A.length) return; const mapa = new Map(); A.forEach((x, i) => mapa.set(x, B[i]));
+    const R = visRosto(), need = new Set(), liga = new Set(); const marca = x => { while (x && !need.has(x)) { need.add(x); if (x === heroi) break; x = x.parent; } };
+    heroi.traverse(x => { if (x.isLight || x.isSkinnedMesh) return; if (R.has(x)) marca(x); else if (visDesenha(x) && K.has(visChave(x))) { liga.add(x); marca(x); } });
+    (function col(v) { if (v && v.isObject3D) marca(v); else if (Array.isArray(v)) v.forEach(col); else if (v && typeof v === 'object' && v.constructor === Object) Object.entries(v).forEach(([k, w]) => { if (k !== 'o') col(w); }); })(heroi.userData.P);
     const cores = String(d.c || '').split(','), MAT = {}; ['pele', 'cab', 'olho', 'top', 'top2', 'calca'].forEach((k, i) => { const m = MH[k].clone(); if (cores[i]) try { m.color.set(cores[i]); } catch (e) {} MAT[MH[k].uuid] = m; });
-    const tem = new Set(), tira = []; B.forEach((x, i) => { if (x.isLight) { tira.push(x); return; } if (keys[i] != null) { x.visible = K.has(keys[i]); if (!x.visible) tira.push(x); else { tem.add(x); x.castShadow = !!x.isMesh; } } else if (R.has(A[i])) tem.add(x); else x.visible = true;
-      if (x.material && !Array.isArray(x.material) && MAT[x.material.uuid]) x.material = MAT[x.material.uuid]; });
-    const vivo = new Set(); tem.forEach(x => { let q = x; while (q && !vivo.has(q)) { vivo.add(q); q = q.parent; } });
-    B.forEach(x => { if (!vivo.has(x) && x !== c) tira.push(x); });
-    const re = v => v && v.isObject3D ? (mapa.get(v) || v) : Array.isArray(v) ? v.map(re) : v && typeof v === 'object' && v.constructor === Object ? Object.fromEntries(Object.entries(v).map(([k, w]) => [k, k === 'o' ? w : re(w)])) : v;
-    c.userData = { P: re(heroi.userData.P) }; tira.forEach(x => { if (x.parent) x.parent.remove(x); });
+    const mapa = new Map(); const cl = x => { let n; try { n = x.clone(false); } catch (e) { n = new T3.Group(); n.position.copy(x.position); n.quaternion.copy(x.quaternion); n.scale.copy(x.scale); }
+      n.visible = R.has(x) ? x.visible : visDesenha(x) ? liga.has(x) : true; if (n.material && !Array.isArray(n.material) && MAT[n.material.uuid]) n.material = MAT[n.material.uuid]; if (n.isMesh) n.castShadow = true;
+      mapa.set(x, n); x.children.forEach(ch => { if (need.has(ch)) n.add(cl(ch)); }); return n; };
+    const c = cl(heroi);
+    const re = v => v && v.isObject3D ? (mapa.get(v) || new T3.Object3D()) : Array.isArray(v) ? v.map(re) : v && typeof v === 'object' && v.constructor === Object ? Object.fromEntries(Object.entries(v).map(([k, w]) => [k, k === 'o' ? w : re(w)])) : v;
+    c.userData = { P: re(heroi.userData.P) };
     c.position.copy(o.c.position); c.rotation.copy(o.c.rotation); c.scale.copy(heroi.scale); c.visible = o.c.visible; world.remove(o.c); if (o.anelNa) c.add(o.anelNa); world.add(c); o.c = c; o.real = true; }
-  function visFrame() { const agora = performance.now(); Object.values(MP.outros).forEach(o => { if (o.visNovo && agora - (o.visT || -1e9) > 2500) { o.visNovo = false; o.visT = agora; try { visConstroi(o); } catch (e) { console.warn('visual mp', e); } } }); }
+  function visFrame() { const agora = performance.now(); Object.values(MP.outros).forEach(o => { if (o.visNovo && (!o.real || agora - (o.visT || -1e9) > 1200)) { o.visNovo = false; o.visT = agora; try { visConstroi(o); } catch (e) { console.warn('visual mp', e); } } }); }
   function mpCria(id, d) { const h = mpHash(id), R = MP_ROUPAS[h % MP_ROUPAS.length]; const c = makeChar({ skin: MP_PELE[(h >> 3) % MP_PELE.length], hairStyle: ['short', 'long', 'short', 'bald'][(h >> 5) % 4], hairC: MP_CAB[(h >> 7) % MP_CAB.length], top: R[0], top2: R[1], pants: '#3a3040', shoe: '#2a2020', iris: '#3a2a1a', s: 0.82, ph: (h % 100) / 10 });
     c.traverse(o => { if (o.isMesh) o.castShadow = true; }); world.add(c); const tag = document.createElement('div'); tag.className = 'mp-tag'; mpTags.appendChild(tag);
     if (d.w && d.w !== 'punho') { const sw = grp(c.userData.P.elR, 0, -0.33, 0.05); tb(sw, 0, 0, 0.5, 0.06, 0.02, 0.75, d.w === 'dragao' ? '#ffb040' : d.w === 'glacial' ? '#9ae6ff' : '#dfe4ee'); tb(sw, 0, 0, 0.1, 0.22, 0.04, 0.04, '#e2c27a'); }
     return { c, tag, ph: (h % 100) / 10, x: d.x, z: d.zz, y: d.y || 0, r: d.r || 0, tx: d.x, tz: d.zz, ty: d.y || 0, tr: d.r || 0, a: d.a, t: performance.now(), d }; }
-  function mpRecebe(d) { if (!d || d.id === MP.id) return; let o = MP.outros[d.id]; if (!o) o = MP.outros[d.id] = mpCria(d.id, d);
+  function mpRecebe(d) { if (!d || d.id === MP.id) return; let o = MP.outros[d.id]; if (!o) { if (d.a === 'afk' && d.u && Object.values(MP.outros).some(x => x.d && x.d.u === d.u)) return; o = MP.outros[d.id] = mpCria(d.id, d); o.t0 = performance.now(); }
+    if (d.u && d.a !== 'afk') Object.keys(MP.outros).forEach(k => { const x = MP.outros[k]; if (k !== d.id && x.d && x.d.u === d.u) { world.remove(x.c); x.tag.remove(); delete MP.outros[k]; } });
     o.tx = d.x; o.tz = d.zz; o.ty = d.y || 0; o.tr = d.r || 0; o.a = d.a; o.d = d; o.t = performance.now() - (typeof d._t === 'number' ? Math.max(0, Math.min(36e5, Date.now() - d._t)) : 0);
     if (MP.visPend && MP.visPend[d.id]) { visRecebe(MP.visPend[d.id]); delete MP.visPend[d.id]; }
     const NA = typeof NACOES !== 'undefined' && NACOES[d.na]; if (NA && !o.anelNa) { o.anelNa = new T3.Mesh(new T3.RingGeometry(0.45, 0.6, 28), new T3.MeshBasicMaterial({ color: NA.cor, transparent: true, opacity: 0.85, side: T3.DoubleSide, toneMapped: false })); o.anelNa.rotation.x = -Math.PI / 2; o.anelNa.position.y = 0.04; o.c.add(o.anelNa); } if (o.anelNa) o.anelNa.visible = d.z === 'nacao';
@@ -2339,7 +2341,7 @@
     if (MP.ok && MP.envT <= 0) { const e = mpEstado(p); const s = JSON.stringify(e); if (s !== MP.ult || performance.now() - (MP.ultT || 0) > 2000) { MP.ult = s; MP.ultT = performance.now(); MP.envT = MP.srv === 2 ? 0.25 : 0.15; try { MP.ch.send({ type: 'broadcast', event: 'p', payload: e }); } catch (er) {} } else MP.envT = 0.15; }
     const agora = performance.now(); let n = 0;
     Object.keys(MP.outros).forEach(id => { const o = MP.outros[id]; if (agora - o.t > 600000) { world.remove(o.c); o.tag.remove(); delete MP.outros[id]; return; } const afk = o.a === 'afk' || agora - o.t > 8000; if (afk !== !!o.afk) { o.afk = afk; o.tag.classList.toggle('afk', afk); }
-      const mesma = o.d.z === zona && !!o.d.dn === !!dentro && !dentro; o.c.visible = mesma; if (!mesma) { o.tag.hidden = true; return; } n++;
+      const mesma = o.d.z === zona && !!o.d.dn === !!dentro && !dentro; o.c.visible = mesma && (o.real || agora - (o.t0 || 0) > 2500); if (!mesma) { o.tag.hidden = true; return; } n++;
       const k = clamp(dt * 8); o.x += (o.tx - o.x) * k; o.z += (o.tz - o.z) * k; o.y += (o.ty - o.y) * k; let dr = o.tr - o.r; while (dr > Math.PI) dr -= Math.PI * 2; while (dr < -Math.PI) dr += Math.PI * 2; o.r += dr * clamp(dt * 10);
       o.c.position.set(o.x, o.y, o.z); o.c.rotation.y = o.r;
       o.c.rotation.order = 'YXZ'; o.c.rotation.x += ((o.a === 'voa' ? 1.3 : o.a === 'paira' ? 0.12 : 0) - o.c.rotation.x) * clamp(dt * 5);
