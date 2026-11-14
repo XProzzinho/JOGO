@@ -8,7 +8,7 @@
     { id: 'lg_abismo', nome: 'Abismo', titulo: 'Vórtice do Abismo', custo: 85, cd: 18, cor: '#7a2aff', desc: 'Vórtice do Abismo: um buraco negro puxa os inimigos pro centro, machuca sem parar e implode no final.' }];
   const LEND_NV = 20, LEND_CD = {};
   LEND.forEach(L => { const h = { id: L.id, nome: L.nome, icone: IC('p_' + L.id), tipo: 'uso', custo: L.custo, lend: L, nvMin: LEND_NV, desc: '✨ LENDÁRIA · ' + L.desc + ' (recarga ' + L.cd + ' s)' }; PODERES.push(h); PW[L.id] = h; });
-  function lendPode(pw) { const L = pw.lend; if (!L) return true; const r = (LEND_CD[L.id] || 0) - Date.now(); if (r > 0) { aviso(pw.nome + ': recarregando, ' + Math.ceil(r / 1000) + ' s.', '#8a9aba'); return false; } if (AR.nv < (pw.nvMin || LEND_NV) && !souAdmin()) { aviso('Magia lendária: precisa do nível ' + (pw.nvMin || LEND_NV) + '.', '#ff6a6a'); return false; } return true; }
+  function lendPode(pw) { const L = pw.lend; if (!L) return true; if (L.glad && GL.ativo) return false; const r = (LEND_CD[L.id] || 0) - Date.now(); if (r > 0) { aviso(pw.nome + ': recarregando, ' + Math.ceil(r / 1000) + ' s.', '#8a9aba'); return false; } if (AR.nv < (pw.nvMin || LEND_NV) && !souAdmin()) { aviso('Magia lendária: precisa do nível ' + (pw.nvMin || LEND_NV) + '.', '#ff6a6a'); return false; } return true; }
   // textura do selo rúnico (do grimório)
   const LEND_SELO = canvasTex(512, 512, (g, w, h) => { const cx = 256, cy = 256; g.clearRect(0, 0, w, h); g.strokeStyle = '#ffffff'; g.shadowColor = '#ffffff'; g.shadowBlur = 10;
     [238, 214, 150, 92].forEach((r, i) => { g.lineWidth = i === 0 ? 5 : 2.5; g.beginPath(); g.arc(cx, cy, r, 0, Math.PI * 2); g.stroke(); });

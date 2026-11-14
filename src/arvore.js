@@ -6,11 +6,13 @@
   // fila: cada magia só libera depois da anterior; os bônus ficam pendurados em cima e embaixo de cada magia
   const ROTAS = [
     { id: 'mago', nome: 'Rota do Mago', sub: 'As 6 magias lendárias, uma depois da outra', ic: '🧙', cor: '#b46aff', etapas: ['lg_trovao', 'lg_glacial', 'lg_eclipse', 'lg_meteoros', 'lg_dragao', 'lg_abismo'],
-      lados: [['mana', 'vida'], ['atk', 'def'], ['crit', 'mana'], ['atk', 'vida'], ['crit', 'def'], ['atk', 'mana']], preco: [2, 2, 3, 3, 4, 4], nv: [5, 8, 11, 14, 17, 20] }];
+      lados: [['mana', 'vida'], ['atk', 'def'], ['crit', 'mana'], ['atk', 'vida'], ['crit', 'def'], ['atk', 'mana']], preco: [2, 2, 3, 3, 4, 4], nv: [5, 8, 11, 14, 17, 20] },
+    { id: 'glad', nome: 'Rota do Gladiador', sub: 'Chakram, saltos, giros e terremotos', ic: '⚔️', cor: '#ffc83d', etapas: ['gl_danca', 'gl_devastador', 'gl_investida', 'gl_furia', 'gl_sismo', 'gl_egide', 'gl_julgamento'],
+      lados: [['atk', 'vida'], ['crit', 'def'], ['atk', 'vida'], ['crit', 'atk'], ['def', 'vida'], ['def', 'crit'], ['atk', 'vida']], preco: [2, 2, 3, 3, 3, 4, 5], nv: [5, 8, 11, 14, 17, 20, 25] }];
   const PONTES = [];
   const ARV = { nos: {}, lig: {}, W: 0, H: 0 };
   AR.arvP = AR.arvP || [];
-  (() => { const DX = 150, Y0 = 135, DY = 96, OFF = 70, X0 = 140; const no = (id, x, y, rota, col) => { ARV.nos[id] = { id, x, y, rota, col }; ARV.lig[id] = ARV.lig[id] || new Set(); return id; };
+  (() => { const DX = 140, Y0 = 56, DY = 158, OFF = 42, X0 = 140; const no = (id, x, y, rota, col) => { ARV.nos[id] = { id, x, y, rota, col }; ARV.lig[id] = ARV.lig[id] || new Set(); return id; };
     const liga = (a, b) => { ARV.lig[a].add(b); ARV.lig[b].add(a); };
     no('raiz', 44, Y0 + (ROTAS.length - 1) / 2 * DY, null, -1); ARV.nos.raiz.raiz = true;
     ROTAS.forEach((R, ri) => { let ant = ['raiz']; R.ids = [];
