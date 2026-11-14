@@ -5,7 +5,7 @@
   // ---------- escolher nação ----------
   const nacP = document.createElement('div'); nacP.id = 'nacao-p'; nacP.hidden = true;
   nacP.innerHTML = '<div class="box"><h2>⚔️ Escolha sua Nação</h2><p>Duas vezes por dia (12h e 20h, horário de Brasília) as nações se enfrentam na <b>Batalha de Nação</b>, num labirinto gigante. Escolha bem: a escolha é pra sempre!</p><div class="nac-cards">' +
-    Object.keys(NACOES).map(k => `<button class="nac-card ${k}" data-n="${k}"><span class="nac-esc">${k === 'vermelha' ? '🦁' : '🐉'}</span><b>${NACOES[k].nome}</b><small>${k === 'vermelha' ? 'Fogo, coragem e força. Os guerreiros do sol poente.' : 'Gelo, estratégia e honra. Os guardiões do céu azul.'}</small></button>`).join('') + '</div></div>';
+    Object.keys(NACOES).map(k => `<button class="nac-card ${k}" data-n="${k}"><img class="nac-esc" src="icones/nac_${k}.jpg" alt=""><b>${NACOES[k].nome}</b><small>${k === 'vermelha' ? 'Fogo, coragem e força. Os guerreiros do sol poente.' : 'Gelo, estratégia e honra. Os guardiões do céu azul.'}</small></button>`).join('') + '</div></div>';
   document.body.appendChild(nacP);
   nacP.querySelectorAll('.nac-card').forEach(b => tapBtn(b, () => { const k = b.dataset.n; AR.nacao = k; salvaAR(); nacP.hidden = true; som('missao_ok', 0.9, 1); flash(k === 'vermelha' ? 'rgba(255,60,70,.35)' : 'rgba(60,140,255,.35)'); aviso(NACOES[k].ic + ' Você agora pertence ao ' + NACOES[k].nome + '!', NACOES[k].cor); }));
   function nacaoPergunta() { if (AR.nacao || !nacP.hidden) return; const ok = (!$('login') || $('login').hidden) && (!$('criar') || $('criar').hidden) && !cenaQ && !conversa; if (ok) nacP.hidden = false; }
@@ -53,7 +53,9 @@
     for (let k = 0; k < W.length; k += 6) { const w = W[k]; const s = glowSpr(G, w.x, ALT + 0.4, w.z, 2.2, '#ffb050', 0.55); part(G, SPH, '#ffd890', w.x, ALT + 0.25, w.z, 0.14, 0.2, 0.14, 0, true); }
     const bases = { vermelha: [x0 + NCEL, z0 + NCEL], azul: [x0 + L - NCEL, z0 + L - NCEL] };
     Object.keys(bases).forEach(k => { const [bx, bz] = bases[k], N = NACOES[k]; const anel = new T3.Mesh(new T3.RingGeometry(3, 3.6, 40), new T3.MeshBasicMaterial({ color: N.cor, transparent: true, opacity: 0.7, side: T3.DoubleSide, toneMapped: false })); anel.rotation.x = -Math.PI / 2; anel.position.set(bx, 0.03, bz); G.add(anel);
-      [[-2.6, -2.6], [2.6, 2.6], [-2.6, 2.6], [2.6, -2.6]].forEach(([ox, oz]) => { part(G, CYL, '#3a3040', bx + ox, 2, bz + oz, 0.08, 4, 0.08); const b = new T3.Mesh(new T3.PlaneGeometry(1.2, 1.6), new T3.MeshStandardMaterial({ color: N.cor, side: T3.DoubleSide, emissive: N.cor2, emissiveIntensity: 0.5 })); b.position.set(bx + ox + 0.62, 3.2, bz + oz); G.add(b); });
+      const tx = new T3.TextureLoader().load('icones/nac_' + k + '.jpg'); tx.colorSpace = T3.SRGBColorSpace; const bm = new T3.MeshStandardMaterial({ map: tx, side: T3.DoubleSide, emissive: '#ffffff', emissiveMap: tx, emissiveIntensity: 0.55, roughness: 0.8 });
+      [[-2.8, -2.8], [2.8, 2.8], [-2.8, 2.8], [2.8, -2.8]].forEach(([ox, oz]) => { part(G, CYL, '#3a3040', bx + ox, 2.6, bz + oz, 0.09, 5.2, 0.09); part(G, SPH, '#e8c070', bx + ox, 5.25, bz + oz, 0.14, 0.14, 0.14); const bar = new T3.Mesh(BOX, new T3.MeshStandardMaterial({ color: '#c8a050', metalness: 0.7, roughness: 0.35 })); bar.scale.set(2.1, 0.07, 0.07); const g2 = grp(G, bx + ox, 4.95, bz + oz); g2.rotation.y = Math.atan2(-ox, -oz) + Math.PI / 2; bar.position.x = 1.05; g2.add(bar);
+        const b = new T3.Mesh(new T3.PlaneGeometry(1.9, 2.4), bm); b.position.set(1.05, 3.68 - 4.95, 0); g2.add(b); G.userData.bandeiras = (G.userData.bandeiras || []).concat(b); });
       glowSpr(G, bx, 1.2, bz, 7, N.cor, 0.35); });
     // centro: arena com cristal
     const cc = [x0 + 7.5 * NCEL, z0 + 7.5 * NCEL]; const cri = new T3.Mesh(new T3.OctahedronGeometry(1.2, 0), new T3.MeshStandardMaterial({ color: '#ffd86a', emissive: '#ffb020', emissiveIntensity: 0.9, flatShading: true })); cri.position.set(cc[0], 3.2, cc[1]); G.add(cri); glowSpr(G, cc[0], 3.2, cc[1], 6, '#ffd86a', 0.45);
@@ -79,7 +81,7 @@
   const nacConv = document.createElement('div'); nacConv.id = 'nacao-conv'; nacConv.hidden = true; nacConv.innerHTML = '<b>⚔️ A Batalha de Nação começou!</b><small>Labirinto gigante: Reino Carmesim 🔴 x 🔵 Reino Safira</small><div><button class="sim">Entrar</button><button class="nao">Agora não</button></div>'; document.body.appendChild(nacConv);
   tapBtn(nacConv.querySelector('.sim'), () => { nacConv.hidden = true; nacaoEntra(); }); tapBtn(nacConv.querySelector('.nao'), () => { nacConv.hidden = true; });
   let nacT = 0;
-  function nacaoFrame(dt, p) { LAB.G.visible = zona === 'nacao'; if (zona === 'nacao') { LAB.cri.rotation.y += dt; } nacT -= dt; if (nacT > 0) return; nacT = 0.5; nacaoCfgOuve();
+  function nacaoFrame(dt, p) { LAB.G.visible = zona === 'nacao'; if (zona === 'nacao') { LAB.cri.rotation.y += dt; (LAB.G.userData.bandeiras || []).forEach((b, i) => { b.rotation.y = Math.sin(gT * 1.6 + i) * 0.12; }); } nacT -= dt; if (nacT > 0) return; nacT = 0.5; nacaoCfgOuve();
     const agora = Date.now(), J = nacaoJanela(agora), antes = NAC.aberta; NAC.aberta = !!J;
     if (J && J.id !== NAC.bid) { NAC.bid = J.id; NAC.placar = { vermelha: 0, azul: 0 }; NAC.abates = 0; NAC.mortes = 0; }
     if (J) NAC.ate = J.ate;
