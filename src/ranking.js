@@ -7,14 +7,14 @@
   function meuPoder() { try { return poderDe(AR); } catch (e) { return (AR.nv || 1) * 45; } }
   function rankDia() { return new Date(Date.now() - 3 * 3600e3).toISOString().slice(0, 10); } // dia em Brasília: o ranking vira à meia-noite
   const rkChave = () => 'aetherion-rank-dia-' + (window.CONTA && CONTA.usuario ? CONTA.usuario.uid : '');
-  function rankCampos() { const o = { poder: meuPoder(), na: AR.nacao || '', st: typeof meuCargo === 'function' ? meuCargo() : '' }; const d = rankDia();
+  function rankCampos() { const o = { poder: meuPoder(), na: AR.nacao || '', st: typeof meuCargo === 'function' ? meuCargo() : '' }; const d = rankDia(); try { const V0 = visAtual(); if (V0.k) o.vis = { k: V0.k, c: V0.c }; } catch (e) {} /* visual atual: reserva pra estátua */
     // a foto do dia (poder + visual) só é tirada uma vez por dia, na 1ª vez depois da meia-noite: roupa nova aparece no ranking no dia seguinte
     let ja = '', jaF = 0; try { ja = localStorage.getItem(rkChave()) || ''; jaF = +localStorage.getItem(rkChave() + '-f') || 0; } catch (e) {} const forca = RK.forcar && RK.forcar > jaF; if (ja !== d || forca) { try { const V = visAtual(); if (V.k) { o.dia = d; o.poderDia = o.poder; o.nomeDia = trNome(); o.nvDia = AR.nv || 1; o.naDia = o.na; o.stDia = o.st; o.visDia = { k: V.k, c: V.c }; try { localStorage.setItem(rkChave(), d); if (RK.forcar) localStorage.setItem(rkChave() + '-f', RK.forcar); } catch (e) {} } } catch (e) {} }
     return o; }
   function rankGrava() { try { if (window.CONTA && CONTA.db && CONTA.usuario) return CONTA.db.collection('perfis').doc(CONTA.usuario.uid).set(Object.assign({ nome: trNome(), nv: AR.nv || 1 }, rankCampos()), { merge: true }).catch(() => {}); } catch (e) {} }
   const RK = { lista: [], t: -1e9, meu: null, pos: 0, chave: '' };
   async function rankBusca() { if (!(window.CONTA && CONTA.db && CONTA.usuario)) return RK.lista; RK.t = performance.now();
-    try { const g0 = rankCampos(); RK.meuDia = g0.poderDia || RK.meuDia; await rankGrava(); const q = await CONTA.db.collection('perfis').orderBy('poderDia', 'desc').limit(10).get(); RK.lista = q.docs.map(d => { const x = d.data(); return { uid: d.id, nome: x.nomeDia || x.nome, nv: x.nvDia || x.nv, poder: x.poderDia || 0, na: x.naDia || x.na, st: x.stDia || x.st, vis: x.visDia || null }; }); RK.dia = rankDia();
+    try { const g0 = rankCampos(); RK.meuDia = g0.poderDia || RK.meuDia; await rankGrava(); const q = await CONTA.db.collection('perfis').orderBy('poderDia', 'desc').limit(10).get(); RK.lista = q.docs.map(d => { const x = d.data(); return { uid: d.id, nome: x.nomeDia || x.nome, nv: x.nvDia || x.nv, poder: x.poderDia || 0, na: x.naDia || x.na, st: x.stDia || x.st, vis: x.visDia || x.vis || null }; }); RK.dia = rankDia();
       const eu = CONTA.usuario.uid, i = RK.lista.findIndex(x => x.uid === eu); RK.pos = i >= 0 ? i + 1 : 0;
       if (!RK.pos) { try { const c = await CONTA.db.collection('perfis').where('poderDia', '>', RK.meuDia || meuPoder()).count().get(); RK.pos = c.data().count + 1; } catch (e) { RK.pos = -1; } }
     } catch (e) { RK.erro = e.code || e.message; } monuAtualiza(); return RK.lista; }
@@ -66,7 +66,7 @@
     g.textAlign = 'center'; g.fillStyle = cor; g.font = '900 30px Georgia,serif'; g.fillText((['👑 1º', '🥈 2º', '🥉 3º'][i]) + ' · ' + String(x ? x.nome || 'Jogador' : '???').slice(0, 18), 256, 54); g.fillStyle = '#fff'; g.font = '800 28px sans-serif'; g.fillText(x ? '⚡ ' + fmtN(x.poder) + ' de poder' : 'Lugar vago', 256, 98);
     if (sp.material.map) sp.material.map.dispose(); const t = new T3.CanvasTexture(c); t.colorSpace = T3.SRGBColorSpace; sp.material.map = t; sp.material.needsUpdate = true; }
   function monuEstatua(slot, i, x) { if (slot.est) { slot.g.remove(slot.est); slot.est = null; }
-    let c = null; try { if (x && x.vis && x.vis.k) c = visMonta(x.vis); } catch (e) {} if (!c) { try { c = visMonta({ k: VIS.k || visAtual().k, c: '' }); } catch (e) {} } if (!c) return;
+    let c = null; try { if (x && x.vis && x.vis.k) c = visMonta(x.vis); } catch (e) {} if (!c) { c = makeChar({ skin: '#ccc', hairStyle: 'short', hairC: '#999', top: '#bbb', top2: '#999', pants: '#888', shoe: '#777', iris: '#555', s: 0.82, ph: i }); world.remove(c); const ix = CHARS.indexOf(c); if (ix >= 0) CHARS.splice(ix, 1); c.userData.semVisual = true; }
     c.traverse(o => { if (o.isMesh) o.castShadow = true; }); if (!(x && x.vis && x.vis.k)) { const mt = MONU.metal[i]; c.traverse(o => { if (o.isMesh) o.material = mt; }); }
     c.scale.setScalar(heroi.scale.x * 2.1); c.position.set(0, slot.h + 0.07, 0); c.rotation.set(0, 0, 0); c.userData.mood = i; slot.g.add(c); slot.est = c;
     try { pose(c, 0, { mood: 'smile', arms: i === 0 ? { shR: [-2.8, 0, 0.25], shL: [-0.3, 0, -0.35], elR: [0, 0, 0], elL: [-0.6, 0, 0] } : i === 1 ? { shR: [-0.7, 0, 0.4], shL: [-0.7, 0, -0.4], elR: [-1.2, 0, 0], elL: [-1.2, 0, 0] } : { shR: [0, 0, 0.5], shL: [-1.4, 0, -0.2], elR: [0, 0, 0], elL: [-0.4, 0, 0] } }); } catch (e) {} }
