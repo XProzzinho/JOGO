@@ -37,11 +37,12 @@
     rkP.innerHTML = `<div class="box"><div class="hd"><b>🏆 Ranking de Poder · Top 10</b><button class="x">✕</button></div>
       <div class="meu"><span>Seu poder</span><b>⚡ ${fmtN(meuPoder())}</b><small>${logado ? (RK.pos > 0 ? 'Sua posição: ' + RK.pos + 'º' : RK.pos < 0 ? 'Você está fora do top 10' : 'Carregando posição...') : 'Entre com uma conta pra aparecer no ranking'}</small></div>
       <div class="ls">${logado ? (lin || (RK.erro ? '<p>Não deu pra carregar o ranking agora (' + RK.erro + ').</p>' : '<p>Carregando...</p>')) : '<p>O ranking é entre jogadores com conta.</p>'}</div>
-      <small class="dc">🕛 O ranking e as estátuas atualizam todo dia à meia-noite e entram todos os jogadores, até quem está offline. O poder soma arma, força, vida, mana, defesa, nível e divino.</small></div>`;
+      <small class="dc">🗿 As estátuas ficam na Praça dos Campeões, na capital Valdren. 🕛 O ranking e as estátuas atualizam todo dia à meia-noite e entram todos os jogadores, até quem está offline. O poder soma arma, força, vida, mana, defesa, nível e divino.</small></div>`;
     tapBtn(rkP.querySelector('.x'), () => { rkP.hidden = true; }); }
   function rankAbre() { rkP.hidden = false; rankDesenha(); rankBusca().then(() => { if (!rkP.hidden) rankDesenha(); }); }
   // ---------- monumento: 3 pedestais com estátuas dos 3 mais fortes, no centro da vila ----------
-  const MONU = (() => { const MX0 = -0.1, MZ0 = 2.7; const G = grp(vil, MX0, 0, MZ0);
+  const CAPG = grp(world, 0, 0, 0); // tudo da capital nova fica aqui (visível quando está perto)
+  const MONU = (() => { const MX0 = VX - 0.1, MZ0 = VZ + 63.2; const G = grp(CAPG, MX0, 0, MZ0);
     const M = (c, o) => new T3.MeshStandardMaterial(Object.assign({ color: c, roughness: 0.5, metalness: 0.2 }, o || {}));
     const marm = M('#e9e4da', { roughness: 0.6 }), escuro = M('#3a3448', { roughness: 0.45, metalness: 0.35 });
     const metal = [M('#ffd34a', { metalness: 0.85, roughness: 0.28, emissive: '#5a3c00', emissiveIntensity: 0.35 }), M('#d8e4f2', { metalness: 0.85, roughness: 0.25, emissive: '#1c2c44', emissiveIntensity: 0.3 }), M('#d08a42', { metalness: 0.8, roughness: 0.32, emissive: '#3a1a04', emissiveIntensity: 0.3 })];
@@ -73,9 +74,9 @@
       if (slot.chave === ch) return; slot.chave = ch; monuPlaca(slot.placa, i, x); slot.placa.position.y = slot.h + 4.6; monuEstatua(slot, i, x); }); }
   let monuT = 3; function rankFrame(dt) { rankOuve(); MONU.P.forEach(s => { s.aura.rotation.z += dt * 0.6; }); try { pracaVFrame(dt); } catch (e) {} monuT -= dt; if (monuT > 0) return; monuT = 1; if (!MONU.P[0].chave) monuAtualiza();
     if (RK.dia && RK.dia !== rankDia()) { RK.t = -1e9; RK.dia = rankDia(); if (souAdmin()) setTimeout(() => rankTodos(), 3000 + Math.random() * 5000); }
-    const p = heroi.position; if (zona === 'vila' && !dentro && Math.hypot(p.x - MONU.X, p.z - MONU.Z) < 60 && performance.now() - RK.t > 120000) rankBusca(); }
+    const p = heroi.position; if ((zona === 'vila' || zona === 'valdren') && !dentro && Math.hypot(p.x - MONU.X, p.z - MONU.Z) < 80 && performance.now() - RK.t > 120000) rankBusca(); }
   // ===================== PRAÇA DOS CAMPEÕES (centro da vila, em volta do pódio) =====================
-  const PRV = (() => { const CX = -0.1, CZ = 5.5, R = 17; const G = grp(vil, CX, 0, CZ); const anim = { fontes: [], chamas: [], brilhos: [], bandeiras: [] };
+  const PRV = (() => { const CX = VX - 0.1, CZ = VZ + 66, R = 17; const G = grp(CAPG, CX, 0, CZ); const anim = { fontes: [], chamas: [], brilhos: [], bandeiras: [] };
     const tx = (w, h, f) => { const c = document.createElement('canvas'); c.width = w; c.height = h; f(c.getContext('2d'), w, h); const t = new T3.CanvasTexture(c); t.colorSpace = T3.SRGBColorSpace; return t; };
     const M = (c, o) => new T3.MeshStandardMaterial(Object.assign({ color: c, roughness: 0.7 }, o || {}));
     const ouro = M('#e0b040', { metalness: 0.7, roughness: 0.3 }), pedraC = M('#d8d2c4'), pedraE = M('#8e8778'), ferro = M('#2a2a34', { metalness: 0.5, roughness: 0.5 }), madeira = M('#6a4426'), verde = M('#3f8a3a', { roughness: 0.9 }), agua = new T3.MeshStandardMaterial({ color: '#5ac8ff', roughness: 0.15, metalness: 0.2, transparent: true, opacity: 0.85 });
@@ -120,7 +121,7 @@
     // brilhos flutuando em volta do pódio
     for (let i = 0; i < 18; i++) { const s = new T3.Sprite(new T3.SpriteMaterial({ map: glowTex, color: ['#ffe08a', '#ff8ab8', '#8ad8ff'][i % 3], transparent: true, depthWrite: false, blending: T3.AdditiveBlending, toneMapped: false, opacity: 0.8 })); s.scale.setScalar(0.25); G.add(s); anim.brilhos.push({ s, a: Math.random() * 6.28, r: 4 + Math.random() * 3, y: 1 + Math.random() * 6, v: 0.2 + Math.random() * 0.4 }); }
     return { G, anim, CX, CZ, R }; })();
-  function pracaVFrame(dt) { if (!vil.visible) return; const A = PRV.anim, t = gT;
+  function pracaVFrame(dt) { if (!CAPG.visible) return; const A = PRV.anim, t = gT;
     A.fontes.forEach(F => F.gotas.forEach(d => { d.f = (d.f + dt * 0.7) % 1; const r = 0.15 + d.f * 1.1, y = 2.45 + Math.sin(d.f * Math.PI) * 0.9 - d.f * 0.6; d.g.position.set(F.x + Math.cos(d.a) * r, y, F.z + Math.sin(d.a) * r); }));
     A.chamas.forEach((f, i) => { const k = 0.85 + Math.sin(t * 14 + i * 2) * 0.15; f.scale.set(k, 0.9 + Math.cos(t * 17 + i) * 0.2, k); });
     A.bandeiras.forEach((b, i) => { if (b.userData.mastro) b.rotation.y = Math.sin(t * 2.2 + i) * 0.25; else b.rotation.z = Math.sin(t * 3 + i * 0.7) * 0.25; });

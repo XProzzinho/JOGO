@@ -131,7 +131,7 @@
   DGS.forEach(d => { TITULOS['dg_' + d.id] = { nome: 'Conquistador: ' + d.nome.replace(' (secreto)', ''), r: d.nv >= 90 ? 'lendario' : d.nv >= 45 ? 'epico' : 'raro', como: 'Vencer o calabouço ' + d.nome }; });
   Object.assign(TITULOS, { torre50: { nome: 'Escalador da Torre', r: 'epico', como: 'Chegar ao andar 50 da Torre dos Monstros' }, torre100: { nome: 'Senhor da Torre', r: 'lendario', como: 'Vencer o andar 100 da Torre' }, colosso: { nome: 'Matador de Colossos', r: 'lendario', como: 'Derrotar o Colosso, chefe de mundo' }, grau_s: { nome: 'Aventureiro Grau S', r: 'lendario', como: 'Chegar ao Grau S no Mural de Missões' } });
   // ---------- PRAÇA DOS AVENTUREIROS (fora do portão leste) ----------
-  var PRACA = { x: MW.r + 16, z: MW.z - 26 };
+  var PRACA = { x: VX + Math.sin(-1.75) * 72, z: VZ + Math.cos(-1.75) * 72 }; // Praça dos Aventureiros: agora no bairro oeste da capital Valdren
   { const g = grp(world, PRACA.x, 0, PRACA.z); const ch = new T3.Mesh(new T3.CircleGeometry(15, 48), new T3.MeshToonMaterial({ color: '#d8ccb4', gradientMap: GRAD })); ch.rotation.x = -Math.PI / 2; ch.position.y = 0.015; ch.receiveShadow = true; g.add(ch);
     // portais das DGs em arco
     DGS.forEach((d, i) => { const a = -1.25 + i / (DGS.length - 1) * 2.5, x = Math.sin(a) * 11, z = -Math.cos(a) * 11; const pg = grp(g, x, 0, z); pg.rotation.y = -a;
@@ -203,8 +203,8 @@
       salvaAR(); misHud(); muralDesenha(); }); }
   // ---------- CHEFE DE MUNDO e RAROS NOTURNOS (campo aberto) ----------
   { const e = fera('golem'); const B = TIPOS.golem; e.T = Object.assign({}, B, { nome: 'Colosso de Pedra Viva', vida: 40000, dano: 70, vel: 1.4, aggro: 18, alc: 6, raio: 3.2, alt: 11, volta: 900, moedas: [600, 900], itens: [['coracao', 1]], chefe: true, barra: '🌋 COLOSSO DE PEDRA VIVA · CHEFE DE MUNDO' });
-    e.g.scale.setScalar(2.4); e.home = [215, -70]; e.colosso = true; reseta(e); FERAS.push(e); glowSpr(e.g, 0, 3, 0, 12, '#ff6a2a', 0.35); }
-  [['lobo', 'Lobo Alfa Sombrio', 255, 120, 1.7], ['bandido', 'Capitão Corvo', 175, 95, 1.4], ['javali', 'Javali Ancestral', 300, -40, 1.8], ['troll', 'Troll da Ponte', 132, 60, 1.0]].forEach(([b, n, x, z, s]) => { const e = fera(b), B = TIPOS[b];
+    e.g.scale.setScalar(2.4); e.home = [150, -150]; e.colosso = true; reseta(e); FERAS.push(e); glowSpr(e.g, 0, 3, 0, 12, '#ff6a2a', 0.35); }
+  [['lobo', 'Lobo Alfa Sombrio', 255, 120, 1.7], ['bandido', 'Capitão Corvo', 175, 95, 1.4], ['javali', 'Javali Ancestral', 420, -40, 1.8], ['troll', 'Troll da Ponte', 132, 60, 1.0]].forEach(([b, n, x, z, s]) => { const e = fera(b), B = TIPOS[b];
     e.T = Object.assign({}, B, { nome: n, vida: B.vida * 8, dano: Math.round(B.dano * 2.2), raio: B.raio * s, alt: B.alt * s, alc: B.alc * s, volta: 600, moedas: [80, 140], chefe: true, barra: '✨ ' + n.toUpperCase() + ' · RARO', zona: 'vila' });
     e.g.scale.setScalar(s); e.home = [x, z]; e.noite = true; e.cls = 'raro'; reseta(e); FERAS.push(e); glowSpr(e.g, 0, B.alt * 0.5, 0, B.alt * 1.8, '#ff3aff', 0.5); });
   misHud();
@@ -256,11 +256,11 @@
     C.divino = Object.keys(DIVINOS).map(k => [k, DIVINOS[k].nome, src(DIVINOS[k].icone), 'Item divino']); C.item = Object.keys(ITEM_INFO).map(k => [k, ITEM_INFO[k][1], src(ITEM_INFO[k][0]), 'Item']); C.titulo = Object.keys(TITULOS).filter(k => k !== 'admin').map(k => [k, TITULOS[k].nome, '', TITULOS[k].r]); return C; };
   // ===================== MAPA-MÚNDI COM TELEPORTE + MAGO TELEPORTADOR =====================
   function lugaresMapa() { const lib = Q.passo >= 1 || finais.some(f => f[0] === 'A') || souAdmin(); const S = SALAO, sx = S[0] + Math.sin(S[2]) * 11, sz = S[1] + Math.cos(S[2]) * 11;
-    return [{ id: 'vila', nome: 'Brumafria', ic: '🏠', x: 0, z: 8.5, cor: '#ffd23c' }, { id: 'praca', nome: 'Praça dos Aventureiros', ic: '🏰', x: PRACA.x, z: PRACA.z + 8, cor: '#ff5a3a', sub: 'Calabouços, Torre, Missões' },
+    return [{ id: 'vila', nome: 'Brumafria', ic: '🏠', x: 0, z: 4.2, cor: '#ffd23c' }, { id: 'praca', nome: 'Praça dos Aventureiros', ic: '🏰', x: PRACA.x + 8, z: PRACA.z, cor: '#ff5a3a', sub: 'Calabouços, Torre, Missões' },
       { id: 'guilda', nome: 'Salão das Guildas', ic: '🛡️', x: sx, z: sz, cor: '#5ab8ff' }, { id: 'masmorra', nome: 'Masmorra', ic: '💀', x: MM_ENT.x + 4, z: MM_ENT.z, cor: '#a07aff' },
       { id: 'goblin', nome: 'Floresta Goblin', ic: '👺', x: GBX - 10, z: GBZ + 10, cor: '#4ab84a' }, { id: 'ponte', nome: 'Ponte do Rio', ic: '🌉', x: RIO.ponte[0] - 9, z: RIO.ponte[1], cor: '#4aa8e8' },
-      { id: 'pousada', nome: 'Pousada do Meio', ic: '🏡', x: POUSADA[0], z: POUSADA[1] + 4, cor: '#e8a040' }, { id: 'colosso', nome: 'Colosso (chefe de mundo)', ic: '🌋', x: 205, z: -48, cor: '#ff6a2a' }, { id: 'leilao', nome: 'Praça do Leilão', ic: '🔨', x: 15 + 3.2, z: 150 - 26 - 3.0, cor: '#e8a040', sub: 'Palanque do leiloeiro' },
-      { id: 'valdren', nome: 'Valdren', ic: '🏛️', x: VX, z: VZ + 40, cor: '#ffe8a0', trava: !lib, sub: lib ? 'A capital' : '🔒 Fale com o Professor' }]; }
+      { id: 'pousada', nome: 'Pousada do Meio', ic: '🏡', x: POUSADA[0], z: POUSADA[1] + 4, cor: '#e8a040' }, { id: 'colosso', nome: 'Colosso (chefe de mundo)', ic: '🌋', x: 160, z: -138, cor: '#ff6a2a' }, { id: 'leilao', nome: 'Praça do Leilão', ic: '🔨', x: HX + Math.sin(LROT) * 31 - 2.8, z: HZ + Math.cos(LROT) * 31 + 0.6, cor: '#e8a040', sub: 'Na capital Valdren' }, { id: 'campeoes', nome: 'Praça dos Campeões', ic: '🏆', x: VX - 6, z: VZ + 88, cor: '#ffd34a', sub: 'Pódio do ranking · capital' }, { id: 'portais', nome: 'Praça dos Portais', ic: '🌀', x: VX + 14, z: VZ - 88, cor: '#5ae8ff', sub: 'Portais pras dungeons · capital' },
+      { id: 'valdren', nome: 'Valdren', ic: '🏛️', x: VX, z: VZ + 40, cor: '#ffe8a0', trava: !lib, sub: lib ? 'Cidade velha da capital' : '🔒 Fale com o Professor' }]; }
   function vaiPara(L) { $('mapa').hidden = true; if (Q.naCarroca || conversa) return; if (L.trava) { aviso(L.sub, '#ff6a6a'); return; } if (L.id === 'valdren') { viajar('valdren'); return; }
     if (CAL.on) { calLimpa(); CAL.on = false; CALG.visible = false; } if (montado) montar(false); if (voando) voa(false);
     cena([{ t: '✨ Teleportando para ' + L.nome + '...', v: null }], () => { dentro = false; zona = 'vila'; heroi.position.set(L.x, 0, L.z); facing = Math.PI; camYaw = 0; cam.position.set(L.x, 4, L.z + 7); fx('luz', [L.x, 0, L.z], 1); som('portal', 0.8, 1); mostrarLugar(L.nome); }); }
@@ -270,7 +270,7 @@
     x.strokeStyle = '#3a8ad8'; x.lineWidth = 10 * k; x.lineCap = 'round'; x.beginPath(); RIO.forEach(([a, b], i) => { const [u, v] = P(a, b); i ? x.lineTo(u, v) : x.moveTo(u, v); }); x.stroke();
     x.strokeStyle = '#c8b48a'; x.lineWidth = 6.4 * k + 2; x.beginPath(); ESTRADA.forEach(([a, b], i) => { const [u, v] = P(a, b); i ? x.lineTo(u, v) : x.moveTo(u, v); }); x.stroke();
     const circ = (a, b, r, f, s) => { const [u, v] = P(a, b); x.beginPath(); x.arc(u, v, r * k, 0, 7); x.fillStyle = f; x.fill(); if (s) { x.strokeStyle = s; x.lineWidth = 2; x.stroke(); } };
-    circ(MW.x, MW.z, MW.r, '#e8d8b0', '#7a7068'); circ(VX, VZ, 46, '#e8d8b8', '#7a7068'); circ(PRACA.x, PRACA.z, 15, '#d8ccb4', '#8a5a3a'); circ(POUSADA[0], POUSADA[1], 17, '#e0c890');
+    circ(MW.x, MW.z, MW.r, '#e8d8b0', '#7a7068'); circ(VX, VZ, 100, '#e6dcc4', '#7a7068'); circ(VX, VZ, 46, '#e8d8b8', '#7a7068'); circ(PRACA.x, PRACA.z, 15, '#d8ccb4', '#8a5a3a'); circ(POUSADA[0], POUSADA[1], 17, '#e0c890');
     x.fillStyle = '#2a6a2a'; [[GBX, GBZ, 22]].forEach(([a, b, r]) => circ(a, b, r, '#3a8a3a'));
     lugaresMapa().forEach(L => { const [u, v] = P(L.x, L.z); x.beginPath(); x.arc(u, v, 13, 0, 7); x.fillStyle = L.trava ? '#8a8a9a' : L.cor; x.fill(); x.lineWidth = 2.5; x.strokeStyle = '#2b2340'; x.stroke(); x.font = '14px sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(L.ic, u, v + 1);
       x.font = 'bold 11px sans-serif'; x.lineWidth = 3; x.strokeStyle = '#fff'; x.strokeText(L.nome, u, v + 22); x.fillStyle = '#2b2340'; x.fillText(L.nome, u, v + 22); });

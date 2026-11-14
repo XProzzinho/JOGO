@@ -1,7 +1,7 @@
   // ===================== MODO HISTÓRIA (missões principais em ordem; cada uma no formato do criador) =====================
   const HISTORIA = [
     { id: "mq_01", levelReq: 1, title: "Primeiros Passos em Brumafria", npc: "Mestre Kaelen", location: "Praça dos Aventureiros",
-      description: "Todo aventureiro começa na Praça. Saia pelo portão leste da vila e procure o Mestre Kaelen, ele treina quem chega.",
+      description: "Todo aventureiro começa na Praça dos Aventureiros, no bairro oeste da capital Valdren. Siga a estrada pro leste e procure o Mestre Kaelen, ele treina quem chega.",
       objectives: [{ type: "REACH", target: "praca", count: 1 }, { type: "TALK", target: "mestre_kaelen", count: 1 }],
       rewards: { xp: 150, gold: 100 }, fim: ['Então você é o novato. Bem-vindo à Praça dos Aventureiros!', 'Aqui ficam os portais, a capitã da guarda e eu, que treino quem quer ficar forte.', 'Mas primeiro quero ver se você aguenta uma luta de verdade.'] },
     { id: "mq_02", levelReq: 1, title: "Teste de Coragem", npc: "Mestre Kaelen", location: "Campos da vila",
@@ -38,7 +38,7 @@
     }
   ];
   // nomes que aparecem pro jogador para cada alvo das missões
-  const HIST_ALVOS = { circulo_runico_praca: { INTERACT: 'Concentrar mana no Círculo Rúnico', ic: '🔵' }, guardiao_treino: { KILL: 'Derrotar o Guardião de Treino', ic: '🗿' }, praca: { REACH: 'Ir até a Praça dos Aventureiros (portão leste)' }, santuario: { REACH: 'Chegar ao Santuário da Praça' }, mestre_kaelen: { TALK: 'Falar com o Mestre Kaelen' }, mestre_ryuken: { TALK: 'Falar com o Mestre Ryuken' }, lobo: { KILL: 'Derrotar Lobos da neve' }, javali: { KILL: 'Derrotar Javalis' }, forja: { INTERACT: 'Visitar a Forja da vila' } };
+  const HIST_ALVOS = { circulo_runico_praca: { INTERACT: 'Concentrar mana no Círculo Rúnico', ic: '🔵' }, guardiao_treino: { KILL: 'Derrotar o Guardião de Treino', ic: '🗿' }, praca: { REACH: 'Ir até a Praça dos Aventureiros (na capital)' }, santuario: { REACH: 'Chegar ao Santuário da Praça' }, mestre_kaelen: { TALK: 'Falar com o Mestre Kaelen' }, mestre_ryuken: { TALK: 'Falar com o Mestre Ryuken' }, lobo: { KILL: 'Derrotar Lobos da neve' }, javali: { KILL: 'Derrotar Javalis' }, forja: { INTERACT: 'Visitar a Forja da vila' } };
   // o que cada "unlockFeature" libera
   const HIST_LIBERA = {
     MODO_BATALHA_1: { nome: '⚡ Modo de Batalha I', fn: () => { AR.bmLib = AR.bmLib || [0, 0, 0]; AR.bmLib[0] = 1; } }

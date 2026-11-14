@@ -846,7 +846,8 @@ ${_}`}class A extends Error{constructor({message:e,code:t,cause:r,name:s}){var n
   // pinheiros nevados
   { const R = rng(801); for (let i = 0; i < 150; i++) { const a = R() * Math.PI * 2, r = MW.r + 6 + R() * 58; const x = Math.cos(a) * r, z = Math.sin(a) * r - 6; if (Math.hypot(x - FO(0, -62)[0], z - FO(0, -62)[1]) < 15 || Math.hypot(x - FO(48, -50)[0], z - FO(48, -50)[1]) < 24 || Math.hypot(x - FO(-60, -6)[0], z - FO(-60, -6)[1]) < 8 || Math.hypot(x - (MW.r + 22), z - (MW.z - 28)) < 26 || Math.abs(Math.atan2(Math.sin(a - Math.PI), Math.cos(a - Math.PI))) < 0.05) continue; const g = grp(vil, x, 0, z); const s = 0.8 + R() * 0.8; g.scale.setScalar(s);
       if (!VISUAL_BLOCOS) arvoreFolhas(g, R); else { tb(g, 0, 0.5, 0, 0.35, 1, 0.35, '#5a3a24'); for (let j = 0; j < 3; j++) { part(g, CONE, '#2a5a3a', 0, 1.6 + j * 1.0, 0, 1.4 - j * 0.35, 1.6, 1.4 - j * 0.35); part(g, CONE, '#ffffff', 0, 2.1 + j * 1.0, 0, 0.6 - j * 0.15, 0.6, 0.6 - j * 0.15); } } COL.push({ t: 'c', x, z, r: 0.45 * s }); } }
-  // (o poço do meio da vila deu lugar à Praça dos Campeões, com o pódio do ranking)
+  // poço no meio da vila
+  { const w = grp(vil, 0, 0, 0); part(w, CYL, '#8a8a94', 0, 0.45, 0, 0.9, 0.9, 0.9); part(w, CYL, '#1a2a4a', 0, 0.91, 0, 0.7, 0.02, 0.7); [-1, 1].forEach(s => tb(w, s * 0.8, 1.6, 0, 0.12, 1.6, 0.12, '#5a3a24')); part(w, ROOF, '#4a3a4a', 0, 2.7, 0, 1.2, 0.8, 1.2).rotation.y = Math.PI / 4; tb(w, 0, 2.2, 0, 1.7, 0.08, 0.08, '#5a3a24'); part(w, CYL, '#7a5a3a', 0.2, 1.7, 0, 0.12, 0.25, 0.12); COL.push({ t: 'c', x: 0, z: 0, r: 1.0 }); }
   // cerca, lenha e barris pra dar vida
   { // (a cerca da praça foi tirada pra cidade ficar aberta)
     [[3.2, -5.4], [-3.4, -5.6]].forEach(([x, z]) => { const g = grp(vil, x, 0, z); for (let k = 0; k < 5; k++) { const l = part(g, CYL, '#8a5a3a', 0, 0.12 + Math.floor(k / 3) * 0.22, (k % 3 - 1) * 0.22 + (k > 2 ? 0.11 : 0), 0.11, 0.9, 0.11); l.rotation.z = Math.PI / 2; } part(g, CYL, '#ffffff', 0, 0.48, 0, 0.5, 0.06, 0.4); COL.push({ t: 'c', x, z, r: 0.55 }); });
@@ -1323,7 +1324,7 @@ ${_}`}class A extends Error{constructor({message:e,code:t,cause:r,name:s}){var n
     for (let i = 8; i < N - 8; i += 9) { const a = pts[i], b = pts[i + 1]; const tl = Math.hypot(b.x - a.x, b.z - a.z) || 1, lx = -(b.z - a.z) / tl, lz = (b.x - a.x) / tl; const sd = (i / 9) % 2 ? 1 : -1; const x = a.x + lx * sd * 4.4, z = a.z + lz * sd * 4.4;
       const g = grp(BEIRA, x, 0, z); part(g, CYL, '#3a3a44', 0, 1.6, 0, 0.09, 3.2, 0.09); tb(g, 0, 3.3, 0, 0.36, 0.42, 0.36, '#ffe6a0', true); part(g, ROOF, '#3a3a44', 0, 3.65, 0, 0.32, 0.3, 0.32).rotation.y = Math.PI / 4; WIN.push(glowSpr(world, x, 3.3, z, 2.4, '#ffc870', 0.7)); }
     for (let i = 0; i < 170; i++) { const k = Math.floor(Rr() * N), a = pts[k]; if (Math.abs(a.x - 232) < 34 || Math.abs(a.x - 138) < 16 || a.x < 125) continue; const ang = Rr() * 6.28, d = 8 + Rr() * 40; const x = a.x + Math.cos(ang) * d, z = a.z + Math.sin(ang) * d;
-      if (Math.hypot(x - MW.x, z - MW.z) < MW.r + 6 || Math.hypot(x - VX, z - VZ) < 62 || ESTRADA.some(([ex, ez]) => Math.hypot(ex - x, ez - z) < 6)) continue;
+      if (Math.hypot(x - MW.x, z - MW.z) < MW.r + 6 || Math.hypot(x - VX, z - VZ) < 106 || ESTRADA.some(([ex, ez]) => Math.hypot(ex - x, ez - z) < 6)) continue;
       const g = grp(BEIRA, x, 0, z); const sc = 0.8 + Rr() * 0.9; g.scale.setScalar(sc); part(g, CYL, '#7a5232', 0, 1.0, 0, 0.2, 2.0, 0.2); part(g, SPH, ['#4fae4f', '#5bbf5b', '#3f9a3f', '#66c25a'][i % 4], 0, 2.7, 0, 1.4, 1.3, 1.4); part(g, SPH, ['#5bbf5b', '#4fae4f'][i % 2], 0.6, 2.2, 0.3, 0.9, 0.8, 0.9); COL.push({ t: 'c', x, z, r: 0.35 * sc }); }
     // placas
     [[0, 'VALDREN →', 1], [N, '← BRUMAFRIA', -1]].forEach(([i, txt, sd]) => { const a = pts[Math.max(2, Math.min(N - 4, i))]; const g = grp(world, a.x + (i ? -4.5 : 0), 0, a.z + (i ? 0 : 4.5)); tb(g, 0, 1.1, 0, 0.15, 2.2, 0.15, '#5a3a24');
@@ -1464,7 +1465,7 @@ ${_}`}class A extends Error{constructor({message:e,code:t,cause:r,name:s}){var n
       { id: 'valdren', nome: 'Valdren', sub: lib ? 'A capital · Academia Real' : '🔒 Fale com o Professor pra ir', on: lib } ];
     $('mapa-lista').innerHTML = ''; L.forEach(l => { const b = document.createElement('button'); b.className = 'lugar' + (zona === l.id ? ' aqui' : ''); b.disabled = !l.on; b.innerHTML = `<b>${l.nome}</b><small>${zona === l.id ? '📍 Você está aqui' : l.sub}</small>`; if (l.on && zona !== l.id) tapBtn(b, () => viajar(l.id)); $('mapa-lista').appendChild(b); }); $('mapa').hidden = false; }
   function viajar(id) { $('mapa').hidden = true; if (Q.naCarroca) return; cena([{ t: id === 'vila' ? 'De volta pra casa... Brumafria' : 'A caminho de Valdren...', v: id === 'vila' ? 'nar05' : 'nar06' }], () => {
-      dentro = false; zona = id; if (id === 'vila') { heroi.position.set(0, 0, 8.5); facing = Math.PI; camYaw = 0; cam.position.set(0, 3, 10); mostrarLugar('Vila de Brumafria'); }
+      dentro = false; zona = id; if (id === 'vila') { heroi.position.set(0, 0, 4.2); facing = Math.PI; camYaw = 0; cam.position.set(0, 3, 10); mostrarLugar('Vila de Brumafria'); }
       else { heroi.position.set(VX, 0, VZ + 40); facing = Math.PI; camYaw = 0; cam.position.set(VX, 3, VZ + 46); mostrarLugar('Valdren · a capital'); } }); }
   tapBtn(mini, abrirMapa); tapBtn($('mapa-fecha'), () => { $('mapa').hidden = true; }); tapBtn($('casa'), () => { if (zona === 'vila' && !dentro) { aviso('Você já está em Brumafria, sua cidade natal.', '#ffd23c'); return; } if (dentro) { aviso('Você está dentro de casa. A porta fica atrás de você.', '#ffd23c'); return; } viajar('vila'); });
 
@@ -1897,7 +1898,7 @@ ${_}`}class A extends Error{constructor({message:e,code:t,cause:r,name:s}){var n
         else if (e.estado === 'volta') { v = anda(e, e.home[0], e.home[1], T.vel, dt) ? T.vel : 0; e.vida = Math.min(e.max, e.vida + dt * e.max * 0.15); if (Math.hypot(g.x - e.home[0], g.z - e.home[1]) < 1.5) { e.estado = 'anda'; e.vida = e.max; } if (d < T.aggro * 0.6 && livre) e.estado = 'caca'; }
         if (d < T.raio + 0.3) { const nx = g.x - p.x, nz = g.z - p.z, nd = Math.hypot(nx, nz) || 1; g.x = p.x + nx / nd * (T.raio + 0.3); g.z = p.z + nz / nd * (T.raio + 0.3); }
         if (zona === 'masmorra') mmLimita(g);
-        if (zona === 'vila') { const r = Math.hypot(g.x, g.z + 6); if (r > 140) { g.x *= 140 / r; g.z = (g.z + 6) * 140 / r - 6; } const rw = Math.hypot(g.x - MW.x, g.z - MW.z); if (rw < MW.r + 0.9 && rw > 1e-3) { g.x = MW.x + (g.x - MW.x) * (MW.r + 0.9) / rw; g.z = MW.z + (g.z - MW.z) * (MW.r + 0.9) / rw; } } }
+        if (zona === 'vila') { try { capitalLimitaFera(g); } catch (er) {} const rw = Math.hypot(g.x - MW.x, g.z - MW.z); if (rw < MW.r + 0.9 && rw > 1e-3) { g.x = MW.x + (g.x - MW.x) * (MW.r + 0.9) / rw; g.z = MW.z + (g.z - MW.z) * (MW.r + 0.9) / rw; } } }
       e.g.rotation.y = e.ry; const sc = e.hitT < 0.15 ? 1 + (0.15 - e.hitT) : 1; e.b.scale.setScalar(sc);
       e.L.forEach((l, i) => { const ph = T.chefe ? i * Math.PI : (i === 0 || i === 3 ? 0 : Math.PI); l.rotation.x = v > 0.2 ? Math.sin(gT * (v * 2.2 + 4) + ph) * 0.6 : 0; });
       if (e.asas) { const f = e.estado === 'ataque' ? 14 : 7; e.asas.forEach((a, i) => a.rotation.z = (i ? 1 : -1) * Math.sin(gT * f) * 0.6); if (e.estado !== 'ataque') e.b.position.y = Math.sin(gT * f) * 0.12; }
@@ -4390,7 +4391,7 @@ const glowA = cv(128, (x) => { const g = x.createRadialGradient(64, 64, 0, 64, 6
   DGS.forEach(d => { TITULOS['dg_' + d.id] = { nome: 'Conquistador: ' + d.nome.replace(' (secreto)', ''), r: d.nv >= 90 ? 'lendario' : d.nv >= 45 ? 'epico' : 'raro', como: 'Vencer o calabouço ' + d.nome }; });
   Object.assign(TITULOS, { torre50: { nome: 'Escalador da Torre', r: 'epico', como: 'Chegar ao andar 50 da Torre dos Monstros' }, torre100: { nome: 'Senhor da Torre', r: 'lendario', como: 'Vencer o andar 100 da Torre' }, colosso: { nome: 'Matador de Colossos', r: 'lendario', como: 'Derrotar o Colosso, chefe de mundo' }, grau_s: { nome: 'Aventureiro Grau S', r: 'lendario', como: 'Chegar ao Grau S no Mural de Missões' } });
   // ---------- PRAÇA DOS AVENTUREIROS (fora do portão leste) ----------
-  var PRACA = { x: MW.r + 16, z: MW.z - 26 };
+  var PRACA = { x: VX + Math.sin(-1.75) * 72, z: VZ + Math.cos(-1.75) * 72 }; // Praça dos Aventureiros: agora no bairro oeste da capital Valdren
   { const g = grp(world, PRACA.x, 0, PRACA.z); const ch = new T3.Mesh(new T3.CircleGeometry(15, 48), new T3.MeshToonMaterial({ color: '#d8ccb4', gradientMap: GRAD })); ch.rotation.x = -Math.PI / 2; ch.position.y = 0.015; ch.receiveShadow = true; g.add(ch);
     // portais das DGs em arco
     DGS.forEach((d, i) => { const a = -1.25 + i / (DGS.length - 1) * 2.5, x = Math.sin(a) * 11, z = -Math.cos(a) * 11; const pg = grp(g, x, 0, z); pg.rotation.y = -a;
@@ -4462,8 +4463,8 @@ const glowA = cv(128, (x) => { const g = x.createRadialGradient(64, 64, 0, 64, 6
       salvaAR(); misHud(); muralDesenha(); }); }
   // ---------- CHEFE DE MUNDO e RAROS NOTURNOS (campo aberto) ----------
   { const e = fera('golem'); const B = TIPOS.golem; e.T = Object.assign({}, B, { nome: 'Colosso de Pedra Viva', vida: 40000, dano: 70, vel: 1.4, aggro: 18, alc: 6, raio: 3.2, alt: 11, volta: 900, moedas: [600, 900], itens: [['coracao', 1]], chefe: true, barra: '🌋 COLOSSO DE PEDRA VIVA · CHEFE DE MUNDO' });
-    e.g.scale.setScalar(2.4); e.home = [215, -70]; e.colosso = true; reseta(e); FERAS.push(e); glowSpr(e.g, 0, 3, 0, 12, '#ff6a2a', 0.35); }
-  [['lobo', 'Lobo Alfa Sombrio', 255, 120, 1.7], ['bandido', 'Capitão Corvo', 175, 95, 1.4], ['javali', 'Javali Ancestral', 300, -40, 1.8], ['troll', 'Troll da Ponte', 132, 60, 1.0]].forEach(([b, n, x, z, s]) => { const e = fera(b), B = TIPOS[b];
+    e.g.scale.setScalar(2.4); e.home = [150, -150]; e.colosso = true; reseta(e); FERAS.push(e); glowSpr(e.g, 0, 3, 0, 12, '#ff6a2a', 0.35); }
+  [['lobo', 'Lobo Alfa Sombrio', 255, 120, 1.7], ['bandido', 'Capitão Corvo', 175, 95, 1.4], ['javali', 'Javali Ancestral', 420, -40, 1.8], ['troll', 'Troll da Ponte', 132, 60, 1.0]].forEach(([b, n, x, z, s]) => { const e = fera(b), B = TIPOS[b];
     e.T = Object.assign({}, B, { nome: n, vida: B.vida * 8, dano: Math.round(B.dano * 2.2), raio: B.raio * s, alt: B.alt * s, alc: B.alc * s, volta: 600, moedas: [80, 140], chefe: true, barra: '✨ ' + n.toUpperCase() + ' · RARO', zona: 'vila' });
     e.g.scale.setScalar(s); e.home = [x, z]; e.noite = true; e.cls = 'raro'; reseta(e); FERAS.push(e); glowSpr(e.g, 0, B.alt * 0.5, 0, B.alt * 1.8, '#ff3aff', 0.5); });
   misHud();
@@ -4515,11 +4516,11 @@ const glowA = cv(128, (x) => { const g = x.createRadialGradient(64, 64, 0, 64, 6
     C.divino = Object.keys(DIVINOS).map(k => [k, DIVINOS[k].nome, src(DIVINOS[k].icone), 'Item divino']); C.item = Object.keys(ITEM_INFO).map(k => [k, ITEM_INFO[k][1], src(ITEM_INFO[k][0]), 'Item']); C.titulo = Object.keys(TITULOS).filter(k => k !== 'admin').map(k => [k, TITULOS[k].nome, '', TITULOS[k].r]); return C; };
   // ===================== MAPA-MÚNDI COM TELEPORTE + MAGO TELEPORTADOR =====================
   function lugaresMapa() { const lib = Q.passo >= 1 || finais.some(f => f[0] === 'A') || souAdmin(); const S = SALAO, sx = S[0] + Math.sin(S[2]) * 11, sz = S[1] + Math.cos(S[2]) * 11;
-    return [{ id: 'vila', nome: 'Brumafria', ic: '🏠', x: 0, z: 8.5, cor: '#ffd23c' }, { id: 'praca', nome: 'Praça dos Aventureiros', ic: '🏰', x: PRACA.x, z: PRACA.z + 8, cor: '#ff5a3a', sub: 'Calabouços, Torre, Missões' },
+    return [{ id: 'vila', nome: 'Brumafria', ic: '🏠', x: 0, z: 4.2, cor: '#ffd23c' }, { id: 'praca', nome: 'Praça dos Aventureiros', ic: '🏰', x: PRACA.x + 8, z: PRACA.z, cor: '#ff5a3a', sub: 'Calabouços, Torre, Missões' },
       { id: 'guilda', nome: 'Salão das Guildas', ic: '🛡️', x: sx, z: sz, cor: '#5ab8ff' }, { id: 'masmorra', nome: 'Masmorra', ic: '💀', x: MM_ENT.x + 4, z: MM_ENT.z, cor: '#a07aff' },
       { id: 'goblin', nome: 'Floresta Goblin', ic: '👺', x: GBX - 10, z: GBZ + 10, cor: '#4ab84a' }, { id: 'ponte', nome: 'Ponte do Rio', ic: '🌉', x: RIO.ponte[0] - 9, z: RIO.ponte[1], cor: '#4aa8e8' },
-      { id: 'pousada', nome: 'Pousada do Meio', ic: '🏡', x: POUSADA[0], z: POUSADA[1] + 4, cor: '#e8a040' }, { id: 'colosso', nome: 'Colosso (chefe de mundo)', ic: '🌋', x: 205, z: -48, cor: '#ff6a2a' }, { id: 'leilao', nome: 'Praça do Leilão', ic: '🔨', x: 15 + 3.2, z: 150 - 26 - 3.0, cor: '#e8a040', sub: 'Palanque do leiloeiro' },
-      { id: 'valdren', nome: 'Valdren', ic: '🏛️', x: VX, z: VZ + 40, cor: '#ffe8a0', trava: !lib, sub: lib ? 'A capital' : '🔒 Fale com o Professor' }]; }
+      { id: 'pousada', nome: 'Pousada do Meio', ic: '🏡', x: POUSADA[0], z: POUSADA[1] + 4, cor: '#e8a040' }, { id: 'colosso', nome: 'Colosso (chefe de mundo)', ic: '🌋', x: 160, z: -138, cor: '#ff6a2a' }, { id: 'leilao', nome: 'Praça do Leilão', ic: '🔨', x: HX + Math.sin(LROT) * 31 - 2.8, z: HZ + Math.cos(LROT) * 31 + 0.6, cor: '#e8a040', sub: 'Na capital Valdren' }, { id: 'campeoes', nome: 'Praça dos Campeões', ic: '🏆', x: VX - 6, z: VZ + 88, cor: '#ffd34a', sub: 'Pódio do ranking · capital' }, { id: 'portais', nome: 'Praça dos Portais', ic: '🌀', x: VX + 14, z: VZ - 88, cor: '#5ae8ff', sub: 'Portais pras dungeons · capital' },
+      { id: 'valdren', nome: 'Valdren', ic: '🏛️', x: VX, z: VZ + 40, cor: '#ffe8a0', trava: !lib, sub: lib ? 'Cidade velha da capital' : '🔒 Fale com o Professor' }]; }
   function vaiPara(L) { $('mapa').hidden = true; if (Q.naCarroca || conversa) return; if (L.trava) { aviso(L.sub, '#ff6a6a'); return; } if (L.id === 'valdren') { viajar('valdren'); return; }
     if (CAL.on) { calLimpa(); CAL.on = false; CALG.visible = false; } if (montado) montar(false); if (voando) voa(false);
     cena([{ t: '✨ Teleportando para ' + L.nome + '...', v: null }], () => { dentro = false; zona = 'vila'; heroi.position.set(L.x, 0, L.z); facing = Math.PI; camYaw = 0; cam.position.set(L.x, 4, L.z + 7); fx('luz', [L.x, 0, L.z], 1); som('portal', 0.8, 1); mostrarLugar(L.nome); }); }
@@ -4529,7 +4530,7 @@ const glowA = cv(128, (x) => { const g = x.createRadialGradient(64, 64, 0, 64, 6
     x.strokeStyle = '#3a8ad8'; x.lineWidth = 10 * k; x.lineCap = 'round'; x.beginPath(); RIO.forEach(([a, b], i) => { const [u, v] = P(a, b); i ? x.lineTo(u, v) : x.moveTo(u, v); }); x.stroke();
     x.strokeStyle = '#c8b48a'; x.lineWidth = 6.4 * k + 2; x.beginPath(); ESTRADA.forEach(([a, b], i) => { const [u, v] = P(a, b); i ? x.lineTo(u, v) : x.moveTo(u, v); }); x.stroke();
     const circ = (a, b, r, f, s) => { const [u, v] = P(a, b); x.beginPath(); x.arc(u, v, r * k, 0, 7); x.fillStyle = f; x.fill(); if (s) { x.strokeStyle = s; x.lineWidth = 2; x.stroke(); } };
-    circ(MW.x, MW.z, MW.r, '#e8d8b0', '#7a7068'); circ(VX, VZ, 46, '#e8d8b8', '#7a7068'); circ(PRACA.x, PRACA.z, 15, '#d8ccb4', '#8a5a3a'); circ(POUSADA[0], POUSADA[1], 17, '#e0c890');
+    circ(MW.x, MW.z, MW.r, '#e8d8b0', '#7a7068'); circ(VX, VZ, 100, '#e6dcc4', '#7a7068'); circ(VX, VZ, 46, '#e8d8b8', '#7a7068'); circ(PRACA.x, PRACA.z, 15, '#d8ccb4', '#8a5a3a'); circ(POUSADA[0], POUSADA[1], 17, '#e0c890');
     x.fillStyle = '#2a6a2a'; [[GBX, GBZ, 22]].forEach(([a, b, r]) => circ(a, b, r, '#3a8a3a'));
     lugaresMapa().forEach(L => { const [u, v] = P(L.x, L.z); x.beginPath(); x.arc(u, v, 13, 0, 7); x.fillStyle = L.trava ? '#8a8a9a' : L.cor; x.fill(); x.lineWidth = 2.5; x.strokeStyle = '#2b2340'; x.stroke(); x.font = '14px sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(L.ic, u, v + 1);
       x.font = 'bold 11px sans-serif'; x.lineWidth = 3; x.strokeStyle = '#fff'; x.strokeText(L.nome, u, v + 22); x.fillStyle = '#2b2340'; x.fillText(L.nome, u, v + 22); });
@@ -7502,7 +7503,7 @@ const glowA = cv(128, (x) => { const g = x.createRadialGradient(64, 64, 0, 64, 6
             return characterGroup;
         }
   // ===================== PEDRAS DE TELEPORTE + CASA DE LEILÕES =====================
-  const HX = 15, HZ = 150; const LEI_CAMINHO = []; // Praça do Leilão: ao ar livre, ao sul de Brumafria (mapa principal)
+  const HX = VX + Math.sin(-2.4) * 72, HZ = VZ + Math.cos(-2.4) * 72; /* bairro noroeste da capital */ const LROT = Math.atan2(VX - HX, VZ - HZ); /* entrada virada pro centro */ const LEI_CAMINHO = []; const lw = (x, z) => [HX + x * Math.cos(LROT) + z * Math.sin(LROT), HZ - x * Math.sin(LROT) + z * Math.cos(LROT)]; // Praça do Leilão: ao ar livre, ao sul de Brumafria (mapa principal)
   // ---- textura do círculo de runas no chão das pedras ----
   const PED_TEX = (() => { const c = document.createElement('canvas'); c.width = c.height = 256; const x = c.getContext('2d'); x.translate(128, 128);
     x.strokeStyle = '#bff4ff'; x.shadowColor = '#3ad8ff'; x.shadowBlur = 14; x.lineWidth = 6; x.beginPath(); x.arc(0, 0, 118, 0, 7); x.stroke(); x.lineWidth = 2.5; x.beginPath(); x.arc(0, 0, 100, 0, 7); x.stroke(); x.beginPath(); x.arc(0, 0, 58, 0, 7); x.stroke();
@@ -7544,7 +7545,7 @@ const glowA = cv(128, (x) => { const g = x.createRadialGradient(64, 64, 0, 64, 6
   function pedraVai(o, l) { if (o.id === 'leilao') { leilaoEntra(); return; } if (o.id === 'valdren') { viajar('valdren'); return; } if (l && l.id) vaiPara(l); }
   // ===================== CASA DE LEILÕES (só o salão por dentro) =====================
   // ===================== PRAÇA DO LEILÃO (ao ar livre, no mapa principal, ao sul da vila) =====================
-  const LEI = (() => { const G = grp(world, HX, 0, HZ); G.rotation.y = Math.PI; /* palanque no sul, entrada virada pra cidade (norte) */ const R0 = 26;
+  const LEI = (() => { const G = grp(world, HX, 0, HZ); G.rotation.y = LROT; /* palanque no sul, entrada virada pra cidade (norte) */ const R0 = 26;
     const tx = (w, h, f) => { const c = document.createElement('canvas'); c.width = w; c.height = h; f(c.getContext('2d'), w, h); const t = new T3.CanvasTexture(c); t.colorSpace = T3.SRGBColorSpace; return t; };
     const banner = tx(1024, 512, (x, w, h) => { const g = x.createLinearGradient(0, 0, 0, h); g.addColorStop(0, '#8a1424'); g.addColorStop(1, '#5a0a18'); x.fillStyle = g; x.fillRect(0, 0, w, h);
       x.strokeStyle = '#ffcf5a'; x.lineWidth = 14; x.strokeRect(18, 18, w - 36, h - 36); x.lineWidth = 3; x.strokeRect(40, 40, w - 80, h - 80); x.textAlign = 'center'; x.fillStyle = '#ffd86a'; x.shadowColor = '#000'; x.shadowBlur = 10;
@@ -7553,7 +7554,7 @@ const glowA = cv(128, (x) => { const g = x.createRadialGradient(64, 64, 0, 64, 6
     pedraT.wrapS = pedraT.wrapT = T3.RepeatWrapping; pedraT.repeat.set(9, 9);
     const M = (c, o) => new T3.MeshStandardMaterial(Object.assign({ color: c, roughness: 0.75 }, o || {}));
     const ouro = M('#d8a840', { metalness: 0.6, roughness: 0.35 }), madeira = M('#5a3420'), creme = M('#efe2c8'), tapete = M('#9a1a2e', { roughness: 0.95 }), ferro = M('#2a2a34', { metalness: 0.5, roughness: 0.5 });
-    const box = (par, m, x, y, z, sx, sy, sz, col) => { const b = new T3.Mesh(BOX, m); b.position.set(x, y, z); b.scale.set(sx, sy, sz); b.castShadow = true; b.receiveShadow = true; par.add(b); if (col) COL.push({ t: 'b', x: HX - x, z: HZ - z, hw: sx / 2, hd: sz / 2, ry: 0 }); return b; };
+    const box = (par, m, x, y, z, sx, sy, sz, col) => { const b = new T3.Mesh(BOX, m); b.position.set(x, y, z); b.scale.set(sx, sy, sz); b.castShadow = true; b.receiveShadow = true; par.add(b); if (col) { const [wx, wz] = lw(x, z); COL.push({ t: 'b', x: wx, z: wz, hw: sx / 2, hd: sz / 2, ry: LROT }); }; return b; };
     // chão de pedra redondo + meio-fio
     const chao = new T3.Mesh(new T3.CircleGeometry(R0, 64), new T3.MeshStandardMaterial({ map: pedraT, roughness: 0.9 })); chao.rotation.x = -Math.PI / 2; chao.position.y = 0.03; chao.receiveShadow = true; G.add(chao);
     const borda = new T3.Mesh(new T3.TorusGeometry(R0, 0.35, 6, 80), M('#8a8274')); borda.rotation.x = Math.PI / 2; borda.position.y = 0.08; G.add(borda);
@@ -7576,7 +7577,7 @@ const glowA = cv(128, (x) => { const g = x.createRadialGradient(64, 64, 0, 64, 6
     for (let i = 0; i < 9; i++) { const f = new T3.Mesh(new T3.ConeGeometry(0.35, 0.8, 3), new T3.MeshBasicMaterial({ color: i % 2 ? '#ffd86a' : '#c8202a', toneMapped: false })); f.rotation.x = Math.PI; f.position.set(-7 + i * 1.75, 7.45, -11.8); G.add(f); }
     // vitrines com itens girando
     const vit = []; const cores = ['#ff6a8a', '#5ae8ff', '#ffd86a', '#a07aff', '#7aff9a', '#ff9a3a'];
-    [-1, 1].forEach(s => { for (let i = 0; i < 3; i++) { const z = -6 + i * 7, x = s * 14; const pe = new T3.Mesh(new T3.CylinderGeometry(0.55, 0.7, 1.2, 8), creme); pe.position.set(x, 0.6, z); pe.castShadow = true; G.add(pe); COL.push({ t: 'c', x: HX - x, z: HZ - z, r: 0.8 });
+    [-1, 1].forEach(s => { for (let i = 0; i < 3; i++) { const z = -6 + i * 7, x = s * 14; const pe = new T3.Mesh(new T3.CylinderGeometry(0.55, 0.7, 1.2, 8), creme); pe.position.set(x, 0.6, z); pe.castShadow = true; G.add(pe); { const [wx, wz] = lw(x, z); COL.push({ t: 'c', x: wx, z: wz, r: 0.8 }); }
       const tp2 = new T3.Mesh(new T3.CylinderGeometry(0.62, 0.62, 0.1, 8), ouro); tp2.position.set(x, 1.22, z); G.add(tp2); const cor = cores[(i + (s > 0 ? 3 : 0)) % 6];
       const it = new T3.Mesh(i % 2 ? new T3.OctahedronGeometry(0.35, 0) : new T3.IcosahedronGeometry(0.33, 0), new T3.MeshBasicMaterial({ color: cor, toneMapped: false })); it.position.set(x, 1.9, z); G.add(it); glowSpr(G, x, 1.9, z, 1.6, cor, 0.5);
       const cup = new T3.Mesh(new T3.SphereGeometry(0.75, 16, 12, 0, Math.PI * 2, 0, Math.PI / 2), new T3.MeshBasicMaterial({ color: '#cfefff', transparent: true, opacity: 0.18, depthWrite: false })); cup.position.set(x, 1.27, z); G.add(cup); vit.push(it); } });
@@ -7584,11 +7585,11 @@ const glowA = cv(128, (x) => { const g = x.createRadialGradient(64, 64, 0, 64, 6
     [-1, 1].forEach(s => { for (let i = 0; i < 3; i++) { const z = -4 + i * 4.5; box(G, madeira, s * 6.5, 0.45, z, 5, 0.25, 1.1, true); box(G, madeira, s * 6.5, 0.9, z + 0.5, 5, 0.7, 0.15); [-2.2, 2.2].forEach(dx => box(G, ferro, s * 6.5 + dx, 0.2, z, 0.15, 0.4, 0.9)); } });
     // postes de luz em volta e arco da entrada
     const lus = []; for (let i = 0; i < 10; i++) { const a = i / 10 * Math.PI * 2 + 0.31; if (Math.abs(Math.sin(a)) > 0.93 && Math.cos(a) < 0) continue; const x = Math.sin(a) * (R0 - 1.4), z = Math.cos(a) * (R0 - 1.4); if (z < -12 && Math.abs(x) < 10) continue;
-      box(G, ferro, x, 2.1, z, 0.18, 4.2, 0.18); const l = grp(G, x, 4.3, z); part(l, SPH, '#fff2c0', 0, 0, 0, 0.32, 0.38, 0.32, 0, true); glowSpr(l, 0, 0, 0, 2.6, '#ffd890', 0.45); lus.push(l); COL.push({ t: 'c', x: HX - x, z: HZ - z, r: 0.3 }); }
+      box(G, ferro, x, 2.1, z, 0.18, 4.2, 0.18); const l = grp(G, x, 4.3, z); part(l, SPH, '#fff2c0', 0, 0, 0, 0.32, 0.38, 0.32, 0, true); glowSpr(l, 0, 0, 0, 2.6, '#ffd890', 0.45); lus.push(l); { const [wx, wz] = lw(x, z); COL.push({ t: 'c', x: wx, z: wz, r: 0.3 }); } }
     { const ar = new T3.Mesh(new T3.TorusGeometry(3.2, 0.3, 8, 24, Math.PI), ouro); ar.position.set(0, 5.2, R0 - 0.6); G.add(ar); [-1, 1].forEach(s => { box(G, creme, s * 3.2, 2.6, R0 - 0.6, 0.7, 5.2, 0.7, true); });
       const pl = new T3.Mesh(new T3.PlaneGeometry(5, 1.2), new T3.MeshBasicMaterial({ map: tx(512, 128, (x, w, h) => { x.fillStyle = '#5a0a18'; x.fillRect(0, 0, w, h); x.strokeStyle = '#ffcf5a'; x.lineWidth = 8; x.strokeRect(6, 6, w - 12, h - 12); x.fillStyle = '#ffd86a'; x.font = 'bold 64px serif'; x.textAlign = 'center'; x.fillText('🔨 LEILÃO', w / 2, 88); }), toneMapped: false, side: T3.DoubleSide })); pl.position.set(0, 6.4, R0 - 0.6); G.add(pl); }
     // caminho de terra da porta sul da vila até a praça
-    { const ax = 0, az = 58, bx = 0, bz = -(R0 - 1), dx = HX + bx - ax, dz = HZ + bz - az, L = Math.hypot(dx, dz); const c = new T3.Mesh(new T3.PlaneGeometry(4.2, L), new T3.MeshToonMaterial({ color: '#d9bf86', gradientMap: GRAD })); c.rotation.x = -Math.PI / 2; c.rotation.z = Math.atan2(dx, dz); c.position.set(ax + dx / 2, 0.025, az + dz / 2); c.receiveShadow = true; world.add(c); LEI_CAMINHO.push(c); }
+    // (o caminho de terra da vila foi tirado: a praça agora fica dentro da capital)
     // o leiloeiro em cima do palanque
     const npc = makeChar({ skin: '#e8c0a0', hairStyle: 'short', hairC: '#c8c8d0', top: '#7a1424', top2: '#ffd86a', pants: '#2a1a24', shoe: '#1a1010', iris: '#5a3a1a', s: 1.08, ph: 4.4 }); npc.position.set(0, 1.25, -13.8); G.add(npc);
     { const P = npc.userData.P; part(P.head, CYL, '#1a1018', 0, 0.36, 0, 0.2, 0.28, 0.2, 0.03); part(P.head, CYL, '#1a1018', 0, 0.23, 0, 0.3, 0.03, 0.3, 0.03); part(P.head, CYL, '#c8202a', 0, 0.27, 0, 0.205, 0.05, 0.205); }
@@ -7596,11 +7597,11 @@ const glowA = cv(128, (x) => { const g = x.createRadialGradient(64, 64, 0, 64, 6
     return { G, lus, vit, npc, R0 }; })();
   function leilaoLimita(p) { p.x = clamp(p.x, HX - 21.6, HX + 21.6); p.z = clamp(p.z, HZ - 9.6, HZ + 16.8); [-1, 1].forEach(s => { for (let i = 0; i < 5; i++) { const cx = HX + s * 19.5, cz = HZ - 14 + i * 7.2, d = Math.hypot(p.x - cx, p.z - cz); if (d < 1.0) { p.x = cx + (p.x - cx) / d * 1.0; p.z = cz + (p.z - cz) / d * 1.0; } } }); }
   function leilaoEntra() { if (Q.naCarroca || conversa) return; if (CAL.on) { calLimpa(); CAL.on = false; CALG.visible = false; } if (montado) montar(false); if (voando) voa(false);
-    cena([{ t: '✨ Teleportando para a Praça do Leilão...', v: null }], () => { dentro = false; zona = 'vila'; heroi.position.set(HX, 0, HZ - 12); facing = 0; camYaw = Math.PI; cam.position.set(HX, 4, HZ - 18); fx('luz', [HX, 0, HZ - 12], 1); som('portal', 0.8, 1); mostrarLugar('Praça do Leilão'); }); }
-  function leilaoFrame(dt, p) { if (!PED_FEITAS) pedrasMonta(); if (zona === 'leilao') { zona = 'vila'; heroi.position.set(HX, 0, HZ - 12); }
+    cena([{ t: '✨ Teleportando para a Praça do Leilão...', v: null }], () => { dentro = false; zona = 'vila'; const [tx, tz] = lw(0, 12), [cx2, cz2] = lw(0, 18); heroi.position.set(tx, 0, tz); facing = LROT + Math.PI; camYaw = LROT; cam.position.set(cx2, 4, cz2); fx('luz', [tx, 0, tz], 1); som('portal', 0.8, 1); mostrarLugar('Praça do Leilão'); }); }
+  function leilaoFrame(dt, p) { if (!PED_FEITAS) pedrasMonta(); if (zona === 'leilao') { zona = 'vila'; const [tx, tz] = lw(0, 12); heroi.position.set(tx, 0, tz); }
     const naVila = zona === 'vila' && !dentro; LEI.G.visible = naVila; LEI_CAMINHO.forEach(c => c.visible = naVila); let al = pedrasFrame(dt, p); if (!naVila || Math.hypot(p.x - HX, p.z - HZ) > 70) return al;
     LEI.vit.forEach((v, i) => { v.rotation.y += dt * 1.2; v.position.y = 1.9 + Math.sin(gT * 2 + i) * 0.1; });
-    const n = LEI.npc, nx = HX, nz = HZ + 13.8, d = Math.hypot(p.x - nx, p.z - nz); n.rotation.y += ((d < 14 ? Math.atan2(p.x - nx, p.z - nz) - Math.PI : 0) - n.rotation.y) * clamp(dt * 4);
+    const n = LEI.npc, [nx, nz] = lw(0, -13.8), d = Math.hypot(p.x - nx, p.z - nz); n.rotation.y += ((d < 14 ? Math.atan2(p.x - nx, p.z - nz) - LROT : 0) - n.rotation.y) * clamp(dt * 4);
     pose(n, gT, { mood: d < 9 ? 'smile' : 'neutral', arms: { shR: [-0.5 + Math.sin(gT * 1.5) * 0.08, 0, 0.2], elR: [-0.9, 0, 0] } }); n.position.y = 1.25;
     if (d < 5.2 && !al) al = { rot: 'LEILÃO', c: n, acao: leilaoAbre }; return al; }
   // ===================== LEILÕES (Firestore: leiloes/{id}) =====================
@@ -10808,7 +10809,7 @@ const ArcaneWingSystem = (function () {
   // ===================== MODO HISTÓRIA (missões principais em ordem; cada uma no formato do criador) =====================
   const HISTORIA = [
     { id: "mq_01", levelReq: 1, title: "Primeiros Passos em Brumafria", npc: "Mestre Kaelen", location: "Praça dos Aventureiros",
-      description: "Todo aventureiro começa na Praça. Saia pelo portão leste da vila e procure o Mestre Kaelen, ele treina quem chega.",
+      description: "Todo aventureiro começa na Praça dos Aventureiros, no bairro oeste da capital Valdren. Siga a estrada pro leste e procure o Mestre Kaelen, ele treina quem chega.",
       objectives: [{ type: "REACH", target: "praca", count: 1 }, { type: "TALK", target: "mestre_kaelen", count: 1 }],
       rewards: { xp: 150, gold: 100 }, fim: ['Então você é o novato. Bem-vindo à Praça dos Aventureiros!', 'Aqui ficam os portais, a capitã da guarda e eu, que treino quem quer ficar forte.', 'Mas primeiro quero ver se você aguenta uma luta de verdade.'] },
     { id: "mq_02", levelReq: 1, title: "Teste de Coragem", npc: "Mestre Kaelen", location: "Campos da vila",
@@ -10845,7 +10846,7 @@ const ArcaneWingSystem = (function () {
     }
   ];
   // nomes que aparecem pro jogador para cada alvo das missões
-  const HIST_ALVOS = { circulo_runico_praca: { INTERACT: 'Concentrar mana no Círculo Rúnico', ic: '🔵' }, guardiao_treino: { KILL: 'Derrotar o Guardião de Treino', ic: '🗿' }, praca: { REACH: 'Ir até a Praça dos Aventureiros (portão leste)' }, santuario: { REACH: 'Chegar ao Santuário da Praça' }, mestre_kaelen: { TALK: 'Falar com o Mestre Kaelen' }, mestre_ryuken: { TALK: 'Falar com o Mestre Ryuken' }, lobo: { KILL: 'Derrotar Lobos da neve' }, javali: { KILL: 'Derrotar Javalis' }, forja: { INTERACT: 'Visitar a Forja da vila' } };
+  const HIST_ALVOS = { circulo_runico_praca: { INTERACT: 'Concentrar mana no Círculo Rúnico', ic: '🔵' }, guardiao_treino: { KILL: 'Derrotar o Guardião de Treino', ic: '🗿' }, praca: { REACH: 'Ir até a Praça dos Aventureiros (na capital)' }, santuario: { REACH: 'Chegar ao Santuário da Praça' }, mestre_kaelen: { TALK: 'Falar com o Mestre Kaelen' }, mestre_ryuken: { TALK: 'Falar com o Mestre Ryuken' }, lobo: { KILL: 'Derrotar Lobos da neve' }, javali: { KILL: 'Derrotar Javalis' }, forja: { INTERACT: 'Visitar a Forja da vila' } };
   // o que cada "unlockFeature" libera
   const HIST_LIBERA = {
     MODO_BATALHA_1: { nome: '⚡ Modo de Batalha I', fn: () => { AR.bmLib = AR.bmLib || [0, 0, 0]; AR.bmLib[0] = 1; } }
@@ -11345,11 +11346,12 @@ const ArcaneWingSystem = (function () {
     rkP.innerHTML = `<div class="box"><div class="hd"><b>🏆 Ranking de Poder · Top 10</b><button class="x">✕</button></div>
       <div class="meu"><span>Seu poder</span><b>⚡ ${fmtN(meuPoder())}</b><small>${logado ? (RK.pos > 0 ? 'Sua posição: ' + RK.pos + 'º' : RK.pos < 0 ? 'Você está fora do top 10' : 'Carregando posição...') : 'Entre com uma conta pra aparecer no ranking'}</small></div>
       <div class="ls">${logado ? (lin || (RK.erro ? '<p>Não deu pra carregar o ranking agora (' + RK.erro + ').</p>' : '<p>Carregando...</p>')) : '<p>O ranking é entre jogadores com conta.</p>'}</div>
-      <small class="dc">🕛 O ranking e as estátuas atualizam todo dia à meia-noite e entram todos os jogadores, até quem está offline. O poder soma arma, força, vida, mana, defesa, nível e divino.</small></div>`;
+      <small class="dc">🗿 As estátuas ficam na Praça dos Campeões, na capital Valdren. 🕛 O ranking e as estátuas atualizam todo dia à meia-noite e entram todos os jogadores, até quem está offline. O poder soma arma, força, vida, mana, defesa, nível e divino.</small></div>`;
     tapBtn(rkP.querySelector('.x'), () => { rkP.hidden = true; }); }
   function rankAbre() { rkP.hidden = false; rankDesenha(); rankBusca().then(() => { if (!rkP.hidden) rankDesenha(); }); }
   // ---------- monumento: 3 pedestais com estátuas dos 3 mais fortes, no centro da vila ----------
-  const MONU = (() => { const MX0 = -0.1, MZ0 = 2.7; const G = grp(vil, MX0, 0, MZ0);
+  const CAPG = grp(world, 0, 0, 0); // tudo da capital nova fica aqui (visível quando está perto)
+  const MONU = (() => { const MX0 = VX - 0.1, MZ0 = VZ + 63.2; const G = grp(CAPG, MX0, 0, MZ0);
     const M = (c, o) => new T3.MeshStandardMaterial(Object.assign({ color: c, roughness: 0.5, metalness: 0.2 }, o || {}));
     const marm = M('#e9e4da', { roughness: 0.6 }), escuro = M('#3a3448', { roughness: 0.45, metalness: 0.35 });
     const metal = [M('#ffd34a', { metalness: 0.85, roughness: 0.28, emissive: '#5a3c00', emissiveIntensity: 0.35 }), M('#d8e4f2', { metalness: 0.85, roughness: 0.25, emissive: '#1c2c44', emissiveIntensity: 0.3 }), M('#d08a42', { metalness: 0.8, roughness: 0.32, emissive: '#3a1a04', emissiveIntensity: 0.3 })];
@@ -11381,9 +11383,9 @@ const ArcaneWingSystem = (function () {
       if (slot.chave === ch) return; slot.chave = ch; monuPlaca(slot.placa, i, x); slot.placa.position.y = slot.h + 4.6; monuEstatua(slot, i, x); }); }
   let monuT = 3; function rankFrame(dt) { rankOuve(); MONU.P.forEach(s => { s.aura.rotation.z += dt * 0.6; }); try { pracaVFrame(dt); } catch (e) {} monuT -= dt; if (monuT > 0) return; monuT = 1; if (!MONU.P[0].chave) monuAtualiza();
     if (RK.dia && RK.dia !== rankDia()) { RK.t = -1e9; RK.dia = rankDia(); if (souAdmin()) setTimeout(() => rankTodos(), 3000 + Math.random() * 5000); }
-    const p = heroi.position; if (zona === 'vila' && !dentro && Math.hypot(p.x - MONU.X, p.z - MONU.Z) < 60 && performance.now() - RK.t > 120000) rankBusca(); }
+    const p = heroi.position; if ((zona === 'vila' || zona === 'valdren') && !dentro && Math.hypot(p.x - MONU.X, p.z - MONU.Z) < 80 && performance.now() - RK.t > 120000) rankBusca(); }
   // ===================== PRAÇA DOS CAMPEÕES (centro da vila, em volta do pódio) =====================
-  const PRV = (() => { const CX = -0.1, CZ = 5.5, R = 17; const G = grp(vil, CX, 0, CZ); const anim = { fontes: [], chamas: [], brilhos: [], bandeiras: [] };
+  const PRV = (() => { const CX = VX - 0.1, CZ = VZ + 66, R = 17; const G = grp(CAPG, CX, 0, CZ); const anim = { fontes: [], chamas: [], brilhos: [], bandeiras: [] };
     const tx = (w, h, f) => { const c = document.createElement('canvas'); c.width = w; c.height = h; f(c.getContext('2d'), w, h); const t = new T3.CanvasTexture(c); t.colorSpace = T3.SRGBColorSpace; return t; };
     const M = (c, o) => new T3.MeshStandardMaterial(Object.assign({ color: c, roughness: 0.7 }, o || {}));
     const ouro = M('#e0b040', { metalness: 0.7, roughness: 0.3 }), pedraC = M('#d8d2c4'), pedraE = M('#8e8778'), ferro = M('#2a2a34', { metalness: 0.5, roughness: 0.5 }), madeira = M('#6a4426'), verde = M('#3f8a3a', { roughness: 0.9 }), agua = new T3.MeshStandardMaterial({ color: '#5ac8ff', roughness: 0.15, metalness: 0.2, transparent: true, opacity: 0.85 });
@@ -11428,17 +11430,96 @@ const ArcaneWingSystem = (function () {
     // brilhos flutuando em volta do pódio
     for (let i = 0; i < 18; i++) { const s = new T3.Sprite(new T3.SpriteMaterial({ map: glowTex, color: ['#ffe08a', '#ff8ab8', '#8ad8ff'][i % 3], transparent: true, depthWrite: false, blending: T3.AdditiveBlending, toneMapped: false, opacity: 0.8 })); s.scale.setScalar(0.25); G.add(s); anim.brilhos.push({ s, a: Math.random() * 6.28, r: 4 + Math.random() * 3, y: 1 + Math.random() * 6, v: 0.2 + Math.random() * 0.4 }); }
     return { G, anim, CX, CZ, R }; })();
-  function pracaVFrame(dt) { if (!vil.visible) return; const A = PRV.anim, t = gT;
+  function pracaVFrame(dt) { if (!CAPG.visible) return; const A = PRV.anim, t = gT;
     A.fontes.forEach(F => F.gotas.forEach(d => { d.f = (d.f + dt * 0.7) % 1; const r = 0.15 + d.f * 1.1, y = 2.45 + Math.sin(d.f * Math.PI) * 0.9 - d.f * 0.6; d.g.position.set(F.x + Math.cos(d.a) * r, y, F.z + Math.sin(d.a) * r); }));
     A.chamas.forEach((f, i) => { const k = 0.85 + Math.sin(t * 14 + i * 2) * 0.15; f.scale.set(k, 0.9 + Math.cos(t * 17 + i) * 0.2, k); });
     A.bandeiras.forEach((b, i) => { if (b.userData.mastro) b.rotation.y = Math.sin(t * 2.2 + i) * 0.25; else b.rotation.z = Math.sin(t * 3 + i * 0.7) * 0.25; });
     A.brilhos.forEach(b => { b.a += dt * b.v; b.y += dt * 0.35; if (b.y > 8) b.y = 1; b.s.position.set(Math.cos(b.a) * b.r, b.y, -2.8 + Math.sin(b.a) * b.r * 0.5); b.s.material.opacity = 0.4 + Math.sin(t * 3 + b.a) * 0.35; }); }
+  // ===================== CAPITAL VALDREN: a cidade velha no meio + bairros novos dentro de uma muralha grande =====================
+  // Bairros: Praça dos Aventureiros (oeste), Praça do Leilão (leste), Praça dos Portais (norte), Praça dos Campeões com o pódio (sul).
+  const CAPT = { R: 100, X: VX, Z: VZ, portais: [], anim: [] };
+  { const C = CAPT, G = CAPG, Rr = rng(777);
+    const M = (c, o) => new T3.MeshToonMaterial(Object.assign({ color: c, gradientMap: GRAD }, o || {}));
+    const ang = (x, z) => Math.atan2(x - C.X, z - C.Z), pol = (a, r) => [C.X + Math.sin(a) * r, C.Z + Math.cos(a) * r];
+    const dAng = (a, b) => { let d = a - b; while (d > Math.PI) d -= Math.PI * 2; while (d < -Math.PI) d += Math.PI * 2; return Math.abs(d); };
+    // portão onde a estrada de Brumafria chega
+    let aEstr = Math.PI * -0.75; { let best = 1e9; ESTRADA.forEach(([x, z]) => { const d = Math.abs(Math.hypot(x - C.X, z - C.Z) - C.R); if (d < best) { best = d; aEstr = ang(x, z); } }); }
+    const PORTOES = [aEstr, 0, Math.PI, -Math.PI / 2]; // (o leste é o porto, não tem portão) C.portoes = PORTOES;
+    const agua = (x, z) => { const lx = x - CAPT.X, lz = z - CAPT.Z; return lx > 22 && lx < 74 && Math.abs(lz) < 52; };
+    const ehPortao = (a, r, larg) => PORTOES.some(g => dAng(a, g) * r < larg);
+    // ----- muralha grande com torres -----
+    { const N = 150, seg = 2 * Math.PI * C.R / N + 0.2; const muro = [], torre = [];
+      for (let i = 0; i < N; i++) { const a = i / N * Math.PI * 2; if (ehPortao(a, C.R, 7)) continue; { const [wx, wz] = pol(a, C.R); if (Math.hypot(wx - POUSADA[0], wz - POUSADA[1]) < 21) continue; } // a Pousada fica encostada na muralha: ali vira passagem muro.push(a); if (i % 10 === 0) torre.push(a); COL.push({ t: 'c', x: pol(a, C.R)[0], z: pol(a, C.R)[1], r: 2.4 }); }
+      PORTOES.forEach(g => [-1, 1].forEach(s => torre.push(g + s * 8.5 / C.R)));
+      const m4 = new T3.Matrix4(), q = new T3.Quaternion(), sc = new T3.Vector3(), ps = new T3.Vector3(), up = new T3.Vector3(0, 1, 0);
+      const pedra = M('#b9b0a0'), pedra2 = M('#8e8676'), telha = M('#7a2a2a');
+      const im = new T3.InstancedMesh(BOX, pedra, muro.length), ameia = new T3.InstancedMesh(BOX, pedra2, muro.length * 2);
+      muro.forEach((a, i) => { const [x, z] = pol(a, C.R); q.setFromAxisAngle(up, a + Math.PI / 2); im.setMatrixAt(i, m4.compose(ps.set(x, 3.5, z), q, sc.set(seg, 7, 1.6)));
+        [-1, 1].forEach((s, k) => ameia.setMatrixAt(i * 2 + k, m4.compose(ps.set(x + Math.sin(a + Math.PI / 2) * s * seg * 0.25, 7.45, z + Math.cos(a + Math.PI / 2) * s * seg * 0.25), q, sc.set(seg * 0.3, 0.9, 1.7)))); });
+      const tc = new T3.InstancedMesh(new T3.CylinderGeometry(2.4, 2.7, 10, 10), pedra, torre.length), tt = new T3.InstancedMesh(new T3.ConeGeometry(3, 3.6, 10), telha, torre.length);
+      torre.forEach((a, i) => { const [x, z] = pol(a, C.R); q.identity(); tc.setMatrixAt(i, m4.compose(ps.set(x, 5, z), q, sc.set(1, 1, 1))); tt.setMatrixAt(i, m4.compose(ps.set(x, 11.8, z), q, sc.set(1, 1, 1))); COL.push({ t: 'c', x, z, r: 2.7 }); });
+      [im, ameia, tc, tt].forEach(m => { m.instanceMatrix.needsUpdate = true; m.castShadow = true; m.receiveShadow = true; G.add(m); });
+      // arcos dos portões com estandarte
+      PORTOES.forEach(g => { const [x, z] = pol(g, C.R); const pg = grp(G, x, 0, z); pg.rotation.y = g; const arco = new T3.Mesh(BOX, pedra2); arco.position.y = 8.6; arco.scale.set(17, 2.2, 2.2); arco.castShadow = true; pg.add(arco);
+        const b = new T3.Mesh(new T3.PlaneGeometry(3.4, 4.2), new T3.MeshStandardMaterial({ color: '#8a1424', side: T3.DoubleSide })); b.position.set(0, 6.2, 1.2); pg.add(b); const e = new T3.Mesh(new T3.PlaneGeometry(1.6, 1.6), new T3.MeshBasicMaterial({ color: '#ffd23c', side: T3.DoubleSide, toneMapped: false, transparent: true, opacity: 0.9 })); e.position.set(0, 6.6, 1.25); e.rotation.z = Math.PI / 4; e.scale.setScalar(0.6); pg.add(e); }); }
+    // ----- ruas: avenida em anel + avenidas que saem dos portões até a cidade velha -----
+    const ruaM = new T3.MeshToonMaterial({ color: '#cbbf9f', gradientMap: GRAD });
+    { const anel = new T3.Mesh(new T3.RingGeometry(61, 66, 128), ruaM); anel.rotation.x = -Math.PI / 2; anel.position.set(C.X, 0.022, C.Z); anel.receiveShadow = true; G.add(anel);
+      PORTOES.forEach(g => { const L = C.R - 46, [x, z] = pol(g, 46 + L / 2); const r = new T3.Mesh(new T3.PlaneGeometry(6, L), ruaM); r.rotation.x = -Math.PI / 2; r.rotation.z = g; r.position.set(x, 0.021, z); r.receiveShadow = true; G.add(r); });
+      for (let i = 0; i < 36; i++) { const a = i / 36 * Math.PI * 2; if (ehPortao(a, 67, 5)) continue; [59.6, 67.4].forEach((rr, k) => { if ((i + k) % 2) return; const [x, z] = pol(a, rr); if (agua(x, z)) return; const g = grp(G, x, 0, z); part(g, CYL, '#2a2a34', 0, 1.9, 0, 0.09, 3.8, 0.09); part(g, SPH, '#fff2c0', 0, 3.95, 0, 0.26, 0.3, 0.26, 0, true); glowSpr(g, 0, 3.95, 0, 2.4, '#ffd890', 0.45); COL.push({ t: 'c', x, z, r: 0.25 }); }); } }
+    // ----- praça dos portais (norte) -----
+    const PP = pol(Math.PI, 70); C.portaisXZ = PP;
+    { const g = grp(G, PP[0], 0, PP[1]); const ch = new T3.Mesh(new T3.CircleGeometry(15, 48), M('#d6cdbb')); ch.rotation.x = -Math.PI / 2; ch.position.y = 0.03; ch.receiveShadow = true; g.add(ch);
+      const an = new T3.Mesh(new T3.RingGeometry(13.6, 14.3, 64), new T3.MeshBasicMaterial({ color: '#5ae8ff', transparent: true, opacity: 0.6, toneMapped: false })); an.rotation.x = -Math.PI / 2; an.position.y = 0.04; g.add(an);
+      const cristal = new T3.Mesh(new T3.OctahedronGeometry(1.1, 0), new T3.MeshBasicMaterial({ color: '#7af0ff', toneMapped: false })); cristal.position.y = 3.2; g.add(cristal); glowSpr(g, 0, 3.2, 0, 6, '#5ae8ff', 0.5); part(g, CYL, '#8a8296', 0, 0.8, 0, 1.2, 1.6, 1.2); COL.push({ t: 'c', x: PP[0], z: PP[1], r: 1.4 }); C.anim.push(() => { cristal.rotation.y += 0.02; cristal.position.y = 3.2 + Math.sin(gT * 2) * 0.25; });
+      const DEST = [['vila', '🏠 Brumafria', '#ffd23c'], ['masmorra', '💀 Masmorra', '#a07aff'], ['goblin', '👺 Floresta Goblin', '#4ab84a'], ['colosso', '🌋 Colosso', '#ff6a2a'], ['guilda', '🛡️ Salão das Guildas', '#5ab8ff'], ['pousada', '🏡 Pousada do Meio', '#e8a040'], ['ponte', '🌉 Ponte do Rio', '#4aa8e8']];
+      DEST.forEach(([id, nome, cor], i) => { const a = Math.PI * 0.18 + i / (DEST.length - 1) * Math.PI * 1.64, x = Math.sin(a) * 10.5, z = Math.cos(a) * 10.5; const pg = grp(g, x, 0, z); pg.rotation.y = a + Math.PI;
+        part(pg, BOX, '#6a6070', -1.3, 1.6, 0, 0.45, 3.2, 0.45); part(pg, BOX, '#6a6070', 1.3, 1.6, 0, 0.45, 3.2, 0.45); part(pg, BOX, '#6a6070', 0, 3.35, 0, 3.1, 0.45, 0.55);
+        const pl = new T3.Mesh(new T3.PlaneGeometry(2.15, 2.9), new T3.MeshBasicMaterial({ color: cor, transparent: true, opacity: 0.55, side: T3.DoubleSide, toneMapped: false })); pl.position.y = 1.55; pg.add(pl); glowSpr(pg, 0, 1.6, 0, 3.4, cor, 0.45);
+        const tx = canvasTex(320, 72, (c, w, h) => { c.fillStyle = '#1a1420'; c.fillRect(0, 0, w, h); c.strokeStyle = cor; c.lineWidth = 5; c.strokeRect(3, 3, w - 6, h - 6); c.fillStyle = '#ffe8a0'; c.font = 'bold 30px sans-serif'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText(nome, w / 2, h / 2 + 1); });
+        [0, Math.PI].forEach(ry => { const pla = new T3.Mesh(new T3.PlaneGeometry(2.9, 0.65), new T3.MeshBasicMaterial({ map: tx, toneMapped: false })); pla.position.set(0, 4.05, ry ? -0.3 : 0.3); pla.rotation.y = ry; pg.add(pla); });
+        const wx = PP[0] + x, wz = PP[1] + z; COL.push({ t: 'c', x: wx + Math.cos(a) * 1.3, z: wz - Math.sin(a) * 1.3, r: 0.35 }, { t: 'c', x: wx - Math.cos(a) * 1.3, z: wz + Math.sin(a) * 1.3, r: 0.35 });
+        C.portais.push({ id, nome, x: wx, z: wz, g: pg, pl }); }); }
+    // ----- casas pra encher a capital -----
+    const ZONAS = [[PRACA.x, PRACA.z, 25], [HX, HZ, 31], [PP[0], PP[1], 21], [MONU.X, MONU.Z + 2.8, 23]];
+    const livre = (x, z, m) => !agua(x, z) && !ZONAS.some(([zx, zz, zr]) => Math.hypot(x - zx, z - zz) < zr + m) && !naEstrada(x, z, 7) && !COL.some(o => Math.hypot(o.x - x, o.z - z) < (o.r || Math.max(o.hw || 0, o.hd || 0)) + m) && Math.hypot(x - POUSADA[0], z - POUSADA[1]) > 26;
+    const casas = []; [[53, 8.5], [74, 10], [84, 10.5], [93, 11]].forEach(([r, passo]) => { const n = Math.floor(2 * Math.PI * r / passo); for (let i = 0; i < n; i++) { const a = (i + (r % 2) * 0.5) / n * Math.PI * 2; if (ehPortao(a, r, 7)) continue; const [x, z] = pol(a, r); const w = 5.2 + Rr() * 2.2, d = 4.6 + Rr() * 1.8, h = 3.4 + Rr() * 2.2;
+      if (!livre(x, z, Math.max(w, d) * 0.6)) continue; casas.push({ x, z, a, w, d, h, c: Rr() }); COL.push({ t: 'b', x, z, hw: w / 2 + 0.1, hd: d / 2 + 0.1, ry: a }); } });
+    { const corP = ['#e8dcc4', '#d8c8a8', '#efe6d2', '#c9b89a', '#e2d2b8', '#d4c4b0'], corT = ['#8a2a2a', '#3a4a7a', '#6a3a2a', '#2f5a3a', '#7a5a2a'];
+      const m4 = new T3.Matrix4(), q = new T3.Quaternion(), q2 = new T3.Quaternion(), sc = new T3.Vector3(), ps = new T3.Vector3(), up = new T3.Vector3(0, 1, 0), cor = new T3.Color();
+      const corpo = new T3.InstancedMesh(BOX, new T3.MeshToonMaterial({ color: '#ffffff', gradientMap: GRAD }), casas.length), teto = new T3.InstancedMesh(new T3.ConeGeometry(0.75, 1, 4), new T3.MeshToonMaterial({ color: '#ffffff', gradientMap: GRAD }), casas.length);
+      const porta = new T3.InstancedMesh(BOX, M('#4a2c18'), casas.length), jan = new T3.InstancedMesh(BOX, new T3.MeshBasicMaterial({ color: '#ffd890', toneMapped: false }), casas.length * 2), cham = new T3.InstancedMesh(BOX, M('#6a5a50'), casas.length);
+      casas.forEach((k, i) => { q.setFromAxisAngle(up, k.a); corpo.setMatrixAt(i, m4.compose(ps.set(k.x, k.h / 2, k.z), q, sc.set(k.w, k.h, k.d))); corpo.setColorAt(i, cor.set(corP[Math.floor(k.c * 6)]));
+        q2.setFromAxisAngle(up, k.a + Math.PI / 4); teto.setMatrixAt(i, m4.compose(ps.set(k.x, k.h + 1.2, k.z), q2, sc.set(k.w * 0.98, 2.4, k.d * 0.98).multiplyScalar(1))); teto.setColorAt(i, cor.set(corT[Math.floor(k.c * 37) % 5]));
+        const fx0 = -Math.sin(k.a), fz0 = -Math.cos(k.a); // frente da casa virada pro centro
+        porta.setMatrixAt(i, m4.compose(ps.set(k.x + fx0 * (k.d / 2 + 0.03), 1.0, k.z + fz0 * (k.d / 2 + 0.03)), q, sc.set(1.1, 2.0, 0.08)));
+        [-1, 1].forEach((s, j) => { const ox = Math.cos(k.a) * s * k.w * 0.3, oz = -Math.sin(k.a) * s * k.w * 0.3; jan.setMatrixAt(i * 2 + j, m4.compose(ps.set(k.x + fx0 * (k.d / 2 + 0.04) + ox, k.h * 0.62, k.z + fz0 * (k.d / 2 + 0.04) + oz), q, sc.set(0.8, 0.8, 0.06))); });
+        cham.setMatrixAt(i, m4.compose(ps.set(k.x + Math.cos(k.a) * k.w * 0.28, k.h + 1.8, k.z - Math.sin(k.a) * k.w * 0.28), q, sc.set(0.5, 1.4, 0.5))); });
+      [corpo, teto, porta, jan, cham].forEach(m => { m.instanceMatrix.needsUpdate = true; if (m.instanceColor) m.instanceColor.needsUpdate = true; m.castShadow = m !== jan; m.receiveShadow = true; G.add(m); });
+      teto.geometry.rotateY(0); }
+    // ----- barracas de feira na avenida -----
+    { const listras = canvasTex(64, 64, (c, w, h) => { for (let i = 0; i < 8; i++) { c.fillStyle = i % 2 ? '#ffffff' : ['#c8202a', '#2a6ac8', '#2a9a4a'][0]; c.fillRect(i * 8, 0, 8, h); } });
+      for (let i = 0; i < 24; i++) { const a = (i + 0.5) / 24 * Math.PI * 2; if (ehPortao(a, 69, 9)) continue; const [x, z] = pol(a, 69.5); if (!livre(x, z, 2.2)) continue; const g = grp(G, x, 0, z); g.rotation.y = a;
+        part(g, BOX, '#7a4a2a', 0, 0.55, 0, 2.6, 1.1, 1.3); [-1.2, 1.2].forEach(s => part(g, BOX, '#5a3a20', s, 1.5, -0.5, 0.12, 3, 0.12)); const t = new T3.Mesh(new T3.BoxGeometry(3, 0.12, 1.9), new T3.MeshToonMaterial({ map: listras, gradientMap: GRAD })); t.position.set(0, 2.9, -0.2); t.rotation.x = -0.25; g.add(t);
+        ['#ff6a3a', '#ffd23c', '#7ad84a', '#c86aff'].forEach((c2, j) => part(g, SPH, c2, -0.9 + j * 0.6, 1.2, 0.2, 0.22, 0.2, 0.22)); COL.push({ t: 'c', x, z, r: 1.4 }); } }
+  }
+  // ----- monstros que caíram dentro da muralha vão pra fora -----
+  FERAS.forEach(e => { if (!e.home || (e.T && e.T.zona && e.T.zona !== 'vila') || e.cal) return; const dx = e.home[0] - CAPT.X, dz = e.home[1] - CAPT.Z, d = Math.hypot(dx, dz); if (d > CAPT.R + 6) return;
+    const k = (CAPT.R + 12 + Math.random() * 18) / (d || 1); e.home = [CAPT.X + dx * k, CAPT.Z + dz * k]; e.g.position.set(e.home[0], 0, e.home[1]); });
+  // ----- frame: visibilidade, animação e portais -----
+  function capitalFrame(dt, p) { const perto = (zona === 'vila' || zona === 'valdren') && !dentro && p.x > 110; CAPG.visible = perto; if (!perto) return null; CAPT.anim.forEach(f => f());
+    let al = null; CAPT.portais.forEach(P => { P.pl.material.opacity = 0.45 + Math.sin(gT * 3 + P.x) * 0.15; if (!al && zona === 'vila' && Math.hypot(p.x - P.x, p.z - P.z) < 2.6) al = { rot: 'PORTAL', c: P.g, acao: () => capitalPortal(P) }; });
+    // fora da muralha não entra nos monstros: eles não atravessam o muro
+    return al; }
+  function capitalPortal(P) { if (conversa || cenaQ) return; let L = null; try { L = lugaresMapa().find(l => l.id === P.id); } catch (e) {} if (!L) return; som('portal', 0.8, 1); vaiPara(L); }
+  // monstros não entram na capital
+  function capitalLimitaFera(g) { const dx = g.x - CAPT.X, dz = g.z - CAPT.Z, d = Math.hypot(dx, dz); if (d < CAPT.R + 3 && d > 1e-3) { g.x = CAPT.X + dx / d * (CAPT.R + 3); g.z = CAPT.Z + dz / d * (CAPT.R + 3); } }
 
   window.__dbg = { ev: s => eval(s), set camYaw(v) { camYaw = v; }, aviso, atualizaMM, visAtual, visRecebe, mpFxRecebe, lendRemoto: (...a) => lendRemoto(...a), get MPO() { return MP.outros; }, get NAC() { return NAC; }, SIM, simCria, simGuerra, simPara, temVoo, nacaoEntra: () => nacaoEntra(), voaTeste: on => { vooLiberado = true; voa(on); }, setZona: z => { zona = z; dentro = false; }, aroMostra: s => aroMostra(s), get NPCS() { return NPCS; }, divVeste: k => divVeste(k), get ARC() { return ARC; }, get _in() { return [input.x, input.y, vel, facing, dashT, Object.keys(keys).join()]; }, danoHeroi, abrirLoja, aprimora, falar, dano, CAL, DGS, calEntra, MIS, abreMural, get PRACA() { return PRACA; }, staffArmas, equipaArma, MONT3D, PET3D, get MONT() { return MONT; }, montar, petChama, MQ, set GMB(v) { GMB = v; gmHud(); }, gmPct, ASAT, COSM, vesteCosm, CB_LISTA, abrirLivros, trocaPag, get mana() { return mana; }, set mana(v) { mana = v; }, ARMAG, T3, vesteCosm, voa, get voando() { return voando; }, input, mpRecebe, entraMasmorra, saiMasmorra, MM, mmFaseAtual, mmMorte, setaFrame, equipaArma, abrirGuilda, arthurNPC, vestePeca, atualizaPecas, PECAS, BLOCOS, modoBatalha, bmLiga, bmDesliga, BMS, ORB, get BM() { return BM; }, get hora() { return hora; }, set hora(v) { hora = v; }, usarHab2: id => classePoder2(id), BUFF, abrirCriar, aplicaClasse, CLASSES, get desp() { return desp; }, set desp(v) { desp = v; }, usarHab: id => classePoder(id), renderer, scene, world, ganhaXp, vesteFantasia, abrirPerfil, fazRetrato, irValdren, Q, heroi, ativo, AR, FERAS, golem, atacar, get vida() { return vida; }, set vida(v) { vida = v; }, abrirLoja, usarPoder: id => usarPoder(PW[id]), acao: () => acao(), get alvo() { return alvo; } };
   // ---------- laço do jogo ----------
   let vy = 0, noChao = true, facing = 0, vel = 0, gT = 0, last = performance.now();
   const ANDAR = 3.0, CORRER = 6.5, GRAV = 22, PULO = 7.6; const tmp = new T3.Vector3();
-  heroi.position.set(0, 0, 8.5); heroi.rotation.y = Math.PI; facing = Math.PI;
+  heroi.position.set(0, 0, 4.2); heroi.rotation.y = Math.PI; facing = Math.PI;
 
   // ---------- limite do mapa principal: floresta fechada + montanhas em volta, pra ninguém ver a borda ----------
   const BORDA = [-128, -183, 488, 213]; // xmin, zmin, xmax, zmax (mesma área do Mapa de Aetherion)
@@ -11521,7 +11602,7 @@ const ArcaneWingSystem = (function () {
     elyAura.visible = !dentro && zona === 'vila'; heroi.visible = true; const alV = valdrenFrame(dt, p); if (zona === 'valdren') alvo = alV; $('tit').textContent = (zona === 'valdren' ? 'VALDREN' : zona === 'masmorra' ? 'MASMORRA' : zona === 'calab' ? 'CALABOUÇO' : zona === 'leilao' ? 'CASA DE LEILÕES' : zona === 'nacao' ? 'BATALHA DE NAÇÃO' : 'BRUMAFRIA') + ' · ' + (modo === 'noite' ? '🌙 ' : '☀️ ') + String(Math.floor(hora)).padStart(2, '0') + ':' + String(Math.floor((hora % 1) * 6) * 10).padStart(2, '0');
     if (dentro) { OBJS.forEach(o => { const d = Math.hypot(p.x - o.x, p.z - o.z); if (d < 1.9 && d < melhor) { melhor = d; alvo = o; } }); if (Math.hypot(p.x - (IX - 1), p.z - 4.4) < 1.3) alvo = { tipo: 'sair' }; }
     else if (zona === 'vila') { const dp = casaFamilia.localToWorld(new T3.Vector3(casaFamilia.userData.door[0], 0, casaFamilia.userData.door[1] - 0.6)); if (Math.hypot(p.x - dp.x, p.z - dp.z) < 1.3) alvo = { tipo: 'entrar' }; }
-    { const alM = mmFrame(dt, p); if (alM) alvo = alM; const alC = calFrame(dt, p); if (alC) alvo = alC; const alL = typeof leilaoFrame === 'function' ? leilaoFrame(dt, p) : null; if (alL) alvo = alL; const alH = typeof historiaFrame === 'function' ? historiaFrame(dt, p) : null; if (alH) alvo = alH; if (typeof aroFrame === 'function') aroFrame(dt); if (typeof pilaresFrame === 'function') pilaresFrame(dt); if (typeof guardiasFrame === 'function') guardiasFrame(dt); if (typeof katanaFrame === 'function') katanaFrame(dt); if (typeof geloFrame === 'function') geloFrame(dt); if (typeof nacaoFrame === 'function') nacaoFrame(dt, p); if (typeof nacaoCeuFrame === 'function') nacaoCeuFrame(dt); if (typeof abismoFrame === 'function') abismoFrame(dt); if (typeof lendFrame === 'function') lendFrame(dt); if (typeof gladFrame === 'function') gladFrame(dt); if (zona === 'vila' && !dentro && Math.hypot(p.x - (MM_ENT.x + 1.5), p.z - MM_ENT.z) < 3.2) alvo = { rot: 'ENTRAR', acao: entraMasmorra }; setaFrame(p); $('voar').hidden = !voando && !(ASAS.visible && !dentro && temVoo()); }
+    { const alM = mmFrame(dt, p); if (alM) alvo = alM; const alC = calFrame(dt, p); if (alC) alvo = alC; const alL = typeof leilaoFrame === 'function' ? leilaoFrame(dt, p) : null; if (alL) alvo = alL; const alCap = typeof capitalFrame === 'function' ? capitalFrame(dt, p) : null; if (alCap) alvo = alCap; const alH = typeof historiaFrame === 'function' ? historiaFrame(dt, p) : null; if (alH) alvo = alH; if (typeof aroFrame === 'function') aroFrame(dt); if (typeof pilaresFrame === 'function') pilaresFrame(dt); if (typeof guardiasFrame === 'function') guardiasFrame(dt); if (typeof katanaFrame === 'function') katanaFrame(dt); if (typeof geloFrame === 'function') geloFrame(dt); if (typeof nacaoFrame === 'function') nacaoFrame(dt, p); if (typeof nacaoCeuFrame === 'function') nacaoCeuFrame(dt); if (typeof abismoFrame === 'function') abismoFrame(dt); if (typeof lendFrame === 'function') lendFrame(dt); if (typeof gladFrame === 'function') gladFrame(dt); if (zona === 'vila' && !dentro && Math.hypot(p.x - (MM_ENT.x + 1.5), p.z - MM_ENT.z) < 3.2) alvo = { rot: 'ENTRAR', acao: entraMasmorra }; setaFrame(p); $('voar').hidden = !voando && !(ASAS.visible && !dentro && temVoo()); }
     if (!conversa) { const alC = combateAlvo(p); if (alC) alvo = alC; }
     const btn = $('acao'); btn.hidden = !alvo || !!conversa || !!cenaQ; if (alvo) { const tx = alvo.rot || (alvo.tipo === 'entrar' ? 'ENTRAR' : alvo.tipo === 'sair' ? 'SAIR' : alvo.falas && !alvo.c ? 'VER' : 'FALAR'); const ic = tx === 'FALAR' ? '💬 ' : tx === 'VER' ? '👁️ ' : tx === 'ENTRAR' ? '🚪 ' : tx === 'SAIR' ? '🚪 ' : tx === 'TELEPORTE' ? '✨ ' : '✋ '; if (btn.dataset.t !== tx) { btn.dataset.t = tx; btn.textContent = ic + tx.charAt(0) + tx.slice(1).toLowerCase(); } acaoPosiciona(alvo, p, btn); }
     // ambiente
