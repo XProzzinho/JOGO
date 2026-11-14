@@ -2,20 +2,21 @@
   // Cada rota é uma sequência de etapas. Etapa = 'id' (um nó) ou ['id1','id2'] (dois caminhos lado a lado, que se juntam de novo).
   // 'P:atk' / 'P:crit' / 'P:vida' / 'P:mana' / 'P:def' são nós passivos (bônus de atributo).
   const ARV_PAS = { atk: { nome: 'Força', ic: '💪', txt: '+3% de ataque', v: 0.03 }, crit: { nome: 'Precisão', ic: '🎯', txt: '+2% de crítico', v: 0.02 }, vida: { nome: 'Vigor', ic: '❤️', txt: '+15 de vida máxima', v: 15 }, mana: { nome: 'Essência', ic: '🔷', txt: '+12 de mana máxima', v: 12 }, def: { nome: 'Couraça', ic: '🛡️', txt: '+3% de defesa', v: 3 } };
+  // só as 6 magias novas; os nós passivos ligam uma à outra
   const ROTAS = [
-    { id: 'arcana', nome: 'Rota Arcana', sub: 'Magia, gelo, fogo e sombra', ic: '🔮', cor: '#b46aff', etapas: ['escudo', ['dardo', 'P:mana'], 'chama', ['gelo', 'raio'], 'P:atk', ['meteoro', 'nova'], ['orbe', 'teleporte'], 'P:mana', ['drenar', 'maldicao'], ['lanca', 'pacto'], 'P:crit', ['clarao', 'ima'], ['lg_trovao', 'lg_glacial'], 'P:atk', ['lg_eclipse', 'lg_meteoros'], 'P:mana', ['lg_dragao', 'lg_abismo']] },
-    { id: 'lamina', nome: 'Rota da Lâmina', sub: 'Espadas, velocidade e crítico', ic: '⚔️', cor: '#ff7a3a', etapas: ['salto', ['vento', 'P:atk'], 'impulso', ['sismico', 'danca'], ['furia', 'passo'], 'P:crit', ['investida', 'veneno'], ['grito', 'tempestade'], 'P:atk', ['tufao', 'runa'], ['bumerangue', 'marca'], ['esmagar', 'espiral'], 'P:vida', ['pele', 'espelho'], 'planar'] },
-    { id: 'guarda', nome: 'Rota do Guardião', sub: 'Escudo, flechas, tiros e cura', ic: '🛡️', cor: '#3ad87a', etapas: ['sabao', ['ferver', 'P:vida'], 'remedio', ['muralha', 'rajada'], ['provocar', 'chuva'], 'P:def', ['escudada', 'congelante'], ['fortaleza', 'floresta'], 'P:vida', ['carregado', 'polvora'], ['granada', 'tripla'], 'P:def', 'recuo'] }];
-  const PONTES = [['arcana', 4, 'lamina', 5], ['lamina', 8, 'guarda', 8]]; // ligações entre rotas
+    { id: 'arcana', nome: 'Rota Arcana', sub: 'Eclipse e Abismo', ic: '🔮', cor: '#b46aff', etapas: ['P:mana', 'lg_eclipse', ['P:atk', 'P:crit'], 'P:mana', 'lg_abismo'] },
+    { id: 'infernal', nome: 'Rota Infernal', sub: 'Meteoros e Dragão', ic: '🔥', cor: '#ff7a3a', etapas: ['P:atk', 'lg_meteoros', ['P:vida', 'P:crit'], 'P:atk', 'lg_dragao'] },
+    { id: 'tempestade', nome: 'Rota da Tempestade', sub: 'Trovão e Glacial', ic: '⚡', cor: '#3ab8ff', etapas: ['P:def', 'lg_trovao', ['P:mana', 'P:vida'], 'P:def', 'lg_glacial'] }];
+  const PONTES = [['arcana', 3, 'infernal', 3], ['infernal', 3, 'tempestade', 3]]; // ligações entre rotas
   const ARV = { nos: {}, lig: {}, W: 0, H: 0 };
   AR.arvP = AR.arvP || [];
-  (() => { const DX = 68, Y0 = 40, DY = 90, OFF = 23, X0 = 96; const no = (id, x, y, rota, col) => { ARV.nos[id] = { id, x, y, rota, col }; ARV.lig[id] = ARV.lig[id] || new Set(); return id; };
+  (() => { const DX = 92, Y0 = 46, DY = 96, OFF = 26, X0 = 110; const no = (id, x, y, rota, col) => { ARV.nos[id] = { id, x, y, rota, col }; ARV.lig[id] = ARV.lig[id] || new Set(); return id; };
     const liga = (a, b) => { ARV.lig[a].add(b); ARV.lig[b].add(a); };
     no('raiz', 38, Y0 + DY, null, -1); ARV.nos.raiz.raiz = true;
     ROTAS.forEach((R, ri) => { let ant = ['raiz']; R.ids = [];
       R.etapas.forEach((et, ci) => { const lista = Array.isArray(et) ? et : [et]; const atual = [];
         lista.forEach((k, j) => { if (!k.startsWith('P:') && !PW[k]) { console.warn('árvore: habilidade não existe', k); return; } const id = k.startsWith('P:') ? 'P:' + R.id + ':' + ci + ':' + k.slice(2) : k; const y = Y0 + ri * DY + (lista.length > 1 ? (j ? OFF : -OFF) : 0); no(id, X0 + ci * DX, y, R.id, ci); atual.push(id); R.ids.push(id);
-          if (!k.startsWith('P:')) { const pw = PW[k]; pw.preco = pw.lend ? 5 : ci < 3 ? 1 : ci < 6 ? 2 : ci < 9 ? 3 : 4; pw.arv = R.id; } });
+          if (!k.startsWith('P:')) { const pw = PW[k]; const seg = ci >= 3; pw.preco = seg ? 4 : 2; pw.nvMin = seg ? 15 : 5; pw.arv = R.id; } });
         if (!atual.length) return; ant.forEach(a => atual.forEach(b => liga(a, b))); ant = atual; R.col = R.col || []; R.col[ci] = atual; });
       R.fimX = X0 + R.etapas.length * DX; });
     PONTES.forEach(([ra, ca, rb, cb]) => { const A = ROTAS.find(r => r.id === ra).col[ca], B = ROTAS.find(r => r.id === rb).col[cb]; if (A && B) liga(A[A.length - 1], B[0]); });
@@ -23,7 +24,7 @@
   function arvTem(id) { return !!ARV.nos[id] && !id.startsWith('P:'); }
   function arvPossui(id) { if (id === 'raiz') return true; if (id.startsWith('P:')) return (AR.arvP || []).includes(id); return AR.tem.includes(id); }
   function arvLiga(id) { const pw = PW[id]; if (pw && pw.nvMin && AR.nv < pw.nvMin && !souAdmin()) return false; return [...(ARV.lig[id] || [])].some(arvPossui); }
-  function arvB(k) { let v = 0; (AR.arvP || []).forEach(id => { const s = id.split(':')[3]; if (s === k && ARV_PAS[s]) v += ARV_PAS[s].v; }); return v; }
+  function arvB(k) { try { ARV_PAS; } catch (e) { return 0; } let v = 0; (AR.arvP || []).forEach(id => { const s = id.split(':')[3]; if (s === k && ARV_PAS[s]) v += ARV_PAS[s].v; }); return v; }
   function arvDesenhaNo(id) { const N = ARV.nos[id]; if (N.raiz) return { ic: '🌟', nome: 'Despertar', cor: '#ffd23c' }; if (id.startsWith('P:')) { const P = ARV_PAS[id.split(':')[3]]; return { ic: P.ic, nome: P.nome, cor: ROTAS.find(r => r.id === N.rota).cor, pas: true }; } const pw = PW[id]; return { ic: pw.icone, nome: pw.nome, cor: ROTAS.find(r => r.id === N.rota).cor, lend: !!pw.lend }; }
   let arvScroll = null;
   function arvRede(col) { col.className = 'arv-rede-wrap' + (AR.arvNomes ? ' nomes' : ''); { let bt = $('arv-nomes'); if (!bt) { bt = document.createElement('button'); bt.id = 'arv-nomes'; $('arv-fecha').before(bt); tapBtn(bt, () => { AR.arvNomes = !AR.arvNomes; salvaAR(); desenhaArvore(); }); } bt.textContent = (AR.arvNomes ? '☑' : '☐') + ' Nomes'; } const sc = document.createElement('div'); sc.className = 'arv-rede-sc'; const R0 = document.createElement('div'); R0.className = 'arv-rede'; R0.style.width = ARV.W + 'px'; R0.style.height = ARV.H + 'px';
@@ -44,3 +45,7 @@
     det.innerHTML = `<button class="arv-x" id="arv-x">✕</button><div class="dt"><span class="ic">${P.ic}</span><div><b>${P.nome}</b><small>Passiva · ${R.nome}</small></div></div><p>${P.txt}. Fica ativa pra sempre depois de aprender.</p><div id="arv-acoes"></div>`;
     tapBtn($('arv-x'), () => { selArv = null; desenhaArvore(); }); const ac = $('arv-acoes'); if (tem) { ac.innerHTML = '<div class="qs">✅ Aprendida</div>'; return true; } const b = document.createElement('button'); b.className = 'ab'; b.disabled = !pode || AR.pts < 1; b.textContent = !pode ? '🔒 Aprenda um nó ligado a este primeiro' : AR.pts < 1 ? 'Falta 1 ponto' : 'Aprender (1 pt)';
     if (pode && AR.pts >= 1) tapBtn(b, () => { AR.pts -= 1; AR.arvP.push(selArv); salvaAR(); atualizaPts(); aplicaNivel(); aviso(P.ic + ' ' + P.nome + ': ' + P.txt + '!', '#7ad87a'); desenhaArvore(); }); ac.appendChild(b); return true; }
+  (() => { if (AR.arvV === 2) return; const fixas = ['memoria', 'luz'], novas = LEND.map(L => L.id), base = ['sabao', 'salto']; let volta = 0;
+    AR.tem = AR.tem.filter(id => { const pw = PW[id]; if (fixas.includes(id) || novas.includes(id) || !pw || pw.cabal) return true; if (!base.includes(id)) volta += 2; return false; });
+    AR.barra = AR.barra.map((id, i) => i < 2 ? id : id && AR.tem.includes(id) ? id : (id && PW[id] && PW[id].cabal ? id : null));
+    volta += (AR.arvP || []).length; AR.arvP = []; AR.pts = (AR.pts || 0) + volta; AR.arvV = 2; salvaAR(); if (volta) setTimeout(() => aviso('🌳 A árvore de habilidades mudou! Você recebeu ' + volta + ' pontos de volta pra gastar nas novas magias.', '#ffd23c'), 2500); try { montaBarra(); } catch (e) {} })();

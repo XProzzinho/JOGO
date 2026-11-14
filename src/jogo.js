@@ -322,7 +322,7 @@
   const RAMOS = [{ id: 'ciencia', nome: 'Ciência', icone: IC('p_ciencia'), cor: '#4ab870' }, { id: 'mana', nome: 'Mana', icone: IC('p_mana'), cor: '#3a8ae8' }, { id: 'corpo', nome: 'Corpo', icone: IC('p_corpo'), cor: '#e88a2a' }, { id: 'fisica', nome: 'Física', icone: IC('p_fisica'), cor: '#b84ad8' }];
   const NSLOTS = 8;
   // progresso da árvore (salvo no aparelho)
-  let AR = { pts: 3, tem: ['sabao', 'salto'], barra: ['memoria', 'luz', null, 'sabao', 'salto', null, null, null], ganhos: [] };
+  let AR = { pts: 3, tem: [], barra: ['memoria', 'luz', null, null, null, null, null, null], ganhos: [] };
   try { const g = JSON.parse(localStorage.getItem('aetherion-arvore') || 'null'); if (g && g.barra && g.barra.length === NSLOTS) AR = Object.assign(AR, g); } catch (e) {}
   AR.barra[0] = 'memoria'; AR.barra[1] = 'luz';
   function salvaAR() { try { localStorage.setItem('aetherion-arvore', JSON.stringify(AR)); } catch (e) {} if (window.CONTA) CONTA.salvar(); }
