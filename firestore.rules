@@ -117,6 +117,11 @@ service cloud.firestore {
     }
 
     // Presentes do Administrador: GM/ADM mandam; o jogador lê e esvazia a própria caixa
+    // Reset de conta: o ADM marca a hora do reset; o jogo do jogador lê e recomeça do zero
+    match /resets/{uid} {
+      allow read: if logado() && (request.auth.uid == uid || souStaff());
+      allow write: if souAdm();
+    }
     match /presentes/{uid} {
       allow read: if logado() && (request.auth.uid == uid || souStaff());
       allow write: if souStaff() || (logado() && request.auth.uid == uid && request.resource.data.lista.size() == 0);

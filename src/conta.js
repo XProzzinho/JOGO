@@ -63,7 +63,7 @@
 
   // salvar na nuvem (espera uns segundos pra juntar várias mudanças)
   let tSalvar = null, pendente = false;
-  async function enviar() { tSalvar = null; if (!C.usuario) return; pendente = false; const L = lerLocal(); let nv = 1; try { nv = JSON.parse(L['aetherion-arvore'] || '{}').nv || 1; } catch (e) {}
+  async function enviar() { tSalvar = null; if (!C.usuario || window.__resetando) return; pendente = false; const L = lerLocal(); let nv = 1; try { nv = JSON.parse(L['aetherion-arvore'] || '{}').nv || 1; } catch (e) {}
     try { await docDe(C.usuario.uid).set({ nome: C.usuario.displayName || '', email: C.usuario.email || '', arvore: L['aetherion-arvore'] || null, finais: L['aetherion-finais'] || null, nv, atualizado: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true }); C.online = true; atualizaSelo(); }
     catch (e) { C.online = false; pendente = true; atualizaSelo(); } }
   C.salvar = function () { if (!C.usuario) return; pendente = true; clearTimeout(tSalvar); tSalvar = setTimeout(enviar, 3000); };
@@ -74,8 +74,13 @@
 
   // quando entra: puxa o progresso da nuvem; conta nova: sobe o progresso do celular
   // puxa o progresso da nuvem só UMA vez por sessão (senão o jogo ficava recarregando sem parar)
+  // ---- reset da conta feito pelo ADM no painel (resets/{uid}) ----
+  async function aplicaReset(uid, em) { window.__resetando = true; try { ['aetherion-arvore', 'aetherion-finais'].forEach(k => localStorage.removeItem(k)); localStorage.setItem('aetherion-dono', uid); sessionStorage.setItem('aetherion-puxado', uid); sessionStorage.setItem('aetherion-resetado', '1'); } catch (e) {}
+    try { await docDe(uid).set({ arvore: null, finais: null, nv: 1, resetVisto: em }, { merge: true }); } catch (e) {} location.reload(); }
+  function ouveReset(uid, visto) { try { db.collection('resets').doc(uid).onSnapshot(r => { const em = r.exists ? r.data().em || 0 : 0; if (em > visto && !window.__resetando) { mostra('Sua conta foi resetada pelo administrador. Recomeçando...'); tela.hidden = false; aplicaReset(uid, em); } }, () => {}); } catch (e) {} }
   async function aoEntrar(u) { C.usuario = u; registraUsuario(u, u.displayName); mostra('Carregando seu progresso...'); ocupado(true); let puxado = null; try { puxado = sessionStorage.getItem('aetherion-puxado'); } catch (e) {}
-    try { const d = await docDe(u.uid).get();
+    try { const d = await docDe(u.uid).get(); let rs = 0; try { const r = await db.collection('resets').doc(u.uid).get(); if (r.exists) rs = r.data().em || 0; } catch (e) {} const visto = (d.exists && d.data().resetVisto) || 0;
+      if (rs > visto) { await aplicaReset(u.uid, rs); return; } ouveReset(u.uid, Math.max(rs, visto));
       if (d.exists && d.data().arvore && puxado !== u.uid) { const dt = d.data(); try { sessionStorage.setItem('aetherion-puxado', u.uid); } catch (e) {}
         let nvLocal = 0, nvNuvem = 0; try { nvLocal = (JSON.parse(localStorage.getItem('aetherion-arvore') || '{}').nv || 0); nvNuvem = (JSON.parse(dt.arvore).nv || 0); } catch (e) {}
         let dono = null; try { dono = localStorage.getItem('aetherion-dono'); } catch (e) {}

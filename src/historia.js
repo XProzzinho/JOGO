@@ -133,3 +133,4 @@
       SANT.canal = 2.6; som('magia', 0.8, 0.8); aviso('🔵 Concentrando mana... fique no círculo!', '#7ae8ff'); } }; }
   setTimeout(histHud, 300);
   window.__hist = { GUARD, SANT, RYU, histFala, histAbre, get at() { return AR.hist; } };
+  try { if (sessionStorage.getItem('aetherion-resetado')) { sessionStorage.removeItem('aetherion-resetado'); setTimeout(() => aviso('♻️ Sua conta foi resetada pelo administrador. Boa nova aventura!', '#ffd23c'), 2500); } } catch (e) {}
