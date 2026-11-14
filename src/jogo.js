@@ -1034,7 +1034,7 @@
     if (e.estado === 'anda' || e.estado === 'volta') { e.estado = 'caca'; }
     if (e.vida <= 0) morre(e); }
   function congelar(e, s) { if (e.morto) return; e.congela = Math.max(e.congela, e.T.chefe ? s * 0.35 : s); }
-  function morre(e) { if (e.hist && typeof histMorte === 'function') { somEm(SOM_MORTE[e.tipo], e.g.position, 1, 0.02); histMorte(e); ganhaXp(60, true); return; } somEm(SOM_MORTE[e.tipo], e.g.position, 1, 0.02); e.morto = true; e.mortoT = 0; e.hp.style.display = 'none'; const p = e.g.position; const [a, b] = e.T.moedas; solta_loot(p.x, p.z, 'moedas', a + Math.floor(Math.random() * (b - a + 1)));
+  function morre(e) { if (typeof histMorteGeral === 'function') histMorteGeral(e); if (e.hist && typeof histMorte === 'function') { somEm(SOM_MORTE[e.tipo], e.g.position, 1, 0.02); histMorte(e); ganhaXp(60, true); return; } somEm(SOM_MORTE[e.tipo], e.g.position, 1, 0.02); e.morto = true; e.mortoT = 0; e.hp.style.display = 'none'; const p = e.g.position; const [a, b] = e.T.moedas; solta_loot(p.x, p.z, 'moedas', a + Math.floor(Math.random() * (b - a + 1)));
     e.T.itens.forEach(([it, ch]) => { if (Math.random() < ch) solta_loot(p.x + (Math.random() - .5), p.z + (Math.random() - .5), it, 1); });
     AR.abates[e.tipo] = (AR.abates[e.tipo] || 0) + 1; if (e.tipo === 'goblin') goblinMorto(); mqMorte(e); calMorte(e); if (e.T.zona === 'masmorra') mmMorte(e); enche(e.T.chefe ? 60 : 12); ganhaXp(XP_TIPO[e.tipo] || 10, true); const tot = Object.values(AR.abates).reduce((s, v) => s + v, 0); salvaAR();
     if (e.tipo === 'morcego') { ganha('morcego1', 3, 'derrotou o Morcego Gigante'); aviso('🏆 O MORCEGO GIGANTE CAIU! Pegue as 🦇 Asas de Morcego no chão.', '#c8a8ff'); }
@@ -1912,6 +1912,7 @@
   ['keydown', 'keyup'].forEach(t => $('criar').addEventListener(t, e => e.stopPropagation()));
   tapBtn($('cr-prox'), () => desenhaCriar(2)); tapBtn($('cr-volta'), () => desenhaCriar(1));
   tapBtn($('cr-fim'), () => { if (!crSel || !CLASSES[crSel]) return; AR.visual.nome = ($('cr-nome').value.trim() || 'Leonardo').slice(0, 16); const nova = AR.classe !== crSel; if (nova) aplicaClasse(crSel); else { mostraArma(); aplicaVisual(); salvaAR(); setTimeout(fazRetrato, 100); } $('criar').hidden = true;
+    if (nova && typeof histComeca === 'function') histComeca();
     if (nova) aviso('🌳 Sua aventura começou! Abra a árvore de habilidades (toque na sua foto) e siga a rota que quiser.', '#3ad8ff'); });
   let criarT = 0; function criarFrame(dt) { if ($('criar').hidden) return; criarT += dt; if (criarT > 0.06) { fazPrevia(criarT, $('cr-previa')); criarT = 0; } }
   // ===================== HABILIDADES PRÓPRIAS DE CADA CLASSE (ramo da classe na árvore) =====================

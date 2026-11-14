@@ -1,5 +1,21 @@
   // ===================== MODO HISTÓRIA (missões principais em ordem; cada uma no formato do criador) =====================
   const HISTORIA = [
+    { id: "mq_01", levelReq: 1, title: "Primeiros Passos em Brumafria", npc: "Mestre Kaelen", location: "Praça dos Aventureiros",
+      description: "Todo aventureiro começa na Praça. Saia pelo portão leste da vila e procure o Mestre Kaelen, ele treina quem chega.",
+      objectives: [{ type: "REACH", target: "praca", count: 1 }, { type: "TALK", target: "mestre_kaelen", count: 1 }],
+      rewards: { xp: 150, gold: 100 }, fim: ['Então você é o novato. Bem-vindo à Praça dos Aventureiros!', 'Aqui ficam os portais, a capitã da guarda e eu, que treino quem quer ficar forte.', 'Mas primeiro quero ver se você aguenta uma luta de verdade.'] },
+    { id: "mq_02", levelReq: 1, title: "Teste de Coragem", npc: "Mestre Kaelen", location: "Campos da vila",
+      description: "Os lobos da neve rondam os campos perto da vila. Derrote 3 deles e volte para o Mestre Kaelen.",
+      objectives: [{ type: "KILL", target: "lobo", count: 3 }],
+      rewards: { xp: 300, gold: 150 }, fim: ['Três lobos! Nada mal pra quem acabou de chegar.', 'Mas lutar com as mãos ou um bastão não vai te levar longe. Você precisa de uma arma de verdade.'] },
+    { id: "mq_03", levelReq: 2, title: "Aço Novo", npc: "Mestre Kaelen", location: "Forja da vila",
+      description: "Visite a Forja da vila para conhecer as armas e prove a sua força derrotando 3 javalis.",
+      objectives: [{ type: "INTERACT", target: "forja", count: 1 }, { type: "KILL", target: "javali", count: 3 }],
+      rewards: { xp: 450, gold: 250 }, fim: ['Agora sim você parece um aventureiro.', 'Tem alguém que sente a energia do Obelisco melhor do que eu: o Mestre Ryuken, no Santuário da Praça.', 'Vá até ele. Ele vai te mostrar o próximo passo.'] },
+    { id: "mq_04", levelReq: 3, title: "O Chamado do Santuário", npc: "Mestre Ryuken", location: "Santuário da Praça",
+      description: "O Mestre Kaelen mandou você procurar o Mestre Ryuken no Santuário da Praça, onde fica o círculo rúnico.",
+      objectives: [{ type: "REACH", target: "santuario", count: 1 }, { type: "TALK", target: "mestre_ryuken", count: 1 }],
+      rewards: { xp: 600, gold: 300 }, fim: ['Kaelen te mandou? Eu já te esperava.', 'Sinto a energia do Obelisco crescendo em você, mas ainda é cedo.', 'Fique mais forte. Quando chegar ao nível 5, o círculo rúnico vai responder à sua mana.'] },
     {
       id: "mq_05",
       levelReq: 5,
@@ -22,7 +38,7 @@
     }
   ];
   // nomes que aparecem pro jogador para cada alvo das missões
-  const HIST_ALVOS = { circulo_runico_praca: { INTERACT: 'Concentrar mana no Círculo Rúnico', ic: '🔵' }, guardiao_treino: { KILL: 'Derrotar o Guardião de Treino', ic: '🗿' } };
+  const HIST_ALVOS = { circulo_runico_praca: { INTERACT: 'Concentrar mana no Círculo Rúnico', ic: '🔵' }, guardiao_treino: { KILL: 'Derrotar o Guardião de Treino', ic: '🗿' }, praca: { REACH: 'Ir até a Praça dos Aventureiros (portão leste)' }, santuario: { REACH: 'Chegar ao Santuário da Praça' }, mestre_kaelen: { TALK: 'Falar com o Mestre Kaelen' }, mestre_ryuken: { TALK: 'Falar com o Mestre Ryuken' }, lobo: { KILL: 'Derrotar Lobos da neve' }, javali: { KILL: 'Derrotar Javalis' }, forja: { INTERACT: 'Visitar a Forja da vila' } };
   // o que cada "unlockFeature" libera
   const HIST_LIBERA = {
     MODO_BATALHA_1: { nome: '⚡ Modo de Batalha I', fn: () => { AR.bmLib = AR.bmLib || [0, 0, 0]; AR.bmLib[0] = 1; } }
@@ -39,7 +55,7 @@
   function histCompleta() { return !!histAtual() && histObjAtual() < 0; }
   function histProgresso(tipo, alvo) { const q = histAtual(); if (!q) return false; const i = histObjAtual(); if (i < 0) return false; const o = q.objectives[i]; if (o.type !== tipo || o.target !== alvo) return false;
     AR.hist.at.prog[i] = (AR.hist.at.prog[i] || 0) + 1; salvaAR(); som('missao_ok', 0.8, 1.2);
-    if (histObjAtual() < 0) setTimeout(() => aviso('📖 ' + q.title + ': objetivos completos! Volte para o ' + q.npc + '.', '#7ad87a'), 700); else aviso('✅ ' + histObjTxt(o) + ' · próximo: ' + histObjTxt(q.objectives[histObjAtual()]), '#7ad87a');
+    if (histObjAtual() < 0) { const ult = q.objectives[q.objectives.length - 1]; if (ult.type === 'TALK') { histFim(q); return true; } setTimeout(() => aviso('📖 ' + q.title + ': objetivos completos! Volte para o ' + q.npc + '.', '#7ad87a'), 700); } else aviso('✅ ' + histObjTxt(o) + ' · próximo: ' + histObjTxt(q.objectives[histObjAtual()]), '#7ad87a');
     histHud(); return true; }
   // ---------- SANTUÁRIO DA PRAÇA: plataforma, círculo rúnico e o Mestre Ryuken ----------
   function santLugar() { // procura um lugar livre perto da praça: longe da estrada, da muralha e de outras coisas
@@ -84,7 +100,7 @@
   function guardiaoInvoca() { const e = GUARD; if (!e.morto) return; reseta(e); e.estado = 'caca'; e.g.position.y = -3; e.surge = 1.6; fx('luz', [SANT.x, 0, SANT.z], 1); tremor = 0.5; som('magia', 1, 0.6); aviso('🗿 O Guardião de Treino despertou! Derrote-o!', '#7ae8ff'); }
   function histMorte(e) { if (e !== GUARD) return false; e.morto = true; e.mortoT = 0; e.hp.style.display = 'none'; fx('luz', [e.g.position.x, 0, e.g.position.z], 0.8); histProgresso('KILL', 'guardiao_treino'); return true; }
   // ---------- fala do mestre ----------
-  function histFala() { const N = 'Mestre Ryuken', q = histAtual();
+  function histFala() { const N = 'Mestre Ryuken', q = histAtual(); if (q && q.id !== 'mq_05' && histTalk(N)) return;
     if (q && q.npc === N) { if (histCompleta()) { falar({ nome: N, falas: q.fim || ['Muito bem! Você completou: ' + q.title + '.'], fim: () => histConclui(q) }); return; }
       const o = q.objectives[histObjAtual()]; falar({ nome: N, falas: ['Ainda não terminou. Agora: ' + histObjTxt(o).toLowerCase() + '.' + (o.target === 'guardiao_treino' && GUARD.morto ? ' Concentre sua mana no círculo de novo para chamar o guardião.' : '')] }); return; }
     const p = histProxima(); if (!p) { falar({ nome: N, falas: ['Você já percorreu todo o caminho que os pergaminhos revelam por enquanto. Volte quando o Obelisco mostrar o próximo capítulo.'] }); return; }
@@ -97,12 +113,12 @@
     if (r.gold) { AR.inv.moedas = (AR.inv.moedas || 0) + r.gold; atualizaInv(); numero(heroi.position, '+' + r.gold + ' 💰', '#ffd23c', 2.4); }
     if (r.unlockFeature) { AR.hist.libs[r.unlockFeature] = 1; const L = HIST_LIBERA[r.unlockFeature]; if (L) L.fn(); }
     salvaAR(); if (r.xp) ganhaXp(r.xp, true); flash('rgba(120,230,255,.45)'); som('missao_ok', 1, 1); fx('luz', [heroi.position.x, 0, heroi.position.z], 1);
-    aviso('🏆 ' + q.title + ' concluída! ' + histRecTxt(q), '#ffd23c'); histHud(); }
+    aviso('🏆 ' + q.title + ' concluída! ' + histRecTxt(q), '#ffd23c'); histHud(); AR.hist.auto = true; salvaAR(); setTimeout(histSegue, 2600); }
   // ---------- HUD da missão ----------
   const histHudEl = document.createElement('div'); histHudEl.id = 'hist-hud'; histHudEl.hidden = true; document.body.appendChild(histHudEl);
   tapBtn(histHudEl, () => histAbre());
   function histHud() { const q = histAtual(); histHudEl.hidden = !q; if (!q) return; const done = histCompleta(), cur = histObjAtual();
-    histHudEl.innerHTML = `<b>📖 ${q.title}</b>` + (done ? `<div class="ok">✅ Volte para o ${q.npc}</div>` : q.objectives.map((o, i) => { const n = AR.hist.at.prog[i] || 0, ok = n >= o.count; return `<div class="${ok ? 'ok' : i === cur ? 'cur' : 'nx'}">${ok ? '✅' : i === cur ? '▸' : '◻️'} ${histObjTxt(o)}${o.count > 1 ? ' ' + Math.min(n, o.count) + '/' + o.count : ''}</div>`; }).join('')); }
+    histHudEl.innerHTML = `<b>📖 ${q.title}</b><small class="dist"></small>` + (done ? `<div class="ok">✅ Volte para o ${q.npc}</div>` : q.objectives.map((o, i) => { const n = AR.hist.at.prog[i] || 0, ok = n >= o.count; return `<div class="${ok ? 'ok' : i === cur ? 'cur' : 'nx'}">${ok ? '✅' : i === cur ? '▸' : '◻️'} ${histObjTxt(o)}${o.count > 1 ? ' ' + Math.min(n, o.count) + '/' + o.count : ''}</div>`; }).join('')); }
   // ---------- painel do Modo História (menu da foto) ----------
   const histP = document.createElement('div'); histP.id = 'hist-p'; histP.hidden = true; document.body.appendChild(histP);
   function histAbre() { const at = histAtual(), prox = histProxima();
@@ -111,7 +127,7 @@
       return `<div class="cap ${feita ? 'feita' : ''} ${ativa ? 'ativa' : ''}"><div class="t"><small>Capítulo ${i + 1} · Nível ${q.levelReq}</small><b>${q.title}</b>${st}</div><p>${q.description}</p><div class="meta">👤 ${q.npc} · 📍 ${q.location}</div><ul>${q.objectives.map((o, k) => { const ok = feita || (ativa && (at.prog[k] || 0) >= o.count); return `<li class="${ok ? 'ok' : ''}">${ok ? '✅' : '◻️'} ${histObjTxt(o)}</li>`; }).join('')}</ul><div class="rec">🎁 ${histRecTxt(q)}</div></div>`; }).join('') + `</div></div>`;
     histP.hidden = false; tapBtn($('hist-x'), () => { histP.hidden = true; }); }
   // ---------- quadro a quadro: círculo, marcador do mestre, guardião surgindo ----------
-  function historiaFrame(dt, p) { const naVila = zona === 'vila' && !dentro;
+  function historiaFrame(dt, p) { histGuia(dt); const naVila = zona === 'vila' && !dentro;
     // marcador acima do mestre
     const q = histAtual(), prox = histProxima(); let m = null; if (q && q.npc === 'Mestre Ryuken' && histCompleta()) m = '?'; else if (!q && prox && prox.npc === 'Mestre Ryuken' && AR.nv >= prox.levelReq) m = '!';
     RYU.marca.visible = !!m && naVila; if (m) { RYU.marca.material.map = marcaT(m, '#ffd23c'); RYU.marca.position.set(RYU.x, 2.85 + Math.sin(gT * 3) * 0.1, RYU.z); }
@@ -134,3 +150,33 @@
   setTimeout(histHud, 300);
   window.__hist = { GUARD, SANT, RYU, histFala, histAbre, get at() { return AR.hist; } };
   try { if (sessionStorage.getItem('aetherion-resetado')) { sessionStorage.removeItem('aetherion-resetado'); setTimeout(() => aviso('♻️ Sua conta foi resetada pelo administrador. Boa nova aventura!', '#ffd23c'), 2500); } } catch (e) {}
+
+  // ===== rota da missão principal: começa sozinha na conta nova e segue de uma missão pra outra =====
+  function histFim(q) { falar({ nome: q.npc, falas: q.fim || ['Muito bem!'], fim: () => histConclui(q) }); }
+  function histSegue() { if (AR.hist.at) return; const p = histProxima(); if (!p) return; if (AR.nv < p.levelReq) { aviso('📖 Próxima missão da história: ' + p.title + ' (libera no nível ' + p.levelReq + ').', '#ffd23c'); return; } histAceita(p); }
+  let histIni = false;
+  function histComeca() { AR.hist.auto = true; if (histIni) return; histIni = true; setTimeout(() => { if (!AR.hist.at && !AR.hist.feitas.length) histAceita(HISTORIA[0]); }, 1200); }
+  // quem já passou do nível 5 pula as missões de começo
+  if (!AR.hist.feitas.length && !AR.hist.at && AR.nv >= 5) { AR.hist.feitas.push('mq_01', 'mq_02', 'mq_03', 'mq_04'); salvaAR(); }
+  else if (!AR.hist.feitas.length && !AR.hist.at) { const iv = setInterval(() => { const cr = $('criar'); if ((!cr || cr.hidden) && !conversa && !cenaQ && window.__entrou !== false) { clearInterval(iv); histComeca(); } }, 1000); }
+  // falar com NPC (objetivo TALK ou entregar a missão)
+  function histNpcNome(n) { return n.toLowerCase().replace(/\s+/g, '_'); }
+  function histTalk(nome) { const q = histAtual(); if (!q) return false; const i = histObjAtual(); if (i >= 0) { const o = q.objectives[i]; if (o.type === 'TALK' && o.target === histNpcNome(nome)) { histProgresso('TALK', o.target); return true; } return false; }
+    if (q.npc === nome) { histFim(q); return true; } return false; }
+  NPCS.forEach(n => { if (/^Mestre Kaelen/.test(n.nome)) { const o = n.acao; n.acao = () => { if (!histTalk('Mestre Kaelen')) o(); }; } });
+  // visitar a Forja
+  { const _abL = abrirLoja; abrirLoja = function () { try { histProgresso('INTERACT', 'forja'); } catch (e) {} return _abL.apply(this, arguments); }; }
+  // derrotar bichos (lobos, javalis...)
+  function histMorteGeral(e) { try { if (!e.hist) histProgresso('KILL', e.tipo); } catch (er) {} }
+  // seta da rota: aponta pro próximo lugar
+  let histSetaMinha = false, histGuiaT = 0;
+  function histAlvoXZ() { const q = histAtual(); if (!q) return null; const i = histObjAtual(); const npcXZ = nm => { const n = NPCS.find(n => n.nome.startsWith(nm)); return n ? [n.x, n.z] : null; };
+    if (i < 0) return q.npc === 'Mestre Ryuken' ? [RYU.x, RYU.z] : npcXZ(q.npc); const o = q.objectives[i];
+    if (o.target === 'praca') return [PRACA.x, PRACA.z]; if (o.target === 'santuario' || o.target === 'circulo_runico_praca') return [SANT.x, SANT.z]; if (o.target === 'mestre_kaelen') return npcXZ('Mestre Kaelen'); if (o.target === 'mestre_ryuken') return [RYU.x, RYU.z]; if (o.target === 'forja') return [FX0, FZ0];
+    if (o.target === 'guardiao_treino') return GUARD.morto ? [SANT.x, SANT.z] : [GUARD.g.position.x, GUARD.g.position.z];
+    if (o.type === 'KILL') { const p = heroi.position; let b = null, bd = 1e9; FERAS.forEach(e => { if (e.tipo !== o.target || !feraAtiva(e)) return; const d = Math.hypot(e.g.position.x - p.x, e.g.position.z - p.z); if (d < bd) { bd = d; b = e; } }); return b ? [b.g.position.x, b.g.position.z] : null; } return null; }
+  function histGuia(dt) { histGuiaT -= dt; if (histGuiaT > 0) return; histGuiaT = 0.3; const livre = !Q.passo || Q.passo === 0; const alvo = livre && zona === 'vila' && !dentro ? histAlvoXZ() : null;
+    if (alvo) { Q.alvoQ = alvo; histSetaMinha = true; } else if (histSetaMinha) { Q.alvoQ = null; histSetaMinha = false; }
+    const q = histAtual(), i = histObjAtual(); if (q && i >= 0) { const o = q.objectives[i]; if (o.type === 'REACH' && alvo && Math.hypot(heroi.position.x - alvo[0], heroi.position.z - alvo[1]) < 9) histProgresso('REACH', o.target); }
+    if (!q && AR.hist.auto) { const p = histProxima(); if (p && AR.nv >= p.levelReq && !conversa) histAceita(p); }
+    const dEl = histHudEl.querySelector('.dist'); if (dEl) dEl.textContent = alvo ? '📍 ' + Math.round(Math.hypot(heroi.position.x - alvo[0], heroi.position.z - alvo[1])) + ' m' : ''; }
