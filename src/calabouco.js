@@ -260,7 +260,7 @@
       { id: 'guilda', nome: 'Salão das Guildas', ic: '🛡️', x: sx, z: sz, cor: '#5ab8ff' }, { id: 'masmorra', nome: 'Masmorra', ic: '💀', x: MM_ENT.x + 4, z: MM_ENT.z, cor: '#a07aff' },
       { id: 'goblin', nome: 'Floresta Goblin', ic: '👺', x: GBX - 10, z: GBZ + 10, cor: '#4ab84a' }, { id: 'ponte', nome: 'Ponte do Rio', ic: '🌉', x: RIO.ponte[0] - 9, z: RIO.ponte[1], cor: '#4aa8e8' },
       { id: 'pousada', nome: 'Pousada do Meio', ic: '🏡', x: POUSADA[0], z: POUSADA[1] + 4, cor: '#e8a040' }, { id: 'colosso', nome: 'Colosso (chefe de mundo)', ic: '🌋', x: 205, z: -48, cor: '#ff6a2a' }, { id: 'leilao', nome: 'Praça do Leilão', ic: '🔨', x: 15 + 3.2, z: 150 - 26 - 3.0, cor: '#e8a040', sub: 'Palanque do leiloeiro' },
-      { id: 'valdren', nome: 'Valdren', ic: '🏛️', x: VX, z: 40, cor: '#ffe8a0', trava: !lib, sub: lib ? 'A capital' : '🔒 Fale com o Professor' }]; }
+      { id: 'valdren', nome: 'Valdren', ic: '🏛️', x: VX, z: VZ + 40, cor: '#ffe8a0', trava: !lib, sub: lib ? 'A capital' : '🔒 Fale com o Professor' }]; }
   function vaiPara(L) { $('mapa').hidden = true; if (Q.naCarroca || conversa) return; if (L.trava) { aviso(L.sub, '#ff6a6a'); return; } if (L.id === 'valdren') { viajar('valdren'); return; }
     if (CAL.on) { calLimpa(); CAL.on = false; CALG.visible = false; } if (montado) montar(false); if (voando) voa(false);
     cena([{ t: '✨ Teleportando para ' + L.nome + '...', v: null }], () => { dentro = false; zona = 'vila'; heroi.position.set(L.x, 0, L.z); facing = Math.PI; camYaw = 0; cam.position.set(L.x, 4, L.z + 7); fx('luz', [L.x, 0, L.z], 1); som('portal', 0.8, 1); mostrarLugar(L.nome); }); }
@@ -270,7 +270,7 @@
     x.strokeStyle = '#3a8ad8'; x.lineWidth = 10 * k; x.lineCap = 'round'; x.beginPath(); RIO.forEach(([a, b], i) => { const [u, v] = P(a, b); i ? x.lineTo(u, v) : x.moveTo(u, v); }); x.stroke();
     x.strokeStyle = '#c8b48a'; x.lineWidth = 6.4 * k + 2; x.beginPath(); ESTRADA.forEach(([a, b], i) => { const [u, v] = P(a, b); i ? x.lineTo(u, v) : x.moveTo(u, v); }); x.stroke();
     const circ = (a, b, r, f, s) => { const [u, v] = P(a, b); x.beginPath(); x.arc(u, v, r * k, 0, 7); x.fillStyle = f; x.fill(); if (s) { x.strokeStyle = s; x.lineWidth = 2; x.stroke(); } };
-    circ(MW.x, MW.z, MW.r, '#e8d8b0', '#7a7068'); circ(VX, 0, 46, '#e8d8b8', '#7a7068'); circ(PRACA.x, PRACA.z, 15, '#d8ccb4', '#8a5a3a'); circ(POUSADA[0], POUSADA[1], 17, '#e0c890');
+    circ(MW.x, MW.z, MW.r, '#e8d8b0', '#7a7068'); circ(VX, VZ, 46, '#e8d8b8', '#7a7068'); circ(PRACA.x, PRACA.z, 15, '#d8ccb4', '#8a5a3a'); circ(POUSADA[0], POUSADA[1], 17, '#e0c890');
     x.fillStyle = '#2a6a2a'; [[GBX, GBZ, 22]].forEach(([a, b, r]) => circ(a, b, r, '#3a8a3a'));
     lugaresMapa().forEach(L => { const [u, v] = P(L.x, L.z); x.beginPath(); x.arc(u, v, 13, 0, 7); x.fillStyle = L.trava ? '#8a8a9a' : L.cor; x.fill(); x.lineWidth = 2.5; x.strokeStyle = '#2b2340'; x.stroke(); x.font = '14px sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(L.ic, u, v + 1);
       x.font = 'bold 11px sans-serif'; x.lineWidth = 3; x.strokeStyle = '#fff'; x.strokeText(L.nome, u, v + 22); x.fillStyle = '#2b2340'; x.fillText(L.nome, u, v + 22); });

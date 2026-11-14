@@ -1269,11 +1269,11 @@ ${_}`}class A extends Error{constructor({message:e,code:t,cause:r,name:s}){var n
   }
 
   // ===================== ROTA DO SÁBIO — VALDREN (x=1000) =====================
-  const VX = 360; /* Valdren agora fica no mesmo mundo, bem a leste da vila */ const val = grp(world, VX, 0, 0); const COLV = []; let zona = 'vila';
+  const VX = 262.1, VZ = -36.7; /* Valdren agora fica no mesmo mundo, bem a leste da vila */ const val = grp(world, VX, 0, VZ); const COLV = []; let zona = 'vila';
   const pedraTex = canvasTex(256, 256, (x, w, h) => { x.fillStyle = '#8a7e70'; x.fillRect(0, 0, w, h); const R = rng(11); for (let r = 0; r < 8; r++) for (let c = 0; c < 8; c++) { x.fillStyle = ['#968a7a', '#7e7264', '#a09484', '#887c6e'][(r * 3 + c * 5) % 4]; x.beginPath(); x.roundRect(c * 32 + 2 + (r % 2) * 16 - 8, r * 32 + 2, 28, 28, 6); x.fill(); } });
   pedraTex.wrapS = pedraTex.wrapT = T3.RepeatWrapping; pedraTex.repeat.set(21, 21);
   { const g = new T3.Mesh(new T3.CircleGeometry(56, 64), new T3.MeshToonMaterial({ color: '#ffffff', map: pedraTex, gradientMap: GRAD })); g.rotation.x = -Math.PI / 2; g.position.y = 0.004; g.receiveShadow = true; val.add(g); }
-  const vb = (x, z, ry, hw, hd) => COLV.push({ t: 'b', x: VX + x, z, ry, hw, hd }), vc = (x, z, r) => COLV.push({ t: 'c', x: VX + x, z, r });
+  const vb = (x, z, ry, hw, hd) => COLV.push({ t: 'b', x: VX + x, z: VZ + z, ry, hw, hd }), vc = (x, z, r) => COLV.push({ t: 'c', x: VX + x, z: VZ + z, r });
   // muralha
   for (let i = 0; i < 40; i++) { const a = i / 40 * Math.PI * 2; const x = Math.sin(a) * 46, z = Math.cos(a) * 46; if (Math.abs(x) < 4 && z > 0) continue; const m = tb(val, x, 3, z, 7.6, 6, 1.6, '#9a9088'); m.rotation.y = a; for (let k = -1; k <= 1; k++) { const mm = tb(val, x + Math.cos(a) * k * 2.4, 6.4, z - Math.sin(a) * k * 2.4, 1.2, 0.8, 1.7, '#8a8078'); mm.rotation.y = a; } vb(x, z, a, 3.8, 0.9); if (i % 5 === 0) { part(val, CYL, '#8a8078', x, 4.5, z, 2.2, 9, 2.2); part(val, CONE, '#3a4a7a', x, 10.2, z, 2.8, 2.6, 2.8); } }
   [-4.4, 4.4].forEach(x => { part(val, CYL, '#8a8078', x, 5, 46, 2.2, 10, 2.2); part(val, CONE, '#3a4a7a', x, 11.2, 46, 2.8, 2.6, 2.8); vc(x, 46, 2.3); tb(val, x * 1.6, 4, 47, 1, 0.6, 0.1, '#c83a3a'); });
@@ -1307,7 +1307,7 @@ ${_}`}class A extends Error{constructor({message:e,code:t,cause:r,name:s}){var n
     // grama entre as duas cidades
     const gt = snowTex.clone(); gt.needsUpdate = true; gt.wrapS = gt.wrapT = T3.RepeatWrapping; gt.repeat.set(45, 42);
     const campo = new T3.Mesh(new T3.PlaneGeometry(VX + 110 - 150, 330), new T3.MeshToonMaterial({ color: '#ffffff', map: gt, gradientMap: GRAD })); campo.rotation.x = -Math.PI / 2; campo.position.set((150 + VX + 110) / 2, -0.02, 25); campo.receiveShadow = true; world.add(campo);
-    const P = [[MW.r + 1, MW.z], [MW.r + 30, MW.z - 2], [MW.r + 75, MW.z + 12], [MW.r + 130, MW.z + 40], [VX - 90, 74], [VX - 40, 82], [VX - 6, 70], [VX, 58], [VX, 46]].map(([x, z]) => new T3.Vector3(x, 0, z));
+    const P = [[MW.r + 1, MW.z], [MW.r + 30, MW.z - 2], [MW.r + 75, MW.z + 12], [MW.r + 130, MW.z + 40], [VX - 90, VZ + 74], [VX - 40, VZ + 82], [VX - 6, VZ + 70], [VX, VZ + 58], [VX, VZ + 46]].map(([x, z]) => new T3.Vector3(x, 0, z));
     const curva = new T3.CatmullRomCurve3(P, false, 'catmullrom', 0.5); const N = 360, LARG = 6.4, pts = curva.getSpacedPoints(N); let dist = 0;
     const pos = [], nor = [], uv = [], bpos = [], bnor = [];
     for (let i = 0; i <= N; i++) { const a = pts[i], b = pts[Math.min(N, i + 1)], c0 = pts[Math.max(0, i - 1)]; const tx = b.x - c0.x, tz = b.z - c0.z, tl = Math.hypot(tx, tz) || 1; const lx = -tz / tl, lz = tx / tl; if (i) dist += a.distanceTo(pts[i - 1]);
@@ -1324,16 +1324,16 @@ ${_}`}class A extends Error{constructor({message:e,code:t,cause:r,name:s}){var n
     for (let i = 8; i < N - 8; i += 9) { const a = pts[i], b = pts[i + 1]; const tl = Math.hypot(b.x - a.x, b.z - a.z) || 1, lx = -(b.z - a.z) / tl, lz = (b.x - a.x) / tl; const sd = (i / 9) % 2 ? 1 : -1; const x = a.x + lx * sd * 4.4, z = a.z + lz * sd * 4.4;
       const g = grp(BEIRA, x, 0, z); part(g, CYL, '#3a3a44', 0, 1.6, 0, 0.09, 3.2, 0.09); tb(g, 0, 3.3, 0, 0.36, 0.42, 0.36, '#ffe6a0', true); part(g, ROOF, '#3a3a44', 0, 3.65, 0, 0.32, 0.3, 0.32).rotation.y = Math.PI / 4; WIN.push(glowSpr(world, x, 3.3, z, 2.4, '#ffc870', 0.7)); }
     for (let i = 0; i < 170; i++) { const k = Math.floor(Rr() * N), a = pts[k]; if (Math.abs(a.x - 232) < 34 || Math.abs(a.x - 138) < 16 || a.x < 125) continue; const ang = Rr() * 6.28, d = 8 + Rr() * 40; const x = a.x + Math.cos(ang) * d, z = a.z + Math.sin(ang) * d;
-      if (Math.hypot(x - MW.x, z - MW.z) < MW.r + 6 || Math.hypot(x - VX, z) < 62 || ESTRADA.some(([ex, ez]) => Math.hypot(ex - x, ez - z) < 6)) continue;
+      if (Math.hypot(x - MW.x, z - MW.z) < MW.r + 6 || Math.hypot(x - VX, z - VZ) < 62 || ESTRADA.some(([ex, ez]) => Math.hypot(ex - x, ez - z) < 6)) continue;
       const g = grp(BEIRA, x, 0, z); const sc = 0.8 + Rr() * 0.9; g.scale.setScalar(sc); part(g, CYL, '#7a5232', 0, 1.0, 0, 0.2, 2.0, 0.2); part(g, SPH, ['#4fae4f', '#5bbf5b', '#3f9a3f', '#66c25a'][i % 4], 0, 2.7, 0, 1.4, 1.3, 1.4); part(g, SPH, ['#5bbf5b', '#4fae4f'][i % 2], 0.6, 2.2, 0.3, 0.9, 0.8, 0.9); COL.push({ t: 'c', x, z, r: 0.35 * sc }); }
     // placas
     [[0, 'VALDREN →', 1], [N, '← BRUMAFRIA', -1]].forEach(([i, txt, sd]) => { const a = pts[Math.max(2, Math.min(N - 4, i))]; const g = grp(world, a.x + (i ? -4.5 : 0), 0, a.z + (i ? 0 : 4.5)); tb(g, 0, 1.1, 0, 0.15, 2.2, 0.15, '#5a3a24');
       const tx = canvasTex(320, 96, (c, w, h) => { c.fillStyle = '#6a4424'; c.fillRect(0, 0, w, h); c.strokeStyle = '#3a2410'; c.lineWidth = 8; c.strokeRect(4, 4, w - 8, h - 8); c.fillStyle = '#ffe8b0'; c.font = 'bold 46px sans-serif'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText(txt, w / 2, h / 2 + 2); });
       const pl = new T3.Mesh(new T3.PlaneGeometry(2.6, 0.78), new T3.MeshBasicMaterial({ map: tx, toneMapped: false, side: T3.DoubleSide })); pl.position.set(0, 2.0, 0); pl.rotation.y = i ? 0 : -Math.PI / 2; g.add(pl); });
-    for (let i = 0; i < 60; i++) { const an = i / 60 * Math.PI * 2, x = Math.sin(an) * 46, z = Math.cos(an) * 46; if (Math.abs(x) < 5 && z > 0) continue; COL.push({ t: 'c', x: VX + x, z, r: 2.6 }); } // muralha de Valdren vista de fora
+    for (let i = 0; i < 60; i++) { const an = i / 60 * Math.PI * 2, x = Math.sin(an) * 46, z = Math.cos(an) * 46; if (Math.abs(x) < 5 && z > 0) continue; COL.push({ t: 'c', x: VX + x, z: VZ + z, r: 2.6 }); } // muralha de Valdren vista de fora
     funde(BEIRA); }
   function naEstrada(x, z, m) { for (let i = 0; i < ESTRADA.length; i += 3) if (Math.hypot(ESTRADA[i][0] - x, ESTRADA[i][1] - z) < m) return true; return false; }
-  const POCAS = []; { const R = rng(41); for (let i = 0; i < 26; i++) { const x = -34 + R() * 64, z = -10 + R() * 40; const m = new T3.Mesh(new T3.CircleGeometry(0.6 + R() * 1.1, 18), new T3.MeshToonMaterial({ color: ['#5a5a2a', '#4a4a24', '#6a5a2a'][i % 3], gradientMap: GRAD })); m.rotation.x = -Math.PI / 2; m.position.set(x, 0.015, z); m.scale.y = 0.6 + R() * 0.6; val.add(m); POCAS.push([VX + x, z]); }
+  const POCAS = []; { const R = rng(41); for (let i = 0; i < 26; i++) { const x = -34 + R() * 64, z = -10 + R() * 40; const m = new T3.Mesh(new T3.CircleGeometry(0.6 + R() * 1.1, 18), new T3.MeshToonMaterial({ color: ['#5a5a2a', '#4a4a24', '#6a5a2a'][i % 3], gradientMap: GRAD })); m.rotation.x = -Math.PI / 2; m.position.set(x, 0.015, z); m.scale.y = 0.6 + R() * 0.6; val.add(m); POCAS.push([VX + x, VZ + z]); }
     for (let i = 0; i < 14; i++) tb(val, -32 + i * 4.6, 0.02, 9.6, 3.6, 0.04, 0.5, '#4a4a24'); }
   const moscas = particles(world, 160, '#14141a', 0.03), fedor = particles(world, 60, '#9aaa5a', 0.25);
   // praça do mercado e a carroça
@@ -1354,16 +1354,16 @@ ${_}`}class A extends Error{constructor({message:e,code:t,cause:r,name:s}){var n
   const capitao = pessoa({ skin: '#c88a5e', hairStyle: 'short', hairC: '#1a1414', top: '#8a909a', top2: '#5a6070', pants: '#3a3a44', iris: '#2a2a2a', s: 1.1, ph: 9.2 });
   { const P = capitao.userData.P; [-1, 1].forEach(s => part(P.spine, SPH, '#7a808a', s * 0.22, 0.52, 0, 0.13, 0.08, 0.13, 0.05)); part(P.head, SPH, '#8a909a', 0, 0.16, 0, 0.16, 0.11, 0.16, 0.03); tb(P.spine, 0, 0.3, 0.13, 0.22, 0.26, 0.02, '#2a3a8a'); const lan = grp(P.elR, 0, -0.3, 0.03); part(lan, CYL, '#6a4a2a', 0, 0.4, 0, 0.02, 2.2, 0.02); part(lan, CONE, '#c8c8d0', 0, 1.6, 0, 0.06, 0.25, 0.06); }
   const alunos = [0, 1, 2].map(i => { const a = pessoa({ top: '#2a3a8a', top2: '#1a2a6a', pants: '#2a3a8a', hairC: ['#3a2a1a', '#c8802a', '#1a1414'][i], hairStyle: i === 1 ? 'long' : 'short', s: 0.8, ph: 10 + i }); part(a.userData.P.hips, CONE, '#2a3a8a', 0, -0.36, 0, 0.3, 0.85, 0.3, 0.03); return a; });
-  const doentes = [[16, 6, 0.4], [18, 9, -0.6], [23, 7, 1.2], [21, 11, 2.0], [15, 2, -1.4]].map(([x, z, r], i) => { const d = pessoa({ skin: '#b8c0a0', top: ['#6a5a4a', '#5a6a7a', '#7a5a5a'][i % 3], ph: 12 + i }); d.userData.pos = [VX + x, z, r]; return d; });
+  const doentes = [[16, 6, 0.4], [18, 9, -0.6], [23, 7, 1.2], [21, 11, 2.0], [15, 2, -1.4]].map(([x, z, r], i) => { const d = pessoa({ skin: '#b8c0a0', top: ['#6a5a4a', '#5a6a7a', '#7a5a5a'][i % 3], ph: 12 + i }); d.userData.pos = [VX + x, VZ + z, r]; return d; });
   const multidao = [0, 1, 2, 3, 4, 5, 6, 7].map(i => pessoa({ top: ['#8a4a3a', '#4a6a8a', '#6a7a4a', '#8a7a4a', '#5a4a7a'][i % 5], hairC: ['#3a2a1a', '#1a1414', '#8a5a2a'][i % 3], hairStyle: i % 3 === 1 ? 'long' : 'short', s: 0.95 + (i % 3) * 0.05, ph: 20 + i }));
   const NPCV = [
-    { c: corvel, nome: 'Arquimago Corvel', x: VX + 3.2, z: -11, ry: -0.6 },
-    { c: capitao, nome: 'Capitão da guarda', x: VX + 7, z: -10, ry: -0.4, vozes: ['cap01'], falas: ['Valdren está fedendo mais que nunca, garoto. Vai fazer o quê, rezar?'] },
-    { c: alunos[0], nome: 'Aluno', x: VX - 2.6, z: -9.6, ry: 0.4, vozes: ['alu01'], falas: ['Bichinhos invisíveis? Ha! Essa é boa.'] },
-    { c: alunos[1], nome: 'Aluna', x: VX - 1.4, z: -8.4, ry: 0.2, vozes: ['alu02'], falas: ['O Arquimago diz que doença é castigo dos deuses.'] },
-    { c: alunos[2], nome: 'Aluno', x: VX - 3.6, z: -8.2, ry: 0.6, vozes: ['alu03'], falas: ['Você é mesmo de Brumafria? Lá ninguém fica doente, é verdade?'] },
-    { c: multidao[0], nome: 'Vendedora', x: VX - 21, z: 9.8, ry: 0.4, vozes: ['ven01'], falas: ['Que cheiro... é sempre assim aqui na capital.'] },
-    { c: multidao[1], nome: 'Pescador', x: VX + 26, z: -4, ry: -1.2, vozes: ['pes01'], falas: ['A água do poço do porto anda com um gosto estranho...'] },
+    { c: corvel, nome: 'Arquimago Corvel', x: VX + 3.2, z: VZ + (-11), ry: -0.6 },
+    { c: capitao, nome: 'Capitão da guarda', x: VX + 7, z: VZ + (-10), ry: -0.4, vozes: ['cap01'], falas: ['Valdren está fedendo mais que nunca, garoto. Vai fazer o quê, rezar?'] },
+    { c: alunos[0], nome: 'Aluno', x: VX - 2.6, z: VZ + (-9.6), ry: 0.4, vozes: ['alu01'], falas: ['Bichinhos invisíveis? Ha! Essa é boa.'] },
+    { c: alunos[1], nome: 'Aluna', x: VX - 1.4, z: VZ + (-8.4), ry: 0.2, vozes: ['alu02'], falas: ['O Arquimago diz que doença é castigo dos deuses.'] },
+    { c: alunos[2], nome: 'Aluno', x: VX - 3.6, z: VZ + (-8.2), ry: 0.6, vozes: ['alu03'], falas: ['Você é mesmo de Brumafria? Lá ninguém fica doente, é verdade?'] },
+    { c: multidao[0], nome: 'Vendedora', x: VX - 21, z: VZ + (9.8), ry: 0.4, vozes: ['ven01'], falas: ['Que cheiro... é sempre assim aqui na capital.'] },
+    { c: multidao[1], nome: 'Pescador', x: VX + 26, z: VZ + (-4), ry: -1.2, vozes: ['pes01'], falas: ['A água do poço do porto anda com um gosto estranho...'] },
   ];
   const mesa = grp(val, 0, 0, -12.5); let tigelas;
   { tb(mesa, 0, 0.8, 0, 2, 0.1, 1, '#7a4a2a'); [[-0.9, -0.4], [0.9, -0.4], [-0.9, 0.4], [0.9, 0.4]].forEach(([a, b]) => tb(mesa, a, 0.4, b, 0.1, 0.8, 0.1, '#5a3a24')); const fog = grp(mesa, 0.6, 0.85, 0); tb(fog, 0, 0.08, 0, 0.4, 0.16, 0.4, '#3a3a40'); mesa.userData.chama = part(fog, CONE, '#ff8a2a', 0, 0.26, 0, 0.1, 0.22, 0.1, 0, true);
@@ -1380,19 +1380,19 @@ ${_}`}class A extends Error{constructor({message:e,code:t,cause:r,name:s}){var n
   const COR_F = (t, v) => ({ n: 'Arquimago Corvel', t, v }), LEO_F = (t, v) => ({ n: 'Leonardo', t, v }), SER_F = (t, v) => ({ n: 'Princesa Seraphine', t, v }), NAR_F = (t, v) => ({ t, v });
   function irValdren() { falar({ nome: 'Professor', falas: [{ t: 'Então venha comigo pra Academia Real, garoto. Valdren espera por você.', v: 'sab25' }], fim: () => {
       cena([NAR_F('Rota do Sábio · A Academia Real', 'nar01'), NAR_F('A Academia ficava na capital, Valdren, uma cidade de cem mil pessoas e nenhum esgoto. O cheiro chegava antes das muralhas.', 'sab01')], () => {
-        zona = 'valdren'; dentro = false; modo = 'dia'; heroi.position.set(VX, 0, 40); facing = Math.PI; camYaw = 0; cam.position.set(VX, 3, 46); Q.passo = 1; Q.rota = 'A';
-        mostrarLugar('Valdren · a capital'); objetivo('Vá até a Academia Real e fale com o Arquimago Corvel', [VX + 3.2, -11]); }); } }); }
+        zona = 'valdren'; dentro = false; modo = 'dia'; heroi.position.set(VX, 0, VZ + 40); facing = Math.PI; camYaw = 0; cam.position.set(VX, 3, VZ + 46); Q.passo = 1; Q.rota = 'A';
+        mostrarLugar('Valdren · a capital'); objetivo('Vá até a Academia Real e fale com o Arquimago Corvel', [VX + 3.2, VZ + (-11)]); }); } }); }
   NPCV[0].falas = [COR_F('Hm? Mais um aluno do interior...', 'cor01')]; 
   function passoCorvel() { if (Q.passo === 1) { falar({ nome: 'Arquimago Corvel', falas: [NAR_F('Nas aulas, Leonardo falou de coisas pequenas demais para ver, que causam doenças. Os professores riram.', 'sab02'), COR_F('Doença é castigo dos deuses, garoto. Ninguém precisa de bichinhos invisíveis pra explicar a vontade divina.', 'sab03'), LEO_F('Então vamos testar. Duas tigelas de caldo: uma eu fervo, a outra fica aberta.', 'sab04')],
-        fim: () => { Q.passo = 2; objetivo('Faça o teste: ferva uma das tigelas na mesa', [VX, -12.5]); } }); return true; } return false; }
+        fim: () => { Q.passo = 2; objetivo('Faça o teste: ferva uma das tigelas na mesa', [VX, VZ + (-12.5)]); } }); return true; } return false; }
   function ferver() { Q.tigela = 1; aviso('A tigela da esquerda está fervendo. A outra fica aberta.', '#ffb04a'); setTimeout(() => cena([NAR_F('Uma semana depois...', 'nar02'), NAR_F('Leonardo não discutiu. Ferveu uma tigela e deixou a outra aberta. Em uma semana, uma estava limpa... e a outra fedia. Metade da turma parou de rir.', 'sab05')], () => {
-      Q.tigela = 2; falar({ nome: 'Arquimago Corvel', falas: [COR_F('Hmpf... coincidência.', 'sab06')], fim: () => cena([NAR_F('Foi aí que a peste chegou. Começou no bairro do porto: febre, diarreia, morte em três dias.', 'sab07')], () => { Q.passo = 3; objetivo('Investigue o poço do bairro do porto (use a Memória 🧠)', [VX + 20, 4]); }) }); }), 2200); }
-  function pocoMemoria() { Q.passo = 3.5; cena([NAR_F('Leonardo sabia o que era. Cólera. Água suja.', 'sab08')], () => { Q.passo = 4; Q.noite = true; hora = 20.5; objetivo('Já é noite. Volte pro seu quarto, do lado da Academia', [VX + 14, -14]); }); }
+      Q.tigela = 2; falar({ nome: 'Arquimago Corvel', falas: [COR_F('Hmpf... coincidência.', 'sab06')], fim: () => cena([NAR_F('Foi aí que a peste chegou. Começou no bairro do porto: febre, diarreia, morte em três dias.', 'sab07')], () => { Q.passo = 3; objetivo('Investigue o poço do bairro do porto (use a Memória 🧠)', [VX + 20, VZ + (4)]); }) }); }), 2200); }
+  function pocoMemoria() { Q.passo = 3.5; cena([NAR_F('Leonardo sabia o que era. Cólera. Água suja.', 'sab08')], () => { Q.passo = 4; Q.noite = true; hora = 20.5; objetivo('Já é noite. Volte pro seu quarto, do lado da Academia', [VX + 14, VZ + (-14)]); }); }
   function portaQuarto() { Q.passo = 4.5; cena([NAR_F('Naquela noite, uma garota encapuzada bateu na porta do quarto dele. Era a princesa Seraphine, a filha mais nova do rei.', 'sab09')], () => { Q.serOn = true;
       falar({ nome: 'Princesa Seraphine', falas: [SER_F('Dizem que você sabe parar isso. A Igreja diz que é castigo. O que você diz?', 'sab10')], escolhas: () => [{ t: '📢 <b>Contar tudo ao povo</b><small>Ensinar na praça a ferver a água, mesmo que chamem de heresia</small>', fn: rotaA1 }, { t: '🤫 <b>Agir em segredo com a princesa</b><small>Salvar a cidade sem aparecer, usando a autoridade dela</small>', fn: rotaA2 }] }); }); }
-  function rotaA1() { Q.passo = 5; Q.sub = 'A1'; Q.noite = false; hora = 7.5; Q.serOn = false; objetivo('De manhã: suba na carroça da praça do mercado e avise o povo', [VX - 16, 12]); aviso('O povo vai se juntar em volta da carroça.', '#ffd23c'); }
-  function rotaA2() { Q.sub = 'A2'; falar({ nome: 'Princesa Seraphine', falas: [SER_F('Então escreva. Eu transformo em ordens do rei.', 'sab17')], fim: () => { Q.passo = 5; Q.noite = false; hora = 7.5; Q.serOn = false; objetivo('Leve as ordens da princesa ao capitão da guarda', [VX + 7, -10]); } }); }
-  function subirCarroca() { Q.passo = 6; Q.naCarroca = true; heroi.position.set(VX - 16, 1.05, 12); falar({ nome: 'Leonardo', falas: [LEO_F('Fervam a água! Lavem as mãos! Não bebam do rio perto do porto!', 'sab11')], fim: () => cena([
+  function rotaA1() { Q.passo = 5; Q.sub = 'A1'; Q.noite = false; hora = 7.5; Q.serOn = false; objetivo('De manhã: suba na carroça da praça do mercado e avise o povo', [VX - 16, VZ + (12)]); aviso('O povo vai se juntar em volta da carroça.', '#ffd23c'); }
+  function rotaA2() { Q.sub = 'A2'; falar({ nome: 'Princesa Seraphine', falas: [SER_F('Então escreva. Eu transformo em ordens do rei.', 'sab17')], fim: () => { Q.passo = 5; Q.noite = false; hora = 7.5; Q.serOn = false; objetivo('Leve as ordens da princesa ao capitão da guarda', [VX + 7, VZ + (-10)]); } }); }
+  function subirCarroca() { Q.passo = 6; Q.naCarroca = true; heroi.position.set(VX - 16, 1.05, VZ + 12); falar({ nome: 'Leonardo', falas: [LEO_F('Fervam a água! Lavem as mãos! Não bebam do rio perto do porto!', 'sab11')], fim: () => cena([
       NAR_F('Leonardo subiu numa carroça na praça do mercado e gritou até perder a voz. No terceiro dia, os inquisidores vieram buscá-lo. Ele foi preso por heresia.', 'sab12'), NAR_F('Mas quem tinha ouvido, tinha fervido a água. E nas ruas onde as pessoas fizeram isso, ninguém mais morreu. Em três semanas, cinco mil pessoas cercaram a prisão gritando o nome dele.', 'sab13'),
       NAR_F('O rei mandou soltá-lo. O Arquimago Corvel, que tinha perdido o próprio filho para a peste, foi o primeiro a se ajoelhar e pedir para aprender.', 'sab14'), NAR_F('Anos depois, Valdren tinha o primeiro hospital de Aetherion, com uma placa na porta: "Lave as mãos antes de entrar."', 'sab15'),
       { n: 'Elysia', t: 'Você não matou nenhum dragão. Mas salvou mais gente do que todos os heróis que eu já mandei, juntos.', v: 'sab16' }], () => { Q.naCarroca = false; heroi.position.y = 0; final('A1', 'O Pai da Medicina', 'Você escolheu a verdade, mesmo com risco. O mundo mudou porque o povo aprendeu.'); }) }); }
@@ -1406,7 +1406,7 @@ ${_}`}class A extends Error{constructor({message:e,code:t,cause:r,name:s}){var n
   tapBtn($('fim-fica'), () => { $('fim').hidden = true; objetivo('Explore Valdren à vontade. Fale com o Professor em Brumafria pra jogar de novo.'); });
   function valdrenFrame(dt, p) {
     const on = zona === 'valdren'; val.visible = on || heroi.position.x > 150; vil.visible = !on && heroi.position.x < 290;
-    const lista = [...NPCV, ...(Q.serOn ? [{ c: seraphine, nome: 'Princesa Seraphine', x: VX + 11.4, z: -14.6, ry: -Math.PI / 2, falas: [SER_F('Você vai me ajudar ou não?', 'ser01')], ser: true }] : [])];
+    const lista = [...NPCV, ...(Q.serOn ? [{ c: seraphine, nome: 'Princesa Seraphine', x: VX + 11.4, z: VZ + (-14.6), ry: -Math.PI / 2, falas: [SER_F('Você vai me ajudar ou não?', 'ser01')], ser: true }] : [])];
     [corvel, seraphine, capitao, ...alunos, ...doentes, ...multidao].forEach(c => c.visible = false);
     if (!on) { seta.visible = false; moscas.visible = fedor.visible = vapor.visible = false; return null; }
     let melhor = 2.6, al = null;
@@ -1418,28 +1418,28 @@ ${_}`}class A extends Error{constructor({message:e,code:t,cause:r,name:s}){var n
     // doentes deitados no porto (depois que a peste chega)
     if (Q.passo >= 3 && !(Q.sub === 'A2' && Q.passo >= 6)) doentes.forEach((c, i) => { const [x, z, r] = c.userData.pos; c.visible = true; if (c.userData.curado) { c.position.set(x, 0, z); c.rotation.set(0, r, 0); pose(c, gT, { mood: 'smile' }); return; } c.position.set(x, 0.15, z); c.rotation.set(-Math.PI / 2, 0, r, 'YXZ'); c.rotation.order = 'YXZ'; c.rotation.y = r; c.rotation.x = -Math.PI / 2; pose(c, gT * 0.3, { mood: 'sad', look: [0, 0] }); });
     // multidão em volta da carroça
-    if (Q.sub === 'A1' && Q.passo >= 5) multidao.forEach((c, i) => { if (i < 1) return; const a = i / 8 * Math.PI * 1.6 + 0.4; const x = VX - 16 + Math.cos(a) * 3.6, z = 12 + Math.sin(a) * 3.6 - 0.5; c.visible = true; c.position.set(x, 0, z); c.rotation.set(0, Math.atan2(VX - 16 - x, 12 - z), 0); pose(c, gT, { mood: Q.passo >= 6 ? 'shock' : 'neutral', look: [0, -0.3], arms: Q.passo >= 6 && i % 2 ? { shL: [-2.6, 0, -0.3], elL: [-0.3, 0, 0] } : undefined }); });
+    if (Q.sub === 'A1' && Q.passo >= 5) multidao.forEach((c, i) => { if (i < 1) return; const a = i / 8 * Math.PI * 1.6 + 0.4; const x = VX - 16 + Math.cos(a) * 3.6, z = VZ + 12 + Math.sin(a) * 3.6 - 0.5; c.visible = true; c.position.set(x, 0, z); c.rotation.set(0, Math.atan2(VX - 16 - x, VZ + 12 - z), 0); pose(c, gT, { mood: Q.passo >= 6 ? 'shock' : 'neutral', look: [0, -0.3], arms: Q.passo >= 6 && i % 2 ? { shL: [-2.6, 0, -0.3], elL: [-0.3, 0, 0] } : undefined }); });
     // tigelas
     tigelas[0].userData.caldo.material = gm(Q.tigela === 2 ? '#e8b860' : '#d8a050'); tigelas[1].userData.caldo.material = gm(Q.tigela === 2 ? '#6a7a2a' : '#d8a050'); mesa.userData.chama.visible = Q.tigela === 1; mesa.userData.chama.scale.y = 0.22 * (1 + Math.sin(gT * 18) * 0.2);
-    vapor.visible = Q.tigela === 1; if (vapor.visible) vapor.userData.place((i, d) => { const k = (gT * 0.5 + i / 30) % 1; d.position.set(VX - 0.5 + Math.sin(i + gT) * 0.1, 1.05 + k * 0.8, -12.5 + Math.cos(i) * 0.1); d.scale.setScalar(0.05 + k * 0.08); });
-    moscas.visible = true; moscas.userData.place((i, d) => { const pc = i < 24 && Q.tigela === 2 ? [VX + 0.6, -12.5, 1.0] : [...POCAS[i % POCAS.length], 0.25]; const a = gT * (3 + (i % 5)) + i; d.position.set(pc[0] + Math.cos(a) * 0.35, pc[2] + 0.2 + Math.sin(a * 1.7) * 0.15, pc[1] + Math.sin(a) * 0.35); });
+    vapor.visible = Q.tigela === 1; if (vapor.visible) vapor.userData.place((i, d) => { const k = (gT * 0.5 + i / 30) % 1; d.position.set(VX - 0.5 + Math.sin(i + gT) * 0.1, 1.05 + k * 0.8, VZ - 12.5 + Math.cos(i) * 0.1); d.scale.setScalar(0.05 + k * 0.08); });
+    moscas.visible = true; moscas.userData.place((i, d) => { const pc = i < 24 && Q.tigela === 2 ? [VX + 0.6, VZ + (-12.5), 1.0] : [...POCAS[i % POCAS.length], 0.25]; const a = gT * (3 + (i % 5)) + i; d.position.set(pc[0] + Math.cos(a) * 0.35, pc[2] + 0.2 + Math.sin(a * 1.7) * 0.15, pc[1] + Math.sin(a) * 0.35); });
     fedor.visible = true; fedor.material.opacity = 0.3; fedor.userData.place((i, d) => { const pc = POCAS[i % POCAS.length]; const k = (gT * 0.15 + i * 0.37) % 1; d.position.set(pc[0] + Math.sin(i + k * 3) * 0.4, 0.2 + k * 2.2, pc[1]); d.scale.setScalar(0.04 + k * 0.1); d.rotation.set(k, i, 0); return k < 0.9 && Math.hypot(pc[0] - p.x, pc[1] - p.z) < 18; });
     // gatilhos da missão
     const perto = (x, z, r) => Math.hypot(p.x - x, p.z - z) < (r || 1.8);
     if (al && al.c === corvel && Q.passo === 1) al = { nome: 'Arquimago Corvel', acao: passoCorvel, rot: 'FALAR' };
     if (al && al.ser) al = null;
     if (al && al.c === capitao && Q.passo === 5 && Q.sub === 'A2') al = { acao: ordensCapitao, rot: 'ENTREGAR' };
-    if (Q.passo === 2 && Q.tigela === 0 && perto(VX, -11.6, 1.9)) al = { acao: ferver, rot: 'FERVER' };
-    if (Q.passo === 3 && perto(VX + 20, 4, 4.2)) { if (ativo.memoria) pocoMemoria(); else if (!Q.dicaPoco) { Q.dicaPoco = true; aviso('Ligue a Memória 🧠 pra entender o que tem nessa água.', '#ffd23c'); } }
-    if (Q.passo === 4 && perto(VX + 11.9, -14.6, 1.8)) al = { acao: portaQuarto, rot: 'ENTRAR' };
-    if (Q.passo === 5 && Q.sub === 'A1' && perto(VX - 16, 12, 2.6)) al = { acao: subirCarroca, rot: 'SUBIR' };
+    if (Q.passo === 2 && Q.tigela === 0 && perto(VX, VZ + (-11.6), 1.9)) al = { acao: ferver, rot: 'FERVER' };
+    if (Q.passo === 3 && perto(VX + 20, VZ + (4), 4.2)) { if (ativo.memoria) pocoMemoria(); else if (!Q.dicaPoco) { Q.dicaPoco = true; aviso('Ligue a Memória 🧠 pra entender o que tem nessa água.', '#ffd23c'); } }
+    if (Q.passo === 4 && perto(VX + 11.9, VZ + (-14.6), 1.8)) al = { acao: portaQuarto, rot: 'ENTRAR' };
+    if (Q.passo === 5 && Q.sub === 'A1' && perto(VX - 16, VZ + (12), 2.6)) al = { acao: subirCarroca, rot: 'SUBIR' };
     if (Q.passo === 3.5 || Q.passo === 4) { /* plaquinha da cólera */ }
     // seta
     seta.visible = !!Q.alvoQ && !conversa && !cenaQ; if (seta.visible) seta.position.set(Q.alvoQ[0], 3.2 + Math.sin(gT * 4) * 0.25, Q.alvoQ[1]);
-    if (Q.naCarroca) { p.set(VX - 16, 1.05, 12); }
+    if (Q.naCarroca) { p.set(VX - 16, 1.05, VZ + 12); }
     return al;
   }
-  SABER.push({ x: VX + 20, y: 3.2, z: 4, t: 'Cólera! A água do poço está suja de esgoto. Ferver mata a bactéria.' }, { x: VX, y: 2.2, z: -12.5, t: 'Ferver a 100 °C mata os micróbios. Por isso o caldo fervido não estraga.' }, { x: VX - 10, y: 1.4, z: 9.6, t: 'Esgoto a céu aberto: é assim que a doença chega na água.' }, { x: VX, y: 9, z: -17, t: 'Academia Real: aqui ainda acham que doença é castigo.' });
+  SABER.push({ x: VX + 20, y: 3.2, z: VZ + (4), t: 'Cólera! A água do poço está suja de esgoto. Ferver mata a bactéria.' }, { x: VX, y: 2.2, z: VZ + (-12.5), t: 'Ferver a 100 °C mata os micróbios. Por isso o caldo fervido não estraga.' }, { x: VX - 10, y: 1.4, z: VZ + (9.6), t: 'Esgoto a céu aberto: é assim que a doença chega na água.' }, { x: VX, y: 9, z: VZ + (-17), t: 'Academia Real: aqui ainda acham que doença é castigo.' });
   SABER.forEach(sb => { if (!sb.el) { const d = document.createElement('div'); d.className = 'tag'; d.textContent = sb.t; $('saber').appendChild(d); sb.el = d; } });
 
   // ---------- MAPA: minimapa e viagem rápida ----------
@@ -1448,7 +1448,7 @@ ${_}`}class A extends Error{constructor({message:e,code:t,cause:r,name:s}){var n
     mx.save(); mx.beginPath(); mx.arc(W / 2, H / 2, W / 2 - 2, 0, 7); mx.clip();
     mx.fillStyle = zona === 'valdren' ? '#e8d8b8' : dentro ? '#c8925a' : '#9ed88a'; mx.fillRect(0, 0, W, H);
     mx.translate(W / 2, H / 2); mx.scale(k, k); mx.translate(-p.x, -p.z);
-    if (zona === 'valdren') { mx.fillStyle = '#4a7a9a'; mx.fillRect(VX + 28, -45, 40, 90); mx.strokeStyle = '#7a7068'; mx.lineWidth = 1.6; mx.beginPath(); mx.arc(VX, 0, 46, 0, 7); mx.stroke(); }
+    if (zona === 'valdren') { mx.fillStyle = '#4a7a9a'; mx.fillRect(VX + 28, VZ - 45, 40, 90); mx.strokeStyle = '#7a7068'; mx.lineWidth = 1.6; mx.beginPath(); mx.arc(VX, VZ, 46, 0, 7); mx.stroke(); }
     else if (!dentro) { mx.fillStyle = '#f2d48a'; mx.beginPath(); mx.arc(0, 0, 5.2, 0, 7); mx.arc(0, 0, 3.2, 0, 7, true); mx.fill(); mx.strokeStyle = '#7a7068'; mx.lineWidth = 1.6; mx.beginPath(); mx.arc(MW.x, MW.z, MW.r, 0, 7); mx.stroke(); }
     const lista = zona === 'valdren' ? COLV : dentro ? COLC : COL;
     lista.forEach(o => { if (o.t === 'c') { if (o.npc) return; mx.fillStyle = o.cor || (zona === 'vila' && !dentro ? '#3f9a3f' : '#8a84a0'); mx.beginPath(); mx.arc(o.x, o.z, Math.max(o.r, 0.5), 0, 7); mx.fill(); }
@@ -1466,7 +1466,7 @@ ${_}`}class A extends Error{constructor({message:e,code:t,cause:r,name:s}){var n
     $('mapa-lista').innerHTML = ''; L.forEach(l => { const b = document.createElement('button'); b.className = 'lugar' + (zona === l.id ? ' aqui' : ''); b.disabled = !l.on; b.innerHTML = `<b>${l.nome}</b><small>${zona === l.id ? '📍 Você está aqui' : l.sub}</small>`; if (l.on && zona !== l.id) tapBtn(b, () => viajar(l.id)); $('mapa-lista').appendChild(b); }); $('mapa').hidden = false; }
   function viajar(id) { $('mapa').hidden = true; if (Q.naCarroca) return; cena([{ t: id === 'vila' ? 'De volta pra casa... Brumafria' : 'A caminho de Valdren...', v: id === 'vila' ? 'nar05' : 'nar06' }], () => {
       dentro = false; zona = id; if (id === 'vila') { heroi.position.set(0, 0, 4.2); facing = Math.PI; camYaw = 0; cam.position.set(0, 3, 10); mostrarLugar('Vila de Brumafria'); }
-      else { heroi.position.set(VX, 0, 40); facing = Math.PI; camYaw = 0; cam.position.set(VX, 3, 46); mostrarLugar('Valdren · a capital'); } }); }
+      else { heroi.position.set(VX, 0, VZ + 40); facing = Math.PI; camYaw = 0; cam.position.set(VX, 3, VZ + 46); mostrarLugar('Valdren · a capital'); } }); }
   tapBtn(mini, abrirMapa); tapBtn($('mapa-fecha'), () => { $('mapa').hidden = true; }); tapBtn($('casa'), () => { if (zona === 'vila' && !dentro) { aviso('Você já está em Brumafria, sua cidade natal.', '#ffd23c'); return; } if (dentro) { aviso('Você está dentro de casa. A porta fica atrás de você.', '#ffd23c'); return; } viajar('vila'); });
 
   // ===================== COMBATE: vida, armas, bichos e a forja =====================
@@ -4140,7 +4140,7 @@ const glowA = cv(128, (x) => { const g = x.createRadialGradient(64, 64, 0, 64, 6
     [[marta, 'bandidos', 3, 3], [bento, 'lobos', -4, 2]].forEach(([c, q, ox, oz]) => { c.traverse(o => { if (o.isMesh) o.castShadow = true; }); const x = cx + ox, z = cz + oz; const n = { c, nome: MQ[q].npc, x, z, ry: 0, ry0: 0, q, acao: () => mqFala(q) }; c.position.set(x, 0, z); world.add(c); NPCS.push(n); COL.push({ t: 'c', x, z, r: 0.45, npc: n });
       n.marca = new T3.Sprite(new T3.SpriteMaterial({ map: marcaT('!', '#ffd23c'), transparent: true, depthWrite: false, toneMapped: false })); n.marca.scale.set(0.45, 0.6, 1); world.add(n.marca); MQ_NPC.push(n); }); }
   // bandidos e lobos que só aparecem de noite, na beira da estrada
-  { const Rr = rng(5150); for (let i = 0; i < 18; i++) { const k = 40 + Math.floor(Rr() * (ESTRADA.length - 80)), c = ESTRADA[k]; if (Math.hypot(c[0] - VX, c[1]) < 70 || Math.hypot(c[0] - POUSADA[0], c[1] - POUSADA[1]) < 26) continue;
+  { const Rr = rng(5150); for (let i = 0; i < 18; i++) { const k = 40 + Math.floor(Rr() * (ESTRADA.length - 80)), c = ESTRADA[k]; if (Math.hypot(c[0] - VX, c[1] - VZ) < 70 || Math.hypot(c[0] - POUSADA[0], c[1] - POUSADA[1]) < 26) continue;
       const [lx, lz] = ladoEstrada(k), s = Rr() < 0.5 ? 1 : -1, d = 9 + Rr() * 14; const e = solta(i % 3 === 2 ? 'lobo' : 'bandido', c[0] + lx * s * d, c[1] + lz * s * d); e.noite = true; } }
   // ---------- MONTARIAS (slot próprio) ----------
   var MONT = { lobo_neve: { nome: 'Lobo Gigante das Neves', base: 'lobo', esc: 1.9, vel: 1.9, preco: 1500, topo: 0.92, desc: 'Montaria: +90% de velocidade.' },
@@ -4520,7 +4520,7 @@ const glowA = cv(128, (x) => { const g = x.createRadialGradient(64, 64, 0, 64, 6
       { id: 'guilda', nome: 'Salão das Guildas', ic: '🛡️', x: sx, z: sz, cor: '#5ab8ff' }, { id: 'masmorra', nome: 'Masmorra', ic: '💀', x: MM_ENT.x + 4, z: MM_ENT.z, cor: '#a07aff' },
       { id: 'goblin', nome: 'Floresta Goblin', ic: '👺', x: GBX - 10, z: GBZ + 10, cor: '#4ab84a' }, { id: 'ponte', nome: 'Ponte do Rio', ic: '🌉', x: RIO.ponte[0] - 9, z: RIO.ponte[1], cor: '#4aa8e8' },
       { id: 'pousada', nome: 'Pousada do Meio', ic: '🏡', x: POUSADA[0], z: POUSADA[1] + 4, cor: '#e8a040' }, { id: 'colosso', nome: 'Colosso (chefe de mundo)', ic: '🌋', x: 205, z: -48, cor: '#ff6a2a' }, { id: 'leilao', nome: 'Praça do Leilão', ic: '🔨', x: 15 + 3.2, z: 150 - 26 - 3.0, cor: '#e8a040', sub: 'Palanque do leiloeiro' },
-      { id: 'valdren', nome: 'Valdren', ic: '🏛️', x: VX, z: 40, cor: '#ffe8a0', trava: !lib, sub: lib ? 'A capital' : '🔒 Fale com o Professor' }]; }
+      { id: 'valdren', nome: 'Valdren', ic: '🏛️', x: VX, z: VZ + 40, cor: '#ffe8a0', trava: !lib, sub: lib ? 'A capital' : '🔒 Fale com o Professor' }]; }
   function vaiPara(L) { $('mapa').hidden = true; if (Q.naCarroca || conversa) return; if (L.trava) { aviso(L.sub, '#ff6a6a'); return; } if (L.id === 'valdren') { viajar('valdren'); return; }
     if (CAL.on) { calLimpa(); CAL.on = false; CALG.visible = false; } if (montado) montar(false); if (voando) voa(false);
     cena([{ t: '✨ Teleportando para ' + L.nome + '...', v: null }], () => { dentro = false; zona = 'vila'; heroi.position.set(L.x, 0, L.z); facing = Math.PI; camYaw = 0; cam.position.set(L.x, 4, L.z + 7); fx('luz', [L.x, 0, L.z], 1); som('portal', 0.8, 1); mostrarLugar(L.nome); }); }
@@ -4530,7 +4530,7 @@ const glowA = cv(128, (x) => { const g = x.createRadialGradient(64, 64, 0, 64, 6
     x.strokeStyle = '#3a8ad8'; x.lineWidth = 10 * k; x.lineCap = 'round'; x.beginPath(); RIO.forEach(([a, b], i) => { const [u, v] = P(a, b); i ? x.lineTo(u, v) : x.moveTo(u, v); }); x.stroke();
     x.strokeStyle = '#c8b48a'; x.lineWidth = 6.4 * k + 2; x.beginPath(); ESTRADA.forEach(([a, b], i) => { const [u, v] = P(a, b); i ? x.lineTo(u, v) : x.moveTo(u, v); }); x.stroke();
     const circ = (a, b, r, f, s) => { const [u, v] = P(a, b); x.beginPath(); x.arc(u, v, r * k, 0, 7); x.fillStyle = f; x.fill(); if (s) { x.strokeStyle = s; x.lineWidth = 2; x.stroke(); } };
-    circ(MW.x, MW.z, MW.r, '#e8d8b0', '#7a7068'); circ(VX, 0, 46, '#e8d8b8', '#7a7068'); circ(PRACA.x, PRACA.z, 15, '#d8ccb4', '#8a5a3a'); circ(POUSADA[0], POUSADA[1], 17, '#e0c890');
+    circ(MW.x, MW.z, MW.r, '#e8d8b0', '#7a7068'); circ(VX, VZ, 46, '#e8d8b8', '#7a7068'); circ(PRACA.x, PRACA.z, 15, '#d8ccb4', '#8a5a3a'); circ(POUSADA[0], POUSADA[1], 17, '#e0c890');
     x.fillStyle = '#2a6a2a'; [[GBX, GBZ, 22]].forEach(([a, b, r]) => circ(a, b, r, '#3a8a3a'));
     lugaresMapa().forEach(L => { const [u, v] = P(L.x, L.z); x.beginPath(); x.arc(u, v, 13, 0, 7); x.fillStyle = L.trava ? '#8a8a9a' : L.cor; x.fill(); x.lineWidth = 2.5; x.strokeStyle = '#2b2340'; x.stroke(); x.font = '14px sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(L.ic, u, v + 1);
       x.font = 'bold 11px sans-serif'; x.lineWidth = 3; x.strokeStyle = '#fff'; x.strokeText(L.nome, u, v + 22); x.fillStyle = '#2b2340'; x.fillText(L.nome, u, v + 22); });
@@ -11368,7 +11368,7 @@ const ArcaneWingSystem = (function () {
     vel = lerp(vel, mag > 0.08 ? (correndo ? CORRER : ANDAR) * (ativo.vento ? 1.5 + nivelHab('vento') * 0.1 : 1) * ((CLASSES && CLASSES[AR.classe]) ? CLASSES[AR.classe].vel : 1) * (BM && BM.vel ? BM.vel : 1) * (voando ? 1.9 * asaB('voo') : 1) * (montado && !voando ? montaria().vel : 1) * (typeof surfVel === 'function' ? surfVel() : 1) * asaB('vel') * (1 + gmPct('velocidade')) * mag : 0, clamp(dt * 8));
     if (ml > 0.001 && mag > 0.08) { mx /= ml; mz /= ml; const want = Math.atan2(mx, mz); let d = want - facing; while (d > Math.PI) d -= Math.PI * 2; while (d < -Math.PI) d += Math.PI * 2; facing += d * clamp(dt * 12); }
     const p = heroi.position; const dash = dashT > 0 ? dashVel : 0; dashT -= dt; p.x += Math.sin(facing) * vel * dt + Math.sin(dashAng) * dash * dt; p.z += Math.cos(facing) * vel * dt + Math.cos(dashAng) * dash * dt;
-    if (zona === 'valdren') { colide(p, COLV); const rx = p.x - VX, r = Math.hypot(rx, p.z); if (r > 44 && !(Math.abs(rx) < 3.4 && p.z > 0)) { p.x = VX + rx * 44 / r; p.z *= 44 / r; } if (r > 47) { zona = 'vila'; mostrarLugar('Estrada de Valdren'); } } else if (zona === 'masmorra') { mmLimita(p); } else if (zona === 'calab') { } else if (zona === 'leilao') { leilaoLimita(p); } else if (zona === 'nacao') { nacaoLimita(p); } else if (dentro) { p.x = clamp(p.x, IX - 4.6, IX + 4.6); p.z = clamp(p.z, -4.6, 4.6); colide(p, COLC); } else { if (p.y < 3.6) colide(p, COL); /* mapa principal sem limite de território: só para na borda do chão (bem longe) e não entra na casa por fora */ if (p.x < BORDA[0]) p.x = BORDA[0]; if (p.x > BORDA[2]) p.x = BORDA[2]; if (p.z < BORDA[1]) p.z = BORDA[1]; if (p.z > BORDA[3]) p.z = BORDA[3]; { const dx = p.x - IX, dz = p.z, d = Math.hypot(dx, dz); if (d < 14) { p.x = IX + dx / (d || 1) * 14; p.z = dz / (d || 1) * 14; } } if (Math.hypot(p.x - VX, p.z) < 44) { zona = 'valdren'; mostrarLugar('Valdren · a capital'); } }
+    if (zona === 'valdren') { colide(p, COLV); const rx = p.x - VX, rz = p.z - VZ, r = Math.hypot(rx, rz); if (r > 44 && !(Math.abs(rx) < 3.4 && rz > 0)) { p.x = VX + rx * 44 / r; p.z = VZ + rz * 44 / r; } if (r > 47) { zona = 'vila'; mostrarLugar('Estrada de Valdren'); } } else if (zona === 'masmorra') { mmLimita(p); } else if (zona === 'calab') { } else if (zona === 'leilao') { leilaoLimita(p); } else if (zona === 'nacao') { nacaoLimita(p); } else if (dentro) { p.x = clamp(p.x, IX - 4.6, IX + 4.6); p.z = clamp(p.z, -4.6, 4.6); colide(p, COLC); } else { if (p.y < 3.6) colide(p, COL); /* mapa principal sem limite de território: só para na borda do chão (bem longe) e não entra na casa por fora */ if (p.x < BORDA[0]) p.x = BORDA[0]; if (p.x > BORDA[2]) p.x = BORDA[2]; if (p.z < BORDA[1]) p.z = BORDA[1]; if (p.z > BORDA[3]) p.z = BORDA[3]; { const dx = p.x - IX, dz = p.z, d = Math.hypot(dx, dz); if (d < 14) { p.x = IX + dx / (d || 1) * 14; p.z = dz / (d || 1) * 14; } } if (Math.hypot(p.x - VX, p.z - VZ) < 44) { zona = 'valdren'; mostrarLugar('Valdren · a capital'); } }
     if (input.jump && noChao && !conversa) { vy = saltoPronto ? PULO * 1.75 : PULO; som('pulo', 0.55); if (saltoPronto) { burstT = 0; burstP = [p.x, p.y, p.z]; } saltoPronto = false; noChao = false; } input.jump = false;
     if (voando && !podeVoar()) voa(false);
     if (voando) { noChao = false; vy = 0; voSobe -= dt; const up = voSobe > 0 ? 1.4 : (input.sobe || keys.Space ? 1 : 0) - (input.desce || keys.KeyQ ? 1 : 0); p.y = clamp(p.y + up * 6.5 * dt, 0, zona === 'masmorra' || zona === 'calab' ? 6 : 45); if (p.y <= 0 && up < 0) { voa(false); noChao = true; } }

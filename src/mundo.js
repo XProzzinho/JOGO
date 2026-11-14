@@ -65,7 +65,7 @@
     [[marta, 'bandidos', 3, 3], [bento, 'lobos', -4, 2]].forEach(([c, q, ox, oz]) => { c.traverse(o => { if (o.isMesh) o.castShadow = true; }); const x = cx + ox, z = cz + oz; const n = { c, nome: MQ[q].npc, x, z, ry: 0, ry0: 0, q, acao: () => mqFala(q) }; c.position.set(x, 0, z); world.add(c); NPCS.push(n); COL.push({ t: 'c', x, z, r: 0.45, npc: n });
       n.marca = new T3.Sprite(new T3.SpriteMaterial({ map: marcaT('!', '#ffd23c'), transparent: true, depthWrite: false, toneMapped: false })); n.marca.scale.set(0.45, 0.6, 1); world.add(n.marca); MQ_NPC.push(n); }); }
   // bandidos e lobos que só aparecem de noite, na beira da estrada
-  { const Rr = rng(5150); for (let i = 0; i < 18; i++) { const k = 40 + Math.floor(Rr() * (ESTRADA.length - 80)), c = ESTRADA[k]; if (Math.hypot(c[0] - VX, c[1]) < 70 || Math.hypot(c[0] - POUSADA[0], c[1] - POUSADA[1]) < 26) continue;
+  { const Rr = rng(5150); for (let i = 0; i < 18; i++) { const k = 40 + Math.floor(Rr() * (ESTRADA.length - 80)), c = ESTRADA[k]; if (Math.hypot(c[0] - VX, c[1] - VZ) < 70 || Math.hypot(c[0] - POUSADA[0], c[1] - POUSADA[1]) < 26) continue;
       const [lx, lz] = ladoEstrada(k), s = Rr() < 0.5 ? 1 : -1, d = 9 + Rr() * 14; const e = solta(i % 3 === 2 ? 'lobo' : 'bandido', c[0] + lx * s * d, c[1] + lz * s * d); e.noite = true; } }
   // ---------- MONTARIAS (slot próprio) ----------
   var MONT = { lobo_neve: { nome: 'Lobo Gigante das Neves', base: 'lobo', esc: 1.9, vel: 1.9, preco: 1500, topo: 0.92, desc: 'Montaria: +90% de velocidade.' },
