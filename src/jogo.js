@@ -2440,6 +2440,29 @@
     const topo = new T3.InstancedMesh(new T3.ConeGeometry(1, 1, 6), new T3.MeshToonMaterial({ color: '#f2f6ff', gradientMap: GRAD }), mts.length);
     mts.forEach(([x, z], i) => { const h = 45 + R() * 45, w = 22 + R() * 18, a = R() * 6.28; q.setFromAxisAngle(up, a); pedra.setMatrixAt(i, m4.compose(ps.set(x, h / 2 - 2, z), q, sc.set(w, h, w))); topo.setMatrixAt(i, m4.compose(ps.set(x, h - 2 - h * 0.14, z), q, sc.set(w * 0.3, h * 0.3, w * 0.3))); });
     [copa, tronco, neveC, pedra, topo].forEach(m => { m.instanceMatrix.needsUpdate = true; m.frustumCulled = false; bordaG.add(m); }); copa.castShadow = false; }
+
+  // ---------- tela cheia (só no navegador; o app já abre em tela cheia) ----------
+  const noApp = location.hostname === 'appassets.androidplatform.net';
+  const tcBtn = document.createElement('button'); tcBtn.id = 'tela-cheia'; tcBtn.className = 'btn'; tcBtn.innerHTML = '⛶'; tcBtn.hidden = noApp; document.body.appendChild(tcBtn);
+  const tcEl = () => document.fullscreenElement || document.webkitFullscreenElement;
+  function telaCheia(on) { const d = document.documentElement; try { if (on) { const r = (d.requestFullscreen || d.webkitRequestFullscreen || (() => null)).call(d, { navigationUI: 'hide' }); const fim = () => { try { screen.orientation && screen.orientation.lock && screen.orientation.lock('landscape').catch(() => {}); } catch (e) {} };
+        if (r && r.then) r.then(fim).catch(() => aviso('Seu navegador não deixou abrir em tela cheia. No iPhone, use "Adicionar à Tela de Início".', '#ffb84a')); else if (!d.requestFullscreen && !d.webkitRequestFullscreen) aviso('Este navegador não tem tela cheia. No iPhone, use "Adicionar à Tela de Início".', '#ffb84a'); else fim(); }
+      else (document.exitFullscreen || document.webkitExitFullscreen).call(document); } catch (e) {} }
+  tapBtn(tcBtn, () => telaCheia(!tcEl()));
+  ['fullscreenchange', 'webkitfullscreenchange'].forEach(ev => document.addEventListener(ev, () => { tcBtn.innerHTML = tcEl() ? '🗗' : '⛶'; tcBtn.classList.toggle('on', !!tcEl()); }));
+  // no navegador do celular, o 1º toque no jogo já liga a tela cheia
+  if (!noApp && matchMedia('(pointer: coarse)').matches) { const auto = () => { document.removeEventListener('touchend', auto, true); if (!tcEl() && window.__entrou !== false) telaCheia(true); else if (!tcEl()) document.addEventListener('touchend', auto, true); }; document.addEventListener('touchend', auto, true); }
+  // ---------- coordenadas (só ADM): mostra onde você está, toque pra copiar ou ir até uma coordenada ----------
+  const cdEl = document.createElement('div'); cdEl.id = 'coord'; cdEl.hidden = true; document.body.appendChild(cdEl);
+  let cdT = 0; function coordFrame(dt, p) { cdT -= dt; if (cdT > 0) return; cdT = 0.15; const adm = meuCargo() === 'adm'; cdEl.hidden = !adm; if (!adm) return; cdEl.textContent = '📍 X ' + p.x.toFixed(1) + '  Z ' + p.z.toFixed(1) + '  Y ' + p.y.toFixed(1) + ' · ' + (dentro ? 'casa' : zona); }
+  const cdP = document.createElement('div'); cdP.id = 'coord-p'; cdP.hidden = true; document.body.appendChild(cdP);
+  tapBtn(cdEl, () => { const p = heroi.position, t = p.x.toFixed(1) + ', ' + p.z.toFixed(1);
+    cdP.innerHTML = `<div class="box"><b>📍 Coordenadas (ADM)</b><p>Você está em <code>X ${p.x.toFixed(1)}, Z ${p.z.toFixed(1)}</code> · ${dentro ? 'casa' : zona}</p><button class="cp">📋 Copiar</button><div class="ir"><input id="cd-x" inputmode="decimal" placeholder="X" value="${p.x.toFixed(1)}"><input id="cd-z" inputmode="decimal" placeholder="Z" value="${p.z.toFixed(1)}"><button class="go">🚀 Ir</button></div><button class="fx">Fechar</button></div>`;
+    cdP.hidden = false; const q = k => cdP.querySelector(k);
+    tapBtn(q('.cp'), () => { try { navigator.clipboard.writeText(t).then(() => aviso('📋 Copiado: ' + t, '#5ab8ff'), () => aviso('📍 ' + t, '#5ab8ff')); } catch (e) { aviso('📍 ' + t, '#5ab8ff'); } });
+    tapBtn(q('.fx'), () => { cdP.hidden = true; });
+    tapBtn(q('.go'), () => { const x = parseFloat(String(q('#cd-x').value).replace(',', '.')), z = parseFloat(String(q('#cd-z').value).replace(',', '.')); if (isNaN(x) || isNaN(z)) { aviso('Digite X e Z.', '#ff6b6b'); return; }
+      if (zona === 'vila' && !dentro) { p.x = clamp(x, BORDA[0], BORDA[2]); p.z = clamp(z, BORDA[1], BORDA[3]); } else { p.x = x; p.z = z; } cdP.hidden = true; fx('luz', [p.x, 0, p.z], 1); aviso('📍 Teleportado pra ' + p.x.toFixed(1) + ', ' + p.z.toFixed(1), '#5ab8ff'); }); });
   function loop(now) {
     // o 1º quadro pode vir com horário ANTES do 'last' (dt negativo): isso jogava o herói pra trás e mexia na vida
     const dt = Math.max(0, Math.min(0.05, ((now || performance.now()) - last) / 1000)) * (window.__lento || 1); last = Math.max(last, now || performance.now()); gT += dt;
@@ -2498,7 +2521,7 @@
     if (tremor > 0) { tremor -= dt; cam.position.x += (Math.random() - .5) * tremor; cam.position.y += (Math.random() - .5) * tremor; }
     cam.lookAt(p.x, p.y + 0.95, p.z); cam.updateMatrixWorld(); bordaG.visible = zona === 'vila' || zona === 'valdren';
     sun.position.set(p.x + 12, 30, p.z + 10); sun.target.position.set(p.x, 0, p.z); sun.target.updateMatrixWorld();
-    guildFrame(); guardaFrame(); mpFrame(dt, p); tituloFrame(dt); ambienteFrame(dt, p); renderer.render(scene, cam); requestAnimationFrame(loop);
+    guildFrame(); guardaFrame(); coordFrame(dt, p); mpFrame(dt, p); tituloFrame(dt); ambienteFrame(dt, p); renderer.render(scene, cam); requestAnimationFrame(loop);
   }
   cam.position.set(0, 2.6, 9.6); requestAnimationFrame(loop);
   mostrarLugar('Vila de Brumafria');
