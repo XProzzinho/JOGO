@@ -1,5 +1,5 @@
   // ===================== PEDRAS DE TELEPORTE + CASA DE LEILÕES =====================
-  const HX = -700, HZ = 700; // a Casa de Leilões fica num "mundo" separado, longe de tudo
+  const HX = 15, HZ = 150; const LEI_CAMINHO = []; // Praça do Leilão: ao ar livre, ao sul de Brumafria (mapa principal)
   // ---- textura do círculo de runas no chão das pedras ----
   const PED_TEX = (() => { const c = document.createElement('canvas'); c.width = c.height = 256; const x = c.getContext('2d'); x.translate(128, 128);
     x.strokeStyle = '#bff4ff'; x.shadowColor = '#3ad8ff'; x.shadowBlur = 14; x.lineWidth = 6; x.beginPath(); x.arc(0, 0, 118, 0, 7); x.stroke(); x.lineWidth = 2.5; x.beginPath(); x.arc(0, 0, 100, 0, 7); x.stroke(); x.beginPath(); x.arc(0, 0, 58, 0, 7); x.stroke();
@@ -26,7 +26,7 @@
   function pedrasMonta() { if (PED_FEITAS) return; PED_FEITAS = true; let L = []; try { L = lugaresMapa(); } catch (e) { return; }
     L.forEach(l => { const px = l.x + 2.8, pz = l.z - 0.6; const g = fazPedra(world, px, pz); PEDRAS.push({ id: l.id, nome: l.nome, ic: l.ic, x: px, z: pz, g, zona: l.id === 'valdren' ? 'valdren' : 'vila' });
       if (l.id === 'valdren') COLV.push({ t: 'c', x: px, z: pz, r: 1.1 }); else COL.push({ t: 'c', x: px, z: pz, r: 1.1 }); });
-    const g = fazPedra(world, HX + 4.5, HZ + 10); PEDRAS.push({ id: 'leilao', nome: 'Casa de Leilões', ic: '🔨', x: HX + 4.5, z: HZ + 10, g, zona: 'leilao' }); }
+    }
   function pedrasFrame(dt, p) { let perto = null, pd = 3.0; PEDRAS.forEach(P => { const U = P.g.userData, vis = P.zona === zona || (P.zona === 'vila' && zona === 'valdren') || (P.zona === 'valdren' && zona === 'vila'); P.g.visible = vis && !dentro; if (!P.g.visible) return;
       const d = Math.hypot(p.x - P.x, p.z - P.z); if (d > 60) return; U.cr.position.y = 3.35 + Math.sin(gT * 1.8 + U.f) * 0.12; U.cr.rotation.y += dt * 1.4; U.an.rotation.z += dt * 1.2; U.an2.rotation.x += dt * 1.6; U.an2.rotation.y += dt * 0.7; U.ch.rotation.z -= dt * 0.35;
       U.gl.material.opacity = 0.55 + Math.sin(gT * 3 + U.f) * 0.2; if (P.zona === zona && d < pd) { pd = d; perto = P; } });
@@ -40,69 +40,66 @@
     pedP.hidden = false; som('magia', 0.5, 1.3); }
   function pedraVai(o, l) { if (o.id === 'leilao') { leilaoEntra(); return; } if (o.id === 'valdren') { viajar('valdren'); return; } if (l && l.id) vaiPara(l); }
   // ===================== CASA DE LEILÕES (só o salão por dentro) =====================
-  const LEI = (() => { const G = grp(world, HX, 0, HZ); G.visible = false; const W = 46, D = 36, H = 12;
+  // ===================== PRAÇA DO LEILÃO (ao ar livre, no mapa principal, ao sul da vila) =====================
+  const LEI = (() => { const G = grp(world, HX, 0, HZ); const R0 = 26;
     const tx = (w, h, f) => { const c = document.createElement('canvas'); c.width = w; c.height = h; f(c.getContext('2d'), w, h); const t = new T3.CanvasTexture(c); t.colorSpace = T3.SRGBColorSpace; return t; };
-    const piso = tx(256, 256, (x) => { for (let i = 0; i < 4; i++) for (let j = 0; j < 4; j++) { x.fillStyle = (i + j) % 2 ? '#e9dfcb' : '#cbb994'; x.fillRect(i * 64, j * 64, 64, 64); } x.strokeStyle = 'rgba(120,90,50,.35)'; x.lineWidth = 2; for (let i = 0; i <= 4; i++) { x.beginPath(); x.moveTo(i * 64, 0); x.lineTo(i * 64, 256); x.moveTo(0, i * 64); x.lineTo(256, i * 64); x.stroke(); } });
-    piso.wrapS = piso.wrapT = T3.RepeatWrapping; piso.repeat.set(W / 4, D / 4);
-    const parede = tx(256, 512, (x, w, h) => { const g = x.createLinearGradient(0, 0, 0, h); g.addColorStop(0, '#3a1e3e'); g.addColorStop(1, '#5a2e52'); x.fillStyle = g; x.fillRect(0, 0, w, h); x.fillStyle = 'rgba(255,210,120,.08)';
-      for (let y = 30; y < h * 0.7; y += 60) for (let xx = (y / 60 % 2) * 32; xx < w; xx += 64) { x.beginPath(); x.moveTo(xx + 16, y); x.lineTo(xx + 26, y + 14); x.lineTo(xx + 16, y + 28); x.lineTo(xx + 6, y + 14); x.closePath(); x.fill(); }
-      x.fillStyle = '#3a2214'; x.fillRect(0, h * 0.78, w, h * 0.22); x.fillStyle = '#c89a3a'; x.fillRect(0, h * 0.775, w, 6); x.fillRect(0, h * 0.96, w, 4); x.strokeStyle = 'rgba(0,0,0,.35)'; x.lineWidth = 2; for (let xx = 0; xx < w; xx += 64) x.strokeRect(xx + 6, h * 0.8, 52, h * 0.14); });
-    parede.wrapS = T3.RepeatWrapping; const banner = tx(1024, 512, (x, w, h) => { const g = x.createLinearGradient(0, 0, 0, h); g.addColorStop(0, '#8a1424'); g.addColorStop(1, '#5a0a18'); x.fillStyle = g; x.fillRect(0, 0, w, h);
+    const banner = tx(1024, 512, (x, w, h) => { const g = x.createLinearGradient(0, 0, 0, h); g.addColorStop(0, '#8a1424'); g.addColorStop(1, '#5a0a18'); x.fillStyle = g; x.fillRect(0, 0, w, h);
       x.strokeStyle = '#ffcf5a'; x.lineWidth = 14; x.strokeRect(18, 18, w - 36, h - 36); x.lineWidth = 3; x.strokeRect(40, 40, w - 80, h - 80); x.textAlign = 'center'; x.fillStyle = '#ffd86a'; x.shadowColor = '#000'; x.shadowBlur = 10;
-      x.font = 'bold 130px serif'; x.fillText('🔨', w / 2, 200); x.font = 'bold 92px serif'; x.fillText('CASA DE LEILÕES', w / 2, 330); x.font = 'bold 40px serif'; x.fillStyle = '#ffe8b0'; x.fillText('✦ AETHERION ✦', w / 2, 420); });
+      x.font = 'bold 130px serif'; x.fillText('🔨', w / 2, 200); x.font = 'bold 92px serif'; x.fillText('LEILÃO', w / 2, 330); x.font = 'bold 40px serif'; x.fillStyle = '#ffe8b0'; x.fillText('✦ PRAÇA DE AETHERION ✦', w / 2, 420); });
+    const pedraT = tx(256, 256, (x) => { x.fillStyle = '#b9b2a4'; x.fillRect(0, 0, 256, 256); for (let j = 0; j < 8; j++) for (let i = 0; i < 8; i++) { const o = (j % 2) * 16; x.fillStyle = ['#c8c1b2', '#b3ab9b', '#d2cbbd', '#a9a291'][(i * 7 + j * 3) % 4]; x.fillRect(i * 32 + o + 1, j * 32 + 1, 30, 30); } });
+    pedraT.wrapS = pedraT.wrapT = T3.RepeatWrapping; pedraT.repeat.set(9, 9);
     const M = (c, o) => new T3.MeshStandardMaterial(Object.assign({ color: c, roughness: 0.75 }, o || {}));
-    const ouro = M('#d8a840', { metalness: 0.6, roughness: 0.35 }), madeira = M('#5a3420'), creme = M('#efe2c8'), tapete = M('#9a1a2e', { roughness: 0.95 });
-    const chao = new T3.Mesh(new T3.PlaneGeometry(W, D), new T3.MeshStandardMaterial({ map: piso, roughness: 0.45 })); chao.rotation.x = -Math.PI / 2; chao.receiveShadow = true; G.add(chao);
-    // paredes viradas pra dentro (de fora não aparecem, então a câmera nunca fica tapada)
-    const pm = new T3.MeshStandardMaterial({ map: parede, roughness: 0.85 }); const pw = (w, x, z, ry) => { const t = parede.clone(); t.needsUpdate = true; t.repeat.set(w / 8, 1); const m = new T3.Mesh(new T3.PlaneGeometry(w, H), new T3.MeshStandardMaterial({ map: t, roughness: 0.85 })); m.position.set(x, H / 2, z); m.rotation.y = ry; G.add(m); };
-    pw(W, 0, -D / 2, 0); pw(W, 0, D / 2, Math.PI); pw(D, -W / 2, 0, Math.PI / 2); pw(D, W / 2, 0, -Math.PI / 2);
-    const teto = new T3.Mesh(new T3.PlaneGeometry(W, D), M('#24142c')); teto.rotation.x = Math.PI / 2; teto.position.y = H; G.add(teto);
-    // vigas douradas no teto
-    for (let i = -2; i <= 2; i++) { const v = new T3.Mesh(BOX, ouro); v.position.set(i * 9, H - 0.3, 0); v.scale.set(0.5, 0.5, D); G.add(v); }
-    // colunas
-    const COLG = new T3.CylinderGeometry(0.55, 0.65, H, 16); [-1, 1].forEach(s => { for (let i = 0; i < 5; i++) { const z = -14 + i * 7.2; const c = new T3.Mesh(COLG, creme); c.position.set(s * 19.5, H / 2, z); c.castShadow = true; G.add(c);
-      [0.3, H - 0.4].forEach(y => { const a = new T3.Mesh(BOX, ouro); a.position.set(s * 19.5, y, z); a.scale.set(1.6, 0.5, 1.6); G.add(a); }); } });
-    // tapete vermelho com borda dourada
-    const tp = new T3.Mesh(new T3.PlaneGeometry(5, 28), tapete); tp.rotation.x = -Math.PI / 2; tp.position.set(0, 0.02, 4); tp.receiveShadow = true; G.add(tp);
-    [-1, 1].forEach(s => { const b = new T3.Mesh(new T3.PlaneGeometry(0.3, 28), new T3.MeshBasicMaterial({ color: '#e8b84a' })); b.rotation.x = -Math.PI / 2; b.position.set(s * 2.55, 0.025, 4); G.add(b); });
-    // palco + balcão do leiloeiro
-    const palco = new T3.Mesh(BOX, madeira); palco.position.set(0, 0.25, -14.5); palco.scale.set(16, 0.5, 6); palco.receiveShadow = true; G.add(palco);
-    const bal = new T3.Mesh(BOX, madeira); bal.position.set(0, 0.6, -11); bal.scale.set(9, 1.2, 1.4); bal.castShadow = true; G.add(bal);
-    const tampo = new T3.Mesh(BOX, ouro); tampo.position.set(0, 1.25, -11); tampo.scale.set(9.4, 0.12, 1.7); G.add(tampo);
-    [-3.5, 0, 3.5].forEach(x => { const f = new T3.Mesh(BOX, ouro); f.position.set(x, 0.6, -10.28); f.scale.set(1.2, 0.8, 0.05); G.add(f); });
-    // martelo em cima do balcão
-    { const m = grp(G, 1.6, 1.4, -11); const cabo = new T3.Mesh(new T3.CylinderGeometry(0.04, 0.04, 0.7, 8), madeira); cabo.rotation.z = Math.PI / 2; m.add(cabo); const cab = new T3.Mesh(new T3.CylinderGeometry(0.11, 0.11, 0.32, 12), M('#3a2014')); cab.position.x = 0.35; m.add(cab); m.rotation.y = 0.5; }
-    // estandarte grande no fundo
-    const bn = new T3.Mesh(new T3.PlaneGeometry(12, 6), new T3.MeshBasicMaterial({ map: banner, toneMapped: false })); bn.position.set(0, 7.5, -D / 2 + 0.05); G.add(bn);
-    [-1, 1].forEach(s => { const f = new T3.Mesh(new T3.PlaneGeometry(2.6, 7), new T3.MeshStandardMaterial({ color: '#8a1424', side: T3.DoubleSide })); f.position.set(s * 9.5, 7, -D / 2 + 0.06); G.add(f); });
-    // lustres
-    const lus = []; [-8, 0, 8].forEach(z => { const l = grp(G, 0, H - 2.8, z); const a = new T3.Mesh(new T3.TorusGeometry(1.4, 0.08, 8, 32), ouro); a.rotation.x = Math.PI / 2; l.add(a);
-      const c = new T3.Mesh(new T3.CylinderGeometry(0.03, 0.03, 2.4, 6), ouro); c.position.y = 1.3; l.add(c); for (let i = 0; i < 8; i++) { const q = i / 8 * Math.PI * 2; part(l, SPH, '#fff2c0', Math.cos(q) * 1.4, 0.18, Math.sin(q) * 1.4, 0.09, 0.14, 0.09, 0, true); glowSpr(l, Math.cos(q) * 1.4, 0.3, Math.sin(q) * 1.4, 0.8, '#ffcf70', 0.75); }
-      glowSpr(l, 0, 0, 0, 5, '#ffd890', 0.35); lus.push(l); });
-    // vitrines com itens girando dos dois lados
+    const ouro = M('#d8a840', { metalness: 0.6, roughness: 0.35 }), madeira = M('#5a3420'), creme = M('#efe2c8'), tapete = M('#9a1a2e', { roughness: 0.95 }), ferro = M('#2a2a34', { metalness: 0.5, roughness: 0.5 });
+    const box = (par, m, x, y, z, sx, sy, sz, col) => { const b = new T3.Mesh(BOX, m); b.position.set(x, y, z); b.scale.set(sx, sy, sz); b.castShadow = true; b.receiveShadow = true; par.add(b); if (col) COL.push({ t: 'b', x: HX + x, z: HZ + z, hw: sx / 2, hd: sz / 2, ry: 0 }); return b; };
+    // chão de pedra redondo + meio-fio
+    const chao = new T3.Mesh(new T3.CircleGeometry(R0, 64), new T3.MeshStandardMaterial({ map: pedraT, roughness: 0.9 })); chao.rotation.x = -Math.PI / 2; chao.position.y = 0.03; chao.receiveShadow = true; G.add(chao);
+    const borda = new T3.Mesh(new T3.TorusGeometry(R0, 0.35, 6, 80), M('#8a8274')); borda.rotation.x = Math.PI / 2; borda.position.y = 0.08; G.add(borda);
+    const mosaico = new T3.Mesh(new T3.RingGeometry(5.5, 6.3, 48), M('#d8a840', { metalness: 0.4 })); mosaico.rotation.x = -Math.PI / 2; mosaico.position.set(0, 0.04, 2); G.add(mosaico);
+    // tapete vermelho da entrada até o palanque
+    const tp = new T3.Mesh(new T3.PlaneGeometry(4, 30), tapete); tp.rotation.x = -Math.PI / 2; tp.position.set(0, 0.05, 2); tp.receiveShadow = true; G.add(tp);
+    [-1, 1].forEach(s => { const b = new T3.Mesh(new T3.PlaneGeometry(0.25, 30), new T3.MeshBasicMaterial({ color: '#e8b84a' })); b.rotation.x = -Math.PI / 2; b.position.set(s * 2.1, 0.055, 2); G.add(b); });
+    // PALANQUE: plataforma alta, degraus, cobertura e painel
+    box(G, madeira, 0, 0.6, -15, 16, 1.2, 7, true); box(G, ouro, 0, 1.22, -15, 16.3, 0.08, 7.3);
+    [0, 1, 2].forEach(i => box(G, madeira, 0, 0.2 + i * 0.2, -11.1 + i * 0.0 + (2 - i) * 0.45 - 0.9, 6, 0.4 + i * 0.4, 0.9));
+    [-7.6, 7.6].forEach(x => { box(G, madeira, x, 3.9, -12, 0.5, 7.8, 0.5, true); box(G, madeira, x, 3.9, -18, 0.5, 7.8, 0.5, true); box(G, ouro, x, 7.9, -12, 0.7, 0.3, 0.7); });
+    { const tet = box(G, tapete, 0, 8.3, -15, 17.5, 0.35, 8); tet.rotation.x = -0.08; [-1, 1].forEach(s => box(G, ouro, 0, 8.05, -15 + s * 4, 17.6, 0.18, 0.18)); }
+    const bn = new T3.Mesh(new T3.PlaneGeometry(10, 5), new T3.MeshBasicMaterial({ map: banner, toneMapped: false, side: T3.DoubleSide })); bn.position.set(0, 4.6, -18.25); G.add(bn);
+    box(G, M('#3a1220'), 0, 4.2, -18.45, 15, 7.4, 0.25);
+    [-1, 1].forEach(s => { const f = new T3.Mesh(new T3.PlaneGeometry(2.2, 6.6), new T3.MeshStandardMaterial({ color: '#8a1424', side: T3.DoubleSide })); f.position.set(s * 6.2, 4.3, -18.2); G.add(f); });
+    // balcão do leiloeiro + martelo
+    box(G, madeira, 0, 1.75, -12.6, 5, 1.1, 1.2); box(G, ouro, 0, 2.33, -12.6, 5.3, 0.1, 1.45); [-1.6, 0, 1.6].forEach(x => box(G, ouro, x, 1.75, -11.97, 1, 0.7, 0.04));
+    { const m = grp(G, 1.2, 2.45, -12.6); const cabo = new T3.Mesh(new T3.CylinderGeometry(0.04, 0.04, 0.7, 8), madeira); cabo.rotation.z = Math.PI / 2; m.add(cabo); const cab = new T3.Mesh(new T3.CylinderGeometry(0.11, 0.11, 0.32, 12), M('#3a2014')); cab.position.x = 0.35; cab.rotation.x = Math.PI / 2; m.add(cab); }
+    // bandeirolas entre os postes do palanque
+    for (let i = 0; i < 9; i++) { const f = new T3.Mesh(new T3.ConeGeometry(0.35, 0.8, 3), new T3.MeshBasicMaterial({ color: i % 2 ? '#ffd86a' : '#c8202a', toneMapped: false })); f.rotation.x = Math.PI; f.position.set(-7 + i * 1.75, 7.45, -11.8); G.add(f); }
+    // vitrines com itens girando
     const vit = []; const cores = ['#ff6a8a', '#5ae8ff', '#ffd86a', '#a07aff', '#7aff9a', '#ff9a3a'];
-    [-1, 1].forEach(s => { for (let i = 0; i < 3; i++) { const z = -6 + i * 8, x = s * 15; const pe = new T3.Mesh(new T3.CylinderGeometry(0.55, 0.7, 1.2, 8), creme); pe.position.set(x, 0.6, z); pe.castShadow = true; G.add(pe);
+    [-1, 1].forEach(s => { for (let i = 0; i < 3; i++) { const z = -6 + i * 7, x = s * 14; const pe = new T3.Mesh(new T3.CylinderGeometry(0.55, 0.7, 1.2, 8), creme); pe.position.set(x, 0.6, z); pe.castShadow = true; G.add(pe); COL.push({ t: 'c', x: HX + x, z: HZ + z, r: 0.8 });
       const tp2 = new T3.Mesh(new T3.CylinderGeometry(0.62, 0.62, 0.1, 8), ouro); tp2.position.set(x, 1.22, z); G.add(tp2); const cor = cores[(i + (s > 0 ? 3 : 0)) % 6];
       const it = new T3.Mesh(i % 2 ? new T3.OctahedronGeometry(0.35, 0) : new T3.IcosahedronGeometry(0.33, 0), new T3.MeshBasicMaterial({ color: cor, toneMapped: false })); it.position.set(x, 1.9, z); G.add(it); glowSpr(G, x, 1.9, z, 1.6, cor, 0.5);
       const cup = new T3.Mesh(new T3.SphereGeometry(0.75, 16, 12, 0, Math.PI * 2, 0, Math.PI / 2), new T3.MeshBasicMaterial({ color: '#cfefff', transparent: true, opacity: 0.18, depthWrite: false })); cup.position.set(x, 1.27, z); G.add(cup); vit.push(it); } });
-    // bancos dos compradores
-    [-1, 1].forEach(s => { for (let i = 0; i < 3; i++) { const b = new T3.Mesh(BOX, madeira); b.position.set(s * 6.5, 0.45, -4 + i * 4.5); b.scale.set(5, 0.25, 1.1); b.castShadow = true; G.add(b); const e = new T3.Mesh(BOX, madeira); e.position.set(s * 6.5, 1.0, -4 + i * 4.5 + 0.5); e.scale.set(5, 0.9, 0.15); G.add(e); } });
-    // porta grande decorativa na entrada
-    { const pt = new T3.Mesh(new T3.PlaneGeometry(5, 7), M('#4a2814')); pt.position.set(0, 3.5, D / 2 - 0.05); pt.rotation.y = Math.PI; G.add(pt); const ar = new T3.Mesh(new T3.TorusGeometry(2.6, 0.18, 8, 24, Math.PI), ouro); ar.position.set(0, 7, D / 2 - 0.1); ar.rotation.y = Math.PI; G.add(ar); }
-    // luzes do salão
-    const l1 = new T3.PointLight(0xffd8a0, 2.2, 40, 1); l1.position.set(0, 8, -6); G.add(l1); const l2 = new T3.PointLight(0xffd8a0, 2.0, 40, 1); l2.position.set(0, 8, 9); G.add(l2);
-    // o leiloeiro
-    const npc = makeChar({ skin: '#e8c0a0', hairStyle: 'short', hairC: '#c8c8d0', top: '#7a1424', top2: '#ffd86a', pants: '#2a1a24', shoe: '#1a1010', iris: '#5a3a1a', s: 1.08, ph: 4.4 }); npc.position.set(0, 0.5, -12.3); G.add(npc);
+    // bancos da plateia virados pro palanque
+    [-1, 1].forEach(s => { for (let i = 0; i < 3; i++) { const z = -4 + i * 4.5; box(G, madeira, s * 6.5, 0.45, z, 5, 0.25, 1.1, true); box(G, madeira, s * 6.5, 0.9, z + 0.5, 5, 0.7, 0.15); [-2.2, 2.2].forEach(dx => box(G, ferro, s * 6.5 + dx, 0.2, z, 0.15, 0.4, 0.9)); } });
+    // postes de luz em volta e arco da entrada
+    const lus = []; for (let i = 0; i < 10; i++) { const a = i / 10 * Math.PI * 2 + 0.31; if (Math.abs(Math.sin(a)) > 0.93 && Math.cos(a) < 0) continue; const x = Math.sin(a) * (R0 - 1.4), z = Math.cos(a) * (R0 - 1.4); if (z < -12 && Math.abs(x) < 10) continue;
+      box(G, ferro, x, 2.1, z, 0.18, 4.2, 0.18); const l = grp(G, x, 4.3, z); part(l, SPH, '#fff2c0', 0, 0, 0, 0.32, 0.38, 0.32, 0, true); glowSpr(l, 0, 0, 0, 2.6, '#ffd890', 0.45); lus.push(l); COL.push({ t: 'c', x: HX + x, z: HZ + z, r: 0.3 }); }
+    { const ar = new T3.Mesh(new T3.TorusGeometry(3.2, 0.3, 8, 24, Math.PI), ouro); ar.position.set(0, 5.2, R0 - 0.6); G.add(ar); [-1, 1].forEach(s => { box(G, creme, s * 3.2, 2.6, R0 - 0.6, 0.7, 5.2, 0.7, true); });
+      const pl = new T3.Mesh(new T3.PlaneGeometry(5, 1.2), new T3.MeshBasicMaterial({ map: tx(512, 128, (x, w, h) => { x.fillStyle = '#5a0a18'; x.fillRect(0, 0, w, h); x.strokeStyle = '#ffcf5a'; x.lineWidth = 8; x.strokeRect(6, 6, w - 12, h - 12); x.fillStyle = '#ffd86a'; x.font = 'bold 64px serif'; x.textAlign = 'center'; x.fillText('🔨 LEILÃO', w / 2, 88); }), toneMapped: false, side: T3.DoubleSide })); pl.position.set(0, 6.4, R0 - 0.6); G.add(pl); }
+    // caminho de terra da porta sul da vila até a praça
+    { const ax = 0, az = 58, bx = 0, bz = R0 - 1, dx = HX + bx - ax, dz = HZ + bz - az, L = Math.hypot(dx, dz); const c = new T3.Mesh(new T3.PlaneGeometry(4.2, L), new T3.MeshToonMaterial({ color: '#d9bf86', gradientMap: GRAD })); c.rotation.x = -Math.PI / 2; c.rotation.z = Math.atan2(dx, dz); c.position.set(ax + dx / 2, 0.025, az + dz / 2); c.receiveShadow = true; world.add(c); LEI_CAMINHO.push(c); }
+    // o leiloeiro em cima do palanque
+    const npc = makeChar({ skin: '#e8c0a0', hairStyle: 'short', hairC: '#c8c8d0', top: '#7a1424', top2: '#ffd86a', pants: '#2a1a24', shoe: '#1a1010', iris: '#5a3a1a', s: 1.08, ph: 4.4 }); npc.position.set(0, 1.25, -13.8); G.add(npc);
     { const P = npc.userData.P; part(P.head, CYL, '#1a1018', 0, 0.36, 0, 0.2, 0.28, 0.2, 0.03); part(P.head, CYL, '#1a1018', 0, 0.23, 0, 0.3, 0.03, 0.3, 0.03); part(P.head, CYL, '#c8202a', 0, 0.27, 0, 0.205, 0.05, 0.205); }
-    return { G, lus, vit, npc, W, D }; })();
+    G.traverse(o => { if (o.isMesh && o.castShadow === undefined) o.castShadow = true; });
+    return { G, lus, vit, npc, R0 }; })();
   function leilaoLimita(p) { p.x = clamp(p.x, HX - 21.6, HX + 21.6); p.z = clamp(p.z, HZ - 9.6, HZ + 16.8); [-1, 1].forEach(s => { for (let i = 0; i < 5; i++) { const cx = HX + s * 19.5, cz = HZ - 14 + i * 7.2, d = Math.hypot(p.x - cx, p.z - cz); if (d < 1.0) { p.x = cx + (p.x - cx) / d * 1.0; p.z = cz + (p.z - cz) / d * 1.0; } } }); }
   function leilaoEntra() { if (Q.naCarroca || conversa) return; if (CAL.on) { calLimpa(); CAL.on = false; CALG.visible = false; } if (montado) montar(false); if (voando) voa(false);
-    cena([{ t: '✨ Teleportando para a Casa de Leilões...', v: null }], () => { dentro = false; zona = 'leilao'; heroi.position.set(HX, 0, HZ + 9); facing = Math.PI; camYaw = 0; cam.position.set(HX, 4, HZ + 15); fx('luz', [HX, 0, HZ + 9], 1); som('portal', 0.8, 1); mostrarLugar('Casa de Leilões'); }); }
-  function leilaoFrame(dt, p) { if (!PED_FEITAS) pedrasMonta(); const naCasa = zona === 'leilao'; LEI.G.visible = naCasa; let al = pedrasFrame(dt, p); if (!naCasa) return al;
+    cena([{ t: '✨ Teleportando para a Praça do Leilão...', v: null }], () => { dentro = false; zona = 'vila'; heroi.position.set(HX, 0, HZ + 12); facing = Math.PI; camYaw = 0; cam.position.set(HX, 4, HZ + 18); fx('luz', [HX, 0, HZ + 12], 1); som('portal', 0.8, 1); mostrarLugar('Praça do Leilão'); }); }
+  function leilaoFrame(dt, p) { if (!PED_FEITAS) pedrasMonta(); if (zona === 'leilao') { zona = 'vila'; heroi.position.set(HX, 0, HZ + 12); }
+    const naVila = zona === 'vila' && !dentro; LEI.G.visible = naVila; LEI_CAMINHO.forEach(c => c.visible = naVila); let al = pedrasFrame(dt, p); if (!naVila || Math.hypot(p.x - HX, p.z - HZ) > 70) return al;
     LEI.vit.forEach((v, i) => { v.rotation.y += dt * 1.2; v.position.y = 1.9 + Math.sin(gT * 2 + i) * 0.1; });
-    const n = LEI.npc, nx = HX, nz = HZ - 12.3, d = Math.hypot(p.x - nx, p.z - nz); n.rotation.y += ((d < 9 ? Math.atan2(p.x - nx, p.z - nz) : 0) - n.rotation.y) * clamp(dt * 4);
-    pose(n, gT, { mood: d < 6 ? 'smile' : 'neutral', arms: { shR: [-0.5 + Math.sin(gT * 1.5) * 0.08, 0, 0.2], elR: [-0.9, 0, 0] } });
-    if (d < 4.6 && !al) al = { rot: 'FALAR', c: n, acao: leilaoAbre }; return al; }
+    const n = LEI.npc, nx = HX, nz = HZ - 13.8, d = Math.hypot(p.x - nx, p.z - nz); n.rotation.y += ((d < 14 ? Math.atan2(p.x - nx, p.z - nz) : 0) - n.rotation.y) * clamp(dt * 4);
+    pose(n, gT, { mood: d < 9 ? 'smile' : 'neutral', arms: { shR: [-0.5 + Math.sin(gT * 1.5) * 0.08, 0, 0.2], elR: [-0.9, 0, 0] } }); n.position.y = 1.25;
+    if (d < 5.2 && !al) al = { rot: 'LEILÃO', c: n, acao: leilaoAbre }; return al; }
   // ===================== LEILÕES (Firestore: leiloes/{id}) =====================
   const LTAXA = 0.05, LDUR = [[1, '1 hora'], [6, '6 horas'], [24, '24 horas']], VDUR = [[24, '1 dia'], [72, '3 dias'], [168, '7 dias']];
   const LS = { aba: 'comprar', docs: {}, un: [], esc: null, filtro: 'todos', modo: 'leilao' };
