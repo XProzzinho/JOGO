@@ -3826,7 +3826,7 @@ const glowA = cv(128, (x) => { const g = x.createRadialGradient(64, 64, 0, 64, 6
   window.addEventListener('pagehide', mpAusente); document.addEventListener('visibilitychange', () => { if (document.hidden) mpAusente(); else MP.ult = ''; });
   function mpEstado(p) { const G = typeof guildState !== 'undefined' && guildState && guildState.guild; const TT = tituloAtual(); return { id: MP.id, u: window.CONTA && CONTA.usuario ? CONTA.usuario.uid : '', n: (AR.visual && AR.visual.nome) || 'Leonardo', t: TT.nome, tr: TT.r, lv: AR.nv, g: G ? G.name : '', ge: G && typeof emblemIcon === 'function' ? emblemIcon(G.emblem) : '', st: meuCargo(), z: zona, dn: dentro ? 1 : 0, x: +p.x.toFixed(2), y: +p.y.toFixed(2), zz: +p.z.toFixed(2), r: +facing.toFixed(2), a: voando ? (voPitch > 0.6 ? 'voa' : 'paira') : !noChao ? 'pulo' : atkT < 0.3 ? 'atk' : vel > 4.2 ? 'corre' : vel > 0.4 ? 'anda' : 'para', w: AR.arma, na: AR.nacao || '' }; }
   // ======== LIVE DO TIKTOK (só administrador) — espectadores viram bonecos no seu mundo ========
-  const LIVE = { ws: null, url: 'wss://jogo-5z79.onrender.com', av: {}, max: 14, btn: null, quer: false, chk: 0 };
+  const LIVE = { ws: null, url: 'wss://live-tik-tok.onrender.com', av: {}, max: 14, btn: null, quer: false, chk: 0 };
   const liveEsc = s => String(s == null ? '' : s).replace(/[<>&]/g, '').slice(0, 40);
   function liveBtn() {
     if (LIVE.btn) return LIVE.btn;
