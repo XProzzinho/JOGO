@@ -3,7 +3,7 @@ const { WebSocketServer } = require('ws');
 
 const user = process.argv[2] || process.env.TIKTOK_USER;
 const PORT = process.env.PORT || 10000;
-const ROOT = path.join(__dirname, 'public');
+const ROOT = fs.existsSync(path.join(__dirname, 'public')) ? path.join(__dirname, 'public') : __dirname;
 const types = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8' };
 
 process.on('uncaughtException', e => console.log('Erro:', e.message || e));
@@ -13,7 +13,7 @@ const server = http.createServer((req, res) => {
   let p = decodeURIComponent(req.url.split('?')[0]);
   if (p === '/') p = '/index.html';
   const f = path.join(ROOT, path.normalize(p));
-  if (!f.startsWith(ROOT)) { res.writeHead(403); return res.end(); }
+  if (!f.startsWith(ROOT) || /server\.js$|package\.json$/.test(f)) { res.writeHead(403); return res.end(); }
   fs.readFile(f, (e, d) => {
     if (e) { res.writeHead(404); return res.end('404'); }
     res.writeHead(200, { 'Content-Type': types[path.extname(f)] || 'application/octet-stream' });
