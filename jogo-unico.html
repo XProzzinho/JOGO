@@ -3831,7 +3831,7 @@ const glowA = cv(128, (x) => { const g = x.createRadialGradient(64, 64, 0, 64, 6
   function liveBtn() {
     if (LIVE.btn) return LIVE.btn;
     const b = document.createElement('button'); b.textContent = '📡'; b.hidden = true;
-    b.style.cssText = 'position:fixed;left:8px;bottom:8px;z-index:60;width:38px;height:38px;border-radius:50%;border:3px solid #2b2340;background:#fff;font-size:18px;opacity:.75;padding:0';
+    b.style.cssText = 'position:fixed;left:8px;bottom:8px;z-index:250;width:44px;height:44px;border-radius:50%;border:3px solid #2b2340;background:#fff;font-size:20px;opacity:.9;padding:0';
     b.onclick = () => {
       if (LIVE.quer) { if (confirm('Desligar a live do TikTok?')) liveDesliga(false); return; }
       let k = ''; try { k = localStorage.getItem('liveKey') || ''; } catch (e) {}
@@ -3886,7 +3886,7 @@ const glowA = cv(128, (x) => { const g = x.createRadialGradient(64, 64, 0, 64, 6
     w.onclose = () => { liveCor(false); if (LIVE.quer) setTimeout(() => { if (LIVE.quer) liveLiga(pin); }, 4000); };
   }
   function liveFrame(dt, p) {
-    LIVE.chk -= dt; if (LIVE.chk <= 0) { LIVE.chk = 2; let adm = false; try { adm = souAdmin(); } catch (e) {} liveBtn().hidden = !adm; if (!adm && LIVE.quer) liveDesliga(false); }
+    LIVE.chk -= dt; if (LIVE.chk <= 0) { LIVE.chk = 2; let adm = false; try { adm = souAdmin() || /[?&]live=1/.test(location.search); } catch (e) {} liveBtn().hidden = !adm; if (!adm && LIVE.quer) liveDesliga(false); }
     const agora = performance.now();
     Object.keys(LIVE.av).forEach(id => {
       const a = LIVE.av[id]; if (agora - a.t > 900000) { liveRemove(id); return; }
