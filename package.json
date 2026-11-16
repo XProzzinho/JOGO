@@ -1,0 +1,8 @@
+{
+  "name": "tiktok-armaduras",
+  "version": "1.0.0",
+  "description": "Boneco com armadura aparece no jogo quando alguém entra na live do TikTok",
+  "main": "server.js",
+  "scripts": { "start": "node server.js" },
+  "dependencies": { "tiktok-live-connector": "latest", "ws": "^8.18.0" }
+}
