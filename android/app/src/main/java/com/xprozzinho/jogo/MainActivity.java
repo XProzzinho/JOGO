@@ -10,6 +10,8 @@ import android.webkit.WebSettings;
 import androidx.webkit.WebViewAssetLoader;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.webkit.JavascriptInterface;
+import android.content.pm.ActivityInfo;
 
 public class MainActivity extends Activity {
     private WebView web;
@@ -31,6 +33,10 @@ public class MainActivity extends Activity {
             public WebResourceResponse shouldInterceptRequest(WebView v, WebResourceRequest r) { return loader.shouldInterceptRequest(r.getUrl()); }
         });
         web.setLayerType(View.LAYER_TYPE_HARDWARE, null);
+        web.addJavascriptInterface(new Object() {
+            @JavascriptInterface
+            public void retrato(final boolean on) { runOnUiThread(() -> setRequestedOrientation(on ? ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT : ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE)); }
+        }, "AndroidTela");
         setContentView(web);
         telaCheia();
         web.loadUrl("https://appassets.androidplatform.net/assets/index.html");
