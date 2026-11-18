@@ -11,6 +11,7 @@ process.on('uncaughtException', e => console.log('Erro:', e.message || e));
 process.on('unhandledRejection', e => console.log('Erro:', (e && e.message) || e));
 
 const server = http.createServer((req, res) => {
+  if (req.url.startsWith('/tts')) return tts(req, res);
   let p = decodeURIComponent(req.url.split('?')[0]);
   if (p === '/') p = '/index.html';
   const f = path.join(ROOT, path.normalize(p));
@@ -21,6 +22,34 @@ const server = http.createServer((req, res) => {
     res.end(d);
   });
 });
+
+/* ---------- VOZ (ElevenLabs): o jogo manda um texto e recebe o áudio falado ----------
+   A chave fica SÓ aqui no servidor, na variável ELEVENLABS_API_KEY do Render (nunca no jogo). */
+const TTS_CACHE = new Map();
+async function tts(req, res) {
+  const u = new URL(req.url, 'http://x');
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  if (ADMIN_KEY && u.searchParams.get('key') !== ADMIN_KEY) { res.writeHead(403); return res.end(); }
+  const KEY = process.env.ELEVENLABS_API_KEY;
+  if (u.pathname === '/tts-ok') { res.writeHead(200, { 'Content-Type': 'application/json' }); return res.end(JSON.stringify({ ok: !!KEY })); }
+  const t = String(u.searchParams.get('t') || '').slice(0, 220).trim();
+  if (!KEY || !t) { res.writeHead(KEY ? 400 : 503); return res.end(); }
+  const voz = process.env.ELEVENLABS_VOICE_ID || 'pNInz6obpgDQGcFmaJgB';
+  const k = voz + '|' + t;
+  try {
+    let buf = TTS_CACHE.get(k);
+    if (!buf) {
+      const r = await fetch('https://api.elevenlabs.io/v1/text-to-speech/' + voz + '?output_format=mp3_44100_64', {
+        method: 'POST', headers: { 'xi-api-key': KEY, 'Content-Type': 'application/json', Accept: 'audio/mpeg' },
+        body: JSON.stringify({ text: t, model_id: process.env.ELEVENLABS_MODEL || 'eleven_flash_v2_5', language_code: 'pt', voice_settings: { stability: 0.45, similarity_boost: 0.8, style: 0.35 } })
+      });
+      if (!r.ok) { console.log('ElevenLabs erro', r.status, (await r.text()).slice(0, 200)); res.writeHead(502); return res.end(); }
+      buf = Buffer.from(await r.arrayBuffer());
+      TTS_CACHE.set(k, buf); if (TTS_CACHE.size > 300) TTS_CACHE.delete(TTS_CACHE.keys().next().value);
+    }
+    res.writeHead(200, { 'Content-Type': 'audio/mpeg', 'Cache-Control': 'public, max-age=86400' }); res.end(buf);
+  } catch (e) { console.log('TTS falhou:', e.message || e); res.writeHead(500); res.end(); }
+}
 
 const wss = new WebSocketServer({
   server,
