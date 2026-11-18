@@ -25,6 +25,20 @@
   html,body{margin:0;height:100%;overflow:hidden;background:var(--ceu);touch-action:none;-webkit-user-select:none;user-select:none;font-family:var(--fonte);color:var(--tinta)}
   button{font-family:inherit}
   [hidden]{display:none!important}
+  body.arena-on>*:not(#jogo-cv):not(#arena-ui):not(#mp-tags):not(#aviso):not(.arena-keep):not(script):not(style){visibility:hidden!important}
+  body.arena-on #mp-tags>:not(.ar-tag){display:none}
+  .mp-tag.ar-tag{display:flex;flex-direction:column;align-items:center;gap:2px;padding:3px 8px;border-radius:9px;background:rgba(20,10,30,.72);border:1px solid #ffcf5a88;color:#fff;font:600 12px system-ui;white-space:nowrap;pointer-events:none;transform-origin:50% 100%}
+  .ar-tag b{color:#ffe08a;text-shadow:0 1px 2px #000}.ar-tag small{font-size:10px;color:#ffd0b0;max-width:180px;overflow:hidden;text-overflow:ellipsis}
+  .ar-hp{display:block;width:70px;height:5px;border-radius:3px;background:#3a1020;overflow:hidden}.ar-hp i{display:block;height:100%;background:linear-gradient(90deg,#ff4a5a,#7aff7a)}
+  #arena-ui{position:fixed;top:44px;right:6px;z-index:260;width:min(200px,34vw);display:flex;flex-direction:column;gap:4px;font:600 11px system-ui;color:#fff}
+  #arena-ui .ar-rk{background:linear-gradient(180deg,rgba(60,10,30,.82),rgba(20,8,30,.82));border:2px solid #ffcf5a;border-radius:12px;padding:5px 7px;box-shadow:0 4px 18px #0008}
+  #arena-ui .tt{display:block;text-align:center;color:#ffd86a;font-size:12px;margin-bottom:3px}
+  #arena-ui .ln{display:flex;align-items:center;gap:4px;padding:1px 4px;border-radius:6px}#arena-ui .ln span{width:22px;text-align:center}#arena-ui .ln em{flex:1;font-style:normal;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}#arena-ui .ln i{font-style:normal;color:#ffd0a0}
+  #arena-ui .ln.t1{background:#ffd86a33}#arena-ui .ln.t2{background:#d8e0ff22}#arena-ui .ln.t3{background:#ff9a5a22}
+  #arena-ui p{margin:6px 0;color:#d8c8e8;font-weight:500;text-align:center}#arena-ui .dc{display:block;margin-top:3px;font-size:9px;color:#c8b8d8;text-align:center;font-weight:500}
+  #arena-ui .ar-feed div{background:rgba(10,6,20,.75);border-left:3px solid #ff8a5a;border-radius:6px;padding:3px 6px;margin-bottom:2px;font-size:10px;font-weight:500;animation:arIn .3s}
+  @keyframes arIn{from{opacity:0;transform:translateX(20px)}}
+  #arena-ui .ar-bt{display:flex;flex-wrap:wrap;gap:4px}#arena-ui .ar-bt button{flex:1 1 45%;padding:4px 3px;border-radius:8px;border:2px solid #2b2340;background:#ffe08a;font:700 10px system-ui;color:#2b2340}
   #jogo-cv{position:fixed;inset:0;width:100vw;height:100vh;display:block}
   #joy{position:fixed;left:40px;bottom:60px;width:140px;height:140px;border-radius:50%;background:rgba(255,255,255,.28);border:4px solid var(--branco);box-shadow:0 4px 0 rgba(43,35,64,.35);pointer-events:none;opacity:.6;transition:opacity .2s}
   #joy.on{opacity:1}
