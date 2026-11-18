@@ -2445,10 +2445,14 @@
   const noApp = location.hostname === 'appassets.androidplatform.net';
   const tcBtn = document.createElement('button'); tcBtn.id = 'tela-cheia'; tcBtn.className = 'btn'; tcBtn.innerHTML = '⛶'; tcBtn.hidden = noApp; document.body.appendChild(tcBtn);
   const tcEl = () => document.fullscreenElement || document.webkitFullscreenElement;
-  function telaCheia(on) { const d = document.documentElement; try { if (on) { const r = (d.requestFullscreen || d.webkitRequestFullscreen || (() => null)).call(d, { navigationUI: 'hide' }); const fim = () => { try { screen.orientation && screen.orientation.lock && screen.orientation.lock('landscape').catch(() => {}); } catch (e) {} };
-        if (r && r.then) r.then(fim).catch(() => aviso('Seu navegador não deixou abrir em tela cheia. No iPhone, use "Adicionar à Tela de Início".', '#ffb84a')); else if (!d.requestFullscreen && !d.webkitRequestFullscreen) aviso('Este navegador não tem tela cheia. No iPhone, use "Adicionar à Tela de Início".', '#ffb84a'); else fim(); }
+  function telaCheia(on, quieto) { const d = document.documentElement; try { if (on) { const r = (d.requestFullscreen || d.webkitRequestFullscreen || (() => null)).call(d, { navigationUI: 'hide' }); const fim = () => { try { screen.orientation && screen.orientation.lock && screen.orientation.lock(zona === 'arena' ? 'portrait' : 'landscape').catch(() => {}); } catch (e) {} };
+        if (r && r.then) r.then(fim).catch(() => quieto || aviso('Seu navegador não deixou abrir em tela cheia. No iPhone, use "Adicionar à Tela de Início".', '#ffb84a')); else if (!d.requestFullscreen && !d.webkitRequestFullscreen) aviso('Este navegador não tem tela cheia. No iPhone, use "Adicionar à Tela de Início".', '#ffb84a'); else fim(); }
       else (document.exitFullscreen || document.webkitExitFullscreen).call(document); } catch (e) {} }
   tapBtn(tcBtn, () => telaCheia(!tcEl()));
+  /* no navegador abre em tela cheia sozinho no primeiro toque (o navegador só deixa depois de um toque); na arena volta pra tela cheia a cada toque */
+  { let saiu = false; document.addEventListener('fullscreenchange', () => { if (!tcEl() && zona !== 'arena') saiu = true; });
+    const auto = () => { if (noApp || tcEl()) return; if (saiu && zona !== 'arena') return; telaCheia(true, true); };
+    ['pointerdown', 'touchend', 'click', 'keydown'].forEach(ev => document.addEventListener(ev, auto, { capture: true, passive: true })); }
   ['fullscreenchange', 'webkitfullscreenchange'].forEach(ev => document.addEventListener(ev, () => { tcBtn.innerHTML = tcEl() ? '🗗' : '⛶'; tcBtn.classList.toggle('on', !!tcEl()); }));
   // no navegador do celular, o 1º toque no jogo já liga a tela cheia
   if (!noApp && matchMedia('(pointer: coarse)').matches) { const auto = () => { document.removeEventListener('touchend', auto, true); if (!tcEl() && window.__entrou !== false) telaCheia(true); else if (!tcEl()) document.addEventListener('touchend', auto, true); }; document.addEventListener('touchend', auto, true); }
