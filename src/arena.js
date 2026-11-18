@@ -106,7 +106,7 @@
     if (!L.aura) { L.aura = glowSpr(L.c, 0, 0.15, 0, 1.6, P.cor, 0.5); } else if (L.aura.material) L.aura.material.color.set(P.cor);
     arenaStats(L); L.hp = L.max; fx('luz', [L.x, 0, L.z], 1.2); fx('cura', [L.x, 0, L.z], 1); try { som('magia', 0.5, 1.1); } catch (e) {}
     if (novo || P.nv >= 2) { arenaFeed('🎁 <b>' + L.nome + '</b> mandou ' + P.ic + ' ' + arenaEsc(nome || 'presente') + ' → <i style="color:' + P.cor + '">' + P.item + '</i> (' + P.fx + ')'); aviso(P.ic + ' ' + L.nome + ' ganhou ' + P.item + '! ' + P.fx, P.cor); arenaFoca(L, P.nv >= 2 ? 4.5 : 3); } }
-  function arenaFeed(t) { ARENA.feed.unshift({ t, em: performance.now() }); ARENA.feed.length = Math.min(ARENA.feed.length, 5); ARENA.uiT = 0; }
+  function arenaFeed(t) { ARENA.feed.unshift({ t, em: performance.now() }); ARENA.feed.length = Math.min(ARENA.feed.length, 4); ARENA.uiT = 0; }
   // ----- eventos da live -----
   function arenaEvento(m) { const id = String(m.id), foto = arenaFotoUrl(m.foto); let L = ARENA.lut[id];
     if (m.type === 'gift') { const S = ARENA.plat[id]; if (!L) { const nome = (S && S.nome) || m.name; if (S) arenaPlatTira(id); L = arenaLut(id, nome, foto || (S && S.foto)); arenaFeed(arenaFoto(L, 'mi') + ' <b>' + L.nome + '</b> ' + (S ? 'desceu da arquibancada e' : '') + ' entrou na LUTA!'); } else arenaLut(id, m.name, foto); arenaPresente(L, m.gift, m.diamonds); return; }
@@ -161,9 +161,9 @@
   // ----- painel: ranking ao lado, mural de lutas, botões do ADM -----
   const arUi = document.createElement('div'); arUi.id = 'arena-ui'; arUi.hidden = true; document.body.appendChild(arUi);
   function arenaUi() { const on = zona === 'arena'; arUi.hidden = !on; if (!on) return; arUi.classList.toggle('mural', ARENA.cam.modo === 'mural'); ARENA.uiT -= 1 / 60; if (ARENA.uiT > 0) return; ARENA.uiT = 0.5;
-    const L = Object.values(ARENA.lut).sort((p, q) => q.kills - p.kills || p.mortes - q.mortes).slice(0, 8), med = ['👑', '🥈', '🥉'];
-    arUi.innerHTML = `<div class="ar-rk"><b class="tt">🏆 RANKING DA ARENA</b>${L.length ? L.map((x, i) => `<div class="ln${i < 3 ? ' t' + (i + 1) : ''}"><span>${med[i] || (i + 1) + 'º'}</span>${arenaFoto(x, 'mi')}<em>${Object.values(x.itens).map(P => P.ic).join('')}${x.nome}</em><i>⚔️ ${x.kills}</i></div>`).join('') : '<p>Ninguém lutando ainda. Mande um presente pra entrar na luta! 🎁</p>'}
-      <small class="dc">👀 Assistindo = arquibancada (${Object.keys(ARENA.plat).length}) · 🎁 Presente = entra na luta</small></div>
+    const L = Object.values(ARENA.lut).sort((p, q) => q.kills - p.kills || p.mortes - q.mortes).slice(0, 5), med = ['👑', '🥈', '🥉'];
+    arUi.innerHTML = `<div class="ar-rk"><b class="tt">🏆 TOP DA ARENA</b>${L.length ? L.map((x, i) => `<div class="ln${i < 3 ? ' t' + (i + 1) : ''}"><span>${med[i] || (i + 1) + 'º'}</span>${arenaFoto(x, 'mi')}<em>${Object.values(x.itens).map(P => P.ic).join('')}${x.nome}</em><i>⚔️ ${x.kills}</i></div>`).join('') : '<p>Ninguém lutando ainda. Mande um presente pra entrar na luta! 🎁</p>'}
+      <small class="dc">👀 ${Object.keys(ARENA.plat).length} na arquibancada · 🎁 presente = luta</small></div>
       <div class="ar-feed">${ARENA.feed.filter(f => performance.now() - f.em < 9000).map(f => `<div>${f.t}</div>`).join('')}</div>
       <div class="ar-bt"><button data-a="bot">➕ Espectador de teste</button><button data-a="pres">🎁 Presente de teste</button><button data-a="sai">🚪 Sair</button></div>`;
     arUi.querySelectorAll('[data-a]').forEach(b => tapBtn(b, () => { const a = b.dataset.a;
@@ -174,11 +174,15 @@
     ARENA.volta = { zona, x: heroi.position.x, z: heroi.position.z, dentro }; ARENA.on = true; zona = 'arena'; dentro = false; heroi.position.set(ARENA.X, 0, ARENA.Z); heroi.visible = false;
     ARENA.cam.modo = 'sobe'; ARENA.cam.t = 2.6; ARENA.cam.a = Math.PI; cam.position.set(ARENA.X, 6, ARENA.Z - ARENA.R - 6); ARENA.cam.pos = cam.position.clone(); ARENA.cam.look.set(ARENA.X, 1, ARENA.Z); document.body.classList.add('arena-on'); arenaRetrato(true);
     aviso('🏟️ Arena da Live aberta! Quem entrar na live vai aparecer lutando.' + (LIVE.ws ? '' : ' (Ligue a live no 📡 ou use o Lutador de teste.)'), '#ffd86a'); }
-  function arenaSai() { if (zona !== 'arena') return; const V = ARENA.volta || { zona: 'vila', x: 0, z: 4.2 }; ARENA.on = false; zona = V.zona === 'arena' ? 'vila' : V.zona; dentro = !!V.dentro; heroi.position.set(V.x, 0, V.z); heroi.visible = true; document.body.classList.remove('arena-on'); arenaRetrato(false); }
+  function arenaSai() { if (zona !== 'arena' || arenaTravada()) return; const V = ARENA.volta || { zona: 'vila', x: 0, z: 4.2 }; ARENA.on = false; zona = V.zona === 'arena' ? 'vila' : V.zona; dentro = !!V.dentro; heroi.position.set(V.x, 0, V.z); heroi.visible = true; document.body.classList.remove('arena-on'); arenaRetrato(false); }
+  /* tela sempre acesa enquanto o jogo estiver aberto (no app o Android já faz isso) */
+  { let wl = null; const pede = () => { try { if (navigator.wakeLock && document.visibilityState === 'visible' && !wl) navigator.wakeLock.request('screen').then(w => { wl = w; w.addEventListener('release', () => { wl = null; }); }).catch(() => {}); } catch (e) {} };
+    document.addEventListener('visibilitychange', pede); ['click', 'touchstart'].forEach(ev => document.addEventListener(ev, pede, { passive: true })); pede(); }
   /* modo retrato (celular em pé) enquanto estiver na arena, pra live do TikTok */
   function arenaRetrato(on) { try { if (window.AndroidTela) { AndroidTela.retrato(!!on); return; } } catch (e) {} try { if (on) { const el = document.documentElement; const f = document.fullscreenElement ? Promise.resolve() : (el.requestFullscreen ? el.requestFullscreen() : Promise.resolve()); f.then(() => screen.orientation && screen.orientation.lock && screen.orientation.lock('portrait')).catch(() => {}); } else if (screen.orientation && screen.orientation.lock) screen.orientation.lock('landscape').catch(() => { try { screen.orientation.unlock(); } catch (e) {} }); } catch (e) {} }
   function arenaLimita(p) { p.x = ARENA.X; p.z = ARENA.Z; p.y = 0; }
   const arBtn = document.createElement('button'); arBtn.textContent = '🏟️'; arBtn.hidden = true; arBtn.title = 'Arena da Live';
   arBtn.style.cssText = 'position:fixed;left:60px;bottom:8px;z-index:250;width:44px;height:44px;border-radius:50%;border:3px solid #2b2340;background:#ffe08a;font-size:20px;opacity:.95;padding:0'; document.body.appendChild(arBtn);
   arBtn.className = 'arena-keep'; arBtn.onclick = () => { if (zona === 'arena') arenaSai(); else arenaEntra(); };
-  let arChk = 0; function arenaLoop(dt) { arChk -= dt; if (arChk <= 0) { arChk = 1; arBtn.hidden = !souAdmin(); if (LIVE.btn) LIVE.btn.classList.add('arena-keep'); if (zona === 'arena' && !souAdmin()) arenaSai(); } try { arenaFrame(dt); } catch (e) { console.warn('arena', e); } }
+  let arChk = 0; function arenaTravada() { return zona === 'arena' && LIVE.quer; }
+  function arenaLoop(dt) { arChk -= dt; if (arChk <= 0) { arChk = 0.5; const trava = arenaTravada(); arBtn.hidden = !souAdmin() || trava; if (LIVE.btn) LIVE.btn.style.display = trava ? 'none' : ''; document.body.classList.toggle('arena-travada', trava); if (LIVE.btn) LIVE.btn.classList.add('arena-keep'); if (zona === 'arena' && !souAdmin()) arenaSai(); } try { arenaFrame(dt); } catch (e) { console.warn('arena', e); } }

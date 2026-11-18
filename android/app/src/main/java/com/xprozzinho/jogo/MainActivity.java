@@ -10,6 +10,7 @@ import android.webkit.WebSettings;
 import androidx.webkit.WebViewAssetLoader;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.webkit.WebChromeClient;
 import android.webkit.JavascriptInterface;
 import android.content.pm.ActivityInfo;
 
@@ -32,6 +33,7 @@ public class MainActivity extends Activity {
             @Override
             public WebResourceResponse shouldInterceptRequest(WebView v, WebResourceRequest r) { return loader.shouldInterceptRequest(r.getUrl()); }
         });
+        web.setWebChromeClient(new WebChromeClient()); /* deixa o confirm/prompt do 📡 aparecer */
         web.setLayerType(View.LAYER_TYPE_HARDWARE, null);
         web.addJavascriptInterface(new Object() {
             @JavascriptInterface
