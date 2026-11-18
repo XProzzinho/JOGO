@@ -657,7 +657,7 @@
 <div id="cena" hidden><div id="cena-quem"></div><div id="cena-txt"></div><div id="cena-mais">toque pra continuar ▸</div></div>
 <div id="fim" hidden><div class="box"><div id="fim-num"></div><div id="fim-nome"></div><p id="fim-nota"></p><div id="fim-selos"></div><div id="fim-cont"></div><div class="row"><button id="fim-volta">Voltar pra Brumafria</button><button class="ghost" id="fim-fica">Explorar Valdren</button></div></div></div>
 <div id="hud"><div class="barras"><div id="bms"><button id="bm1" class="bm"><span>I</span></button><button id="bm2" class="bm"><span>II</span></button><button id="bm3" class="bm"><span>III</span></button></div><div class="bcol"><div id="xpbar"><i id="xp-fill"></i><span id="xp-txt">XP</span></div></div></div><div id="poderes"></div></div>
-<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+<script src="three.min.js"></script>
 <script>(()=>{var Vs=Symbol.for("@supabase/supabase-js.traceContextExtractor");function gr(){return globalThis[Vs]}function se(e,t){var r={};for(var s in e)if(Object.prototype.hasOwnProperty.call(e,s)&&t.indexOf(s)<0)r[s]=e[s];if(e!=null&&typeof Object.getOwnPropertySymbols==="function"){for(var n=0,s=Object.getOwnPropertySymbols(e);n<s.length;n++)if(t.indexOf(s[n])<0&&Object.prototype.propertyIsEnumerable.call(e,s[n]))r[s[n]]=e[s[n]]}return r}function yr(e,t,r,s){function n(i){return i instanceof r?i:new r(function(o){o(i)})}return new(r||(r=Promise))(function(i,o){function a(u){try{c(s.next(u))}catch(h){o(h)}}function l(u){try{c(s.throw(u))}catch(h){o(h)}}function c(u){u.done?i(u.value):n(u.value).then(a,l)}c((s=s.apply(e,t||[])).next())})}var mr=(e)=>{if(e)return(...t)=>e(...t);return(...t)=>fetch(...t)};class Pe extends Error{constructor(e,t="FunctionsError",r){super(e);this.name=t,this.context=r}toJSON(){return{name:this.name,message:this.message,context:this.context}}}class rt extends Pe{constructor(e){super("Failed to send a request to the Edge Function","FunctionsFetchError",e)}}class Ie extends Pe{constructor(e){super("Relay Error invoking the Edge Function","FunctionsRelayError",e)}}class je extends Pe{constructor(e){super("Edge Function returned a non-2xx status code","FunctionsHttpError",e)}}var Ce;(function(e){e.Any="any",e.ApNortheast1="ap-northeast-1",e.ApNortheast2="ap-northeast-2",e.ApSouth1="ap-south-1",e.ApSoutheast1="ap-southeast-1",e.ApSoutheast2="ap-southeast-2",e.CaCentral1="ca-central-1",e.EuCentral1="eu-central-1",e.EuWest1="eu-west-1",e.EuWest2="eu-west-2",e.EuWest3="eu-west-3",e.SaEast1="sa-east-1",e.UsEast1="us-east-1",e.UsWest1="us-west-1",e.UsWest2="us-west-2"})(Ce||(Ce={}));class st{constructor(e,{headers:t={},customFetch:r,region:s=Ce.Any}={}){this.url=e,this.headers=t,this.region=s,this.fetch=mr(r)}setAuth(e){this.headers.Authorization=`Bearer ${e}`}invoke(e){return yr(this,arguments,void 0,function*(t,r={}){var s,n;let i,o,a;try{let{headers:l,method:c,body:u,signal:h,timeout:d}=r,f={},{region:g}=r;if(!g)g=this.region;let p=new URL(`${this.url}/${t}`);if(g&&g!=="any")f["x-region"]=g,p.searchParams.set("forceFunctionRegion",g);let m,_=!!l&&Object.keys(l).some((xe)=>xe.toLowerCase()==="content-type");if(u&&!_)if(typeof Blob<"u"&&u instanceof Blob||u instanceof ArrayBuffer)f["Content-Type"]=u.type||"application/octet-stream",m=u;else if(typeof u==="string")f["Content-Type"]="text/plain",m=u;else if(typeof FormData<"u"&&u instanceof FormData)m=u;else f["Content-Type"]="application/json",m=JSON.stringify(u);else if(u&&typeof u!=="string"&&!(typeof Blob<"u"&&u instanceof Blob)&&!(u instanceof ArrayBuffer)&&!(typeof FormData<"u"&&u instanceof FormData))m=JSON.stringify(u);else m=u;let w=h;if(d)if(o=new AbortController,i=setTimeout(()=>o.abort(),d),h)w=o.signal,a=()=>o.abort(),h.addEventListener("abort",a);else w=o.signal;let S=yield this.fetch(p.toString(),{method:c||"POST",headers:Object.assign(Object.assign(Object.assign({},f),this.headers),l),body:m,signal:w}).catch((xe)=>{throw new rt(xe)}),P=S.headers.get("x-relay-error");if(P&&P==="true")throw new Ie(S);if(!S.ok)throw new je(S);let E=((s=S.headers.get("Content-Type"))!==null&&s!==void 0?s:"text/plain").split(";")[0].trim().toLowerCase(),T;if(E==="application/json")T=yield S.json();else if(E==="application/octet-stream"||E==="application/pdf")T=yield S.blob();else if(E==="text/event-stream")T=S;else if(E==="multipart/form-data")T=yield S.formData();else T=yield S.text();return{data:T,error:null,response:S}}catch(l){return{data:null,error:l,response:l instanceof je||l instanceof Ie?l.context:void 0}}finally{if(i)clearTimeout(i);if(a)(n=r.signal)===null||n===void 0||n.removeEventListener("abort",a)}})}}var ie=class extends Error{constructor(e){super(e.message);this.name="PostgrestError",this.details=e.details,this.hint=e.hint,this.code=e.code}toJSON(){return{name:this.name,message:this.message,details:this.details,hint:this.hint,code:this.code}}},Er=3,vr=(e)=>Math.min(1000*2**e,30000),Ws=[520,503],kr=["GET","HEAD","OPTIONS"];function Ne(e){return Ne=typeof Symbol=="function"&&typeof Symbol.iterator=="symbol"?function(t){return typeof t}:function(t){return t&&typeof Symbol=="function"&&t.constructor===Symbol&&t!==Symbol.prototype?"symbol":typeof t},Ne(e)}function Gs(e,t){if(Ne(e)!="object"||!e)return e;var r=e[Symbol.toPrimitive];if(r!==void 0){var s=r.call(e,t||"default");if(Ne(s)!="object")return s;throw TypeError("@@toPrimitive must return a primitive value.")}return(t==="string"?String:Number)(e)}function Js(e){var t=Gs(e,"string");return Ne(t)=="symbol"?t:t+""}function zs(e,t,r){return(t=Js(t))in e?Object.defineProperty(e,t,{value:r,enumerable:!0,configurable:!0,writable:!0}):e[t]=r,e}function _r(e,t){var r=Object.keys(e);if(Object.getOwnPropertySymbols){var s=Object.getOwnPropertySymbols(e);t&&(s=s.filter(function(n){return Object.getOwnPropertyDescriptor(e,n).enumerable})),r.push.apply(r,s)}return r}function ne(e){for(var t=1;t<arguments.length;t++){var r=arguments[t]!=null?arguments[t]:{};t%2?_r(Object(r),!0).forEach(function(s){zs(e,s,r[s])}):Object.getOwnPropertyDescriptors?Object.defineProperties(e,Object.getOwnPropertyDescriptors(r)):_r(Object(r)).forEach(function(s){Object.defineProperty(e,s,Object.getOwnPropertyDescriptor(r,s))})}return e}function wr(e,t){return new Promise((r)=>{if(t===null||t===void 0?void 0:t.aborted){r();return}let s=setTimeout(()=>{t===null||t===void 0||t.removeEventListener("abort",n),r()},e);function n(){clearTimeout(s),r()}t===null||t===void 0||t.addEventListener("abort",n)})}function Ys(e,t,r,s){if(!s||r>=Er)return!1;if(!kr.includes(e))return!1;if(!Ws.includes(t))return!1;return!0}async function Tr(e,t,r,s){let n=0;while(!0){let l=ne({},r.headers);if(n>0)l["X-Retry-Count"]=String(n);let c;try{c=await e(t,{method:r.method,headers:l,body:r.body,signal:r.signal})}catch(u){var i;if((u===null||u===void 0?void 0:u.name)==="AbortError"||(u===null||u===void 0?void 0:u.code)==="ABORT_ERR"||(u===null||u===void 0?void 0:u.name)==="TimeoutError"&&((i=r.signal)===null||i===void 0?void 0:i.aborted))throw u;if(!kr.includes(r.method))throw u;if(s&&n<Er){let h=vr(n);n++,await wr(h,r.signal);continue}throw u}if(Ys(r.method,c.status,n,s)){var o,a;let u=(o=(a=c.headers)===null||a===void 0?void 0:a.get("Retry-After"))!==null&&o!==void 0?o:null,h=u!==null?Math.max(0,parseInt(u,10)||0)*1000:vr(n);await c.text(),n++,await wr(h,r.signal);continue}return c}}var Xs=class{constructor(e){var t,r,s,n,i;if(this.shouldThrowOnError=!1,this.retryEnabled=!0,this.method=e.method,this.url=e.url,this.headers=new Headers(e.headers),this.schema=e.schema,this.body=e.body,this.shouldThrowOnError=(t=e.shouldThrowOnError)!==null&&t!==void 0?t:!1,this.signal=e.signal,this.isMaybeSingle=(r=e.isMaybeSingle)!==null&&r!==void 0?r:!1,this.shouldStripNulls=(s=e.shouldStripNulls)!==null&&s!==void 0?s:!1,this.urlLengthLimit=(n=e.urlLengthLimit)!==null&&n!==void 0?n:8000,this.retryEnabled=(i=e.retry)!==null&&i!==void 0?i:!0,e.fetch)this.fetch=e.fetch;else this.fetch=fetch}throwOnError(){return this.shouldThrowOnError=!0,this}stripNulls(){if(this.headers.get("Accept")==="text/csv")throw Error("stripNulls() cannot be used with csv()");return this.shouldStripNulls=!0,this}setHeader(e,t){return this.headers=new Headers(this.headers),this.headers.set(e,t),this}retry(e){return this.retryEnabled=e,this}then(e,t){var r=this;if(this.schema===void 0);else if(["GET","HEAD"].includes(this.method))this.headers.set("Accept-Profile",this.schema);else this.headers.set("Content-Profile",this.schema);if(this.method!=="GET"&&this.method!=="HEAD")this.headers.set("Content-Type","application/json");if(this.shouldStripNulls){let o=this.headers.get("Accept");if(o==="application/vnd.pgrst.object+json")this.headers.set("Accept","application/vnd.pgrst.object+json;nulls=stripped");else if(!o||o==="application/json")this.headers.set("Accept","application/vnd.pgrst.array+json;nulls=stripped")}let s=this.fetch,i=(async()=>{let o={};r.headers.forEach((l,c)=>{o[c]=l});let a=await Tr(s,r.url.toString(),{method:r.method,headers:o,body:JSON.stringify(r.body,(l,c)=>typeof c==="bigint"?c.toString():c),signal:r.signal},r.retryEnabled);return await r.processResponse(a)})();if(!this.shouldThrowOnError)i=i.catch((o)=>{var a;let l="",c="",u="",h=o===null||o===void 0?void 0:o.cause;if(h){var d,f,g,p;let w=(d=h===null||h===void 0?void 0:h.message)!==null&&d!==void 0?d:"",S=(f=h===null||h===void 0?void 0:h.code)!==null&&f!==void 0?f:"";if(l=`${(g=o===null||o===void 0?void 0:o.name)!==null&&g!==void 0?g:"FetchError"}: ${o===null||o===void 0?void 0:o.message}`,l+=`
 
 Caused by: ${(p=h===null||h===void 0?void 0:h.name)!==null&&p!==void 0?p:"Error"}: ${w}`,S)l+=` (${S})`;if(h===null||h===void 0?void 0:h.stack)l+=`
@@ -2498,20 +2498,20 @@ ${_}`}class A extends Error{constructor({message:e,code:t,cause:r,name:s}){var n
   // botão BUFF (aparece com a espada de ADM/GM) e janela pra mandar buff pros jogadores perto
   var buffBtn = document.createElement('button'); buffBtn.className = 'btn'; buffBtn.id = 'buff-btn'; buffBtn.hidden = true; buffBtn.innerHTML = '<img class="ico" src="icones/gm_divino.svg" alt=""> BUFF'; document.body.appendChild(buffBtn);
   var buffP = document.createElement('div'); buffP.id = 'buffp'; buffP.hidden = true; document.body.appendChild(buffP);
-  var bfTipo = 'forca', bfMin = 30, bfPct = 50;
+  var bfNv = 1, bfMin = 30;
   function bfDesenha() { const p = heroi.position, perto = [{ uid: CONTA.usuario && CONTA.usuario.uid, n: trNome() + ' (você)', d: 0 }];
     Object.values(MP.outros || {}).forEach(o => { if (!o.d || !o.d.u) return; const d = Math.hypot(o.x - p.x, o.z - p.z); if (d < 25) perto.push({ uid: o.d.u, n: String(o.d.n || 'Jogador').replace(/</g, ''), d }); });
     perto.sort((a, b) => a.d - b.d);
-    buffP.innerHTML = `<div class="box"><div class="hd"><b>${ARMAS[AR.arma].icone} Mandar buff</b><button class="x">✕</button></div><div class="tp">${Object.keys(GMB_INFO).map(k => `<button data-t="${k}" class="${k === bfTipo ? 'on' : ''}" style="--c:${GMB_INFO[k][1]}">${IC('gm_' + k)}<small>${GMB_INFO[k][0]}</small></button>`).join('')}</div>
-      <div class="op">${[[5, '5 min'], [30, '30 min'], [60, '1 h'], [1440, '24 h'], [0, '∞']].map(([m, t]) => `<button data-m="${m}" class="${m === bfMin ? 'on' : ''}">${t}</button>`).join('')}</div><div class="op">${[25, 50, 75, 100].map(v => `<button data-p="${v}" class="${v === bfPct ? 'on' : ''}">${v}%</button>`).join('')}</div>
+    buffP.innerHTML = `<div class="box"><div class="hd"><b>${ARMAS[AR.arma].icone} Mandar buff</b><button class="x">✕</button></div><div class="tp">${[1, 2, 3].map(n => `<button data-n="${n}" class="${n === bfNv ? 'on' : ''}" style="--c:${GM_NIVEIS[n][1]}">${IC('gm_gm' + n)}<small>Buff GM Lv ${n}<br>+${GM_NIVEIS[n][0]}% em tudo</small></button>`).join('')}</div>
+      <div class="op">${[[5, '5 min'], [30, '30 min'], [60, '1 h'], [1440, '24 h'], [0, '∞']].map(([m, t]) => `<button data-m="${m}" class="${m === bfMin ? 'on' : ''}">${t}</button>`).join('')}</div>
       <div class="ls">${perto.map(j => `<div class="jg"><span>${j.n}${j.d ? ` <i>${j.d.toFixed(0)} m</i>` : ''}</span><button data-u="${j.uid}">Dar</button></div>`).join('')}${perto.length < 2 ? '<p>Nenhum jogador perto (até 25 m). Dá pra mandar pra você mesmo.</p>' : ''}</div></div>`;
     buffP.querySelector('.x').onclick = () => { buffP.hidden = true; };
-    buffP.querySelectorAll('[data-t]').forEach(b => b.onclick = () => { bfTipo = b.dataset.t; bfDesenha(); }); buffP.querySelectorAll('[data-m]').forEach(b => b.onclick = () => { bfMin = +b.dataset.m; bfDesenha(); }); buffP.querySelectorAll('[data-p]').forEach(b => b.onclick = () => { bfPct = +b.dataset.p; bfDesenha(); });
+    buffP.querySelectorAll('[data-n]').forEach(b => b.onclick = () => { bfNv = +b.dataset.n; bfDesenha(); }); buffP.querySelectorAll('[data-m]').forEach(b => b.onclick = () => { bfMin = +b.dataset.m; bfDesenha(); });
     buffP.querySelectorAll('[data-u]').forEach(b => b.onclick = async () => { const uid = b.dataset.u, nome = b.parentNode.querySelector('span').textContent.replace(/\s\d+ m$/, ''); if (!uid || !CONTA.db) { aviso('Precisa estar logado.', '#ff6a6a'); return; } b.disabled = true;
-      const item = { id: Math.random().toString(36).slice(2, 10), tipo: bfTipo, pct: bfPct, ate: bfMin ? Date.now() + bfMin * 60000 : 0, imune: false, por: CONTA.usuario.uid, porNome: trNome(), criado: Date.now() };
+      const item = { id: Math.random().toString(36).slice(2, 10), tipo: 'gm', nivel: bfNv, pct: GM_NIVEIS[bfNv][0], ate: bfMin ? Date.now() + bfMin * 60000 : 0, imune: false, por: CONTA.usuario.uid, porNome: trNome(), criado: Date.now() };
       try { const ref = CONTA.db.collection('buffs').doc(uid); await CONTA.db.runTransaction(async t => { const d = await t.get(ref); const L = ((d.exists && d.data().lista) || []).filter(x => x.tipo !== item.tipo && (!x.ate || x.ate > Date.now())); L.push(item); t.set(ref, { lista: L, nome, mudou: Date.now() }, { merge: true }); });
-        CONTA.db.collection('buffLog').add({ acao: 'aplicar', alvo: uid, alvoNome: nome, por: CONTA.usuario.uid, porNome: trNome(), cargo: souAdmin() ? 'adm' : 'gm', tipo: item.tipo, pct: bfPct, min: bfMin, criado: Date.now() }).catch(() => {});
-        aviso(IC('gm_' + bfTipo) + ' ' + GMB_INFO[bfTipo][0] + ' enviado pra ' + nome + '!', GMB_INFO[bfTipo][1]); fx('luz', [heroi.position.x, 0, heroi.position.z], 0.6); som('magia', 0.7); } catch (e) { aviso('Não deu: ' + (e.code || e.message), '#ff6a6a'); } b.disabled = false; }); }
+        CONTA.db.collection('buffLog').add({ acao: 'aplicar', alvo: uid, alvoNome: nome, por: CONTA.usuario.uid, porNome: trNome(), cargo: souAdmin() ? 'adm' : 'gm', tipo: item.tipo, nivel: bfNv, pct: item.pct, min: bfMin, criado: Date.now() }).catch(() => {});
+        aviso(gmIco(item) + ' ' + gmNome(item) + ' enviado pra ' + nome + '!', gmCor(item)); fx('luz', [heroi.position.x, 0, heroi.position.z], 0.6); som('magia', 0.7); } catch (e) { aviso('Não deu: ' + (e.code || e.message), '#ff6a6a'); } b.disabled = false; }); }
   tapBtn(buffBtn, () => { if (buffP.hidden) { bfDesenha(); buffP.hidden = false; } else buffP.hidden = true; });
   // ---- BRILHO das armas aprimoradas: +6 azul, +10 roxo intenso, +15 dourado fortíssimo ----
   const BR_TEX = (() => { const c = document.createElement('canvas'); c.width = c.height = 128; const x = c.getContext('2d'), g = x.createRadialGradient(64, 64, 0, 64, 64, 64); g.addColorStop(0, 'rgba(255,255,255,1)'); g.addColorStop(0.25, 'rgba(255,255,255,.6)'); g.addColorStop(1, 'rgba(255,255,255,0)'); x.fillStyle = g; x.fillRect(0, 0, 128, 128); return new T3.CanvasTexture(c); })();
@@ -3825,86 +3825,6 @@ const glowA = cv(128, (x) => { const g = x.createRadialGradient(64, 64, 0, 64, 6
   function mpAusente() { try { if (MP.ch && MP.ok) { const e = mpEstado(heroi.position); e.a = 'afk'; MP.ch.send({ type: 'broadcast', event: 'p', payload: e }); MP.ult = ''; } } catch (e) {} }
   window.addEventListener('pagehide', mpAusente); document.addEventListener('visibilitychange', () => { if (document.hidden) mpAusente(); else MP.ult = ''; });
   function mpEstado(p) { const G = typeof guildState !== 'undefined' && guildState && guildState.guild; const TT = tituloAtual(); return { id: MP.id, u: window.CONTA && CONTA.usuario ? CONTA.usuario.uid : '', n: (AR.visual && AR.visual.nome) || 'Leonardo', t: TT.nome, tr: TT.r, lv: AR.nv, g: G ? G.name : '', ge: G && typeof emblemIcon === 'function' ? emblemIcon(G.emblem) : '', st: meuCargo(), z: zona, dn: dentro ? 1 : 0, x: +p.x.toFixed(2), y: +p.y.toFixed(2), zz: +p.z.toFixed(2), r: +facing.toFixed(2), a: voando ? (voPitch > 0.6 ? 'voa' : 'paira') : !noChao ? 'pulo' : atkT < 0.3 ? 'atk' : vel > 4.2 ? 'corre' : vel > 0.4 ? 'anda' : 'para', w: AR.arma, na: AR.nacao || '' }; }
-  // ======== LIVE DO TIKTOK (só administrador) — espectadores viram bonecos no seu mundo ========
-  const LIVE = { ws: null, url: 'wss://live-tik-tok.onrender.com', av: {}, max: 14, btn: null, quer: false, chk: 0 };
-  const liveEsc = s => String(s == null ? '' : s).replace(/[<>&]/g, '').slice(0, 40);
-  function liveBtn() {
-    if (LIVE.btn) return LIVE.btn;
-    const b = document.createElement('button'); b.textContent = '📡'; b.hidden = true;
-    b.style.cssText = 'position:fixed;left:8px;bottom:8px;z-index:250;width:44px;height:44px;border-radius:50%;border:3px solid #2b2340;background:#fff;font-size:20px;opacity:.9;padding:0';
-    b.onclick = () => {
-      if (LIVE.quer) { if (confirm('Desligar a live do TikTok?')) liveDesliga(false); return; }
-      let k = ''; try { k = localStorage.getItem('liveKey') || ''; } catch (e) {}
-      const pin = prompt('PIN da live (deixe vazio se não tiver):', k); if (pin === null) return;
-      try { localStorage.setItem('liveKey', pin); } catch (e) {}
-      liveLiga(pin);
-    };
-    document.body.appendChild(b); LIVE.btn = b; return b;
-  }
-  function liveCor(on) { const b = liveBtn(); b.style.background = on ? '#8affb0' : LIVE.quer ? '#ffe08a' : '#fff'; }
-  function liveCria(id, nome) {
-    const h = mpHash(id), R = MP_ROUPAS[h % MP_ROUPAS.length];
-    const c = makeChar({ skin: MP_PELE[(h >> 3) % MP_PELE.length], hairStyle: ['short', 'long', 'short', 'bald'][(h >> 5) % 4], hairC: MP_CAB[(h >> 7) % MP_CAB.length], top: R[0], top2: R[1], pants: '#3a3040', shoe: '#2a2020', iris: '#3a2a1a', s: 0.82, ph: (h % 100) / 10 });
-    c.traverse(o => { if (o.isMesh) o.castShadow = true; }); world.add(c);
-    const tag = document.createElement('div'); tag.className = 'mp-tag'; mpTags.appendChild(tag);
-    const a = Math.random() * 6.283, r = 3.5 + Math.random() * 4, x = heroi.position.x + Math.cos(a) * r, z = heroi.position.z + Math.sin(a) * r;
-    return { c, tag, nome: liveEsc(nome) || 'Visitante', x, z, y: heroi.position.y, tx: x, tz: z, rot: 0, ph: (h % 100) / 10, wT: 0, fala: '', falaT: 0, pulo: -9, t: performance.now(), h: '' };
-  }
-  function liveAv(id, nome) {
-    let a = LIVE.av[id];
-    if (!a) {
-      const ks = Object.keys(LIVE.av); if (ks.length >= LIVE.max) liveRemove(ks[0]);
-      a = LIVE.av[id] = liveCria(id, nome); try { flash('rgba(120,200,255,.25)'); } catch (e) {}
-    }
-    a.t = performance.now(); return a;
-  }
-  function liveRemove(id) { const a = LIVE.av[id]; if (!a) return; world.remove(a.c); a.tag.remove(); delete LIVE.av[id]; }
-  function liveEvento(m) {
-    if (!m || !souAdmin()) return;
-    const a = liveAv(String(m.id), m.name), nome = a.nome;
-    if (m.type === 'join') aviso('📺 ' + nome + ' entrou na live!', '#ff4a8a');
-    else if (m.type === 'chat' && m.text) { a.fala = liveEsc(m.text); a.falaT = performance.now() + 5000; }
-    else if (m.type === 'gift') {
-      a.pulo = gT; try { flash('rgba(255,210,74,.35)'); } catch (e) {}
-      ['cb_atk', 'cb_def', 'cb_regen'].forEach(k => BUFF[k] = Math.max(BUFF[k] || 0, 30));
-      vida = Math.min(VIDA_MAX, vida + VIDA_MAX * 0.3);
-      aviso('🎁 ' + nome + ' mandou ' + liveEsc(m.gift || 'um presente') + '! Poder concedido por 30 s', '#ffd24a');
-    }
-    else if (m.type === 'follow') { vida = Math.min(VIDA_MAX, vida + VIDA_MAX * 0.2); aviso('❤️ ' + nome + ' seguiu a live! +vida', '#ff7aa8'); }
-    else if (m.type === 'like') a.pulo = gT;
-  }
-  function liveDesliga(manter) {
-    const w = LIVE.ws; LIVE.ws = null; if (w) { w.onclose = null; try { w.close(); } catch (e) {} }
-    if (!manter) { LIVE.quer = false; Object.keys(LIVE.av).forEach(liveRemove); liveCor(false); }
-  }
-  function liveLiga(pin) {
-    liveDesliga(true); LIVE.quer = true; liveCor(false);
-    let w; try { w = new WebSocket(LIVE.url + (pin ? '?key=' + encodeURIComponent(pin) : '')); } catch (e) { aviso('Live: endereço inválido', '#ff6a6a'); LIVE.quer = false; return; }
-    LIVE.ws = w;
-    w.onopen = () => { aviso('📺 Live conectada!', '#5aff9a'); liveCor(true); };
-    w.onmessage = e => { try { liveEvento(JSON.parse(e.data)); } catch (er) {} };
-    w.onclose = () => { liveCor(false); if (LIVE.quer) setTimeout(() => { if (LIVE.quer) liveLiga(pin); }, 4000); };
-  }
-  function liveFrame(dt, p) {
-    LIVE.chk -= dt; if (LIVE.chk <= 0) { LIVE.chk = 2; let adm = false; try { adm = souAdmin() || /[?&]live=1/.test(location.search); } catch (e) {} liveBtn().hidden = !adm; if (!adm && LIVE.quer) liveDesliga(false); }
-    const agora = performance.now();
-    Object.keys(LIVE.av).forEach(id => {
-      const a = LIVE.av[id]; if (agora - a.t > 900000) { liveRemove(id); return; }
-      const vis = !dentro; a.c.visible = vis; if (!vis) { a.tag.hidden = true; return; }
-      a.wT -= dt; const dh = Math.hypot(a.x - heroi.position.x, a.z - heroi.position.z);
-      if (a.wT <= 0 || dh > 16) { a.wT = 2 + Math.random() * 3; const an = Math.random() * 6.283, r = 3 + Math.random() * 5; a.tx = heroi.position.x + Math.cos(an) * r; a.tz = heroi.position.z + Math.sin(an) * r; }
-      const dx = a.tx - a.x, dz = a.tz - a.z, d = Math.hypot(dx, dz), anda = d > 0.4;
-      if (anda) { const v = (dh > 12 ? 5 : 2.2) * dt; a.x += dx / d * v; a.z += dz / d * v; let dr = Math.atan2(dx, dz) - a.rot; while (dr > Math.PI) dr -= Math.PI * 2; while (dr < -Math.PI) dr += Math.PI * 2; a.rot += dr * clamp(dt * 10); }
-      if (heroi.position.y < 0.5) a.y += (heroi.position.y - a.y) * clamp(dt * 4);
-      const pulando = gT - a.pulo < 0.8; a.c.position.set(a.x, a.y + (pulando ? Math.abs(Math.sin((gT - a.pulo) / 0.8 * Math.PI)) * 1.1 : 0), a.z); a.c.rotation.y = a.rot;
-      if (pulando) pose(a.c, gT, { mood: 'smile', arms: { shL: [-2.6, 0, -0.3], shR: [-2.6, 0, 0.3], elL: [-0.3, 0, 0], elR: [-0.3, 0, 0] }, legs: { thL: -0.4, knL: 0.8, thR: -0.2, knR: 0.4 } });
-      else pose(a.c, gT + a.ph, anda ? { walk: true, mood: 'smile' } : { mood: 'smile' });
-      const falando = a.fala && agora < a.falaT, h = '<b>' + a.nome + '</b>' + (falando ? '<small>💬 ' + a.fala + '</small>' : '');
-      if (a.h !== h) { a.h = h; a.tag.innerHTML = h; }
-      const dd = Math.hypot(a.x - p.x, a.z - p.z); if (dd > 24) { a.tag.hidden = true; return; }
-      guildPosition(a.tag, a.c, 1.75); a.tag.style.transform = 'translate(-50%,-100%) scale(' + clamp(1.15 - dd / 24, 0.5, 1).toFixed(2) + ')'; a.tag.style.zIndex = String(100 - Math.round(dd));
-    });
-  }
   function mpFrame(dt, p) { srvAuto(); mpLiga(); MP.envT -= dt; MP.fxT = (MP.fxT || 0) - dt; if (MP.fxT <= 0) { MP.fxT = 0.12; mpFxEnvia(); visEnvia(); visFrame(); }
     if (MP.ok && MP.envT <= 0) { const e = mpEstado(p); const s = JSON.stringify(e); if (s !== MP.ult || performance.now() - (MP.ultT || 0) > 2000) { MP.ult = s; MP.ultT = performance.now(); MP.envT = MP.srv === 2 ? 0.25 : 0.15; try { MP.ch.send({ type: 'broadcast', event: 'p', payload: e }); } catch (er) {} } else MP.envT = 0.15; }
     const agora = performance.now(); let n = 0;
@@ -4132,17 +4052,23 @@ const glowA = cv(128, (x) => { const g = x.createRadialGradient(64, 64, 0, 64, 6
 
   // ===================== BUFFS DE GM / ADM (mandados pelo Painel ADM) =====================
   // O painel grava em buffs/{uid}: { lista: [{ id, tipo, pct, ate (ms, 0 = permanente), imune, porNome }] }
-  var GMB_INFO = { forca: ['Força Suprema', '#ff3a2a'], protecao: ['Proteção Divina', '#3aa8ff'], regen: ['Regeneração Suprema', '#3aff7a'], velocidade: ['Velocidade Suprema', '#b05aff'], xp: ['Experiência Divina', '#ffc83a'], divino: ['Poder Divino', '#ffe8a0'] };
+  var GMB_INFO = { forca: ['Força Suprema', '#ff3a2a'], protecao: ['Proteção Divina', '#3aa8ff'], regen: ['Regeneração Suprema', '#3aff7a'], velocidade: ['Velocidade Suprema', '#b05aff'], xp: ['Experiência Divina', '#ffc83a'], divino: ['Poder Divino', '#ffe8a0'], gm: ['Buff do GM', '#ff5ab0'] };
+  // Buff do GM (ADM e GM juntos num só): nível 1, 2 ou 3 dá força, proteção, regeneração, velocidade e XP de uma vez
+  var GM_NIVEIS = { 1: [30, '#5ad8ff'], 2: [60, '#c86aff'], 3: [100, '#ffd23c'] };
+  function gmNv(b) { return Math.max(1, Math.min(3, b.nivel | 0 || (b.pct >= 100 ? 3 : b.pct >= 60 ? 2 : 1))); }
+  function gmNome(b) { return b.tipo === 'gm' ? 'Buff GM Lv ' + gmNv(b) : GMB_INFO[b.tipo][0]; }
+  function gmIco(b) { return IC(b.tipo === 'gm' ? 'gm_gm' + gmNv(b) : 'gm_' + b.tipo); }
+  function gmCor(b) { return b.tipo === 'gm' ? GM_NIVEIS[gmNv(b)][1] : GMB_INFO[b.tipo][1]; }
   var GMB = [], gmbVistos = {}, gmbOuvindo = false, gmbAuras = {};
   function gmAtivos() { const ag = Date.now(); return (GMB || []).filter(b => GMB_INFO[b.tipo] && (!b.ate || b.ate > ag)); }
-  function gmPct(tipo) { let v = 0; gmAtivos().forEach(b => { if (b.tipo === tipo) v = Math.max(v, b.pct || 0); if (b.tipo === 'divino' && tipo !== 'imune') v = Math.max(v, (b.pct || 0) / 2); }); return v / 100; }
+  function gmPct(tipo) { let v = 0; gmAtivos().forEach(b => { if (b.tipo === tipo) v = Math.max(v, b.pct || 0); if (b.tipo === 'divino' && tipo !== 'imune') v = Math.max(v, (b.pct || 0) / 2); if (b.tipo === 'gm') v = Math.max(v, GM_NIVEIS[gmNv(b)][0]); }); return v / 100; }
   function gmImune() { return gmAtivos().some(b => b.tipo === 'divino' && b.imune); }
   function gmDur(b) { if (!b.ate) return '∞'; const s = Math.max(0, Math.round((b.ate - Date.now()) / 1000)); return s >= 3600 ? Math.floor(s / 3600) + 'h' + String(Math.floor(s % 3600 / 60)).padStart(2, '0') : s >= 60 ? Math.floor(s / 60) + ' min' : s + ' s'; }
   function gmOuve() { if (gmbOuvindo || !window.CONTA || !CONTA.db || !CONTA.usuario) return; gmbOuvindo = true;
     CONTA.db.collection('buffs').doc(CONTA.usuario.uid).onSnapshot(d => { const L = (d.exists && d.data().lista) || []; const vv = !!(d.exists && d.data().voo); if (vv !== vooLiberado && Object.keys(gmbVistos).length + GMB.length > 0) aviso(vv ? '🪽 O Administrador liberou o voo pra você!' : '🔒 Seu voo foi bloqueado pelo Administrador.', vv ? '#7ad87a' : '#ff8a6a'); vooLiberado = vv; if (!vv && voando && !souAdmin()) voa(false); const primeira = !Object.keys(gmbVistos).length && !GMB.length;
-      L.forEach(b => { if (!gmbVistos[b.id]) { gmbVistos[b.id] = 1; if (!primeira && GMB_INFO[b.tipo] && (!b.ate || b.ate > Date.now())) { aviso(IC('gm_' + b.tipo) + ' ' + (b.porNome || 'Um GM') + ' te deu <b>' + GMB_INFO[b.tipo][0] + '</b> (' + (b.ate ? gmDur(b) : 'permanente') + ')', GMB_INFO[b.tipo][1]); flash('rgba(255,240,180,.4)'); som('missao_ok', 0.8, 1); } } });
+      L.forEach(b => { if (!gmbVistos[b.id]) { gmbVistos[b.id] = 1; if (!primeira && GMB_INFO[b.tipo] && (!b.ate || b.ate > Date.now())) { aviso(gmIco(b) + ' ' + (b.porNome || 'Um GM') + ' te deu <b>' + gmNome(b) + '</b> (' + (b.ate ? gmDur(b) : 'permanente') + ')', gmCor(b)); flash('rgba(255,240,180,.4)'); som('missao_ok', 0.8, 1); } } });
       if (GMB.length && !L.length) aviso('Os buffs de GM foram removidos.', '#8a9aba'); GMB = L; gmHud(); }, () => { gmbOuvindo = false; }); }
-  function gmHud() { const el = $('gm-buffs'); const A = gmAtivos(); el.hidden = !A.length; el.innerHTML = A.map(b => `<span style="--c:${GMB_INFO[b.tipo][1]}">${IC('gm_' + b.tipo)}<small>${gmDur(b)}</small></span>`).join(''); }
+  function gmHud() { const el = $('gm-buffs'); const A = gmAtivos(); el.hidden = !A.length; el.innerHTML = A.map(b => `<span style="--c:${gmCor(b)}">${gmIco(b)}<small>${b.tipo === 'gm' ? 'Lv' + gmNv(b) + ' · ' : ''}${gmDur(b)}</small></span>`).join(''); }
   var gmT = 0;
   function gmFrame(dt) { gmT += dt; if (gmT > 1) { gmT = 0; gmOuve(); gmHud(); }
     const A = gmAtivos(), p = heroi.position; const r = gmPct('regen'); if (r > 0) { vida = Math.min(VIDA_MAX, vida + VIDA_MAX * r * 0.05 * dt); mana = Math.min(MANA_MAX, mana + MANA_MAX * r * 0.05 * dt); }
@@ -11596,6 +11522,93 @@ const ArcaneWingSystem = (function () {
   function capitalPortal(P) { if (conversa || cenaQ) return; let L = null; try { L = lugaresMapa().find(l => l.id === P.id); } catch (e) {} if (!L) return; som('portal', 0.8, 1); vaiPara(L); }
   // monstros não entram na capital
   function capitalLimitaFera(g) { const dx = g.x - CAPT.X, dz = g.z - CAPT.Z, d = Math.hypot(dx, dz); if (d < CAPT.R + 3 && d > 1e-3) { g.x = CAPT.X + dx / d * (CAPT.R + 3); g.z = CAPT.Z + dz / d * (CAPT.R + 3); } }
+  // ======== LIVE DO TIKTOK (só administrador) — espectadores viram bonecos no seu mundo ========
+  const LIVE = { ws: null, url: 'wss://live-tik-tok.onrender.com', av: {}, max: 14, btn: null, quer: false, chk: 0 };
+  const liveEsc = s => String(s == null ? '' : s).replace(/[<>&]/g, '').slice(0, 40);
+  function liveBtn() {
+    if (LIVE.btn) return LIVE.btn;
+    const b = document.createElement('button'); b.textContent = '📡'; b.hidden = true;
+    b.style.cssText = 'position:fixed;left:8px;bottom:8px;z-index:250;width:44px;height:44px;border-radius:50%;border:3px solid #2b2340;background:#fff;font-size:20px;opacity:.9;padding:0';
+    b.onclick = () => {
+      if (LIVE.quer) { if (confirm('Desligar a live do TikTok?')) liveDesliga(false); return; }
+      let k = ''; try { k = localStorage.getItem('liveKey') || ''; } catch (e) {}
+      const pin = prompt('PIN da live (deixe vazio se não tiver):', k); if (pin === null) return;
+      try { localStorage.setItem('liveKey', pin); } catch (e) {}
+      liveLiga(pin);
+    };
+    document.body.appendChild(b); LIVE.btn = b; return b;
+  }
+  function liveCor(on) { const b = liveBtn(); b.style.background = on ? '#8affb0' : LIVE.quer ? '#ffe08a' : '#fff'; }
+  function liveCria(id, nome) {
+    const h = mpHash(id), R = MP_ROUPAS[h % MP_ROUPAS.length];
+    const c = makeChar({ skin: MP_PELE[(h >> 3) % MP_PELE.length], hairStyle: ['short', 'long', 'short', 'bald'][(h >> 5) % 4], hairC: MP_CAB[(h >> 7) % MP_CAB.length], top: R[0], top2: R[1], pants: '#3a3040', shoe: '#2a2020', iris: '#3a2a1a', s: 0.82, ph: (h % 100) / 10 });
+    c.traverse(o => { if (o.isMesh) o.castShadow = true; }); world.add(c);
+    const tag = document.createElement('div'); tag.className = 'mp-tag'; mpTags.appendChild(tag);
+    const a = Math.random() * 6.283, r = 3.5 + Math.random() * 4, x = heroi.position.x + Math.cos(a) * r, z = heroi.position.z + Math.sin(a) * r;
+    return { c, tag, nome: liveEsc(nome) || 'Visitante', x, z, y: heroi.position.y, tx: x, tz: z, rot: 0, ph: (h % 100) / 10, wT: 0, fala: '', falaT: 0, pulo: -9, t: performance.now(), h: '' };
+  }
+  function liveAv(id, nome) {
+    let a = LIVE.av[id];
+    if (!a) {
+      const ks = Object.keys(LIVE.av); if (ks.length >= LIVE.max) liveRemove(ks[0]);
+      a = LIVE.av[id] = liveCria(id, nome); try { flash('rgba(120,200,255,.25)'); } catch (e) {}
+    }
+    a.t = performance.now(); return a;
+  }
+  function liveRemove(id) { const a = LIVE.av[id]; if (!a) return; world.remove(a.c); a.tag.remove(); delete LIVE.av[id]; }
+  function liveEvento(m) {
+    if (!m || !souAdmin()) return;
+    const a = liveAv(String(m.id), m.name), nome = a.nome;
+    if (m.type === 'join') aviso('📺 ' + nome + ' entrou na live!', '#ff4a8a');
+    else if (m.type === 'chat' && m.text) { a.fala = liveEsc(m.text); a.falaT = performance.now() + 5000; }
+    else if (m.type === 'gift') {
+      a.pulo = gT; try { flash('rgba(255,210,74,.35)'); } catch (e) {}
+      ['cb_atk', 'cb_def', 'cb_regen'].forEach(k => BUFF[k] = Math.max(BUFF[k] || 0, 30));
+      vida = Math.min(VIDA_MAX, vida + VIDA_MAX * 0.3);
+      aviso('🎁 ' + nome + ' mandou ' + liveEsc(m.gift || 'um presente') + '! Poder concedido por 30 s', '#ffd24a');
+    }
+    else if (m.type === 'follow') { vida = Math.min(VIDA_MAX, vida + VIDA_MAX * 0.2); aviso('❤️ ' + nome + ' seguiu a live! +vida', '#ff7aa8'); }
+    else if (m.type === 'like') a.pulo = gT;
+  }
+  function liveDesliga(manter) {
+    const w = LIVE.ws; LIVE.ws = null; if (w) { w.onclose = null; try { w.close(); } catch (e) {} }
+    if (!manter) { LIVE.quer = false; Object.keys(LIVE.av).forEach(liveRemove); liveCor(false); }
+  }
+  function liveLiga(pin) {
+    liveDesliga(true); LIVE.quer = true; liveCor(false);
+    let w; try { w = new WebSocket(LIVE.url + (pin ? '?key=' + encodeURIComponent(pin) : '')); } catch (e) { aviso('Live: endereço inválido', '#ff6a6a'); LIVE.quer = false; return; }
+    LIVE.ws = w;
+    w.onopen = () => { aviso('📺 Live conectada!', '#5aff9a'); liveCor(true); };
+    w.onmessage = e => { try { liveEvento(JSON.parse(e.data)); } catch (er) {} };
+    w.onclose = () => { liveCor(false); if (LIVE.quer) setTimeout(() => { if (LIVE.quer) liveLiga(pin); }, 4000); };
+  }
+  function liveFrame(dt, p) {
+    LIVE.chk -= dt; if (LIVE.chk <= 0) { LIVE.chk = 2; let adm = false; try { adm = souAdmin() || /[?&]live=1/.test(location.search); } catch (e) {} liveBtn().hidden = !adm; if (!adm && LIVE.quer) liveDesliga(false); }
+    const agora = performance.now();
+    Object.keys(LIVE.av).forEach(id => {
+      const a = LIVE.av[id]; if (agora - a.t > 900000) { liveRemove(id); return; }
+      const vis = !dentro; a.c.visible = vis; if (!vis) { a.tag.hidden = true; return; }
+      a.wT -= dt; const dh = Math.hypot(a.x - heroi.position.x, a.z - heroi.position.z);
+      if (a.wT <= 0 || dh > 16) { a.wT = 2 + Math.random() * 3; const an = Math.random() * 6.283, r = 3 + Math.random() * 5; a.tx = heroi.position.x + Math.cos(an) * r; a.tz = heroi.position.z + Math.sin(an) * r; }
+      const dx = a.tx - a.x, dz = a.tz - a.z, d = Math.hypot(dx, dz), anda = d > 0.4;
+      if (anda) { const v = (dh > 12 ? 5 : 2.2) * dt; a.x += dx / d * v; a.z += dz / d * v; let dr = Math.atan2(dx, dz) - a.rot; while (dr > Math.PI) dr -= Math.PI * 2; while (dr < -Math.PI) dr += Math.PI * 2; a.rot += dr * clamp(dt * 10); }
+      if (heroi.position.y < 0.5) a.y += (heroi.position.y - a.y) * clamp(dt * 4);
+      const pulando = gT - a.pulo < 0.8; a.c.position.set(a.x, a.y + (pulando ? Math.abs(Math.sin((gT - a.pulo) / 0.8 * Math.PI)) * 1.1 : 0), a.z); a.c.rotation.y = a.rot;
+      if (pulando) pose(a.c, gT, { mood: 'smile', arms: { shL: [-2.6, 0, -0.3], shR: [-2.6, 0, 0.3], elL: [-0.3, 0, 0], elR: [-0.3, 0, 0] }, legs: { thL: -0.4, knL: 0.8, thR: -0.2, knR: 0.4 } });
+      else pose(a.c, gT + a.ph, anda ? { walk: true, mood: 'smile' } : { mood: 'smile' });
+      const falando = a.fala && agora < a.falaT, h = '<b>' + a.nome + '</b>' + (falando ? '<small>💬 ' + a.fala + '</small>' : '');
+      if (a.h !== h) { a.h = h; a.tag.innerHTML = h; }
+      const dd = Math.hypot(a.x - p.x, a.z - p.z); if (dd > 24) { a.tag.hidden = true; return; }
+      guildPosition(a.tag, a.c, 1.75); a.tag.style.transform = 'translate(-50%,-100%) scale(' + clamp(1.15 - dd / 24, 0.5, 1).toFixed(2) + ')'; a.tag.style.zIndex = String(100 - Math.round(dd));
+    });
+  }
+  // diagnóstico da live: etiqueta de versão + botão imediato com ?live=1
+  try { const vt = document.createElement('div'); vt.textContent = 'versão live-4'; vt.style.cssText = 'position:fixed;right:6px;bottom:4px;z-index:9999;font:11px sans-serif;color:#fff;background:rgba(0,0,0,.6);padding:2px 6px;border-radius:6px;pointer-events:none'; document.body.appendChild(vt); setTimeout(() => vt.remove(), 15000);
+    if (/[?&]live=1/.test(location.search)) liveBtn().hidden = false; } catch (e) { console.error('live', e); }
+  // a live roda no próprio laço (não precisa mexer no jogo.js)
+  let liveUlt = 0;
+  function liveLoop(now) { const dt = Math.min(0.1, (now - (liveUlt || now)) / 1000); liveUlt = now; try { liveFrame(dt, heroi.position); } catch (e) { console.error('live', e); } requestAnimationFrame(liveLoop); }
+  requestAnimationFrame(liveLoop);
 
   window.__dbg = { ev: s => eval(s), set camYaw(v) { camYaw = v; }, aviso, atualizaMM, visAtual, visRecebe, mpFxRecebe, lendRemoto: (...a) => lendRemoto(...a), get MPO() { return MP.outros; }, get NAC() { return NAC; }, SIM, simCria, simGuerra, simPara, temVoo, nacaoEntra: () => nacaoEntra(), voaTeste: on => { vooLiberado = true; voa(on); }, setZona: z => { zona = z; dentro = false; }, aroMostra: s => aroMostra(s), get NPCS() { return NPCS; }, divVeste: k => divVeste(k), get ARC() { return ARC; }, get _in() { return [input.x, input.y, vel, facing, dashT, Object.keys(keys).join()]; }, danoHeroi, abrirLoja, aprimora, falar, dano, CAL, DGS, calEntra, MIS, abreMural, get PRACA() { return PRACA; }, staffArmas, equipaArma, MONT3D, PET3D, get MONT() { return MONT; }, montar, petChama, MQ, set GMB(v) { GMB = v; gmHud(); }, gmPct, ASAT, COSM, vesteCosm, CB_LISTA, abrirLivros, trocaPag, get mana() { return mana; }, set mana(v) { mana = v; }, ARMAG, T3, vesteCosm, voa, get voando() { return voando; }, input, mpRecebe, entraMasmorra, saiMasmorra, MM, mmFaseAtual, mmMorte, setaFrame, equipaArma, abrirGuilda, arthurNPC, vestePeca, atualizaPecas, PECAS, BLOCOS, modoBatalha, bmLiga, bmDesliga, BMS, ORB, get BM() { return BM; }, get hora() { return hora; }, set hora(v) { hora = v; }, usarHab2: id => classePoder2(id), BUFF, abrirCriar, aplicaClasse, CLASSES, get desp() { return desp; }, set desp(v) { desp = v; }, usarHab: id => classePoder(id), renderer, scene, world, ganhaXp, vesteFantasia, abrirPerfil, fazRetrato, irValdren, Q, heroi, ativo, AR, FERAS, golem, atacar, get vida() { return vida; }, set vida(v) { vida = v; }, abrirLoja, usarPoder: id => usarPoder(PW[id]), acao: () => acao(), get alvo() { return alvo; } };
   // ---------- laço do jogo ----------
@@ -11704,7 +11717,7 @@ const ArcaneWingSystem = (function () {
     if (tremor > 0) { tremor -= dt; cam.position.x += (Math.random() - .5) * tremor; cam.position.y += (Math.random() - .5) * tremor; }
     cam.lookAt(p.x, p.y + 0.95, p.z); cam.updateMatrixWorld(); bordaG.visible = zona === 'vila' || zona === 'valdren';
     sun.position.set(p.x + 12, 30, p.z + 10); sun.target.position.set(p.x, 0, p.z); sun.target.updateMatrixWorld();
-    guildFrame(); guardaFrame(); coordFrame(dt, p); try { rankFrame(dt); } catch (e) {} mpFrame(dt, p); try { liveFrame(dt, p); } catch (e) {} tituloFrame(dt); ambienteFrame(dt, p); renderer.render(scene, cam); requestAnimationFrame(loop);
+    guildFrame(); guardaFrame(); coordFrame(dt, p); try { rankFrame(dt); } catch (e) {} mpFrame(dt, p); tituloFrame(dt); ambienteFrame(dt, p); renderer.render(scene, cam); requestAnimationFrame(loop);
   }
   cam.position.set(0, 2.6, 9.6); requestAnimationFrame(loop);
   mostrarLugar('Vila de Brumafria');
@@ -11713,7 +11726,7 @@ const ArcaneWingSystem = (function () {
 
 
 </script>
-<script src="https://cdn.jsdelivr.net/npm/firebase@10.12.2/firebase-app-compat.js"></script><script src="https://cdn.jsdelivr.net/npm/firebase@10.12.2/firebase-auth-compat.js"></script><script src="https://cdn.jsdelivr.net/npm/firebase@10.12.2/firebase-firestore-compat.js"></script><script src="https://cdn.jsdelivr.net/npm/firebase@10.12.2/firebase-database-compat.js"></script>
+<script src="firebase/firebase-app-compat.js"></script><script src="firebase/firebase-auth-compat.js"></script><script src="firebase/firebase-firestore-compat.js"></script><script src="firebase/firebase-database-compat.js"></script>
 <script>
 // Projeto do Firebase: brumafria-o-despertar
 window.FIREBASE_CONFIG = {

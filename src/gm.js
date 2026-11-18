@@ -1,16 +1,22 @@
   // ===================== BUFFS DE GM / ADM (mandados pelo Painel ADM) =====================
   // O painel grava em buffs/{uid}: { lista: [{ id, tipo, pct, ate (ms, 0 = permanente), imune, porNome }] }
-  var GMB_INFO = { forca: ['Força Suprema', '#ff3a2a'], protecao: ['Proteção Divina', '#3aa8ff'], regen: ['Regeneração Suprema', '#3aff7a'], velocidade: ['Velocidade Suprema', '#b05aff'], xp: ['Experiência Divina', '#ffc83a'], divino: ['Poder Divino', '#ffe8a0'] };
+  var GMB_INFO = { forca: ['Força Suprema', '#ff3a2a'], protecao: ['Proteção Divina', '#3aa8ff'], regen: ['Regeneração Suprema', '#3aff7a'], velocidade: ['Velocidade Suprema', '#b05aff'], xp: ['Experiência Divina', '#ffc83a'], divino: ['Poder Divino', '#ffe8a0'], gm: ['Buff do GM', '#ff5ab0'] };
+  // Buff do GM (ADM e GM juntos num só): nível 1, 2 ou 3 dá força, proteção, regeneração, velocidade e XP de uma vez
+  var GM_NIVEIS = { 1: [30, '#5ad8ff'], 2: [60, '#c86aff'], 3: [100, '#ffd23c'] };
+  function gmNv(b) { return Math.max(1, Math.min(3, b.nivel | 0 || (b.pct >= 100 ? 3 : b.pct >= 60 ? 2 : 1))); }
+  function gmNome(b) { return b.tipo === 'gm' ? 'Buff GM Lv ' + gmNv(b) : GMB_INFO[b.tipo][0]; }
+  function gmIco(b) { return IC(b.tipo === 'gm' ? 'gm_gm' + gmNv(b) : 'gm_' + b.tipo); }
+  function gmCor(b) { return b.tipo === 'gm' ? GM_NIVEIS[gmNv(b)][1] : GMB_INFO[b.tipo][1]; }
   var GMB = [], gmbVistos = {}, gmbOuvindo = false, gmbAuras = {};
   function gmAtivos() { const ag = Date.now(); return (GMB || []).filter(b => GMB_INFO[b.tipo] && (!b.ate || b.ate > ag)); }
-  function gmPct(tipo) { let v = 0; gmAtivos().forEach(b => { if (b.tipo === tipo) v = Math.max(v, b.pct || 0); if (b.tipo === 'divino' && tipo !== 'imune') v = Math.max(v, (b.pct || 0) / 2); }); return v / 100; }
+  function gmPct(tipo) { let v = 0; gmAtivos().forEach(b => { if (b.tipo === tipo) v = Math.max(v, b.pct || 0); if (b.tipo === 'divino' && tipo !== 'imune') v = Math.max(v, (b.pct || 0) / 2); if (b.tipo === 'gm') v = Math.max(v, GM_NIVEIS[gmNv(b)][0]); }); return v / 100; }
   function gmImune() { return gmAtivos().some(b => b.tipo === 'divino' && b.imune); }
   function gmDur(b) { if (!b.ate) return '∞'; const s = Math.max(0, Math.round((b.ate - Date.now()) / 1000)); return s >= 3600 ? Math.floor(s / 3600) + 'h' + String(Math.floor(s % 3600 / 60)).padStart(2, '0') : s >= 60 ? Math.floor(s / 60) + ' min' : s + ' s'; }
   function gmOuve() { if (gmbOuvindo || !window.CONTA || !CONTA.db || !CONTA.usuario) return; gmbOuvindo = true;
     CONTA.db.collection('buffs').doc(CONTA.usuario.uid).onSnapshot(d => { const L = (d.exists && d.data().lista) || []; const vv = !!(d.exists && d.data().voo); if (vv !== vooLiberado && Object.keys(gmbVistos).length + GMB.length > 0) aviso(vv ? '🪽 O Administrador liberou o voo pra você!' : '🔒 Seu voo foi bloqueado pelo Administrador.', vv ? '#7ad87a' : '#ff8a6a'); vooLiberado = vv; if (!vv && voando && !souAdmin()) voa(false); const primeira = !Object.keys(gmbVistos).length && !GMB.length;
-      L.forEach(b => { if (!gmbVistos[b.id]) { gmbVistos[b.id] = 1; if (!primeira && GMB_INFO[b.tipo] && (!b.ate || b.ate > Date.now())) { aviso(IC('gm_' + b.tipo) + ' ' + (b.porNome || 'Um GM') + ' te deu <b>' + GMB_INFO[b.tipo][0] + '</b> (' + (b.ate ? gmDur(b) : 'permanente') + ')', GMB_INFO[b.tipo][1]); flash('rgba(255,240,180,.4)'); som('missao_ok', 0.8, 1); } } });
+      L.forEach(b => { if (!gmbVistos[b.id]) { gmbVistos[b.id] = 1; if (!primeira && GMB_INFO[b.tipo] && (!b.ate || b.ate > Date.now())) { aviso(gmIco(b) + ' ' + (b.porNome || 'Um GM') + ' te deu <b>' + gmNome(b) + '</b> (' + (b.ate ? gmDur(b) : 'permanente') + ')', gmCor(b)); flash('rgba(255,240,180,.4)'); som('missao_ok', 0.8, 1); } } });
       if (GMB.length && !L.length) aviso('Os buffs de GM foram removidos.', '#8a9aba'); GMB = L; gmHud(); }, () => { gmbOuvindo = false; }); }
-  function gmHud() { const el = $('gm-buffs'); const A = gmAtivos(); el.hidden = !A.length; el.innerHTML = A.map(b => `<span style="--c:${GMB_INFO[b.tipo][1]}">${IC('gm_' + b.tipo)}<small>${gmDur(b)}</small></span>`).join(''); }
+  function gmHud() { const el = $('gm-buffs'); const A = gmAtivos(); el.hidden = !A.length; el.innerHTML = A.map(b => `<span style="--c:${gmCor(b)}">${gmIco(b)}<small>${b.tipo === 'gm' ? 'Lv' + gmNv(b) + ' · ' : ''}${gmDur(b)}</small></span>`).join(''); }
   var gmT = 0;
   function gmFrame(dt) { gmT += dt; if (gmT > 1) { gmT = 0; gmOuve(); gmHud(); }
     const A = gmAtivos(), p = heroi.position; const r = gmPct('regen'); if (r > 0) { vida = Math.min(VIDA_MAX, vida + VIDA_MAX * r * 0.05 * dt); mana = Math.min(MANA_MAX, mana + MANA_MAX * r * 0.05 * dt); }
