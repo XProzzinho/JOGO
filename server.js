@@ -59,7 +59,7 @@ if (!user) {
 
     live.on('member', d => send({ type: 'join', ...who(d) }));
     live.on('chat', d => send({ type: 'chat', ...who(d), text: d.comment }));
-    live.on('gift', d => send({ type: 'gift', ...who(d), gift: d.giftName, count: d.repeatCount || 1 }));
+    live.on('gift', d => send({ type: 'gift', ...who(d), gift: d.giftName, count: d.repeatCount || 1, diamonds: d.diamondCount || 0 }));
     live.on('like', d => send({ type: 'like', ...who(d) }));
     live.on('follow', d => send({ type: 'follow', ...who(d) }));
     live.on('disconnected', () => { console.log('Desconectado, tentando de novo...'); setTimeout(connect, 15000); });
