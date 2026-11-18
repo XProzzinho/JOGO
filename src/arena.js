@@ -137,22 +137,54 @@
       if (L.h !== h) { L.h = h; L.tag.innerHTML = h; } guildPosition(L.tag, L.c, 2.0); L.tag.style.transform = 'translate(-50%,-100%) scale(' + clamp(1.3 - d / 40, 0.55, 1.2).toFixed(2) + ')'; L.tag.style.zIndex = String(200 - Math.round(d)); });
     Object.values(ARENA.plat).forEach(S => { const d = cam.position.distanceTo(S.c.position), falando = S.fala && agora < S.falaT; if (d > (falando ? 70 : 26)) { S.tag.hidden = true; return; } S.tag.hidden = false;
       const h = arenaFoto(S) + '<b>' + S.nome + '</b>' + (falando ? '<small>💬 ' + S.fala + '</small>' : ''); if (S.h !== h) { S.h = h; S.tag.innerHTML = h; } guildPosition(S.tag, S.c, 1.9); S.tag.style.transform = 'translate(-50%,-100%) scale(' + clamp(1.15 - d / 30, 0.45, 1.1).toFixed(2) + ')'; S.tag.style.zIndex = String(150 - Math.round(d)); }); }
+  /* ----- TITÃ DA ARENA: chefe gigante no meio enquanto ninguém luta; a galera derruba ele e depois duela ----- */
+  const BO = { boss: true, id: '__boss', nome: 'Titã da Arena', x: ARENA.X, z: ARENA.Z, r: 3.4, hp: 0, max: 3000, vivo: false, morto: 0, e: null, pos: new T3.Vector3(), cd: 3, golpe: -1, ult: null, espera: 1.5, rot: 0, queda: 0 };
+  const boBar = document.createElement('div'); boBar.id = 'arena-boss'; boBar.className = 'arena-keep'; boBar.hidden = true; boBar.innerHTML = '<b>👹 TITÃ DA ARENA</b><span><i></i></span><small></small>'; document.body.appendChild(boBar);
+  function arenaBossNasce() { if (!BO.e) { const e = fera('golem'); try { e.hp.remove(); } catch (x) {} world.remove(e.g); ARG.G.add(e.g); e.g.position.set(0, 0, 0); e.g.scale.setScalar(2.7);
+      e.g.traverse(o => { if (o.isMesh && o.material && o.material.color && !o.material.transparent) { o.material = o.material.clone(); o.material.color.lerp(new T3.Color('#7a3aff'), 0.35); } });
+      for (let i = 0; i < 5; i++) { const k = part(e.b, CONE, '#ffd23c', (i - 2) * 0.32, 4.75 + (i % 2 ? 0 : 0.12), 0.15, 0.13, 0.5, 0.13, 0.02, true); k.rotation.z = (i - 2) * -0.12; }
+      BO.aura = glowSpr(e.g, 0, 2.2, 0, 9, '#a060ff', 0.35); BO.e = e; }
+    BO.e.g.visible = true; BO.e.g.rotation.set(0, 0, 0); BO.e.g.position.y = 0; BO.max = 4000 + 300 * Object.keys(ARENA.lut).length; BO.hp = BO.max; BO.vivo = true; BO.queda = 0; BO.cd = 3; BO.golpe = -1; BO.ult = null; Object.values(ARENA.lut).forEach(L => { L.danoBoss = 0; });
+    fx('luz', [BO.x, 0, BO.z], 1.5); fx('fumo', [BO.x, 0, BO.z], 1.5); try { som('portal', 0.8, 0.6); } catch (x) {} arenaFeed('👹 O <b>TITÃ DA ARENA</b> apareceu! Mande presente e entre pra derrubar ele!'); }
+  function arenaBossMorre(L) { BO.vivo = false; BO.hp = 0; BO.queda = 0.001; L.kills += 3; const top = Object.values(ARENA.lut).sort((p, q) => (q.danoBoss || 0) - (p.danoBoss || 0))[0];
+    if (top && top !== L) top.kills += 2; fx('fogo', [BO.x, 2, BO.z], 1.5); fx('luz', [BO.x, 0, BO.z], 1.5); try { som('magia', 1, 0.6); } catch (x) {} tremor = 0.6;
+    arenaFeed('💥 <b>' + L.nome + '</b> deu o golpe final no TITÃ! (+3)' + (top && top !== L ? ' · <b>' + top.nome + '</b> causou mais dano (+2)' : '')); aviso('💥 TITÃ DERROTADO por ' + L.nome + '! Agora é todo mundo contra todo mundo!', '#ffd23c'); arenaFoca(L, 4); }
+  function arenaBossFrame(dt, vivos) { const on = zona === 'arena';
+    if (!on) { boBar.hidden = true; return; }
+    if (!BO.vivo && !BO.queda && Object.keys(ARENA.lut).length === 0) { BO.espera -= dt; if (BO.espera <= 0) arenaBossNasce(); } else if (!BO.vivo) BO.espera = 2.5;
+    const e = BO.e; boBar.hidden = !(BO.vivo || BO.queda); if (!e) return;
+    if (BO.queda) { BO.queda += dt; e.g.rotation.x = -Math.min(1.45, BO.queda * 1.1); e.g.position.y = -Math.max(0, BO.queda - 1.5) * 2; if (BO.queda > 4) { BO.queda = 0; e.g.visible = false; } }
+    if (!BO.vivo) { boBar.querySelector('i').style.width = '0%'; return; }
+    BO.pos.set(BO.x, 9, BO.z); const t = gT;
+    // vira pro lutador mais perto
+    let alvo = null, bd = 1e9; vivos.forEach(o => { const d = Math.hypot(o.x - BO.x, o.z - BO.z); if (d < bd) { bd = d; alvo = o; } });
+    if (alvo) { let dr = Math.atan2(alvo.x - BO.x, alvo.z - BO.z) - BO.rot; while (dr > Math.PI) dr -= Math.PI * 2; while (dr < -Math.PI) dr += Math.PI * 2; BO.rot += dr * clamp(dt * 1.5); } else BO.rot += dt * 0.2;
+    e.g.rotation.y = BO.rot; e.b.position.y = Math.sin(t * 1.6) * 0.06;
+    // golpe no chão: levanta os braços e bate, acerta quem está perto
+    if (BO.golpe < 0) { e.arms.forEach((a, i) => a.rotation.x = Math.sin(t * 1.4 + i * Math.PI) * 0.25); BO.cd -= dt; if (BO.cd <= 0 && alvo && bd < 9) { BO.golpe = 0; } }
+    else { BO.golpe += dt; const w = 1.0;
+      if (BO.golpe < w) e.arms.forEach(a => a.rotation.x = -(BO.golpe / w) * 2.7);
+      else { e.arms.forEach(a => a.rotation.x = 0.5); if (!BO.bateu) { BO.bateu = true; fx('fumo', [BO.x, 0.3, BO.z], 0.8); fx('vento', [BO.x, 0.3, BO.z], 0.6); tremor = Math.max(tremor, 0.25); try { som('golem_soco', 0.7, 0.8); } catch (x) {}
+          vivos.forEach(o => { const dx = o.x - BO.x, dz = o.z - BO.z, d = Math.hypot(dx, dz); if (d < 8.5) { const dano = Math.round(18 + Math.random() * 14); o.hp -= dano; try { numero(o.c.position, String(dano), '#ff5a5a', 2.2); } catch (x) {} if (d > 1e-3) { o.x += dx / d * 2.2; o.z += dz / d * 2.2; } if (o.hp <= 0) { o.hp = 0; o.morto = 3; o.mortes++; arenaFeed('👹 O Titã esmagou <b>' + o.nome + '</b>!'); } } }); }
+        if (BO.golpe > w + 0.6) { BO.golpe = -1; BO.bateu = false; BO.cd = 2.2 + Math.random() * 1.2 - (BO.hp < BO.max / 2 ? 0.8 : 0); } } }
+    boBar.querySelector('i').style.width = (BO.hp / BO.max * 100).toFixed(1) + '%'; boBar.querySelector('small').textContent = Math.ceil(BO.hp) + ' / ' + BO.max + (vivos.length ? ' · ' + vivos.length + ' lutando' : ' · esperando lutadores'); }
   // ----- luta automática -----
   function arenaFrame(dt) { const on = zona === 'arena'; ARG.G.visible = on; arenaUi(); if (!on) { Object.values(ARENA.lut).concat(Object.values(ARENA.plat)).forEach(L => { L.c.visible = false; L.tag.hidden = true; }); return; }
     Object.values(ARENA.plat).forEach(S => { S.c.visible = true; const u = Math.sin(gT * 3 + S.ph), vibra = u > 0.55; pose(S.c, gT, { mood: 'happy', arms: vibra ? { shL: [-2.7, 0, -0.3], shR: [-2.7, 0, 0.3], elL: [-0.3, 0, 0], elR: [-0.3, 0, 0] } : { shL: [-0.2, 0, -0.1], shR: [-0.2, 0, 0.1] } }); S.c.position.y = S.y + (vibra ? Math.abs(Math.sin(gT * 9 + S.ph)) * 0.18 : 0); });
     ARG.tochas.forEach((f, i) => { const s = 0.85 + Math.sin(gT * 13 + i * 2) * 0.15; f.scale.set(s, 0.9 + Math.cos(gT * 17 + i) * 0.2, s); });
-    const Ls = Object.values(ARENA.lut), vivos = Ls.filter(L => !L.morto);
+    const Ls = Object.values(ARENA.lut), vivos = Ls.filter(L => !L.morto); arenaBossFrame(dt, vivos);
     Ls.forEach(L => { L.c.visible = true; if (L.div) L.div.up(gT); if (L.regen && !L.morto) L.hp = Math.min(L.max, L.hp + L.regen * dt);
       if (L.morto) { L.morto -= dt; pose(L.c, gT, { mood: 'sad', lean: 1.2, hipY: 0.35, legs: { thL: -1.4, knL: 1.6, thR: -1.4, knR: 1.6 } }); L.c.position.y = -0.2;
         if (L.morto <= 0) { L.morto = 0; L.hp = L.max; const a = Math.random() * Math.PI * 2, r = ARENA.R * 0.85; L.x = ARENA.X + Math.sin(a) * r; L.z = ARENA.Z + Math.cos(a) * r; L.c.position.y = 0; fx('luz', [L.x, 0, L.z], 0.8); } L.c.position.x = L.x; L.c.position.z = L.z; return; }
       // escolhe alvo: o mais perto, às vezes troca
-      if (!L.alvo || L.alvo.morto || !ARENA.lut[L.alvo.id] || Math.random() < dt * 0.15) { let best = null, bd = 1e9; vivos.forEach(o => { if (o === L) return; const d = Math.hypot(o.x - L.x, o.z - L.z) + Math.random() * 6; if (d < bd) { bd = d; best = o; } }); L.alvo = best; }
+      if (BO.vivo) L.alvo = BO; else if (!L.alvo || L.alvo.boss || L.alvo.morto || !ARENA.lut[L.alvo.id] || Math.random() < dt * 0.15) { let best = null, bd = 1e9; vivos.forEach(o => { if (o === L) return; const d = Math.hypot(o.x - L.x, o.z - L.z) + Math.random() * 6; if (d < bd) { bd = d; best = o; } }); L.alvo = best; }
       const A = L.alvo; let anda = false, atk = gT - L.atkT < 0.35;
       if (A) { const dx = A.x - L.x, dz = A.z - L.z, d = Math.hypot(dx, dz); let dr = Math.atan2(dx, dz) - L.rot; while (dr > Math.PI) dr -= Math.PI * 2; while (dr < -Math.PI) dr += Math.PI * 2; L.rot += dr * clamp(dt * 8);
-        if (d > 1.5) { const v = 3.2 * L.vel * dt; L.x += dx / d * v; L.z += dz / d * v; anda = true; }
-        else { L.cd -= dt; if (L.cd <= 0) { L.cd = 0.8 + Math.random() * 0.6; L.atkT = gT; const dano = Math.round((7 + Math.random() * 7) * L.dano); A.hp -= dano; try { numero(A.c.position, String(dano), L.dano > 1.2 ? '#ffd86a' : '#ffffff', 2.2); } catch (e) {} try { som('espada', 0.25, 1); } catch (e) {} fx('vento', [A.x, 1, A.z], 0.3);
-            if (A.hp <= 0) { A.hp = 0; A.morto = 3; A.mortes++; L.kills++; L.alvo = null; arenaFeed('⚔️ <b>' + L.nome + '</b> derrotou <b>' + A.nome + '</b>' + (L.kills % 5 === 0 ? ' · 🔥 ' + L.kills + ' abates!' : '')); } } } }
+        if (d > (A.boss ? A.r + 0.9 : 1.5)) { const v = 3.2 * L.vel * dt; L.x += dx / d * v; L.z += dz / d * v; anda = true; }
+        else { L.cd -= dt; if (L.cd <= 0) { L.cd = 0.8 + Math.random() * 0.6; L.atkT = gT; const dano = Math.round((7 + Math.random() * 7) * L.dano); A.hp -= dano; if (A.boss) { L.danoBoss = (L.danoBoss || 0) + dano; A.ult = L; } try { numero(A.boss ? A.pos : A.c.position, String(dano), L.dano > 1.2 ? '#ffd86a' : '#ffffff', A.boss ? 0 : 2.2); } catch (e) {} try { som('espada', 0.25, 1); } catch (e) {} fx('vento', [A.boss ? L.x + (A.x - L.x) * 0.4 : A.x, 1, A.boss ? L.z + (A.z - L.z) * 0.4 : A.z], 0.3);
+            if (A.boss) { if (A.hp <= 0) arenaBossMorre(L); } else if (A.hp <= 0) { A.hp = 0; A.morto = 3; A.mortes++; L.kills++; L.alvo = null; arenaFeed('⚔️ <b>' + L.nome + '</b> derrotou <b>' + A.nome + '</b>' + (L.kills % 5 === 0 ? ' · 🔥 ' + L.kills + ' abates!' : '')); } } } }
       // não sai da areia e não fica um em cima do outro
+      if (BO.vivo) { const dx = L.x - BO.x, dz = L.z - BO.z, d = Math.hypot(dx, dz), m = BO.r + 0.5; if (d < m && d > 1e-3) { L.x = BO.x + dx / d * m; L.z = BO.z + dz / d * m; } }
       vivos.forEach(o => { if (o === L) return; const dx = L.x - o.x, dz = L.z - o.z, d = Math.hypot(dx, dz); if (d < 0.8 && d > 1e-3) { L.x += dx / d * (0.8 - d) * 0.5; L.z += dz / d * (0.8 - d) * 0.5; } });
       { const dx = L.x - ARENA.X, dz = L.z - ARENA.Z, d = Math.hypot(dx, dz), m = ARENA.R - 1.2; if (d > m) { L.x = ARENA.X + dx / d * m; L.z = ARENA.Z + dz / d * m; } }
       L.c.position.set(L.x, 0, L.z); L.c.rotation.y = L.rot;

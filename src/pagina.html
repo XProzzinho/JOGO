@@ -43,6 +43,9 @@
   #arena-ui.mural .ar-rk,#arena-ui.mural .ar-feed{opacity:0;transition:opacity .5s}#arena-ui .ar-rk,#arena-ui .ar-feed{transition:opacity .5s}
   @media (orientation:portrait){#arena-ui{top:86px;right:5px;width:42vw}}
   body.arena-travada #arena-ui .ar-bt{display:none}
+  #arena-boss{position:fixed;top:8px;left:50%;transform:translateX(-50%);z-index:261;width:min(420px,60vw);text-align:center;color:#fff;font:800 12px system-ui;text-shadow:0 1px 3px #000;pointer-events:none}
+  #arena-boss b{display:block;color:#e8c8ff;letter-spacing:1px}#arena-boss span{display:block;height:10px;margin:3px 0;border-radius:6px;background:#2a0a2a;border:1.5px solid #c89aff;overflow:hidden}#arena-boss i{display:block;height:100%;width:100%;background:linear-gradient(90deg,#ff3a5a,#c040ff);transition:width .2s}#arena-boss small{font-size:9.5px;color:#ffd8f0;font-weight:600}
+  @media (orientation:portrait){#arena-boss{top:86px;left:6px;transform:none;width:50vw}}
   @keyframes arIn{from{opacity:0;transform:translateX(20px)}}
   #arena-ui .ar-bt{display:flex;flex-wrap:wrap;gap:4px}#arena-ui .ar-bt button{flex:1 1 45%;padding:4px 3px;border-radius:8px;border:2px solid #2b2340;background:#ffe08a;font:700 10px system-ui;color:#2b2340}
   #jogo-cv{position:fixed;inset:0;width:100vw;height:100vh;display:block}
