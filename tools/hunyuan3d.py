@@ -23,7 +23,7 @@ for i, p in enumerate(prompts):
     try:
         img = p.get("imagem")
         if not img:
-            r = flux.predict(prompt=p["texto"], seed=p.get("seed", 1234), randomize_seed=False, width=768, height=1024,
+            r = flux.predict(prompt=p["texto"], seed=p.get("seed", 1234), randomize_seed=False, width=p.get('w', 768), height=p.get('h', 1024),
                              num_inference_steps=4, api_name="/infer")
             img = caminho(r[0])
             shutil.copy(img, f"saida/arte_{n}.webp" if img.endswith(".webp") else f"saida/arte_{n}.png")
