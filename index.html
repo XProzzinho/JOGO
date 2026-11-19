@@ -11904,7 +11904,7 @@ const ArcaneWingSystem = (function () {
   function arenaNorm(t) { return String(t || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, ''); }
   function arenaParaLuta(id, nome, foto) { let L = ARENA.lut[id]; if (L) return L; const S0 = ARENA.plat[id]; if (S0) arenaPlatTira(id); L = arenaLut(id, (S0 && S0.nome) || nome, foto || (S0 && S0.foto)); arenaFoca(L, 3); return L; }
   /* comentários especiais: VERMELHO / AZUL (times) e DUELO nome */
-  function arenaComando(m, id, foto) { const n = arenaNorm(m.text);
+  function arenaComando(m, id, foto) { const n = arenaNorm(m.text); const perg = arenaPergunta(n); if (perg) { arenaExplica(perg); if (perg !== 'lutar') { if (!ARENA.lut[id]) arenaPlat(id, m.name, foto); return true; } }
     const du = n.match(/\bduelo\b\s*@?\s*([^\s].{0,30})?/);
     if (du) { const L = arenaParaLuta(id, m.name, foto); const alvoTxt = (du[1] || '').trim(); arenaDuelo(L, alvoTxt); return true; }
     const tm = /\bvermelho\b/.test(n) ? 'r' : /\bazul\b/.test(n) ? 'b' : '';
@@ -11946,13 +11946,24 @@ const ArcaneWingSystem = (function () {
     const agora = performance.now(); CR.lista = CR.lista.filter(x => agora - x[0] < 10000); const tot = CR.lista.reduce((a, x) => a + x[1], 0);
     if (tot >= 40 && CR.cd <= 0) { CR.cd = 30; CR.lista = []; arenaCoracoes(90); Object.values(ARENA.lut).forEach(x => { if (!x.morto) { x.hp = x.max; } }); aviso('❤️ CHUVA DE CORAÇÕES! Todo mundo curado!', '#ff5a8a'); arenaFeed('❤️ <b>CHUVA DE CORAÇÕES!</b> As curtidas curaram todo mundo!'); arenaFala('Chuva de corações! As curtidas curaram todos os lutadores!', true); } }
   /* ---- narrador: explica como funciona de tempos em tempos ---- */
-  const NARRA = ['Bem-vindos à Arena da Live! Quem só assiste fica na arquibancada. Comente lutar e o seu personagem entra na batalha!',
-    'Quer desafiar alguém? Comente duelo e o nome da pessoa. O vencedor do duelo ganha três pontos!',
-    'Escolha seu time! Comente vermelho ou azul. Quem é do mesmo time não se ataca, e o placar dos times aparece na tela.',
-    'Cada presente dá um item de poder e uma corrente de luz pro seu lutador. Quanto mais caro o presente, mais forte o item!',
-    'Tem meta de presentes na tela! Quando completar, cai uma chuva de itens pra todo mundo e aparece o Titã Dourado!',
-    'A cada cinco minutos acaba a rodada. Quem tiver mais abates vira campeão e ganha a coroa!',
-    'Curte a live! Muitas curtidas juntas fazem uma chuva de corações que cura todos os lutadores!'];
+  const EXPLICA = {
+    lutar: ['⚔️ <b>COMO ENTRAR:</b> comente <b>LUTAR</b> no chat', 'Como entrar na luta: é só comentar a palavra lutar no chat. Seu personagem desce da arquibancada pra arena e luta sozinho contra o mais perto. Cada adversário que você derrubar vale um ponto no ranking.'],
+    duelo: ['🤺 <b>DUELO:</b> comente <b>DUELO</b> + nome da pessoa · vencedor +3', 'Como funciona o duelo: comente duelo e o nome de quem você quer desafiar, por exemplo, duelo Maria. Os dois lutam sozinhos dentro de um anel dourado, e ninguém mais pode atacar vocês. Quem vencer ganha três pontos. Se ninguém cair em um minuto, dá empate. Se escrever só duelo, você desafia o primeiro do ranking.'],
+    times: ['🔴🔵 <b>TIMES:</b> comente <b>VERMELHO</b> ou <b>AZUL</b> · time não se ataca', 'Como funcionam os times: comente vermelho ou azul pra escolher seu lado. Quem é do mesmo time não se ataca, então vocês lutam juntos contra o outro time. Cada abate soma um ponto pro seu time no placar. Qual time escolher? Entra no time que está perdendo pra ajudar a virar, ou no time do seu amigo pra lutar junto com ele!'],
+    presentes: ['🎁 <b>PRESENTES:</b> entra na luta + item de poder + sobe de nível', 'Como funcionam os presentes: qualquer presente coloca você direto na luta e dá um item de poder. Rosa dá uma espada com mais dano, casquinha dá um escudo com mais vida, bom jogo dá botas de velocidade, e o coração faz você se curar sozinho. Cada presente também sobe seu nível, e seu lutador fica maior.'],
+    divinos: ['✨ <b>ARTEFATOS DIVINOS</b> têm poderes: sol de fogo, gelo e fogo espectral', 'Os artefatos divinos têm poderes de verdade! O Emblema Flamejante joga um sol de fogo que explode e queima os inimigos. O Astrolábio Arcano solta o corte glacial, pilares de gelo que congelam e o juízo congelado que cai do céu. E o Manto do Abismo queima quem chega perto com fogo espectral e avança com as asas roubando vida. Mini dino dá o Emblema, o controle dá o Astrolábio, e os presentes grandes dão o Manto.'],
+    meta: ['🎯 <b>META:</b> completou = chuva de itens + Titã Dourado', 'Como funciona a meta de presentes: a barra na tela enche com cada presente. Quando completar, cai uma chuva de itens pra todo mundo que está lutando, e aparece o Titã Dourado, que vale o dobro de pontos.'],
+    tita: ['👹 <b>TITÃ:</b> todos atacam juntos · golpe final +3 · mais dano +2', 'Como funciona o Titã: ele é o chefe gigante do meio da arena. Enquanto ele estiver vivo, todo mundo ataca ele junto. Quem der o golpe final ganha três pontos, e quem causar mais dano ganha dois. Cuidado com o soco no chão, que acerta todo mundo perto dele!'],
+    rodada: ['👑 <b>RODADA:</b> 5 minutos · mais abates = campeão com coroa', 'Como funcionam as rodadas: cada rodada dura cinco minutos. No fim, quem tiver mais abates vira o campeão e ganha uma coroa dourada na cabeça. Depois os pontos zeram e começa tudo de novo, então sempre dá tempo de ganhar!'],
+    curtidas: ['👍 <b>CURTIDAS</b> curam · muitas juntas = chuva de corações', 'Curtidas também ajudam! Cada curtida cura um pouco o seu lutador, e quando a galera curte muito junto, cai uma chuva de corações que cura todo mundo. E se você seguir a live, seu lutador volta com a vida cheia!'] };
+  const NARRA = ['Bem-vindos à Arena da Live! Quem só assiste fica na arquibancada. Comente lutar e o seu personagem entra na batalha! Comente duelo pra desafiar alguém, ou vermelho e azul pra entrar num time!'].concat(Object.values(EXPLICA).map(x => x[1]));
+  const EXP_T = {};
+  function arenaExplica(k) { const E = EXPLICA[k]; if (!E) return; const agora = performance.now(); if (EXP_T[k] && agora - EXP_T[k] < 20000) return; EXP_T[k] = agora; arenaFala(E[1], true);
+    ctaEl.innerHTML = '📖 ' + E[0]; ctaEl.hidden = false; void ctaEl.offsetWidth; ctaEl.classList.add('on'); CTA.on = true; CTA.t = 10; }
+  /* pergunta no chat ("como funciona o duelo?") -> o locutor explica */
+  function arenaPergunta(n) { if (!/\bcomo\b|\?|\bqual\b|\bo que\b|\bexplica|\bajuda|\bnao entendi/.test(n)) return null;
+    const M = [['duelo', /duelo|desafi/], ['times', /time|vermelho|azul|lado/], ['divinos', /divin|artefat|poder|emblema|astrolabio|manto/], ['presentes', /presente|rosa|item|nivel/], ['meta', /meta|barra/], ['tita', /tita|boss|chefe|gigante/], ['rodada', /rodada|coroa|campeao/], ['curtidas', /curti|coracao|like/], ['lutar', /lut|entr|jog|particip|funciona|faz/]];
+    const m = M.find(x => x[1].test(n)); return m ? m[0] : null; }
   /* ===================== LOCUTOR: comenta a luta o tempo todo, sem repetir ===================== */
   const LOC_HYPE = ['Que batalha, galera! A arena está pegando fogo!', 'Olha a pancadaria! Ninguém quer perder aqui!', 'Isso aqui é a Arena da Live, onde só os fortes sobrevivem!', 'Que golpe! Vocês viram isso?', 'A arquibancada está agitada hoje!',
     'Tá muito disputado! Qualquer um pode virar o jogo!', 'Espadas pra todo lado! Que confusão boa!', 'Quem vai ser o próximo campeão? Ainda dá tempo!', 'Essa live está demais! Chama os amigos pra assistir!', 'Tá vindo gente nova aí! Sejam bem-vindos à arena!',
@@ -11977,7 +11988,7 @@ const ArcaneWingSystem = (function () {
     const fraco = vivos.filter(L => L.hp < L.max * 0.25)[0]; if (fraco) ops.push(fraco.nome + ' está quase sem vida! Alguém salva ele!');
     return ops.length ? ops[Math.floor(Math.random() * ops.length)] : null; }
   function arenaLocutor() { if (VOZ.tocando || VOZ.fila.length) { NR.t = 6; return; } LOC.vez = ((LOC.vez || 0) + 1) % 5; const ls = Object.keys(ARENA.lut).length;
-    let f = null; if (LOC.vez === 0) f = locPega('narra', NARRA); else if (LOC.vez === 2 || !ls) f = locPega('chama', LOC_CHAMA); else if (LOC.vez === 4) f = locPega('hype', LOC_HYPE); else f = locDinamico() || locPega('hype', LOC_HYPE);
+    let f = null; if (LOC.vez % 2 === 0 && (LOC.exp = (LOC.exp || 0) + 1) % 2) { arenaExplica(locPega('exp', Object.keys(EXPLICA))); return; } if (LOC.vez === 0) f = locPega('narra', NARRA); else if (LOC.vez === 2 || !ls) f = locPega('chama', LOC_CHAMA); else if (LOC.vez === 4) f = locPega('hype', LOC_HYPE); else f = locDinamico() || locPega('hype', LOC_HYPE);
     if (f) arenaFala(f); }
   function arenaLocAbate(L, A) { L.seq = (L.seq || 0) + 1; const vinga = A.matouMe === L.id; A.ultSeq = A.seq || 0; A.seq = 0; A.matouMe = L.id;
     let f = null; if (!LOC.pBlood) { LOC.pBlood = true; f = 'Primeiro sangue da rodada! ' + L.nome + ' derrubou ' + A.nome + '!'; }
@@ -12013,19 +12024,64 @@ const ArcaneWingSystem = (function () {
     else if (a === 'time') { const x = rnd(ls.concat(ps)); if (x) arenaEvento({ type: 'chat', id: x.id, name: x.nome, text: Math.random() < 0.5 ? 'vermelho' : 'azul' }); }
     else if (a === 'like') { const x = rnd(ls.concat(ps)); arenaEvento({ type: 'like', id: x ? x.id : 'like', name: x ? x.nome : 'Fã', count: 15 }); }
     else if (a === 'meta') { MT.n = MT.alvo - 1; const x = rnd(ls.concat(ps)); if (x) arenaEvento({ type: 'gift', id: x.id, name: x.nome, gift: 'Rosa', diamonds: 1 }); } }
+  /* ===================== APODERES DOS ARTEFATOS DIVINOS (funcionam de verdade na arena) ===================== */
+  const APROJ = [], APGEO = { orbe: new T3.SphereGeometry(0.45, 14, 10), onda: new T3.RingGeometry(1.2, 1.9, 24, 1, -0.9, 1.8), cone: new T3.ConeGeometry(0.45, 2.4, 6), pilar: new T3.CylinderGeometry(1.6, 1.6, 26, 18, 1, true), anel: new T3.RingGeometry(2.2, 2.6, 40) };
+  const apMat = (c, o) => new T3.MeshBasicMaterial({ color: c, transparent: true, opacity: o == null ? 0.9 : o, blending: T3.AdditiveBlending, depthWrite: false, toneMapped: false, side: T3.DoubleSide });
+  const APODERES = {
+    emblema: [{ k: 'sol', nome: '☀️ Sol Ígneo', cd: 6, alc: 11, fn: arenaSolIgneo }],
+    astrolabio: [{ k: 'corte', nome: '❄️ Corte Glacial', cd: 5, alc: 7, fn: arenaCorteGlacial }, { k: 'pilares', nome: '🧊 Pilares Gélidos', cd: 8, alc: 10, fn: arenaPilaresGelidos }, { k: 'juizo', nome: '💠 Juízo Congelado', cd: 15, alc: 12, fn: arenaJuizoCongelado }],
+    manto: [{ k: 'asas', nome: '🦇 Asas do Abismo', cd: 7, alc: 9, fn: arenaAsasAbismo }, { k: 'aura', nome: '👻 Fogo Espectral', cd: 0, alc: 2.8, aura: true }] };
+  function arenaInimigos(L, r, x, z) { x = x == null ? L.x : x; z = z == null ? L.z : z; const v = Object.values(ARENA.lut).filter(o => o !== L && !o.morto && !arenaAmigo(L, o) && Math.hypot(o.x - x, o.z - z) < r); if (BO.vivo && Math.hypot(BO.x - x, BO.z - z) < r + BO.r) v.push(BO); return v; }
+  function arenaFere(L, A, dano, cor) { if (A.boss) { if (!BO.vivo) return; dano = Math.round(dano * L.dano); BO.hp -= dano; L.danoBoss = (L.danoBoss || 0) + dano; try { numero(BO.pos, String(dano), cor, 0); } catch (e) {} if (BO.hp <= 0) arenaBossMorre(L); return; }
+    if (A.morto) return; dano = Math.round(dano * L.dano); A.hp -= dano; try { numero(A.c.position, String(dano), cor, 2.2); } catch (e) {}
+    if (A.hp <= 0) { A.hp = 0; A.morto = 3; A.mortes++; L.kills++; if (L.alvo === A) L.alvo = null; arenaAbate(L, A); arenaFeed('✨ <b>' + L.nome + '</b> derrotou <b>' + A.nome + '</b> com poder divino!'); } }
+  function arenaGrita(L, P) { try { numero(L.c.position, P.nome, '#ffe08a', 3.4); } catch (e) {} if (Math.random() < 0.3) arenaFala(locPega('pod_' + P.k, [L.nome + ' usou ' + P.nome.replace(/^\S+\s/, '') + '!', 'Olha o ' + P.nome.replace(/^\S+\s/, '') + ' do ' + L.nome + '!', 'Poder divino! ' + P.nome.replace(/^\S+\s/, '') + '!'])); }
+  function arenaSolIgneo(L, A) { const m = new T3.Mesh(APGEO.orbe, apMat('#ffb030', 1)); const g = grp(world, L.x, 2.6, L.z); g.add(m); glowSpr(g, 0, 0, 0, 3.2, '#ff7a1a', 0.9);
+    APROJ.push({ g, alvo: A, v: 13, t: 0, max: 3, hit(x, z) { fx('fogo', [x, 0.8, z], 1); fx('chama', [x, 0.5, z], 0.6); try { som('fogo', 0.5, 1); } catch (e) {} arenaInimigos(L, 3.4, x, z).forEach(o => { arenaFere(L, o, 30, '#ff8a2a'); if (!o.boss) o.queima = 3; }); } }); }
+  function arenaCorteGlacial(L, A) { const m = new T3.Mesh(APGEO.onda, apMat('#8af0ff', 0.95)); m.rotation.x = -Math.PI / 2; const g = grp(world, L.x, 1, L.z); g.add(m); const ang = Math.atan2(A.x - L.x, A.z - L.z); g.rotation.y = ang;
+    const dx = Math.sin(ang), dz = Math.cos(ang), ja = new Set(); fx('gelo', [L.x, 1, L.z], 0.5);
+    APROJ.push({ g, t: 0, max: 0.75, fixo: true, passo(dt, P) { g.position.x += dx * 13 * dt; g.position.z += dz * 13 * dt; m.scale.setScalar(1 + P.t * 1.4); m.material.opacity = 0.95 * (1 - P.t / P.max);
+      arenaInimigos(L, 1.8, g.position.x, g.position.z).forEach(o => { if (ja.has(o)) return; ja.add(o); arenaFere(L, o, 24, '#8af0ff'); if (!o.boss) o.lento = 2.5; fx('gelo', [o.x, 1, o.z], 0.4); }); } }); }
+  function arenaPilaresGelidos(L, A) { const x0 = A.x, z0 = A.z, g = grp(world, x0, 0, z0), cs = []; for (let i = 0; i < 6; i++) { const a = i / 6 * Math.PI * 2, r = i ? 1.3 : 0; const c = new T3.Mesh(APGEO.cone, new T3.MeshStandardMaterial({ color: '#bfefff', emissive: '#3ab8ff', emissiveIntensity: 0.6, transparent: true, opacity: 0.9, roughness: 0.2 })); c.position.set(Math.sin(a) * r, -1.3, Math.cos(a) * r); c.rotation.z = (Math.random() - 0.5) * 0.4; g.add(c); cs.push(c); }
+    let bateu = false; APROJ.push({ g, t: 0, max: 2.2, fixo: true, passo(dt, P) { const u = Math.min(1, P.t / 0.25); cs.forEach((c, i) => { c.position.y = -1.3 + u * (2.2 + (i ? 0 : 0.6)) - (P.t > 1.7 ? (P.t - 1.7) * 6 : 0); });
+      if (!bateu && P.t > 0.2) { bateu = true; fx('gelo', [x0, 0.6, z0], 1); try { som('gelo', 0.5, 1); } catch (e) {} arenaInimigos(L, 2.4, x0, z0).forEach(o => { arenaFere(L, o, 28, '#bff2ff'); if (!o.boss) o.congela = 1.6; }); } },
+      fim() { cs.forEach(c => c.material.dispose()); } }); }
+  function arenaJuizoCongelado(L, A) { const x0 = A.x, z0 = A.z, g = grp(world, x0, 0, z0); const col = new T3.Mesh(APGEO.pilar, apMat('#9ae8ff', 0)); col.position.y = 13; g.add(col); const an = new T3.Mesh(APGEO.anel, apMat('#9ae8ff', 0.9)); an.rotation.x = -Math.PI / 2; an.position.y = 0.08; g.add(an);
+    let bateu = false; APROJ.push({ g, t: 0, max: 2.4, fixo: true, passo(dt, P) { an.scale.setScalar(Math.max(0.2, 1.2 - P.t * 0.6)); an.rotation.z += dt * 3;
+      if (P.t > 0.8 && !bateu) { bateu = true; fx('gelo', [x0, 1, z0], 1.5); fx('luz', [x0, 0, z0], 1); tremor = Math.max(tremor, 0.2); try { som('gelo', 0.8, 0.7); } catch (e) {} arenaInimigos(L, 4.2, x0, z0).forEach(o => { arenaFere(L, o, 45, '#9ae8ff'); if (!o.boss) o.congela = 2.2; }); }
+      col.material.opacity = P.t < 0.8 ? 0 : Math.max(0, 0.85 - (P.t - 0.8) * 0.6); col.scale.set(1 + (P.t - 0.8) * 0.3, 1, 1 + (P.t - 0.8) * 0.3); } }); }
+  function arenaAsasAbismo(L, A) { const ang = Math.atan2(A.x - L.x, A.z - L.z), d = Math.max(0, Math.hypot(A.x - L.x, A.z - L.z) - 1.2), x0 = L.x, z0 = L.z; L.dash = { t: 0, max: 0.35, x0, z0, x1: x0 + Math.sin(ang) * d, z1: z0 + Math.cos(ang) * d, alvo: A };
+    for (let i = 0; i < 5; i++) setTimeout(() => fx('fumo', [L.x, 1, L.z], 0.5), i * 70); try { som('vento', 0.5, 0.8); } catch (e) {} }
+  function arenaEstado(L, dt) { if (L.queima > 0) { L.queima -= dt; L.hp -= 5 * dt; if (Math.random() < dt * 3) fx('chama', [L.x, 1, L.z], 0.3); if (L.hp <= 0 && !L.morto) { L.hp = 1; } }
+    if (L.lento > 0) L.lento -= dt;
+    if (L.dash) { const D = L.dash; D.t += dt; const u = Math.min(1, D.t / D.max); L.x = D.x0 + (D.x1 - D.x0) * u; L.z = D.z0 + (D.z1 - D.z0) * u; L.c.position.set(L.x, 0.4 * Math.sin(u * Math.PI), L.z); pose(L.c, gT, { run: true, lean: 0.6, arms: { shL: [0.6, 0, -1.2], shR: [0.6, 0, 1.2] } });
+      if (u >= 1) { L.dash = null; const A = D.alvo; fx('fumo', [L.x, 1, L.z], 0.8); if (A && (A.boss ? BO.vivo : !A.morto)) { arenaFere(L, A, 26, '#c88aff'); L.hp = Math.min(L.max, L.hp + 18); } } return true; }
+    if (L.congela > 0) { L.congela -= dt; L.c.position.set(L.x, 0, L.z); if (!L.gelo) { L.gelo = new T3.Mesh(new T3.BoxGeometry(1.1, 2.1, 1.1), new T3.MeshStandardMaterial({ color: '#bfefff', emissive: '#3ab8ff', emissiveIntensity: 0.4, transparent: true, opacity: 0.55, roughness: 0.1 })); L.gelo.position.y = 1; L.c.add(L.gelo); } return true; }
+    if (L.gelo) { L.c.remove(L.gelo); L.gelo.geometry.dispose(); L.gelo.material.dispose(); L.gelo = null; fx('gelo', [L.x, 1, L.z], 0.4); }
+    return false; }
+  function arenaPoderes(dt, vivos) { vivos.forEach(L => { if (L.morto || L.dash || L.congela > 0) return; const divs = Object.values(L.itens).filter(P => P.div); if (!divs.length) return; L.cds = L.cds || {};
+      divs.forEach(P => (APODERES[P.div] || []).forEach(H => { if (H.aura) { L.auraT = (L.auraT || 0) - dt; const ini = arenaInimigos(L, H.alc); if (ini.length && L.auraT <= 0) { L.auraT = 0.5; ini.forEach(o => arenaFere(L, o, 4, '#c88aff')); fx('fumo', [L.x, 0.6, L.z], 0.4); } return; }
+        L.cds[H.k] = (L.cds[H.k] == null ? Math.random() * H.cd : L.cds[H.k]) - dt; if (L.cds[H.k] > 0) return;
+        const A = (L.alvo && (L.alvo.boss ? BO.vivo : !L.alvo.morto) && Math.hypot(L.alvo.x - L.x, L.alvo.z - L.z) < H.alc + (L.alvo.boss ? BO.r : 0)) ? L.alvo : arenaInimigos(L, H.alc)[0]; if (!A) return;
+        L.cds[H.k] = H.cd * (0.85 + Math.random() * 0.3); L.atkT = gT; H.fn(L, A); arenaGrita(L, H); })); });
+    for (let i = APROJ.length - 1; i >= 0; i--) { const P = APROJ[i]; P.t += dt; if (P.passo) P.passo(dt, P);
+      if (!P.fixo) { const A = P.alvo, ok = A && (A.boss ? BO.vivo : !A.morto); const tx = ok ? A.x : P.tx, tz = ok ? A.z : P.tz, ty = A && A.boss ? 4 : 1.2; P.tx = tx; P.tz = tz; const dx = tx - P.g.position.x, dy = ty - P.g.position.y, dz = tz - P.g.position.z, d = Math.hypot(dx, dy, dz);
+        if (d < 0.8 || P.t > P.max) { P.hit(P.g.position.x, P.g.position.z); P.t = 99; } else { const k = Math.min(1, P.v * dt / d); P.g.position.x += dx * k; P.g.position.y += dy * k; P.g.position.z += dz * k; P.g.rotation.y += dt * 6; } }
+      if (P.t > P.max) { world.remove(P.g); P.g.traverse(o => { if (o.material && o.material !== corMat && o.isMesh) o.material.dispose(); }); if (P.fim) P.fim(); APROJ.splice(i, 1); } } }
   // ----- luta automática -----
   function arenaFrame(dt) { const on = zona === 'arena'; ARG.G.visible = on; arenaUi(); if (!on) { Object.values(ARENA.lut).concat(Object.values(ARENA.plat)).forEach(L => { L.c.visible = false; L.tag.hidden = true; }); return; }
     Object.values(ARENA.plat).forEach(S => { S.c.visible = true; const u = Math.sin(gT * 3 + S.ph), vibra = u > 0.55; pose(S.c, gT, { mood: 'happy', arms: vibra ? { shL: [-2.7, 0, -0.3], shR: [-2.7, 0, 0.3], elL: [-0.3, 0, 0], elR: [-0.3, 0, 0] } : { shL: [-0.2, 0, -0.1], shR: [-0.2, 0, 0.1] } }); S.c.position.y = S.y + (vibra ? Math.abs(Math.sin(gT * 9 + S.ph)) * 0.18 : 0); });
     if (ARG.up) ARG.up(gT); arenaElosFrame(dt); try { arenaShowFrame(dt); } catch (e) { console.warn('show', e); } ARG.tochas.forEach((f, i) => { const s = 0.85 + Math.sin(gT * 13 + i * 2) * 0.15; f.scale.set(s, 0.9 + Math.cos(gT * 17 + i) * 0.2, s); });
-    const Ls = Object.values(ARENA.lut), vivos = Ls.filter(L => !L.morto); arenaBossFrame(dt, vivos); arenaCtaFrame(dt);
+    const Ls = Object.values(ARENA.lut), vivos = Ls.filter(L => !L.morto); arenaBossFrame(dt, vivos); arenaCtaFrame(dt); try { arenaPoderes(dt, vivos); } catch (e) { console.warn('poder', e); }
     Ls.forEach(L => { L.c.visible = true; if (L.div) L.div.up(gT); { const esc = 0.9 * (1 + Math.min(0.3, (L.up || 0) * 0.05) + (L.pulso || 0) * 0.25); L.c.scale.setScalar(esc); if (L.pulso) L.pulso = Math.max(0, L.pulso - dt * 1.5); } if (L.regen && !L.morto) L.hp = Math.min(L.max, L.hp + L.regen * dt);
       if (L.morto) { L.morto -= dt; pose(L.c, gT, { mood: 'sad', lean: 1.2, hipY: 0.35, legs: { thL: -1.4, knL: 1.6, thR: -1.4, knR: 1.6 } }); L.c.position.y = -0.2;
         if (L.morto <= 0) { L.morto = 0; L.hp = L.max; const a = Math.random() * Math.PI * 2, r = ARENA.R * 0.85; L.x = ARENA.X + Math.sin(a) * r; L.z = ARENA.Z + Math.cos(a) * r; L.c.position.y = 0; fx('luz', [L.x, 0, L.z], 0.8); } L.c.position.x = L.x; L.c.position.z = L.z; return; }
+      if (arenaEstado(L, dt)) return;
       // escolhe alvo: o mais perto, às vezes troca
       if (DU.on && (L === DU.a || L === DU.b)) L.alvo = L === DU.a ? DU.b : DU.a; else if (BO.vivo) L.alvo = BO; else if (!L.alvo || L.alvo.boss || L.alvo.morto || !ARENA.lut[L.alvo.id] || arenaAmigo(L, L.alvo) || Math.random() < dt * 0.15) { let best = null, bd = 1e9; vivos.forEach(o => { if (o === L || arenaAmigo(L, o)) return; const d = Math.hypot(o.x - L.x, o.z - L.z) + Math.random() * 6; if (d < bd) { bd = d; best = o; } }); L.alvo = best; }
       const A = L.alvo; let anda = false, atk = gT - L.atkT < 0.35;
       if (A) { const dx = A.x - L.x, dz = A.z - L.z, d = Math.hypot(dx, dz); let dr = Math.atan2(dx, dz) - L.rot; while (dr > Math.PI) dr -= Math.PI * 2; while (dr < -Math.PI) dr += Math.PI * 2; L.rot += dr * clamp(dt * 8);
-        if (d > (A.boss ? A.r + 0.9 : 1.5)) { const v = 3.2 * L.vel * dt; L.x += dx / d * v; L.z += dz / d * v; anda = true; }
+        if (d > (A.boss ? A.r + 0.9 : 1.5)) { const v = 3.2 * L.vel * (L.lento > 0 ? 0.45 : 1) * dt; L.x += dx / d * v; L.z += dz / d * v; anda = true; }
         else { L.cd -= dt; if (L.cd <= 0) { L.cd = 0.8 + Math.random() * 0.6; L.atkT = gT; const dano = Math.round((7 + Math.random() * 7) * L.dano); A.hp -= dano; if (A.boss) { L.danoBoss = (L.danoBoss || 0) + dano; A.ult = L; } try { numero(A.boss ? A.pos : A.c.position, String(dano), L.dano > 1.2 ? '#ffd86a' : '#ffffff', A.boss ? 0 : 2.2); } catch (e) {} try { som('espada', 0.25, 1); } catch (e) {} fx('vento', [A.boss ? L.x + (A.x - L.x) * 0.4 : A.x, 1, A.boss ? L.z + (A.z - L.z) * 0.4 : A.z], 0.3);
             if (A.boss) { if (A.hp <= 0) arenaBossMorre(L); } else if (A.hp <= 0) { A.hp = 0; A.morto = 3; A.mortes++; L.kills++; L.alvo = null; arenaAbate(L, A); arenaFeed('⚔️ <b>' + L.nome + '</b> derrotou <b>' + A.nome + '</b>' + (L.kills % 5 === 0 ? ' · 🔥 ' + L.kills + ' abates!' : '')); } } } }
       // não sai da areia e não fica um em cima do outro
