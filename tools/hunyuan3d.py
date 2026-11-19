@@ -32,8 +32,8 @@ for i, p in enumerate(prompts):
             ok += 1
             continue
         if hy is None:
-            hy = Client("tencent/Hunyuan3D-2", token=token, verbose=False)
-        r = hy.predict(caption=None, image=handle_file(img), steps=30, guidance_scale=5.0, seed=p.get("seed", 1234),
+            hy = Client(os.environ.get("ESPACO_3D") or "tencent/Hunyuan3D-2.1", token=token, verbose=False)
+        r = hy.predict(image=handle_file(img), steps=30, guidance_scale=5.0, seed=p.get("seed", 1234),
                        octree_resolution=256, check_box_rembg=True, num_chunks=8000, randomize_seed=False,
                        api_name="/generation_all")
         for k, f in enumerate(r[:2]):
