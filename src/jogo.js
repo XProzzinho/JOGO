@@ -689,6 +689,7 @@
     esp_executora: { nome: 'Executora Dupla', icone: '⚔️', dano: 78, alc: 2.7, cd: 0.34, preco: 2000, esp: 'exec', desc: 'Especial: dano x2,5 em inimigos com pouca vida e o 3º golpe dispara uma lâmina de energia.' },
     esp_adm: { nome: 'Lâmina Suprema ADM', halo: true, icone: '⚔️', dano: 999, alc: 3.2, cd: 0.28, staff: 'adm', esp: 'staff', defMax: true, desc: 'Só do Administrador. Dano e defesa no máximo. Botão BUFF manda buffs pros jogadores.' },
     placa_adm: { nome: 'Placa Suprema ADM', halo: true, icone: '⚔️', dano: 999, alc: 3.6, cd: 0.3, staff: 'adm', placa: true, esp: 'staff', defMax: true, desc: 'Placa gigante do Administrador. Dano e defesa no máximo. Botão BUFF manda buffs pros jogadores. Só ADM usa.' },
+    placa_serafica: { nome: 'Placa Seráfica GM', icone: '👼', dano: 999, alc: 3.6, cd: 0.3, staff: 'gm', placa: true, esp: 'staff', defMax: true, desc: 'Placa de Game Master da Forja Seráfica: moldura de ouro, coroa com auréola tripla, asas de serafim e cristais flutuando. Dano e defesa no máximo.' },
     placa_gm: { nome: 'Placa Suprema GM', icone: '⚔️', dano: 999, alc: 3.6, cd: 0.3, staff: 'gm', placa: true, esp: 'staff', defMax: true, desc: 'Placa gigante de Game Master. Dano e defesa no máximo. Botão BUFF manda buffs pros jogadores. Só GM/ADM usa.' },
     esp_gm: { nome: 'Executora GM', icone: '⚔️', dano: 999, alc: 3.2, cd: 0.28, staff: 'gm', esp: 'staff', defMax: true, desc: 'Só de GM. Dano e defesa no máximo. Botão BUFF manda buffs pros jogadores.' },
     gl_eclipse: { nome: 'Eclipse Negro GL', icone: '🌙', dano: 62, alc: 2.8, cd: 0.32, giro: true, braco: true, soClasse: 'gladiador', preco: 800, esp: 'sup', desc: 'Só Gladiador. Acerta tudo em volta. Especial: +15% de crítico e o 3º golpe solta uma onda de choque.' },
@@ -1359,6 +1360,57 @@
     if (k === 'divino') { A(P.head, TOR2, GEMA, 0, 0.42, -0.04, 0.14, 0.14, 0.3, Math.PI / 2 - 0.45); [-1, 1].forEach(s => { const w = A(P.spine, CONE2, GEMA, s * 0.13, 0.5, -0.19, 0.045, 0.3, 0.012); w.rotation.z = -s * 1.0; w.rotation.x = 0.3; }); }
     L.push(glowSpr(P.spine, 0, 0.4, 0.2, 0.18, D.brilho, 0.35));
     L.forEach(m => m.visible = false); CAS['mago_' + k] = { m: L, abas, calca: COURO, capa, tab }; });
+  // ===================== ARSENAL CELESTIAL: Armadura Imperial, Celestial e Glacial (peças presas no corpo do herói) =====================
+  const ARSENAL = {
+    arsenal_imperial: { nome: 'Armadura Imperial', icone: '⚜️', def: 46, mana: 40, desc: 'Armadura técnica branca e azul com faixas de energia ciano, óculos de combate e casaco longo.', tipo: 'tech', base: '#101827', armor: '#f0f5fb', trim: '#cbd7e5', accent: '#0758dc', glow: '#36caff' },
+    arsenal_celestial: { nome: 'Armadura Celestial', icone: '💠', def: 50, mana: 35, desc: 'Armadura pesada azul real com placas de prata, elmo de chifres com visor luminoso e capa celeste.', tipo: 'heavy', elmo: true, capa: '#071b48', base: '#0758dc', armor: '#cbd7e5', trim: '#f0f5fb', accent: '#0758dc', glow: '#36caff' },
+    arsenal_glacial: { nome: 'Armadura Glacial', icone: '🧊', def: 52, mana: 30, desc: 'Armadura branca como gelo eterno sobre aço escuro, elmo coroado com visor ciano e capa da noite polar.', tipo: 'heavy', elmo: true, capa: '#07162e', base: '#101827', armor: '#f0f5fb', trim: '#cbd7e5', accent: '#0758dc', glow: '#36caff' } };
+  Object.assign(FANT, ARSENAL);
+  Object.keys(ARSENAL).forEach(k => { const D = ARSENAL[k], P = heroi.userData.P, L = [], heavy = D.tipo === 'heavy';
+    const mt = (c, me, ro, em, ei) => new T3.MeshStandardMaterial({ color: c, metalness: me, roughness: ro, emissive: em || '#000000', emissiveIntensity: ei || 0, envMap: ENV, envMapIntensity: 1.2 });
+    const BASE = mt(D.base, 0.6, 0.35, D.base === '#0758dc' ? '#063cff' : null, D.base === '#0758dc' ? 0.35 : 0), ARM = mt(D.armor, 0.8, 0.24), TRIM = mt(D.trim, 0.88, 0.2), ACC = mt(D.accent, 0.72, 0.22, '#063cff', 0.6), PRETO = mt('#050a12', 0.35, 0.42);
+    const GLOW = new T3.MeshStandardMaterial({ color: D.glow, emissive: '#078cff', emissiveIntensity: 1.8, roughness: 0.2, toneMapped: false }), BRANCO = mt('#f0f5fb', 0.5, 0.3);
+    const A = (pa, ...a) => { const m = pc(pa, ...a); L.push(m); return m; }; const G = (pa, x, y, z) => { const g = grp(pa, x, y, z); L.push(g); return g; };
+    const espinho = (pa, x, y, z, len, r, rz, rx) => A(pa, CONE2, TRIM, x, y, z, r, len, r, rx || 0, 0, rz);
+    // tronco: couraça, placas do peito anguladas com faixa azul, crista central com gema
+    A(P.spine, SPH2, BASE, 0, 0.2, 0, 0.19, 0.16, 0.14); A(P.spine, SPH2, ARM, 0, 0.395, 0.01, 0.215, 0.245, 0.158);
+    [-1, 1].forEach(s => { A(P.spine, BOX, ARM, s * 0.078, 0.42, 0.122, 0.13, 0.15, 0.045, 0, 0, s * -0.18); A(P.spine, BOX, ACC, s * 0.078, 0.42, 0.147, 0.014, 0.11, 0.008, 0, 0, s * -0.18);
+      if (heavy) { espinho(P.spine, s * 0.15, 0.53, 0.02, 0.13, 0.03, -s * 0.5); } A(P.spine, CONE2, ARM, s * 0.065, 0.6, 0.045, 0.026, 0.11, 0.026, 0.25, 0, -s * 0.45); });
+    A(P.spine, BOX, TRIM, 0, 0.415, 0.158, 0.042, 0.1, 0.022); A(P.spine, SPH2, GLOW, 0, 0.415, 0.172, 0.02, 0.028, 0.012);
+    [0.27, 0.315, 0.355].forEach(y => A(P.spine, BOX, GLOW, 0, y, 0.15, 0.028, 0.006, 0.005));
+    // cinto com medalhão de caveira
+    A(P.spine, CYL2, TRIM, 0, 0.05, 0, 0.197, 0.046, 0.143); A(P.spine, SPH2, TRIM, 0, 0.05, 0.15, 0.042, 0.045, 0.02); A(P.spine, SPH2, BRANCO, 0, 0.054, 0.165, 0.024, 0.024, 0.008); [-1, 1].forEach(s => A(P.spine, SPH2, PRETO, s * 0.011, 0.058, 0.172, 0.005, 0.006, 0.003));
+    // abas da frente (e casaco longo na Imperial)
+    const abas = { R: G(P.hips, 0.07, -0.03, 0.12), L: G(P.hips, -0.07, -0.03, 0.12), B: G(P.hips, 0, -0.03, -0.12) };
+    [['R', 1], ['L', -1]].forEach(([k2, s]) => { A(abas[k2], BOX, BASE, 0, -0.1, 0, 0.065, 0.19, 0.025, 0, 0, s * 0.06); A(abas[k2], BOX, ACC, 0, -0.1, 0.014, 0.011, 0.16, 0.006, 0, 0, s * 0.06); if (heavy) espinho(abas[k2], s * 0.025, -0.2, 0.01, 0.06, 0.016, Math.PI - s * 0.3); });
+    if (!heavy) { A(abas.B, BOX, BASE, 0, -0.2, 0, 0.26, 0.38, 0.03); A(abas.B, BOX, ACC, 0, -0.2, -0.016, 0.012, 0.34, 0.006); [-1, 1].forEach(s => A(abas.B, BOX, ACC, s * 0.12, -0.2, -0.016, 0.012, 0.34, 0.006)); }
+    else A(abas.B, BOX, BASE, 0, -0.12, 0, 0.2, 0.22, 0.025);
+    A(P.hips, CYL2, BASE, 0, -0.06, 0, 0.175, 0.13, 0.13);
+    ['L', 'R'].forEach((sd, i) => { const sx = i ? 1 : -1;
+      // ombreiras duplas, faixa azul e espinhos (pesadas) ou antena (Imperial)
+      const sh = P['sh' + sd]; A(sh, SPH2, BASE, sx * 0.03, 0.02, 0, 0.11, 0.09, 0.105); A(sh, SPH2, ARM, sx * 0.045, 0.035, 0.03, 0.125, 0.095, 0.11); A(sh, BOX, ACC, sx * 0.045, 0.035, 0.137, 0.022, 0.08, 0.008, 0, 0, sx * 0.2);
+      if (heavy) { espinho(sh, sx * 0.07, 0.12, -0.01, 0.17, 0.035, -sx * 0.45); espinho(sh, sx * 0.13, 0.05, -0.01, 0.13, 0.03, -sx * 1.1); } else if (sx < 0) espinho(sh, sx * 0.06, 0.13, 0, 0.14, 0.018, -sx * 0.3);
+      A(sh, CYL2, BASE, 0, -0.17, 0, 0.062, 0.17, 0.062); A(sh, BOX, ARM, 0, -0.17, 0.03, 0.085, 0.14, 0.075); A(sh, BOX, ACC, 0, -0.17, 0.069, 0.013, 0.1, 0.006);
+      // cotovelo, antebraço e manopla
+      const el = P['el' + sd]; A(el, SPH2, TRIM, 0, 0, 0.01, 0.06, 0.06, 0.06); A(el, BOX, ARM, 0, -0.13, 0.02, 0.08, 0.14, 0.08); A(el, BOX, ACC, 0, -0.13, 0.062, 0.012, 0.1, 0.006); A(el, BOX, TRIM, 0, -0.255, 0.03, 0.075, 0.06, 0.072);
+      // coxa, joelho, canela e bota
+      const th = P['th' + sd]; A(th, CYL2, BASE, 0, -0.2, 0, 0.085, 0.3, 0.085); A(th, BOX, ARM, 0, -0.17, 0.065, 0.08, 0.16, 0.03);
+      const kn = P['kn' + sd]; A(kn, SPH2, ARM, 0, 0, 0.035, 0.078, 0.062, 0.05); A(kn, BOX, TRIM, 0, 0, 0.083, 0.06, 0.012, 0.008); if (heavy) espinho(kn, sx * 0.04, 0.05, 0.03, 0.08, 0.02, -sx * 0.5);
+      A(kn, CYL2, BASE, 0, -0.2, 0, 0.07, 0.3, 0.07); A(kn, BOX, ARM, 0, -0.18, 0.052, 0.08, 0.22, 0.035); A(kn, BOX, ACC, 0, -0.18, 0.071, 0.014, 0.17, 0.006);
+      const ft = P['ft' + sd]; A(ft, BOX, BASE, 0, 0.0, 0.05, 0.13, 0.085, 0.26); A(ft, BOX, TRIM, 0, 0.008, 0.15, 0.125, 0.065, 0.09); A(ft, BOX, PRETO, 0, -0.045, 0.06, 0.135, 0.02, 0.28); });
+    // cabeça: elmo com visor e chifres (pesadas) ou faixa de óculos (Imperial)
+    if (D.elmo) { A(P.head, SPH2, BASE, 0, 0.17, -0.005, 0.158, 0.135, 0.155); A(P.head, BOX, ARM, 0, 0.17, 0.09, 0.22, 0.07, 0.07); A(P.head, BOX, PRETO, 0, 0.125, 0.12, 0.17, 0.045, 0.03); A(P.head, BOX, GLOW, 0, 0.125, 0.137, 0.12, 0.009, 0.006);
+      A(P.head, CONE2, TRIM, 0, 0.36, -0.01, 0.04, 0.2, 0.04); [-1, 1].forEach(s => { A(P.head, CONE2, ARM, s * 0.13, 0.25, 0, 0.035, 0.17, 0.035, 0, 0, -s * 0.55); A(P.head, CONE2, ACC, s * 0.08, 0.3, 0.02, 0.02, 0.1, 0.02, 0, 0, -s * 0.4); A(P.head, BOX, ARM, s * 0.135, 0.11, 0.03, 0.03, 0.1, 0.1); }); }
+    else { A(P.head, BOX, ACC, 0, 0.135, 0.12, 0.2, 0.034, 0.03); A(P.head, BOX, PRETO, 0, 0.135, 0.137, 0.15, 0.016, 0.008); A(P.head, BOX, GLOW, 0, 0.135, 0.142, 0.1, 0.005, 0.004); }
+    // capa (pesadas)
+    let capa = null; if (D.capa) { capa = G(P.spine, 0, 0.56, -0.15); const geo = new T3.BufferGeometry(), v = [], ix = [], R = 9, C = 8;
+      for (let i = 0; i <= R; i++) { const t = i / R; for (let j = 0; j <= C; j++) { const u = j / C - 0.5, w = 0.2 * (1 - 0.1 * t) * 2; v.push(u * w * (1 + t * 0.35), -t * 0.78, -t * 0.08 + Math.abs(u) * 0.06 + t * t * 0.05); } }
+      for (let i = 0; i < R; i++) for (let j = 0; j < C; j++) { const a = i * (C + 1) + j, b = a + C + 1; ix.push(a, b, a + 1, b, b + 1, a + 1); }
+      geo.setAttribute('position', new T3.Float32BufferAttribute(v, 3)); geo.setIndex(ix); geo.computeVertexNormals();
+      const cm = new T3.Mesh(geo, new T3.MeshStandardMaterial({ color: D.capa, metalness: 0.3, roughness: 0.6, side: T3.DoubleSide, envMap: ENV, envMapIntensity: 0.6 })); cm.castShadow = true; capa.add(cm); L.push(cm);
+      [-1, 1].forEach(s => A(capa, BOX, ACC, s * 0.205, -0.39, -0.03, 0.012, 0.78, 0.012, 0.05, 0, s * 0.08)); }
+    L.push(glowSpr(P.spine, 0, 0.415, 0.2, 0.12, D.glow, 0.5));
+    L.forEach(m => m.visible = false); CAS[k] = { m: L, abas, calca: BASE, capa }; });
   function escondeTrajes() { armadura.forEach(m => m.visible = false); Object.values(CAS).forEach(c => c.m.forEach(m => m.visible = false)); }
   function casacoFrame() { const c = CAS[AR.fantasia] || (CASACOS[AR.pecas.calca] && CAS[AR.pecas.calca]); if (!c) return; const P = heroi.userData.P, a = c.abas;
     a.R.rotation.x = Math.min(0, P.thR.rotation.x) * 0.9; a.L.rotation.x = Math.min(0, P.thL.rotation.x) * 0.9; a.B.rotation.x = Math.max(0, Math.max(P.thL.rotation.x, P.thR.rotation.x)) * 0.7; if (c.tab) c.tab.rotation.x = Math.min(0, P.thL.rotation.x, P.thR.rotation.x) * 0.85; if (c.capa) { const v = typeof vel !== 'undefined' ? vel : 0; c.capa.rotation.x += (Math.min(0.6, v * 0.06) + Math.sin(gT * 2.2) * 0.03 - c.capa.rotation.x) * 0.15; } }

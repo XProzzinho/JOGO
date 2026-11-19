@@ -1518,6 +1518,7 @@ ${_}`}class A extends Error{constructor({message:e,code:t,cause:r,name:s}){var n
     esp_executora: { nome: 'Executora Dupla', icone: '⚔️', dano: 78, alc: 2.7, cd: 0.34, preco: 2000, esp: 'exec', desc: 'Especial: dano x2,5 em inimigos com pouca vida e o 3º golpe dispara uma lâmina de energia.' },
     esp_adm: { nome: 'Lâmina Suprema ADM', halo: true, icone: '⚔️', dano: 999, alc: 3.2, cd: 0.28, staff: 'adm', esp: 'staff', defMax: true, desc: 'Só do Administrador. Dano e defesa no máximo. Botão BUFF manda buffs pros jogadores.' },
     placa_adm: { nome: 'Placa Suprema ADM', halo: true, icone: '⚔️', dano: 999, alc: 3.6, cd: 0.3, staff: 'adm', placa: true, esp: 'staff', defMax: true, desc: 'Placa gigante do Administrador. Dano e defesa no máximo. Botão BUFF manda buffs pros jogadores. Só ADM usa.' },
+    placa_serafica: { nome: 'Placa Seráfica GM', icone: '👼', dano: 999, alc: 3.6, cd: 0.3, staff: 'gm', placa: true, esp: 'staff', defMax: true, desc: 'Placa de Game Master da Forja Seráfica: moldura de ouro, coroa com auréola tripla, asas de serafim e cristais flutuando. Dano e defesa no máximo.' },
     placa_gm: { nome: 'Placa Suprema GM', icone: '⚔️', dano: 999, alc: 3.6, cd: 0.3, staff: 'gm', placa: true, esp: 'staff', defMax: true, desc: 'Placa gigante de Game Master. Dano e defesa no máximo. Botão BUFF manda buffs pros jogadores. Só GM/ADM usa.' },
     esp_gm: { nome: 'Executora GM', icone: '⚔️', dano: 999, alc: 3.2, cd: 0.28, staff: 'gm', esp: 'staff', defMax: true, desc: 'Só de GM. Dano e defesa no máximo. Botão BUFF manda buffs pros jogadores.' },
     gl_eclipse: { nome: 'Eclipse Negro GL', icone: '🌙', dano: 62, alc: 2.8, cd: 0.32, giro: true, braco: true, soClasse: 'gladiador', preco: 800, esp: 'sup', desc: 'Só Gladiador. Acerta tudo em volta. Especial: +15% de crítico e o 3º golpe solta uma onda de choque.' },
@@ -2188,6 +2189,57 @@ ${_}`}class A extends Error{constructor({message:e,code:t,cause:r,name:s}){var n
     if (k === 'divino') { A(P.head, TOR2, GEMA, 0, 0.42, -0.04, 0.14, 0.14, 0.3, Math.PI / 2 - 0.45); [-1, 1].forEach(s => { const w = A(P.spine, CONE2, GEMA, s * 0.13, 0.5, -0.19, 0.045, 0.3, 0.012); w.rotation.z = -s * 1.0; w.rotation.x = 0.3; }); }
     L.push(glowSpr(P.spine, 0, 0.4, 0.2, 0.18, D.brilho, 0.35));
     L.forEach(m => m.visible = false); CAS['mago_' + k] = { m: L, abas, calca: COURO, capa, tab }; });
+  // ===================== ARSENAL CELESTIAL: Armadura Imperial, Celestial e Glacial (peças presas no corpo do herói) =====================
+  const ARSENAL = {
+    arsenal_imperial: { nome: 'Armadura Imperial', icone: '⚜️', def: 46, mana: 40, desc: 'Armadura técnica branca e azul com faixas de energia ciano, óculos de combate e casaco longo.', tipo: 'tech', base: '#101827', armor: '#f0f5fb', trim: '#cbd7e5', accent: '#0758dc', glow: '#36caff' },
+    arsenal_celestial: { nome: 'Armadura Celestial', icone: '💠', def: 50, mana: 35, desc: 'Armadura pesada azul real com placas de prata, elmo de chifres com visor luminoso e capa celeste.', tipo: 'heavy', elmo: true, capa: '#071b48', base: '#0758dc', armor: '#cbd7e5', trim: '#f0f5fb', accent: '#0758dc', glow: '#36caff' },
+    arsenal_glacial: { nome: 'Armadura Glacial', icone: '🧊', def: 52, mana: 30, desc: 'Armadura branca como gelo eterno sobre aço escuro, elmo coroado com visor ciano e capa da noite polar.', tipo: 'heavy', elmo: true, capa: '#07162e', base: '#101827', armor: '#f0f5fb', trim: '#cbd7e5', accent: '#0758dc', glow: '#36caff' } };
+  Object.assign(FANT, ARSENAL);
+  Object.keys(ARSENAL).forEach(k => { const D = ARSENAL[k], P = heroi.userData.P, L = [], heavy = D.tipo === 'heavy';
+    const mt = (c, me, ro, em, ei) => new T3.MeshStandardMaterial({ color: c, metalness: me, roughness: ro, emissive: em || '#000000', emissiveIntensity: ei || 0, envMap: ENV, envMapIntensity: 1.2 });
+    const BASE = mt(D.base, 0.6, 0.35, D.base === '#0758dc' ? '#063cff' : null, D.base === '#0758dc' ? 0.35 : 0), ARM = mt(D.armor, 0.8, 0.24), TRIM = mt(D.trim, 0.88, 0.2), ACC = mt(D.accent, 0.72, 0.22, '#063cff', 0.6), PRETO = mt('#050a12', 0.35, 0.42);
+    const GLOW = new T3.MeshStandardMaterial({ color: D.glow, emissive: '#078cff', emissiveIntensity: 1.8, roughness: 0.2, toneMapped: false }), BRANCO = mt('#f0f5fb', 0.5, 0.3);
+    const A = (pa, ...a) => { const m = pc(pa, ...a); L.push(m); return m; }; const G = (pa, x, y, z) => { const g = grp(pa, x, y, z); L.push(g); return g; };
+    const espinho = (pa, x, y, z, len, r, rz, rx) => A(pa, CONE2, TRIM, x, y, z, r, len, r, rx || 0, 0, rz);
+    // tronco: couraça, placas do peito anguladas com faixa azul, crista central com gema
+    A(P.spine, SPH2, BASE, 0, 0.2, 0, 0.19, 0.16, 0.14); A(P.spine, SPH2, ARM, 0, 0.395, 0.01, 0.215, 0.245, 0.158);
+    [-1, 1].forEach(s => { A(P.spine, BOX, ARM, s * 0.078, 0.42, 0.122, 0.13, 0.15, 0.045, 0, 0, s * -0.18); A(P.spine, BOX, ACC, s * 0.078, 0.42, 0.147, 0.014, 0.11, 0.008, 0, 0, s * -0.18);
+      if (heavy) { espinho(P.spine, s * 0.15, 0.53, 0.02, 0.13, 0.03, -s * 0.5); } A(P.spine, CONE2, ARM, s * 0.065, 0.6, 0.045, 0.026, 0.11, 0.026, 0.25, 0, -s * 0.45); });
+    A(P.spine, BOX, TRIM, 0, 0.415, 0.158, 0.042, 0.1, 0.022); A(P.spine, SPH2, GLOW, 0, 0.415, 0.172, 0.02, 0.028, 0.012);
+    [0.27, 0.315, 0.355].forEach(y => A(P.spine, BOX, GLOW, 0, y, 0.15, 0.028, 0.006, 0.005));
+    // cinto com medalhão de caveira
+    A(P.spine, CYL2, TRIM, 0, 0.05, 0, 0.197, 0.046, 0.143); A(P.spine, SPH2, TRIM, 0, 0.05, 0.15, 0.042, 0.045, 0.02); A(P.spine, SPH2, BRANCO, 0, 0.054, 0.165, 0.024, 0.024, 0.008); [-1, 1].forEach(s => A(P.spine, SPH2, PRETO, s * 0.011, 0.058, 0.172, 0.005, 0.006, 0.003));
+    // abas da frente (e casaco longo na Imperial)
+    const abas = { R: G(P.hips, 0.07, -0.03, 0.12), L: G(P.hips, -0.07, -0.03, 0.12), B: G(P.hips, 0, -0.03, -0.12) };
+    [['R', 1], ['L', -1]].forEach(([k2, s]) => { A(abas[k2], BOX, BASE, 0, -0.1, 0, 0.065, 0.19, 0.025, 0, 0, s * 0.06); A(abas[k2], BOX, ACC, 0, -0.1, 0.014, 0.011, 0.16, 0.006, 0, 0, s * 0.06); if (heavy) espinho(abas[k2], s * 0.025, -0.2, 0.01, 0.06, 0.016, Math.PI - s * 0.3); });
+    if (!heavy) { A(abas.B, BOX, BASE, 0, -0.2, 0, 0.26, 0.38, 0.03); A(abas.B, BOX, ACC, 0, -0.2, -0.016, 0.012, 0.34, 0.006); [-1, 1].forEach(s => A(abas.B, BOX, ACC, s * 0.12, -0.2, -0.016, 0.012, 0.34, 0.006)); }
+    else A(abas.B, BOX, BASE, 0, -0.12, 0, 0.2, 0.22, 0.025);
+    A(P.hips, CYL2, BASE, 0, -0.06, 0, 0.175, 0.13, 0.13);
+    ['L', 'R'].forEach((sd, i) => { const sx = i ? 1 : -1;
+      // ombreiras duplas, faixa azul e espinhos (pesadas) ou antena (Imperial)
+      const sh = P['sh' + sd]; A(sh, SPH2, BASE, sx * 0.03, 0.02, 0, 0.11, 0.09, 0.105); A(sh, SPH2, ARM, sx * 0.045, 0.035, 0.03, 0.125, 0.095, 0.11); A(sh, BOX, ACC, sx * 0.045, 0.035, 0.137, 0.022, 0.08, 0.008, 0, 0, sx * 0.2);
+      if (heavy) { espinho(sh, sx * 0.07, 0.12, -0.01, 0.17, 0.035, -sx * 0.45); espinho(sh, sx * 0.13, 0.05, -0.01, 0.13, 0.03, -sx * 1.1); } else if (sx < 0) espinho(sh, sx * 0.06, 0.13, 0, 0.14, 0.018, -sx * 0.3);
+      A(sh, CYL2, BASE, 0, -0.17, 0, 0.062, 0.17, 0.062); A(sh, BOX, ARM, 0, -0.17, 0.03, 0.085, 0.14, 0.075); A(sh, BOX, ACC, 0, -0.17, 0.069, 0.013, 0.1, 0.006);
+      // cotovelo, antebraço e manopla
+      const el = P['el' + sd]; A(el, SPH2, TRIM, 0, 0, 0.01, 0.06, 0.06, 0.06); A(el, BOX, ARM, 0, -0.13, 0.02, 0.08, 0.14, 0.08); A(el, BOX, ACC, 0, -0.13, 0.062, 0.012, 0.1, 0.006); A(el, BOX, TRIM, 0, -0.255, 0.03, 0.075, 0.06, 0.072);
+      // coxa, joelho, canela e bota
+      const th = P['th' + sd]; A(th, CYL2, BASE, 0, -0.2, 0, 0.085, 0.3, 0.085); A(th, BOX, ARM, 0, -0.17, 0.065, 0.08, 0.16, 0.03);
+      const kn = P['kn' + sd]; A(kn, SPH2, ARM, 0, 0, 0.035, 0.078, 0.062, 0.05); A(kn, BOX, TRIM, 0, 0, 0.083, 0.06, 0.012, 0.008); if (heavy) espinho(kn, sx * 0.04, 0.05, 0.03, 0.08, 0.02, -sx * 0.5);
+      A(kn, CYL2, BASE, 0, -0.2, 0, 0.07, 0.3, 0.07); A(kn, BOX, ARM, 0, -0.18, 0.052, 0.08, 0.22, 0.035); A(kn, BOX, ACC, 0, -0.18, 0.071, 0.014, 0.17, 0.006);
+      const ft = P['ft' + sd]; A(ft, BOX, BASE, 0, 0.0, 0.05, 0.13, 0.085, 0.26); A(ft, BOX, TRIM, 0, 0.008, 0.15, 0.125, 0.065, 0.09); A(ft, BOX, PRETO, 0, -0.045, 0.06, 0.135, 0.02, 0.28); });
+    // cabeça: elmo com visor e chifres (pesadas) ou faixa de óculos (Imperial)
+    if (D.elmo) { A(P.head, SPH2, BASE, 0, 0.17, -0.005, 0.158, 0.135, 0.155); A(P.head, BOX, ARM, 0, 0.17, 0.09, 0.22, 0.07, 0.07); A(P.head, BOX, PRETO, 0, 0.125, 0.12, 0.17, 0.045, 0.03); A(P.head, BOX, GLOW, 0, 0.125, 0.137, 0.12, 0.009, 0.006);
+      A(P.head, CONE2, TRIM, 0, 0.36, -0.01, 0.04, 0.2, 0.04); [-1, 1].forEach(s => { A(P.head, CONE2, ARM, s * 0.13, 0.25, 0, 0.035, 0.17, 0.035, 0, 0, -s * 0.55); A(P.head, CONE2, ACC, s * 0.08, 0.3, 0.02, 0.02, 0.1, 0.02, 0, 0, -s * 0.4); A(P.head, BOX, ARM, s * 0.135, 0.11, 0.03, 0.03, 0.1, 0.1); }); }
+    else { A(P.head, BOX, ACC, 0, 0.135, 0.12, 0.2, 0.034, 0.03); A(P.head, BOX, PRETO, 0, 0.135, 0.137, 0.15, 0.016, 0.008); A(P.head, BOX, GLOW, 0, 0.135, 0.142, 0.1, 0.005, 0.004); }
+    // capa (pesadas)
+    let capa = null; if (D.capa) { capa = G(P.spine, 0, 0.56, -0.15); const geo = new T3.BufferGeometry(), v = [], ix = [], R = 9, C = 8;
+      for (let i = 0; i <= R; i++) { const t = i / R; for (let j = 0; j <= C; j++) { const u = j / C - 0.5, w = 0.2 * (1 - 0.1 * t) * 2; v.push(u * w * (1 + t * 0.35), -t * 0.78, -t * 0.08 + Math.abs(u) * 0.06 + t * t * 0.05); } }
+      for (let i = 0; i < R; i++) for (let j = 0; j < C; j++) { const a = i * (C + 1) + j, b = a + C + 1; ix.push(a, b, a + 1, b, b + 1, a + 1); }
+      geo.setAttribute('position', new T3.Float32BufferAttribute(v, 3)); geo.setIndex(ix); geo.computeVertexNormals();
+      const cm = new T3.Mesh(geo, new T3.MeshStandardMaterial({ color: D.capa, metalness: 0.3, roughness: 0.6, side: T3.DoubleSide, envMap: ENV, envMapIntensity: 0.6 })); cm.castShadow = true; capa.add(cm); L.push(cm);
+      [-1, 1].forEach(s => A(capa, BOX, ACC, s * 0.205, -0.39, -0.03, 0.012, 0.78, 0.012, 0.05, 0, s * 0.08)); }
+    L.push(glowSpr(P.spine, 0, 0.415, 0.2, 0.12, D.glow, 0.5));
+    L.forEach(m => m.visible = false); CAS[k] = { m: L, abas, calca: BASE, capa }; });
   function escondeTrajes() { armadura.forEach(m => m.visible = false); Object.values(CAS).forEach(c => c.m.forEach(m => m.visible = false)); }
   function casacoFrame() { const c = CAS[AR.fantasia] || (CASACOS[AR.pecas.calca] && CAS[AR.pecas.calca]); if (!c) return; const P = heroi.userData.P, a = c.abas;
     a.R.rotation.x = Math.min(0, P.thR.rotation.x) * 0.9; a.L.rotation.x = Math.min(0, P.thL.rotation.x) * 0.9; a.B.rotation.x = Math.max(0, Math.max(P.thL.rotation.x, P.thR.rotation.x)) * 0.7; if (c.tab) c.tab.rotation.x = Math.min(0, P.thL.rotation.x, P.thR.rotation.x) * 0.85; if (c.capa) { const v = typeof vel !== 'undefined' ? vel : 0; c.capa.rotation.x += (Math.min(0.6, v * 0.06) + Math.sin(gT * 2.2) * 0.03 - c.capa.rotation.x) * 0.15; } }
@@ -2510,6 +2562,63 @@ ${_}`}class A extends Error{constructor({message:e,code:t,cause:r,name:s}){var n
     [-1, 1].forEach(s => { const c = new T.Mesh(new T.ConeGeometry(0.06, 0.32, 4), ouro); c.position.set(s * (W / 2 + 0.02), 0, 0); c.rotation.z = -s * Math.PI / 2; pl.add(c); });
     const tp = new T.Mesh(new T.ConeGeometry(0.07, 0.4, 6), cm); tp.position.y = H / 2 + 0.2; pl.add(tp); glowSpr(pl, 0, 0, 0, 4.2, brilho, 0.45); return g; }
   [['placa_adm', '#c81e1e', '#ff3a2a'], ['placa_gm', '#1e6ad8', '#3aa8ff']].forEach(([k, c, b]) => { const G = grp(maoG); G.rotation.x = Math.PI / 2; G.rotateZ(Math.PI); G.add(fazPlaca(k.slice(6), c, b)); G.scale.setScalar(0.63); G.visible = false; G.traverse(o => { if (o.isMesh) o.castShadow = true; }); ARMAG[k] = G; ESP_DEF[k] = [0, b, '', '']; });
+  // ---- PLACA SERÁFICA GM (Forja Seráfica): moldura dourada, coroa, auréola tripla, asas de penas e cristais nas quinas ----
+  const PSER = { up: null, nome: '' };
+  function fazPlacaSerafica() { const T = T3, g = new T.Group(), env = { envMap: ENV, envMapIntensity: 1.6 }, COR = '#ffe680';
+    const ouro = new T.MeshStandardMaterial(Object.assign({ color: '#ffe074', metalness: 0.95, roughness: 0.16, emissive: '#7a5008', emissiveIntensity: 0.5 }, env));
+    const obs = new T.MeshStandardMaterial(Object.assign({ color: '#151128', metalness: 0.85, roughness: 0.22 }, env));
+    const ene = new T.MeshStandardMaterial({ color: COR, emissive: COR, emissiveIntensity: 2.2, roughness: 0.12, toneMapped: false });
+    const gem = new T.MeshPhysicalMaterial({ color: COR, emissive: COR, emissiveIntensity: 1.8, roughness: 0.05, clearcoat: 1, transparent: true, opacity: 0.92, toneMapped: false });
+    const pena = new T.MeshStandardMaterial({ color: '#fffaf0', emissive: '#fff4d0', emissiveIntensity: 0.35, roughness: 0.35, metalness: 0.05, side: T.DoubleSide });
+    const m = (geo, mat, pa, x, y, z) => { const o = new T.Mesh(geo, mat); o.position.set(x || 0, y || 0, z || 0); (pa || g).add(o); return o; };
+    const ext = (pts, d, b, mat) => { const sh = new T.Shape(); pts.forEach(([x, y], i) => i ? sh.lineTo(x, y) : sh.moveTo(x, y)); sh.closePath(); const geo = new T.ExtrudeGeometry(sh, { depth: d, bevelEnabled: true, bevelThickness: b, bevelSize: b, bevelSegments: 2 }); geo.center(); return new T.Mesh(geo, mat); };
+    // cabo com anéis de ouro e cristal na ponta (igual às outras placas)
+    m(new T.CylinderGeometry(0.045, 0.05, 1.25, 12), obs, g, 0, 0.25, 0); for (let i = 0; i < 6; i++) m(new T.TorusGeometry(0.052, 0.012, 6, 16), ouro, g, 0, -0.2 + i * 0.09, 0).rotation.x = Math.PI / 2;
+    m(new T.OctahedronGeometry(0.1), gem, g, 0, -0.42, 0).scale.y = 1.4;
+    const B = new T.Group(); B.position.y = 1.42; B.scale.setScalar(0.6); g.add(B);
+    const ret = (w, h) => [[-w, h], [w, h], [w, -h], [-w, -h]];
+    B.add(ext(ret(2.12, 0.76), 0.14, 0.05, ouro), ext(ret(2.03, 0.69), 0.165, 0.03, ouro), ext(ret(1.99, 0.665), 0.16, 0.014, ene), ext(ret(1.945, 0.63), 0.175, 0.012, ene), ext(ret(1.92, 0.61), 0.185, 0.025, obs));
+    // rebites com micro-gemas
+    const rv = new T.SphereGeometry(0.044, 10, 8), rg = new T.OctahedronGeometry(0.03, 0), pts = []; for (let i = 0; i < 9; i++) { const x = -1.76 + i / 8 * 3.52; pts.push([x, 0.76], [x, -0.76]); } [-0.36, 0, 0.36].forEach(y => pts.push([-2.12, y], [2.12, y]));
+    pts.forEach(([x, y]) => [1, -1].forEach(s => { m(rv, ouro, B, x, y, s * 0.12); m(rg, gem, B, x, y, s * 0.155); }));
+    // face com o nome (frente e verso)
+    const cv = document.createElement('canvas'); cv.width = 1024; cv.height = 512; const tx = new T.CanvasTexture(cv); tx.colorSpace = T.SRGBColorSpace; tx.anisotropy = 4;
+    const desenha = nome => { const c = cv.getContext('2d'); c.clearRect(0, 0, 1024, 512); const gr = c.createRadialGradient(512, 256, 30, 512, 256, 470); gr.addColorStop(0, '#451a03e2'); gr.addColorStop(1, 'rgba(9,7,20,.96)'); c.fillStyle = gr; c.fillRect(58, 70, 908, 372);
+      c.strokeStyle = 'rgba(255,232,133,.7)'; c.lineWidth = 4; c.strokeRect(74, 86, 876, 340); c.strokeStyle = 'rgba(255,232,133,.3)'; c.lineWidth = 2; c.strokeRect(84, 96, 856, 320);
+      c.save(); c.translate(188, 256); c.rotate(Math.PI / 4); const bg = c.createLinearGradient(-70, -70, 70, 70); bg.addColorStop(0, '#fffbeb'); bg.addColorStop(0.5, '#f59e0b'); bg.addColorStop(1, '#451a03'); c.fillStyle = bg; c.shadowColor = '#f59e0b'; c.shadowBlur = 24; c.fillRect(-62, -62, 124, 124); c.shadowBlur = 0; c.strokeStyle = '#fffbeb'; c.lineWidth = 4; c.strokeRect(-62, -62, 124, 124); c.restore();
+      c.textAlign = 'center'; c.textBaseline = 'middle'; c.font = '900 58px Georgia, serif'; c.lineWidth = 6; c.strokeStyle = 'rgba(8,6,18,.94)'; c.strokeText('GM', 188, 259, 125); c.fillStyle = '#fff'; c.fillText('GM', 188, 259, 125);
+      c.textAlign = 'left'; c.font = '800 36px Georgia, serif'; c.strokeText('✦ GAME MASTER ✦', 298, 146, 620); c.fillStyle = '#fffbeb'; c.fillText('✦ GAME MASTER ✦', 298, 146, 620);
+      c.font = '900 86px Georgia, serif'; const ng = c.createLinearGradient(0, 200, 0, 320); ng.addColorStop(0, '#ffffff'); ng.addColorStop(0.52, '#fff4b8'); ng.addColorStop(1, '#f59e0b'); c.strokeStyle = '#080612'; c.lineWidth = 6; c.strokeText(nome, 298, 258, 620); c.shadowColor = 'rgba(255,215,64,.9)'; c.shadowBlur = 18; c.fillStyle = ng; c.fillText(nome, 298, 258, 620); c.shadowBlur = 0;
+      c.font = '700 30px Georgia, serif'; c.lineWidth = 4; c.strokeStyle = 'rgba(8,6,18,.9)'; c.strokeText('SANTUÁRIO • CELESTIAL', 298, 362, 620); c.fillStyle = '#f1f5f9'; c.fillText('SANTUÁRIO • CELESTIAL', 298, 362, 620); tx.needsUpdate = true; };
+    desenha('[GM]');
+    const fm = new T.MeshBasicMaterial({ map: tx, transparent: true, depthWrite: false, toneMapped: false }); [1, -1].forEach(s => { const f = m(new T.PlaneGeometry(3.72, 1.86), fm, B, 0, 0, s * 0.133); if (s < 0) f.rotation.y = Math.PI; });
+    // coroa de 7 pontas com cristal central e auréola tripla
+    const cr = new T.Group(); cr.position.y = 0.96; B.add(cr); cr.add(ext([[-0.92, -0.16], [-1.12, 0.24], [-0.74, 0.06], [-0.58, 0.34], [-0.36, 0.1], [-0.22, 0.44], [-0.08, 0.18], [0, 0.52], [0.08, 0.18], [0.22, 0.44], [0.36, 0.1], [0.58, 0.34], [0.74, 0.06], [1.12, 0.24], [0.92, -0.16]], 0.12, 0.025, ouro));
+    const gc = m(new T.OctahedronGeometry(0.21, 0), gem, cr, 0, 0.16, 0.08); gc.scale.set(0.9, 1.25, 0.9); m(new T.TorusGeometry(0.26, 0.026, 8, 24), ouro, cr, 0, 0.16, 0.08); glowSpr(cr, 0, 0.16, 0.14, 1.2, COR, 0.85);
+    const ha = new T.Group(); ha.position.y = 0.78; cr.add(ha); const h1 = m(new T.TorusGeometry(0.92, 0.028, 8, 48), ene, ha); h1.rotation.x = Math.PI / 2.25; const h2 = m(new T.TorusGeometry(0.62, 0.018, 8, 40), ouro, ha); h2.rotation.x = Math.PI / 2.25;
+    for (let s = 0; s < 12; s++) { const a = s / 12 * Math.PI * 2, k = m(new T.ConeGeometry(0.045, 0.22, 6), s % 2 ? ene : ouro, h1, Math.cos(a) * 1.0, Math.sin(a) * 1.0, 0); k.rotation.z = a - Math.PI / 2; }
+    glowSpr(ha, 0, 0, 0, 2.6, COR, 0.6);
+    // pendente de cristal embaixo
+    const pd = new T.Group(); pd.position.set(0, -0.94, 0.04); B.add(pd); { const bc = ext([[-0.78, 0.15], [0, -0.04], [0.78, 0.15], [0.42, -0.18], [0, -0.34], [-0.42, -0.18]], 0.13, 0.025, ouro); bc.position.set(0, -0.86, 0); B.add(bc); }
+    m(new T.TorusGeometry(0.06, 0.015, 6, 14), ouro, pd); const gp = m(new T.OctahedronGeometry(0.16, 0), gem, pd, 0, -0.18, 0); gp.scale.set(0.85, 1.45, 0.85); glowSpr(pd, 0, -0.18, 0.08, 0.9, COR, 0.85);
+    // 4 cristais flutuando nas quinas com anel de astrolábio
+    const cris = []; [[-1, 1], [1, 1], [-1, -1], [1, -1]].forEach(([dx, dy], i) => { const bx = m(new T.BoxGeometry(0.28, 0.28, 0.24), ouro, B, dx * 2.12, dy * 0.76, 0); m(new T.OctahedronGeometry(0.085, 0), gem, bx, 0, 0, 0.14);
+      const cg = new T.Group(); cg.position.set(dx * 2.6, dy * 1.2, 0.05); B.add(cg); const c = m(new T.OctahedronGeometry(0.175, 0), gem, cg); c.scale.set(0.84, 1.54, 0.84); const an = m(new T.TorusGeometry(0.26, 0.015, 6, 24), ouro, cg); an.rotation.x = Math.PI / 2.55; glowSpr(cg, 0, 0, 0, 1, COR, 0.9); cris.push({ cg, c, an, y: dy * 1.2, f: i * 1.57 }); });
+    // asas de serafim (penas em camadas)
+    const penaGeo = (() => { const L = 1, W = 0.3, sh = new T.Shape(); sh.moveTo(0, 0); sh.bezierCurveTo(-W * 0.48, L * 0.28, -W * 0.52, L * 0.78, 0, L); sh.bezierCurveTo(W * 0.52, L * 0.78, W * 0.48, L * 0.28, 0, 0); const geo = new T.ExtrudeGeometry(sh, { depth: 0.02, bevelEnabled: false, curveSegments: 8 }); const p = geo.attributes.position; for (let i = 0; i < p.count; i++) p.setZ(i, p.getZ(i) - Math.pow(Math.max(0, p.getY(i)), 1.8) * 0.22); geo.computeVertexNormals(); return geo; })();
+    const asas = [-1, 1].map(dir => { const pv = new T.Group(); pv.position.set(dir * 2.06, 0.1, -0.02); B.add(pv); const cam = [new T.Group(), new T.Group()]; cam.forEach(c => pv.add(c));
+      for (let i = 0; i < 10; i++) { const t = i / 9, L = 2.6 - t * 1.25, f = m(penaGeo, pena, cam[0]); f.scale.set(1.15 - t * 0.25, L, 1); f.position.set(dir * (0.28 + Math.sin(t * Math.PI) * 0.38), 0.44 - t * 0.76, -0.03 - i * 0.007); f.rotation.z = (-0.48 - t * 1.6) * dir; if (i < 4) { const p = m(penaGeo, ouro, f, 0, 0.76, -0.12); p.scale.set(0.68, 0.24, 1); } }
+      for (let i = 0; i < 6; i++) { const t = i / 5, L = 1.6 - t * 0.7, f = m(penaGeo, pena, cam[1]); f.scale.set(1.1 - t * 0.2, L, 1); f.position.set(dir * (0.23 + Math.sin(t * Math.PI) * 0.26), 0.38 - t * 0.6, 0.03 - i * 0.005); f.rotation.z = (-0.56 - t * 1.4) * dir; }
+      const om = ext([[0, 0.3], [dir * 0.82, 0.74], [dir * 1.24, 0.56], [dir * 0.68, 0.2], [dir * 1.02, 0.04], [dir * 0.46, -0.28], [0, -0.26]], 0.075, 0.018, ouro); om.position.set(dir * 0.48, 0.26, 0.08); pv.add(om); m(new T.OctahedronGeometry(0.11, 0), gem, pv, dir * 0.53, 0.3, 0.17);
+      return { pv, cam }; });
+    glowSpr(B, 0, 0.05, -0.48, 8, COR, 0.45);
+    g.userData.nome = n => desenha(n);
+    g.userData.up = (t, dt) => { h1.rotation.z += dt * 1.45; h2.rotation.z -= dt * 0.85; ha.position.y = 0.78 + Math.sin(t * 3.2) * 0.035; gc.rotation.y += dt * 2.2; gp.rotation.y -= dt * 2.5; pd.rotation.z = Math.sin(t * 2.6) * 0.09;
+      const fl = Math.sin(t * 2.8) * 0.09; asas.forEach((a, i) => { const s = i ? -1 : 1; a.pv.rotation.y = s * fl; a.cam[1].rotation.y = s * (Math.sin(t * 2.8 - 0.35) * 0.076 - fl); });
+      cris.forEach(c => { c.c.rotation.y += dt * 2.8; c.an.rotation.z += dt * 1.85; c.cg.position.y = c.y + Math.sin(t * 3.6 + c.f) * 0.07; }); ene.emissiveIntensity = 2.2 + Math.sin(t * 4.5) * 0.6; gem.emissiveIntensity = 1.8 + Math.sin(t * 4.5) * 0.7; };
+    return g; }
+  { const G = grp(maoG); G.rotation.x = Math.PI / 2; G.rotateZ(Math.PI); const P = fazPlacaSerafica(); G.add(P); G.scale.setScalar(0.63); G.visible = false; G.traverse(o => { if (o.isMesh) o.castShadow = true; }); ARMAG.placa_serafica = G; ESP_DEF.placa_serafica = [0, '#ffe680', '', '']; PSER.P = P; }
+  function placaSerFrame(dt) { const G = ARMAG.placa_serafica; if (!G || !G.visible) return; const n = '[GM] ' + String((AR.visual && AR.visual.nome) || 'Game Master').slice(0, 16); if (PSER.nome !== n) { PSER.nome = n; PSER.P.userData.nome(n); } PSER.P.userData.up(gT, dt); }
   // ---- efeitos especiais das espadas ----
   function espHit(A, e) { const p = heroi.position;
     if (A.esp === 'corr') { e.vuln = Math.max(e.vuln, 4); if (Math.random() < 0.2) { e.stun = Math.max(e.stun, 0.8); numero(e.g.position, 'GLITCH', '#3aff7a', e.T.alt + 0.4); } }
@@ -2524,7 +2633,7 @@ ${_}`}class A extends Error{constructor({message:e,code:t,cause:r,name:s}){var n
   // ---- ADM / GM ----
   var souGM = false, souADMc = false, staffPronto = false;
   function staffArmas() { const adm = souAdmin(); const quer = { esp_adm: adm, esp_gm: adm || souGM };
-    if (staffPronto) ['placa_adm', 'placa_gm'].forEach(k => { if (AR.armas.includes(k) && !podeArma(k)) { AR.armas = AR.armas.filter(x => x !== k); if (AR.arma === k) equipaArma(null); } });
+    if (staffPronto) ['placa_adm', 'placa_gm', 'placa_serafica'].forEach(k => { if (AR.armas.includes(k) && !podeArma(k)) { AR.armas = AR.armas.filter(x => x !== k); if (AR.arma === k) equipaArma(null); } });
     Object.keys(quer).forEach(k => { const tem = AR.armas.includes(k); if (quer[k] && !tem) { AR.armas.push(k); aviso('Você recebeu: ' + ARMAS[k].icone + ' ' + ARMAS[k].nome + '!', '#ff5aa8'); } if (!quer[k] && tem) { AR.armas = AR.armas.filter(x => x !== k); if (AR.arma === k) equipaArma(null); } }); }
   setTimeout(() => { try { if (window.CONTA && CONTA.db && CONTA.usuario) CONTA.db.collection('staff').doc(CONTA.usuario.uid).get().then(d => { souGM = d.exists && (d.data().cargo === 'gm' || d.data().cargo === 'adm'); souADMc = d.exists && d.data().cargo === 'adm'; staffPronto = true; staffArmas(); salvaAR(); }).catch(() => staffArmas()); else { staffPronto = true; staffArmas(); } } catch (e) { staffArmas(); } }, 7000);
   // botão BUFF (aparece com a espada de ADM/GM) e janela pra mandar buff pros jogadores perto
@@ -2993,7 +3102,7 @@ const glowA = cv(128, (x) => { const g = x.createRadialGradient(64, 64, 0, 64, 6
     if (!HALO.voo) return; const V = HALO.voo; V.t += dt; const u = Math.min(1, V.t / 0.75), e = u < 0.5 ? 2 * u * u : 1 - Math.pow(-2 * u + 2, 2) / 2;
     HALO.H.position.set(0, 1.75 + (-0.08 - 1.75) * e + (u >= 1 ? Math.sin(gT * 2.2) * 0.03 : 0), -0.75 * (1 - e));
     HALO.H.rotation.x = -Math.PI / 2 * e; HALO.H.rotation.z += dt * (14 * (1 - e) + 0.9); HALO.H.scale.setScalar(1 + e * 0.25); }
-  function haloFrame(dt) { arcanoFrame(dt); rubraFrame(dt); seteFrame(dt); seloFrame(dt); arautoFrame(dt); const quer = haloVis() && !dentro; haloDefFrame(dt); haloVooFrame(dt); HALO.H.visible = quer || HALO.elos.length > 0; if (HALO.cd > 0) HALO.cd -= dt;
+  function haloFrame(dt) { try { placaSerFrame(dt); } catch (e) {} arcanoFrame(dt); rubraFrame(dt); seteFrame(dt); seloFrame(dt); arautoFrame(dt); const quer = haloVis() && !dentro; haloDefFrame(dt); haloVooFrame(dt); HALO.H.visible = quer || HALO.elos.length > 0; if (HALO.cd > 0) HALO.cd -= dt;
     if (!HALO.H.visible) return; HALO.F.rotation.z += dt * 2.1; HALO.G.material.opacity = 0.5 + Math.sin(gT * 3) * 0.15; { const pu = 0.5 + Math.sin(gT * 3.4) * 0.25; HALO.brA.material.opacity = pu; HALO.brB.material.opacity = 0.45 + Math.sin(gT * 4.1 + 1) * 0.25; HALO.brA2.material.opacity = 0.15 + Math.sin(gT * 2.2) * 0.12; }
     if (HALO.def) { HALO.A.rotation.z += dt * 6; HALO.B.rotation.z -= dt * 9; HALO.F.rotation.z += dt * 4; return; }
     if (!HALO.elos.length) { HALO.A.rotation.z += dt * 0.55; HALO.B.rotation.z -= dt * 1.5; return; }
