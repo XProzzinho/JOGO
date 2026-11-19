@@ -3,7 +3,7 @@ import os, sys, json, shutil
 from gradio_client import Client
 prompts = json.loads(os.environ["PROMPTS"])
 os.makedirs("saida", exist_ok=True)
-c = Client("tencent/Hunyuan3D-2", hf_token=os.environ.get("HF_TOKEN") or None, verbose=False)
+c = Client("tencent/Hunyuan3D-2", token=os.environ.get("HF_TOKEN") or None, verbose=False)
 ok = 0
 for i, p in enumerate(prompts):
     try:
