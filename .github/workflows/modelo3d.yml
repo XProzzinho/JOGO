@@ -1,0 +1,28 @@
+name: Gerar modelo 3D (Hunyuan)
+on:
+  workflow_dispatch:
+    inputs:
+      prompts:
+        description: 'Lista JSON: [{"texto":"...","seed":1}]'
+        required: true
+jobs:
+  gerar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install gradio_client
+      - name: Gerar
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          PROMPTS: ${{ github.event.inputs.prompts }}
+        run: python tools/hunyuan3d.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: modelos3d
+          path: saida/
+          if-no-files-found: ignore
