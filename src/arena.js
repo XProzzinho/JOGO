@@ -42,7 +42,7 @@
         const led2 = new T3.Mesh(new T3.TorusGeometry(R + 15.5, 0.18, 6, 96), new T3.MeshBasicMaterial({ color: '#ff2ad8', toneMapped: false })); led2.rotation.x = Math.PI / 2; led2.position.y = 11; G.add(led2);
         const tor = []; for (let i = 0; i < 8; i++) { const a = i / 8 * Math.PI * 2 + 0.2, r = R + 26; const m = new T3.Mesh(new T3.BoxGeometry(1.2, 22, 1.2), new T3.MeshStandardMaterial({ color: '#120e26' })); m.position.set(Math.sin(a) * r, 11, Math.cos(a) * r); G.add(m); const f = new T3.Mesh(new T3.BoxGeometry(1.3, 0.3, 1.3), new T3.MeshBasicMaterial({ color: i % 2 ? '#2af0ff' : '#ff2ad8', toneMapped: false })); f.position.set(m.position.x, 22, m.position.z); G.add(f); tor.push(f); }
         return t => { led.material.color.setHSL((t * 0.08) % 1, 1, 0.55); led2.material.color.setHSL((t * 0.08 + 0.5) % 1, 1, 0.55); tor.forEach((f, i) => { f.position.y = 4 + ((t * 4 + i * 2.5) % 18); }); }; } }];
-  let ARENA_TEMA = 0; try { const v = +localStorage.getItem('arenaTema'); if (v >= 0 && v < ARENA_TEMAS.length) ARENA_TEMA = v; } catch (e) {}
+  let ARENA_TEMA = 4; try { const v = localStorage.getItem('arenaTema2') == null ? 4 : +localStorage.getItem('arenaTema2'); if (v >= 0 && v < ARENA_TEMAS.length) ARENA_TEMA = v; } catch (e) {}
   function arenaCeu() { return ARENA_TEMAS[ARENA_TEMA].ceu; }
   const ARG = { G: grp(world, ARENA.X, 0, ARENA.Z), T: null, tochas: [], up: null }; ARG.G.visible = false;
   function arenaMonta(n) { const TM = ARENA_TEMAS[n] || ARENA_TEMAS[0]; ARENA_TEMA = ARENA_TEMAS.indexOf(TM); if (ARG.T) { ARG.G.remove(ARG.T); ARG.T.traverse(o => { if (o.geometry && o.geometry !== SPH) o.geometry.dispose(); }); }
@@ -138,7 +138,7 @@
     if (P.k === 'rosa' && L.lam) { L.lam.material = L.lam.material.clone(); L.lam.material.color.set('#ff7aa8'); if (L.lam.material.emissive) L.lam.material.emissive.set('#ff2a6a'); }
     if (P.k === 'sorvete' && !L.escudo) { L.escudo = part(L.c.userData.P.elL, BOX, '#bfeaff', 0, -0.3, 0.12, 0.42, 0.5, 0.06, 0.04, true); }
     if (!L.aura) { L.aura = glowSpr(L.c, 0, 0.15, 0, 1.6, P.cor, 0.5); } else if (L.aura.material) L.aura.material.color.set(P.cor);
-    arenaStats(L); L.hp = L.max; fx('luz', [L.x, 0, L.z], 1.2); fx('cura', [L.x, 0, L.z], 1); try { som('magia', 0.5, 1.1); } catch (e) {}
+    arenaStats(L); L.hp = L.max; L.up = (L.up || 0) + 1; arenaElo(L, P); try { som('magia', 0.5, 1.1); } catch (e) {}
     if (novo || P.nv >= 2) { arenaFeed('🎁 <b>' + L.nome + '</b> mandou ' + P.ic + ' ' + arenaEsc(nome || 'presente') + ' → <i style="color:' + P.cor + '">' + P.item + '</i> (' + P.fx + ')'); aviso(P.ic + ' ' + L.nome + ' ganhou ' + P.item + '! ' + P.fx, P.cor); arenaFala(L.nome + ' mandou ' + (nome || 'um presente') + ' e ganhou ' + P.item + '!', true); arenaFoca(L, P.nv >= 2 ? 4.5 : 3); } }
   function arenaFeed(t) { ARENA.feed.unshift({ t, em: performance.now() }); ARENA.feed.length = Math.min(ARENA.feed.length, 4); ARENA.uiT = 0; }
   // ----- eventos da live -----
@@ -169,7 +169,7 @@
     cam.lookAt(C.look); cam.updateMatrixWorld();
     // nomes e vida em cima de cada lutador (depois da câmera, pra não tremer)
     const agora = performance.now(); Object.values(ARENA.lut).forEach(L => { const d = cam.position.distanceTo(L.c.position); if (L.morto || d > 60) { L.tag.hidden = true; return; } L.tag.hidden = false;
-      const falando = L.fala && agora < L.falaT, h = arenaFoto(L) + '<b>' + Object.values(L.itens).map(P => P.ic).join('') + (L.div || L.itens.rosa ? ' ' : '') + L.nome + '</b><span class="ar-hp"><i style="width:' + Math.round(L.hp / L.max * 100) + '%"></i></span><small>⚔️ ' + L.kills + (falando ? ' · 💬 ' + L.fala : '') + '</small>';
+      const falando = L.fala && agora < L.falaT, h = arenaFoto(L) + (L.up ? '<em class="ar-nv">Nv ' + (1 + L.up) + '</em>' : '') + '<b>' + Object.values(L.itens).map(P => P.ic).join('') + (L.div || L.itens.rosa ? ' ' : '') + L.nome + '</b><span class="ar-hp"><i style="width:' + Math.round(L.hp / L.max * 100) + '%"></i></span><small>⚔️ ' + L.kills + (falando ? ' · 💬 ' + L.fala : '') + '</small>';
       if (L.h !== h) { L.h = h; L.tag.innerHTML = h; } guildPosition(L.tag, L.c, 2.0); L.tag.style.transform = 'translate(-50%,-100%) scale(' + clamp(1.3 - d / 40, 0.55, 1.2).toFixed(2) + ')'; L.tag.style.zIndex = String(200 - Math.round(d)); });
     Object.values(ARENA.plat).forEach(S => { const d = cam.position.distanceTo(S.c.position), falando = S.fala && agora < S.falaT; if (d > (falando ? 70 : 26)) { S.tag.hidden = true; return; } S.tag.hidden = false;
       const h = arenaFoto(S) + '<b>' + S.nome + '</b>' + (falando ? '<small>💬 ' + S.fala + '</small>' : ''); if (S.h !== h) { S.h = h; S.tag.innerHTML = h; } guildPosition(S.tag, S.c, 1.9); S.tag.style.transform = 'translate(-50%,-100%) scale(' + clamp(1.15 - d / 30, 0.45, 1.1).toFixed(2) + ')'; S.tag.style.zIndex = String(150 - Math.round(d)); }); }
@@ -228,12 +228,34 @@
     if (CTA.on) { ctaEl.classList.remove('on'); CTA.on = false; CTA.t = 1.2; return; }
     const L = arenaCtaLista(); /* a cada 2 mensagens, volta pra chamada principal */ let msg; if (CTA.i % 3 === 0) msg = CTA.i % 6 === 0 ? L[0] : L[2]; else { const R = [L[1]].concat(L.slice(3)); msg = R[(CTA.j || 0) % R.length]; CTA.j = (CTA.j || 0) + 1; } CTA.i++;
     ctaEl.innerHTML = msg; if (CTA.i % 3 === 1 || !VOZ.fila.length && !VOZ.tocando && Math.random() < 0.5) arenaFala(msg); ctaEl.hidden = false; void ctaEl.offsetWidth; ctaEl.classList.add('on'); CTA.on = true; CTA.t = 6; }
+  /* ----- ELO DE LUZ: presente = sai uma luz do meio da arena e vai pro personagem, que sobe de nível ----- */
+  const ELOS = [], ELO_GEO = { col: new T3.CylinderGeometry(0.7, 1.1, 1, 16, 1, true), elo: new T3.TorusGeometry(0.5, 0.1, 8, 18), raio: new T3.CylinderGeometry(0.12, 0.12, 1, 8, 1, true), anel: new T3.RingGeometry(0.6, 0.85, 40) };
+  const eloMat = c => new T3.MeshBasicMaterial({ color: c, transparent: true, opacity: 0.9, blending: T3.AdditiveBlending, depthWrite: false, toneMapped: false, side: T3.DoubleSide });
+  function arenaElo(L, P) { const nv = ARENA_TEMAS[ARENA_TEMA].id === 'neon', c1 = nv ? (P.nv >= 3 ? '#ff2ad8' : '#2af0ff') : P.cor, c2 = nv ? '#ff5ae8' : '#ffffff';
+    const G = grp(world, ARENA.X, 0, ARENA.Z); const col = new T3.Mesh(ELO_GEO.col, eloMat(c1)); col.scale.set(1, 16, 1); col.position.y = 8; G.add(col);
+    const base = new T3.Mesh(ELO_GEO.anel, eloMat(c1)); base.rotation.x = -Math.PI / 2; base.position.y = 0.06; base.scale.setScalar(3); G.add(base);
+    const raio = new T3.Mesh(ELO_GEO.raio, eloMat(c2)); world.add(raio); const elos = []; for (let i = 0; i < 13; i++) { const e = new T3.Mesh(ELO_GEO.elo, eloMat(i % 2 ? c2 : c1)); world.add(e); elos.push(e); }
+    const orbe = glowSpr(world, ARENA.X, 6, ARENA.Z, 2.6, c1, 1), anel = new T3.Mesh(ELO_GEO.anel, eloMat(c1)); anel.rotation.x = -Math.PI / 2; anel.visible = false; world.add(anel);
+    ELOS.push({ L, G, col, base, raio, elos, orbe, anel, t: 0, nv: P.nv, c1 }); fx('luz', [ARENA.X, 0, ARENA.Z], 1); }
+  const _ea = new T3.Vector3(), _eb = new T3.Vector3(), _ec = new T3.Vector3(), _eu = new T3.Vector3(0, 1, 0), _eq = new T3.Quaternion();
+  function arenaElosFrame(dt) { for (let k = ELOS.length - 1; k >= 0; k--) { const E = ELOS[k], L = E.L; E.t += dt; const t = E.t, T = 2.6 + E.nv * 0.3;
+      const sobe = Math.min(1, t / 0.5), some = t > T - 0.6 ? Math.max(0, (T - t) / 0.6) : 1;
+      E.col.scale.set(1 + Math.sin(t * 12) * 0.08, 16 * sobe, 1 + Math.sin(t * 12) * 0.08); E.col.position.y = 8 * sobe; E.col.material.opacity = 0.75 * some; E.base.scale.setScalar(3 + Math.sin(t * 6) * 0.4); E.base.material.opacity = some;
+      // curva do meio da arena (alto) até o peito do personagem
+      _ea.set(ARENA.X, 9, ARENA.Z); _eb.set(L.x, (L.y || 0) + 1.25, L.z); const vai = clamp((t - 0.35) / 0.55);
+      const pt = (u, out) => { const m = 1 - u; out.set(m * m * _ea.x + 2 * m * u * (_ea.x + _eb.x) / 2 + u * u * _eb.x, m * m * _ea.y + 2 * m * u * 13 + u * u * _eb.y, m * m * _ea.z + 2 * m * u * (_ea.z + _eb.z) / 2 + u * u * _eb.z); return out; };
+      E.elos.forEach((e, i) => { const u = (i + 0.5) / E.elos.length; e.visible = u <= vai && some > 0; pt(u, e.position); pt(Math.min(1, u + 0.02), _ec); e.lookAt(_ec); e.rotateZ(i % 2 ? Math.PI / 2 : 0); e.rotation.z += t * 2; e.scale.setScalar(1 + Math.sin(t * 10 + i) * 0.15); e.material.opacity = 0.95 * some; });
+      pt(0, _ea); pt(vai, _ec); const d = _ea.distanceTo(_ec); E.raio.visible = d > 0.1 && some > 0; E.raio.position.copy(_ea).add(_ec).multiplyScalar(0.5); E.raio.scale.set(1, d, 1); E.raio.quaternion.setFromUnitVectors(_eu, _ec.clone().sub(_ea).normalize()); E.raio.material.opacity = 0.8 * some;
+      pt(vai, _ec); E.orbe.position.copy(_ec); E.orbe.material.opacity = vai < 1 ? 1 : some;
+      if (vai >= 1 && !E.chegou) { E.chegou = true; E.anel.visible = true; fx('luz', [L.x, 0, L.z], 1.2); fx('cura', [L.x, 0, L.z], 1); try { numero(L.c.position, 'LEVEL UP! Nv ' + (1 + L.up), E.c1, 2.8); } catch (e) {} try { som('portal', 0.6, 1.4); } catch (e) {} L.pulso = 1; }
+      if (E.chegou) { const a = Math.min(1, (t - 0.9) / 0.9); E.anel.position.set(L.x, (L.y || 0) + 0.08, L.z); E.anel.scale.setScalar(1 + a * 3.5); E.anel.material.opacity = (1 - a) * 0.9; }
+      if (t > T) { world.remove(E.G); world.remove(E.raio); world.remove(E.orbe); world.remove(E.anel); E.elos.forEach(e => world.remove(e)); [E.col, E.base, E.raio, E.anel, ...E.elos].forEach(m => m.material.dispose()); ELOS.splice(k, 1); } } }
   // ----- luta automática -----
   function arenaFrame(dt) { const on = zona === 'arena'; ARG.G.visible = on; arenaUi(); if (!on) { Object.values(ARENA.lut).concat(Object.values(ARENA.plat)).forEach(L => { L.c.visible = false; L.tag.hidden = true; }); return; }
     Object.values(ARENA.plat).forEach(S => { S.c.visible = true; const u = Math.sin(gT * 3 + S.ph), vibra = u > 0.55; pose(S.c, gT, { mood: 'happy', arms: vibra ? { shL: [-2.7, 0, -0.3], shR: [-2.7, 0, 0.3], elL: [-0.3, 0, 0], elR: [-0.3, 0, 0] } : { shL: [-0.2, 0, -0.1], shR: [-0.2, 0, 0.1] } }); S.c.position.y = S.y + (vibra ? Math.abs(Math.sin(gT * 9 + S.ph)) * 0.18 : 0); });
-    if (ARG.up) ARG.up(gT); ARG.tochas.forEach((f, i) => { const s = 0.85 + Math.sin(gT * 13 + i * 2) * 0.15; f.scale.set(s, 0.9 + Math.cos(gT * 17 + i) * 0.2, s); });
+    if (ARG.up) ARG.up(gT); arenaElosFrame(dt); ARG.tochas.forEach((f, i) => { const s = 0.85 + Math.sin(gT * 13 + i * 2) * 0.15; f.scale.set(s, 0.9 + Math.cos(gT * 17 + i) * 0.2, s); });
     const Ls = Object.values(ARENA.lut), vivos = Ls.filter(L => !L.morto); arenaBossFrame(dt, vivos); arenaCtaFrame(dt);
-    Ls.forEach(L => { L.c.visible = true; if (L.div) L.div.up(gT); if (L.regen && !L.morto) L.hp = Math.min(L.max, L.hp + L.regen * dt);
+    Ls.forEach(L => { L.c.visible = true; if (L.div) L.div.up(gT); { const esc = 0.9 * (1 + Math.min(0.3, (L.up || 0) * 0.05) + (L.pulso || 0) * 0.25); L.c.scale.setScalar(esc); if (L.pulso) L.pulso = Math.max(0, L.pulso - dt * 1.5); } if (L.regen && !L.morto) L.hp = Math.min(L.max, L.hp + L.regen * dt);
       if (L.morto) { L.morto -= dt; pose(L.c, gT, { mood: 'sad', lean: 1.2, hipY: 0.35, legs: { thL: -1.4, knL: 1.6, thR: -1.4, knR: 1.6 } }); L.c.position.y = -0.2;
         if (L.morto <= 0) { L.morto = 0; L.hp = L.max; const a = Math.random() * Math.PI * 2, r = ARENA.R * 0.85; L.x = ARENA.X + Math.sin(a) * r; L.z = ARENA.Z + Math.cos(a) * r; L.c.position.y = 0; fx('luz', [L.x, 0, L.z], 0.8); } L.c.position.x = L.x; L.c.position.z = L.z; return; }
       // escolhe alvo: o mais perto, às vezes troca
@@ -259,7 +281,7 @@
       <div class="ar-feed">${ARENA.feed.filter(f => performance.now() - f.em < 9000).map(f => `<div>${f.t}</div>`).join('')}</div>
       <div class="ar-bt"><button data-a="bot">➕ Espectador de teste</button><button data-a="lutar">💬 LUTAR de teste</button><button data-a="pres">🎁 Presente de teste</button><button data-a="tema">🎨 ${ARENA_TEMAS[ARENA_TEMA].nome}</button><button data-a="voz">${VOZ.on ? '🔊 Voz ligada' : '🔇 Voz desligada'}</button><button data-a="sai">🚪 Sair</button></div>`;
     arUi.querySelectorAll('[data-a]').forEach(b => tapBtn(b, () => { const a = b.dataset.a;
-      if (a === 'tema') { arenaMonta((ARENA_TEMA + 1) % ARENA_TEMAS.length); try { localStorage.setItem('arenaTema', String(ARENA_TEMA)); } catch (e) {} } else if (a === 'voz') { VOZ.on = !VOZ.on; VOZ.fila = []; try { localStorage.setItem('arenaVoz', VOZ.on ? '1' : '0'); } catch (e) {} if (VOZ.on) arenaFala('Voz da arena ligada!', true); } else if (a === 'sai') arenaSai(); else if (a === 'lutar') { const Ps = Object.values(ARENA.plat); const S = Ps[Math.floor(Math.random() * Ps.length)]; if (S) arenaEvento({ type: 'chat', id: S.id, name: S.nome, text: 'bora LUTAR!' }); } else if (a === 'bot') { const id = 'teste' + Math.random().toString(36).slice(2, 7); arenaEvento({ type: 'join', id, name: 'Teste ' + id.slice(-3).toUpperCase() }); }
+      if (a === 'tema') { arenaMonta((ARENA_TEMA + 1) % ARENA_TEMAS.length); try { localStorage.setItem('arenaTema2', String(ARENA_TEMA)); } catch (e) {} } else if (a === 'voz') { VOZ.on = !VOZ.on; VOZ.fila = []; try { localStorage.setItem('arenaVoz', VOZ.on ? '1' : '0'); } catch (e) {} if (VOZ.on) arenaFala('Voz da arena ligada!', true); } else if (a === 'sai') arenaSai(); else if (a === 'lutar') { const Ps = Object.values(ARENA.plat); const S = Ps[Math.floor(Math.random() * Ps.length)]; if (S) arenaEvento({ type: 'chat', id: S.id, name: S.nome, text: 'bora LUTAR!' }); } else if (a === 'bot') { const id = 'teste' + Math.random().toString(36).slice(2, 7); arenaEvento({ type: 'join', id, name: 'Teste ' + id.slice(-3).toUpperCase() }); }
       else { const Ps = Object.values(ARENA.plat), Ls = Ps.length ? Ps : Object.values(ARENA.lut); if (!Ls.length) return; const L = Ls[Math.floor(Math.random() * Ls.length)]; const G = ARENA_PRES[Math.floor(Math.random() * ARENA_PRES.length)]; arenaEvento({ type: 'gift', id: L.id, name: L.nome, gift: G.nomes[0], diamonds: G.nv >= 4 ? 500 : G.nv === 3 ? 100 : G.nv === 2 ? 10 : 1 }); } ARENA.uiT = 0; })); }
   // ----- entrar / sair (só ADM) -----
   function arenaEntra() { if (!souAdmin()) { aviso('🔒 A Arena da Live é só do Administrador.', '#ff6a6a'); return; } if (zona === 'arena') return; if (montado) montar(false); if (voando) voa(false);
