@@ -133,18 +133,20 @@
       o.g.traverse(x => { if (x.isMesh) x.frustumCulled = false; }); } catch (e) { console.warn('arena divino', e); o = null; }
     L.div = o; }
   function arenaStats(L) { let dano = 1, vida = 0, vel = 1, regen = 0; Object.values(L.itens).forEach(P => { dano *= P.dano || 1; vida += P.vida || 0; vel = Math.max(vel, P.vel || 1); regen += P.regen || 0; }); L.dano = dano; L.max = 100 + vida; L.vel = vel; L.regen = regen; }
-  function arenaPresente(L, nome, dia) { const P = arenaPresenteDe(nome, dia), novo = !L.itens[P.k]; L.itens[P.k] = P;
+  function arenaPresente(L, nome, dia, premio) { const P = arenaPresenteDe(nome, dia), novo = !L.itens[P.k]; L.itens[P.k] = P;
     if (P.div) { const top = Object.values(L.itens).filter(x => x.div).sort((a, b) => b.nv - a.nv)[0]; if (top === P && L.divT !== P.div) { arenaDivVisual(L, P.div); L.divT = P.div; } }
     if (P.k === 'rosa' && L.lam) { L.lam.material = L.lam.material.clone(); L.lam.material.color.set('#ff7aa8'); if (L.lam.material.emissive) L.lam.material.emissive.set('#ff2a6a'); }
     if (P.k === 'sorvete' && !L.escudo) { L.escudo = part(L.c.userData.P.elL, BOX, '#bfeaff', 0, -0.3, 0.12, 0.42, 0.5, 0.06, 0.04, true); }
     if (!L.aura) { L.aura = glowSpr(L.c, 0, 0.15, 0, 1.6, P.cor, 0.5); } else if (L.aura.material) L.aura.material.color.set(P.cor);
     arenaStats(L); L.hp = L.max; L.up = (L.up || 0) + 1; arenaElo(L, P); try { som('magia', 0.5, 1.1); } catch (e) {}
-    if (novo || P.nv >= 2) { arenaFeed('🎁 <b>' + L.nome + '</b> mandou ' + P.ic + ' ' + arenaEsc(nome || 'presente') + ' → <i style="color:' + P.cor + '">' + P.item + '</i> (' + P.fx + ')'); aviso(P.ic + ' ' + L.nome + ' ganhou ' + P.item + '! ' + P.fx, P.cor); arenaFala(L.nome + ' mandou ' + (nome || 'um presente') + ' e ganhou ' + P.item + '!', true); arenaFoca(L, P.nv >= 2 ? 4.5 : 3); } }
+    if (premio) { try { numero(L.c.position, P.ic + ' ' + P.item, P.cor, 3.2); } catch (e) {} } else if (novo || P.nv >= 2) { arenaFeed('🎁 <b>' + L.nome + '</b> mandou ' + P.ic + ' ' + arenaEsc(nome || 'presente') + ' → <i style="color:' + P.cor + '">' + P.item + '</i> (' + P.fx + ')'); aviso(P.ic + ' ' + L.nome + ' ganhou ' + P.item + '! ' + P.fx, P.cor); arenaFala(L.nome + ' mandou ' + (nome || 'um presente') + ' e ganhou ' + P.item + '!', true); arenaFoca(L, P.nv >= 2 ? 4.5 : 3); } }
   function arenaFeed(t) { ARENA.feed.unshift({ t, em: performance.now() }); ARENA.feed.length = Math.min(ARENA.feed.length, 4); ARENA.uiT = 0; }
   // ----- eventos da live -----
   function arenaQuerLutar(t) { const n = String(t || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ''); return /\blutar\b|\bluta\b|⚔/.test(n); }
   function arenaEvento(m) { const id = String(m.id), foto = arenaFotoUrl(m.foto); let L = ARENA.lut[id];
-    if (m.type === 'gift') { const S = ARENA.plat[id]; if (!L) { const nome = (S && S.nome) || m.name; if (S) arenaPlatTira(id); L = arenaLut(id, nome, foto || (S && S.foto)); arenaFeed(arenaFoto(L, 'mi') + ' <b>' + L.nome + '</b> ' + (S ? 'desceu da arquibancada e' : '') + ' entrou na LUTA!'); } else arenaLut(id, m.name, foto); arenaPresente(L, m.gift, m.diamonds); return; }
+    if (m.type === 'like') arenaCurtida(+m.count || 1);
+    if (m.type === 'chat' && arenaComando(m, id, foto)) return;
+    if (m.type === 'gift') { const S = ARENA.plat[id]; if (!L) { const nome = (S && S.nome) || m.name; if (S) arenaPlatTira(id); L = arenaLut(id, nome, foto || (S && S.foto)); arenaFeed(arenaFoto(L, 'mi') + ' <b>' + L.nome + '</b> ' + (S ? 'desceu da arquibancada e' : '') + ' entrou na LUTA!'); } else arenaLut(id, m.name, foto); arenaPresente(L, m.gift, m.diamonds); arenaMeta(Math.max(1, Math.min(50, +m.count || 1)), L); return; }
     if (L) { arenaLut(id, m.name, foto); if (m.type === 'join') { arenaFoca(L, 3); }
       else if (m.type === 'chat' && m.text) { L.fala = arenaEsc(m.text); L.falaT = performance.now() + 5000; arenaFala(L.nome + ' disse: ' + m.text); }
       else if (m.type === 'like') { L.hp = Math.min(L.max, L.hp + 6); }
@@ -169,20 +171,20 @@
     cam.lookAt(C.look); cam.updateMatrixWorld();
     // nomes e vida em cima de cada lutador (depois da câmera, pra não tremer)
     const agora = performance.now(); Object.values(ARENA.lut).forEach(L => { const d = cam.position.distanceTo(L.c.position); if (L.morto || d > 60) { L.tag.hidden = true; return; } L.tag.hidden = false;
-      const falando = L.fala && agora < L.falaT, h = arenaFoto(L) + (L.up ? '<em class="ar-nv">Nv ' + (1 + L.up) + '</em>' : '') + '<b>' + Object.values(L.itens).map(P => P.ic).join('') + (L.div || L.itens.rosa ? ' ' : '') + L.nome + '</b><span class="ar-hp"><i style="width:' + Math.round(L.hp / L.max * 100) + '%"></i></span><small>⚔️ ' + L.kills + (falando ? ' · 💬 ' + L.fala : '') + '</small>';
+      const falando = L.fala && agora < L.falaT, h = arenaFoto(L) + (L.time ? '<em class="ar-tm ' + L.time + '">' + (L.time === 'r' ? 'VERMELHO' : 'AZUL') + '</em>' : '') + (DU.on && (L === DU.a || L === DU.b) ? '<em class="ar-du">⚔️ DUELO</em>' : '') + (L.coroa ? '<em class="ar-nv">👑 CAMPEÃO</em>' : '') + (L.up ? '<em class="ar-nv">Nv ' + (1 + L.up) + '</em>' : '') + '<b>' + Object.values(L.itens).map(P => P.ic).join('') + (L.div || L.itens.rosa ? ' ' : '') + L.nome + '</b><span class="ar-hp"><i style="width:' + Math.round(L.hp / L.max * 100) + '%"></i></span><small>⚔️ ' + L.kills + (falando ? ' · 💬 ' + L.fala : '') + '</small>';
       if (L.h !== h) { L.h = h; L.tag.innerHTML = h; } guildPosition(L.tag, L.c, 2.0); L.tag.style.transform = 'translate(-50%,-100%) scale(' + clamp(1.3 - d / 40, 0.55, 1.2).toFixed(2) + ')'; L.tag.style.zIndex = String(200 - Math.round(d)); });
     Object.values(ARENA.plat).forEach(S => { const d = cam.position.distanceTo(S.c.position), falando = S.fala && agora < S.falaT; if (d > (falando ? 70 : 26)) { S.tag.hidden = true; return; } S.tag.hidden = false;
       const h = arenaFoto(S) + '<b>' + S.nome + '</b>' + (falando ? '<small>💬 ' + S.fala + '</small>' : ''); if (S.h !== h) { S.h = h; S.tag.innerHTML = h; } guildPosition(S.tag, S.c, 1.9); S.tag.style.transform = 'translate(-50%,-100%) scale(' + clamp(1.15 - d / 30, 0.45, 1.1).toFixed(2) + ')'; S.tag.style.zIndex = String(150 - Math.round(d)); }); }
   /* ----- TITÃ DA ARENA: chefe gigante no meio enquanto ninguém luta; a galera derruba ele e depois duela ----- */
   const BO = { boss: true, id: '__boss', nome: 'Titã da Arena', x: ARENA.X, z: ARENA.Z, r: 3.4, hp: 0, max: 3000, vivo: false, morto: 0, e: null, pos: new T3.Vector3(), cd: 3, golpe: -1, ult: null, espera: 1.5, rot: 0, queda: 0 };
   const boBar = document.createElement('div'); boBar.id = 'arena-boss'; boBar.className = 'arena-keep'; boBar.hidden = true; boBar.innerHTML = '<b>👹 TITÃ DA ARENA</b><span><i></i></span><small></small>'; document.body.appendChild(boBar);
-  function arenaBossNasce() { if (!BO.e) { const e = fera('golem'); try { e.hp.remove(); } catch (x) {} world.remove(e.g); ARG.G.add(e.g); e.g.position.set(0, 0, 0); e.g.scale.setScalar(2.7);
+  function arenaBossNasce(dourado) { if (!BO.e) { const e = fera('golem'); try { e.hp.remove(); } catch (x) {} world.remove(e.g); ARG.G.add(e.g); e.g.position.set(0, 0, 0); e.g.scale.setScalar(2.7);
       e.g.traverse(o => { if (o.isMesh && o.material && o.material.color && !o.material.transparent) { o.material = o.material.clone(); o.material.color.lerp(new T3.Color('#7a3aff'), 0.35); } });
       for (let i = 0; i < 5; i++) { const k = part(e.b, CONE, '#ffd23c', (i - 2) * 0.32, 4.75 + (i % 2 ? 0 : 0.12), 0.15, 0.13, 0.5, 0.13, 0.02, true); k.rotation.z = (i - 2) * -0.12; }
       BO.aura = glowSpr(e.g, 0, 2.2, 0, 9, '#a060ff', 0.35); BO.e = e; }
     BO.e.g.visible = true; BO.e.g.rotation.set(0, 0, 0); BO.e.g.position.y = 0; BO.max = 4000 + 300 * Object.keys(ARENA.lut).length; BO.hp = BO.max; BO.vivo = true; BO.queda = 0; BO.cd = 3; BO.golpe = -1; BO.ult = null; Object.values(ARENA.lut).forEach(L => { L.danoBoss = 0; });
-    fx('luz', [BO.x, 0, BO.z], 1.5); fx('fumo', [BO.x, 0, BO.z], 1.5); try { som('portal', 0.8, 0.6); } catch (x) {} arenaFeed('👹 O <b>TITÃ DA ARENA</b> apareceu! Comente LUTAR pra derrubar ele!'); arenaFala('O Titã da Arena apareceu! Comente lutar pra derrubar ele!', true); }
-  function arenaBossMorre(L) { BO.vivo = false; BO.hp = 0; BO.queda = 0.001; L.kills += 3; const top = Object.values(ARENA.lut).sort((p, q) => (q.danoBoss || 0) - (p.danoBoss || 0))[0];
+    fx('luz', [BO.x, 0, BO.z], 1.5); fx('fumo', [BO.x, 0, BO.z], 1.5); try { som('portal', 0.8, 0.6); } catch (x) {} if (!dourado) { arenaFeed('👹 O <b>TITÃ DA ARENA</b> apareceu! Comente LUTAR pra derrubar ele!'); arenaFala('O Titã da Arena apareceu! Comente lutar pra derrubar ele!', true); } else arenaFeed('👑 O <b>TITÃ DOURADO</b> apareceu! Vale o dobro de pontos!'); }
+  function arenaBossMorre(L) { BO.vivo = false; BO.hp = 0; BO.queda = 0.001; L.kills += BO.dourado ? 6 : 3; if (BO.dourado) { BO.dourado = false; if (BO.aura) BO.aura.material.color.set('#a060ff'); setTimeout(() => { boBar.querySelector('b').textContent = '👹 TITÃ DA ARENA'; }, 4000); } const top = Object.values(ARENA.lut).sort((p, q) => (q.danoBoss || 0) - (p.danoBoss || 0))[0];
     if (top && top !== L) top.kills += 2; fx('fogo', [BO.x, 2, BO.z], 1.5); fx('luz', [BO.x, 0, BO.z], 1.5); try { som('magia', 1, 0.6); } catch (x) {} tremor = 0.6;
     arenaFeed('💥 <b>' + L.nome + '</b> deu o golpe final no TITÃ! (+3)' + (top && top !== L ? ' · <b>' + top.nome + '</b> causou mais dano (+2)' : '')); aviso('💥 TITÃ DERROTADO por ' + L.nome + '! Agora é todo mundo contra todo mundo!', '#ffd23c'); arenaFala('O Titã foi derrotado por ' + L.nome + '! Agora é todo mundo contra todo mundo!', true); arenaFoca(L, 4); }
   function arenaBossFrame(dt, vivos) { const on = zona === 'arena';
@@ -208,7 +210,7 @@
   const VOZ = { on: true, fila: [], tocando: false, base: '', falhou: 0, cta: 0 };
   try { VOZ.on = localStorage.getItem('arenaVoz') !== '0'; } catch (e) {}
   function vozLimpa(t) { return String(t || '').replace(/<[^>]+>/g, ' ').replace(/\s=\s/g, ' e ganhe ').replace(/·/g, ',').replace(/\bx(\d)/g, 'vezes $1').replace(/\+(\d)/g, 'mais $1').replace(/[()]/g, ' ').replace(/\bGG\b/g, 'gê gê').replace(/\p{Lu}{3,}/gu, w => w.toLowerCase()).replace(/\s+,/g, ',').replace(/\p{Extended_Pictographic}|\uFE0F|\u200D/gu, ' ').replace(/https?:\S+/g, '').replace(/\s+/g, ' ').trim().slice(0, 200); }
-  function arenaFala(t, prio) { if (!VOZ.on || zona !== 'arena') return; t = vozLimpa(t); if (t.length < 2) return; if (prio) { VOZ.fila = VOZ.fila.filter(x => x.prio); VOZ.fila.push({ t, prio }); } else if (VOZ.fila.length < 2) VOZ.fila.push({ t }); vozProx(); }
+  function arenaFala(t, prio) { if (!VOZ.on || zona !== 'arena') return; t = vozLimpa(t); if (t.length < 2) return; if (prio) { VOZ.fila = VOZ.fila.filter(x => x.prio); VOZ.fila.push({ t, prio }); if (VOZ.fila.length > 4) VOZ.fila.splice(0, VOZ.fila.length - 4); } else if (VOZ.fila.length < 2) VOZ.fila.push({ t }); vozProx(); }
   function vozDispositivo(t, fim) { try { const s = window.speechSynthesis; if (!s) return fim(); const u = new SpeechSynthesisUtterance(t); u.lang = 'pt-BR'; u.rate = 1.05; u.onend = fim; u.onerror = fim; s.speak(u); setTimeout(fim, 12000); } catch (e) { fim(); } }
   function vozProx() { if (VOZ.tocando || !VOZ.fila.length) return; const { t } = VOZ.fila.shift(); VOZ.tocando = true; let feito = false; const fim = () => { if (feito) return; feito = true; VOZ.tocando = false; setTimeout(vozProx, 250); };
     let pin = ''; try { pin = localStorage.getItem('liveKey') || ''; } catch (e) {} const base = LIVE.url.replace(/^ws/, 'http').replace(/\/$/, '');
@@ -220,7 +222,7 @@
   const CTA = { i: 0, t: 2, on: false };
   function arenaCtaLista() { const L = ['💬 Comente <b>LUTAR</b> e seu personagem entra na arena!', '👀 Só assistindo? Você fica na <b>arquibancada</b> torcendo', '⚔️ Comente <b>LUTAR</b> e desça da arquibancada pra batalha!'];
     ARENA_PRES.forEach(P => L.push(P.ic + ' Mande <b>' + P.nomes[0].replace(/^./, c => c.toUpperCase()) + '</b> = ' + P.item + ' <span style="color:' + P.cor + '">(' + P.fx + ')</span>'));
-    L.push('🎁 Qualquer presente também te coloca na luta na hora!', '🏆 Quem mais derrotar fica no <b>TOPO</b> do ranking!', '❤️ Seguiu a live? Seu lutador recupera a vida toda!', '👍 Curtidas curam seu lutador durante a luta!');
+    L.push('⚔️ Comente <b>DUELO</b> e o nome de alguém pra desafiar!', '🔴🔵 Comente <b>VERMELHO</b> ou <b>AZUL</b> e entre num time!', '🎯 Meta: faltam <b>' + (MT.alvo - MT.n) + '</b> presentes pra chuva de itens!', '⏱ Rodada acaba em <b>' + arenaRelogio() + '</b>: o campeão ganha a coroa 👑', '👍 Muitas curtidas = <b>CHUVA DE CORAÇÕES</b> e cura pra todos!', '🎁 Qualquer presente também te coloca na luta na hora!', '🏆 Quem mais derrotar fica no <b>TOPO</b> do ranking!', '❤️ Seguiu a live? Seu lutador recupera a vida toda!', '👍 Curtidas curam seu lutador durante a luta!');
     if (BO.vivo) L.push('👹 O <b>TITÃ</b> está no meio da arena! Comente LUTAR e ajude a derrubar!', '💥 Golpe final no Titã vale <b>+3</b> no ranking!');
     const top = Object.values(ARENA.lut).sort((p, q) => q.kills - p.kills)[0]; if (top && top.kills > 0) L.push('👑 <b>' + top.nome + '</b> está no topo com ' + top.kills + ' abates. Quem derruba?');
     return L; }
@@ -250,21 +252,94 @@
       if (vai >= 1 && !E.chegou) { E.chegou = true; E.anel.visible = true; fx('luz', [L.x, 0, L.z], 1.2); fx('cura', [L.x, 0, L.z], 1); try { numero(L.c.position, 'LEVEL UP! Nv ' + (1 + L.up), E.c1, 2.8); } catch (e) {} try { som('portal', 0.6, 1.4); } catch (e) {} L.pulso = 1; }
       if (E.chegou) { const a = Math.min(1, (t - 0.9) / 0.9); E.anel.position.set(L.x, (L.y || 0) + 0.08, L.z); E.anel.scale.setScalar(1 + a * 3.5); E.anel.material.opacity = (1 - a) * 0.9; }
       if (t > T) { world.remove(E.G); world.remove(E.raio); world.remove(E.orbe); world.remove(E.anel); E.elos.forEach(e => world.remove(e)); [E.col, E.base, E.raio, E.anel, ...E.elos].forEach(m => m.material.dispose()); ELOS.splice(k, 1); } } }
+  /* ===================== SHOW DA LIVE: meta de presentes, rodadas com campeão, duelo, times, chuva de corações e narrador ===================== */
+  const MT = { n: 0, alvo: 30, ev: 0 }, RD = { t: 300, n: 1, camp: null, campeoes: [] }, DU = { on: false, a: null, b: null, t: 0 }, TIM = { r: 0, b: 0 }, CR = { lista: [], t: 0, cd: 0, n: 0, sprs: [] }, NR = { t: 25 };
+  const showEl = document.createElement('div'); showEl.id = 'arena-show'; showEl.className = 'arena-keep'; showEl.hidden = true; document.body.appendChild(showEl);
+  function arenaRelogio() { const t = Math.max(0, Math.ceil(RD.t)); return Math.floor(t / 60) + ':' + String(t % 60).padStart(2, '0'); }
+  function arenaPlacarTimes() { const ls = Object.values(ARENA.lut); if (!ls.some(L => L.time)) return ''; return `<div class="ar-times"><span class="r">🔴 ${TIM.r}</span><small>TIMES</small><span class="b">${TIM.b} 🔵</span></div>`; }
+  function arenaAmigo(L, o) { if (!o || o.boss) return false; if (L.time && L.time === o.time) return true; if (DU.on) { const dl = L === DU.a || L === DU.b, dob = o === DU.a || o === DU.b; if (dl !== dob) return true; } return false; }
+  function arenaNorm(t) { return String(t || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, ''); }
+  function arenaParaLuta(id, nome, foto) { let L = ARENA.lut[id]; if (L) return L; const S0 = ARENA.plat[id]; if (S0) arenaPlatTira(id); L = arenaLut(id, (S0 && S0.nome) || nome, foto || (S0 && S0.foto)); arenaFoca(L, 3); return L; }
+  /* comentários especiais: VERMELHO / AZUL (times) e DUELO nome */
+  function arenaComando(m, id, foto) { const n = arenaNorm(m.text);
+    const du = n.match(/\bduelo\b\s*@?\s*([^\s].{0,30})?/);
+    if (du) { const L = arenaParaLuta(id, m.name, foto); const alvoTxt = (du[1] || '').trim(); arenaDuelo(L, alvoTxt); return true; }
+    const tm = /\bvermelho\b/.test(n) ? 'r' : /\bazul\b/.test(n) ? 'b' : '';
+    if (tm) { const L = arenaParaLuta(id, m.name, foto); if (L.time !== tm) { L.time = tm; L.h = ''; L.alvo = null; const nm = tm === 'r' ? 'VERMELHO' : 'AZUL'; arenaFeed((tm === 'r' ? '🔴' : '🔵') + ' <b>' + L.nome + '</b> entrou pro time <b>' + nm + '</b>!'); arenaFala(L.nome + ' entrou pro time ' + nm.toLowerCase() + '!'); } return true; }
+    return false; }
+  /* ---- duelo ---- */
+  const duAnel = new T3.Mesh(new T3.TorusGeometry(3.2, 0.12, 6, 64), new T3.MeshBasicMaterial({ color: '#ffd23c', transparent: true, opacity: 0.9, toneMapped: false })); duAnel.rotation.x = Math.PI / 2; duAnel.visible = false; world.add(duAnel);
+  function arenaDuelo(L, txt) { if (DU.on) { arenaFeed('⏳ Já tem um duelo rolando, <b>' + L.nome + '</b>. Espera acabar!'); return; }
+    const t = arenaNorm(txt).replace(/^@/, '').trim(); const todos = Object.values(ARENA.lut).filter(o => o !== L).concat(Object.values(ARENA.plat));
+    let o = t ? todos.find(x => arenaNorm(x.nome) === t) || todos.find(x => t.length >= 3 && arenaNorm(x.nome).includes(t)) || todos.find(x => t.length >= 3 && t.includes(arenaNorm(x.nome))) : null;
+    if (!o) { const ls = Object.values(ARENA.lut).filter(x => x !== L && !x.morto); o = ls.sort((p, q) => q.kills - p.kills)[0]; if (!o) { arenaFeed('⚔️ <b>' + L.nome + '</b> quer duelo, mas não tem ninguém na arena!'); return; } }
+    if (o.plat) o = arenaParaLuta(o.id, o.nome, o.foto);
+    DU.on = true; DU.a = L; DU.b = o; DU.t = 60; [L, o].forEach(x => { x.hp = x.max; x.morto = 0; x.h = ''; });
+    arenaFeed('⚔️ <b>DUELO!</b> ' + arenaFoto(L, 'mi') + ' <b>' + L.nome + '</b> desafiou ' + arenaFoto(o, 'mi') + ' <b>' + o.nome + '</b>!'); aviso('⚔️ DUELO: ' + L.nome + ' x ' + o.nome + '!', '#ffd23c');
+    arenaFala('Duelo! ' + L.nome + ' desafiou ' + o.nome + '! Valendo três pontos!', true); arenaFoca(L, 3.5); ARENA.fila = [o]; }
+  function arenaDueloFim(venc, perd) { if (!DU.on) return; DU.on = false; duAnel.visible = false; [DU.a, DU.b].forEach(x => { if (x) x.h = ''; });
+    if (venc) { venc.kills += 3; venc.hp = venc.max; arenaFeed('🏆 <b>' + venc.nome + '</b> venceu o duelo contra <b>' + perd.nome + '</b>! (+3)'); aviso('🏆 ' + venc.nome + ' venceu o duelo!', '#ffd23c'); arenaFala(venc.nome + ' venceu o duelo contra ' + perd.nome + '!', true); arenaFoca(venc, 3.5); }
+    else { arenaFeed('⏱️ O duelo deu empate por tempo!'); arenaFala('O duelo terminou empatado!', true); } DU.a = DU.b = null; }
+  function arenaAbate(L, A) { if (L.time && A.time && L.time !== A.time) { TIM[L.time]++; } else if (L.time && !A.time) TIM[L.time]++;
+    if (DU.on && ((L === DU.a && A === DU.b) || (L === DU.b && A === DU.a))) arenaDueloFim(L, A); }
+  /* ---- meta de presentes ---- */
+  function arenaMeta(n, L) { MT.n += n; if (MT.n >= MT.alvo) { MT.n = 0; MT.ev++; arenaMetaCompleta(L); MT.alvo += 10; } }
+  function arenaMetaCompleta(L) { aviso('🎯 META BATIDA! Chuva de itens pra todo mundo!', '#2af0ff'); arenaFeed('🎯 <b>META DE PRESENTES BATIDA!</b> Chuva de itens + Titã Dourado!'); arenaFala('Meta de presentes batida! Chuva de itens pra todo mundo, e o Titã Dourado vai aparecer!', true);
+    const baratos = ARENA_PRES.filter(P => P.nv === 1); Object.values(ARENA.lut).forEach((x, i) => setTimeout(() => { if (ARENA.lut[x.id]) { const P = baratos[Math.floor(Math.random() * baratos.length)]; arenaPresente(x, P.nomes[0], 1, true); } }, 400 + i * 350));
+    setTimeout(() => { if (!BO.vivo && zona === 'arena') { arenaBossNasce(true); BO.max *= 2; BO.hp = BO.max; BO.dourado = true; if (BO.aura) BO.aura.material.color.set('#ffd23c'); boBar.querySelector('b').textContent = '👑 TITÃ DOURADO'; arenaFala('O Titã Dourado apareceu! Ele vale o dobro de pontos!', true); } }, 2500); }
+  /* ---- rodadas com campeão ---- */
+  function arenaCoroa(L) { Object.values(ARENA.lut).forEach(x => { if (x.coroa) { x.c.userData.P.head.remove(x.coroa); x.coroa = null; x.h = ''; } }); if (!L) return;
+    const g = grp(L.c.userData.P.head, 0, 0.36, 0); part(g, CYL, '#ffd23c', 0, 0, 0, 0.2, 0.08, 0.2, 0.02, true); for (let i = 0; i < 5; i++) { const a = i / 5 * Math.PI * 2; part(g, CONE, '#ffd23c', Math.sin(a) * 0.17, 0.1, Math.cos(a) * 0.17, 0.05, 0.14, 0.05, 0.02, true); } glowSpr(g, 0, 0.1, 0, 0.8, '#ffd23c', 0.6); L.coroa = g; L.h = ''; }
+  function arenaRodadaFim() { const ls = Object.values(ARENA.lut).sort((p, q) => q.kills - p.kills || p.mortes - q.mortes), c = ls[0] && ls[0].kills > 0 ? ls[0] : null;
+    if (c) { RD.camp = { nome: c.nome, id: c.id, kills: c.kills }; RD.campeoes.unshift(RD.camp); RD.campeoes.length = Math.min(3, RD.campeoes.length); arenaCoroa(c); fx('luz', [c.x, 0, c.z], 1.5); aviso('👑 ' + c.nome + ' é o CAMPEÃO da rodada ' + RD.n + ' com ' + c.kills + ' abates!', '#ffd23c');
+      arenaFeed('👑 <b>' + c.nome + '</b> é o <b>CAMPEÃO</b> da rodada ' + RD.n + '!'); arenaFala(c.nome + ' é o campeão da rodada ' + RD.n + ', com ' + c.kills + ' abates! Ganhou a coroa! Nova rodada começando!', true); arenaFoca(c, 5); }
+    else arenaFala('Nova rodada começando! Comente lutar e entre na arena!', true);
+    Object.values(ARENA.lut).forEach(x => { x.kills = 0; x.mortes = 0; x.danoBoss = 0; }); TIM.r = TIM.b = 0; RD.n++; RD.t = 300; }
+  /* ---- curtidas: corações caindo e chuva de corações ---- */
+  const corTex = (() => { const c = document.createElement('canvas'); c.width = c.height = 64; const g = c.getContext('2d'); const gr = g.createRadialGradient(24, 22, 4, 32, 34, 30); gr.addColorStop(0, '#ff9ab8'); gr.addColorStop(1, '#ff1a4a'); g.fillStyle = gr; g.beginPath(); g.moveTo(32, 56); g.bezierCurveTo(4, 36, 6, 10, 20, 10); g.bezierCurveTo(27, 10, 31, 15, 32, 20); g.bezierCurveTo(33, 15, 37, 10, 44, 10); g.bezierCurveTo(58, 10, 60, 36, 32, 56); g.fill(); g.fillStyle = 'rgba(255,255,255,.7)'; g.beginPath(); g.ellipse(21, 20, 5, 3, -0.6, 0, 7); g.fill(); const t = new T3.CanvasTexture(c); t.colorSpace = T3.SRGBColorSpace; return t; })();
+  const corMat = new T3.SpriteMaterial({ map: corTex, transparent: true, depthWrite: false });
+  function arenaCoracoes(n) { for (let i = 0; i < n; i++) { if (CR.sprs.length > 120) break; const s = new T3.Sprite(corMat); const a = Math.random() * Math.PI * 2, r = Math.random() * ARENA.R; s.position.set(ARENA.X + Math.sin(a) * r, 14 + Math.random() * 10, ARENA.Z + Math.cos(a) * r); s.scale.setScalar(0.9 + Math.random() * 0.9); s.userData.v = 3 + Math.random() * 3; s.userData.f = Math.random() * 6; world.add(s); CR.sprs.push(s); } }
+  function arenaCurtida(n) { if (zona !== 'arena') return; n = Math.min(30, n); CR.lista.push([performance.now(), n]); arenaCoracoes(Math.min(6, n));
+    const agora = performance.now(); CR.lista = CR.lista.filter(x => agora - x[0] < 10000); const tot = CR.lista.reduce((a, x) => a + x[1], 0);
+    if (tot >= 40 && CR.cd <= 0) { CR.cd = 30; CR.lista = []; arenaCoracoes(90); Object.values(ARENA.lut).forEach(x => { if (!x.morto) { x.hp = x.max; } }); aviso('❤️ CHUVA DE CORAÇÕES! Todo mundo curado!', '#ff5a8a'); arenaFeed('❤️ <b>CHUVA DE CORAÇÕES!</b> As curtidas curaram todo mundo!'); arenaFala('Chuva de corações! As curtidas curaram todos os lutadores!', true); } }
+  /* ---- narrador: explica como funciona de tempos em tempos ---- */
+  const NARRA = ['Bem-vindos à Arena da Live! Quem só assiste fica na arquibancada. Comente lutar e o seu personagem entra na batalha!',
+    'Quer desafiar alguém? Comente duelo e o nome da pessoa. O vencedor do duelo ganha três pontos!',
+    'Escolha seu time! Comente vermelho ou azul. Quem é do mesmo time não se ataca, e o placar dos times aparece na tela.',
+    'Cada presente dá um item de poder e uma corrente de luz pro seu lutador. Quanto mais caro o presente, mais forte o item!',
+    'Tem meta de presentes na tela! Quando completar, cai uma chuva de itens pra todo mundo e aparece o Titã Dourado!',
+    'A cada cinco minutos acaba a rodada. Quem tiver mais abates vira campeão e ganha a coroa!',
+    'Curte a live! Muitas curtidas juntas fazem uma chuva de corações que cura todos os lutadores!'];
+  function arenaShowFrame(dt) { if (zona !== 'arena') { showEl.hidden = true; return; }
+    const ls = Object.values(ARENA.lut);
+    if (ls.length >= 2) { RD.t -= dt; if (RD.t <= 0) arenaRodadaFim(); }
+    if (DU.on) { DU.t -= dt; const a = DU.a, b = DU.b; if (!a || !b || !ARENA.lut[a.id] || !ARENA.lut[b.id]) arenaDueloFim(null); else if (DU.t <= 0) arenaDueloFim(null); else { duAnel.visible = true; duAnel.position.set((a.x + b.x) / 2, 0.1, (a.z + b.z) / 2); duAnel.scale.setScalar(Math.max(1, Math.hypot(a.x - b.x, a.z - b.z) / 4 + 0.6)); duAnel.material.color.setHSL(0.13 + Math.sin(gT * 4) * 0.03, 1, 0.55); } }
+    if (CR.cd > 0) CR.cd -= dt;
+    for (let i = CR.sprs.length - 1; i >= 0; i--) { const s = CR.sprs[i]; s.position.y -= s.userData.v * dt; s.position.x += Math.sin(gT * 2 + s.userData.f) * dt * 0.8; if (s.position.y < 0.3) { world.remove(s); CR.sprs.splice(i, 1); } }
+    NR.t -= dt; if (NR.t <= 0) { NR.t = 55; NR.i = ((NR.i || 0) + 1) % NARRA.length; arenaFala(NARRA[NR.i]); }
+    const pct = Math.min(100, MT.n / MT.alvo * 100);
+    const h = `<div class="mt"><b>🎯 META DE PRESENTES</b><span><i style="width:${pct.toFixed(1)}%"></i></span><small>${MT.n} / ${MT.alvo} · completou = chuva de itens + Titã Dourado</small></div>`;
+    if (showEl._h !== h) { showEl._h = h; showEl.innerHTML = h; } showEl.hidden = false; }
+  function arenaTesteShow(a) { const ls = Object.values(ARENA.lut), ps = Object.values(ARENA.plat), rnd = v => v[Math.floor(Math.random() * v.length)];
+    if (a === 'duelo') { const x = rnd(ls.length ? ls : ps); if (x) arenaEvento({ type: 'chat', id: x.id, name: x.nome, text: 'duelo' }); }
+    else if (a === 'time') { const x = rnd(ls.concat(ps)); if (x) arenaEvento({ type: 'chat', id: x.id, name: x.nome, text: Math.random() < 0.5 ? 'vermelho' : 'azul' }); }
+    else if (a === 'like') { const x = rnd(ls.concat(ps)); arenaEvento({ type: 'like', id: x ? x.id : 'like', name: x ? x.nome : 'Fã', count: 15 }); }
+    else if (a === 'meta') { MT.n = MT.alvo - 1; const x = rnd(ls.concat(ps)); if (x) arenaEvento({ type: 'gift', id: x.id, name: x.nome, gift: 'Rosa', diamonds: 1 }); } }
   // ----- luta automática -----
   function arenaFrame(dt) { const on = zona === 'arena'; ARG.G.visible = on; arenaUi(); if (!on) { Object.values(ARENA.lut).concat(Object.values(ARENA.plat)).forEach(L => { L.c.visible = false; L.tag.hidden = true; }); return; }
     Object.values(ARENA.plat).forEach(S => { S.c.visible = true; const u = Math.sin(gT * 3 + S.ph), vibra = u > 0.55; pose(S.c, gT, { mood: 'happy', arms: vibra ? { shL: [-2.7, 0, -0.3], shR: [-2.7, 0, 0.3], elL: [-0.3, 0, 0], elR: [-0.3, 0, 0] } : { shL: [-0.2, 0, -0.1], shR: [-0.2, 0, 0.1] } }); S.c.position.y = S.y + (vibra ? Math.abs(Math.sin(gT * 9 + S.ph)) * 0.18 : 0); });
-    if (ARG.up) ARG.up(gT); arenaElosFrame(dt); ARG.tochas.forEach((f, i) => { const s = 0.85 + Math.sin(gT * 13 + i * 2) * 0.15; f.scale.set(s, 0.9 + Math.cos(gT * 17 + i) * 0.2, s); });
+    if (ARG.up) ARG.up(gT); arenaElosFrame(dt); try { arenaShowFrame(dt); } catch (e) { console.warn('show', e); } ARG.tochas.forEach((f, i) => { const s = 0.85 + Math.sin(gT * 13 + i * 2) * 0.15; f.scale.set(s, 0.9 + Math.cos(gT * 17 + i) * 0.2, s); });
     const Ls = Object.values(ARENA.lut), vivos = Ls.filter(L => !L.morto); arenaBossFrame(dt, vivos); arenaCtaFrame(dt);
     Ls.forEach(L => { L.c.visible = true; if (L.div) L.div.up(gT); { const esc = 0.9 * (1 + Math.min(0.3, (L.up || 0) * 0.05) + (L.pulso || 0) * 0.25); L.c.scale.setScalar(esc); if (L.pulso) L.pulso = Math.max(0, L.pulso - dt * 1.5); } if (L.regen && !L.morto) L.hp = Math.min(L.max, L.hp + L.regen * dt);
       if (L.morto) { L.morto -= dt; pose(L.c, gT, { mood: 'sad', lean: 1.2, hipY: 0.35, legs: { thL: -1.4, knL: 1.6, thR: -1.4, knR: 1.6 } }); L.c.position.y = -0.2;
         if (L.morto <= 0) { L.morto = 0; L.hp = L.max; const a = Math.random() * Math.PI * 2, r = ARENA.R * 0.85; L.x = ARENA.X + Math.sin(a) * r; L.z = ARENA.Z + Math.cos(a) * r; L.c.position.y = 0; fx('luz', [L.x, 0, L.z], 0.8); } L.c.position.x = L.x; L.c.position.z = L.z; return; }
       // escolhe alvo: o mais perto, às vezes troca
-      if (BO.vivo) L.alvo = BO; else if (!L.alvo || L.alvo.boss || L.alvo.morto || !ARENA.lut[L.alvo.id] || Math.random() < dt * 0.15) { let best = null, bd = 1e9; vivos.forEach(o => { if (o === L) return; const d = Math.hypot(o.x - L.x, o.z - L.z) + Math.random() * 6; if (d < bd) { bd = d; best = o; } }); L.alvo = best; }
+      if (DU.on && (L === DU.a || L === DU.b)) L.alvo = L === DU.a ? DU.b : DU.a; else if (BO.vivo) L.alvo = BO; else if (!L.alvo || L.alvo.boss || L.alvo.morto || !ARENA.lut[L.alvo.id] || arenaAmigo(L, L.alvo) || Math.random() < dt * 0.15) { let best = null, bd = 1e9; vivos.forEach(o => { if (o === L || arenaAmigo(L, o)) return; const d = Math.hypot(o.x - L.x, o.z - L.z) + Math.random() * 6; if (d < bd) { bd = d; best = o; } }); L.alvo = best; }
       const A = L.alvo; let anda = false, atk = gT - L.atkT < 0.35;
       if (A) { const dx = A.x - L.x, dz = A.z - L.z, d = Math.hypot(dx, dz); let dr = Math.atan2(dx, dz) - L.rot; while (dr > Math.PI) dr -= Math.PI * 2; while (dr < -Math.PI) dr += Math.PI * 2; L.rot += dr * clamp(dt * 8);
         if (d > (A.boss ? A.r + 0.9 : 1.5)) { const v = 3.2 * L.vel * dt; L.x += dx / d * v; L.z += dz / d * v; anda = true; }
         else { L.cd -= dt; if (L.cd <= 0) { L.cd = 0.8 + Math.random() * 0.6; L.atkT = gT; const dano = Math.round((7 + Math.random() * 7) * L.dano); A.hp -= dano; if (A.boss) { L.danoBoss = (L.danoBoss || 0) + dano; A.ult = L; } try { numero(A.boss ? A.pos : A.c.position, String(dano), L.dano > 1.2 ? '#ffd86a' : '#ffffff', A.boss ? 0 : 2.2); } catch (e) {} try { som('espada', 0.25, 1); } catch (e) {} fx('vento', [A.boss ? L.x + (A.x - L.x) * 0.4 : A.x, 1, A.boss ? L.z + (A.z - L.z) * 0.4 : A.z], 0.3);
-            if (A.boss) { if (A.hp <= 0) arenaBossMorre(L); } else if (A.hp <= 0) { A.hp = 0; A.morto = 3; A.mortes++; L.kills++; L.alvo = null; arenaFeed('⚔️ <b>' + L.nome + '</b> derrotou <b>' + A.nome + '</b>' + (L.kills % 5 === 0 ? ' · 🔥 ' + L.kills + ' abates!' : '')); } } } }
+            if (A.boss) { if (A.hp <= 0) arenaBossMorre(L); } else if (A.hp <= 0) { A.hp = 0; A.morto = 3; A.mortes++; L.kills++; L.alvo = null; arenaAbate(L, A); arenaFeed('⚔️ <b>' + L.nome + '</b> derrotou <b>' + A.nome + '</b>' + (L.kills % 5 === 0 ? ' · 🔥 ' + L.kills + ' abates!' : '')); } } } }
       // não sai da areia e não fica um em cima do outro
       if (BO.vivo) { const dx = L.x - BO.x, dz = L.z - BO.z, d = Math.hypot(dx, dz), m = BO.r + 0.5; if (d < m && d > 1e-3) { L.x = BO.x + dx / d * m; L.z = BO.z + dz / d * m; } }
       vivos.forEach(o => { if (o === L) return; const dx = L.x - o.x, dz = L.z - o.z, d = Math.hypot(dx, dz); if (d < 0.8 && d > 1e-3) { L.x += dx / d * (0.8 - d) * 0.5; L.z += dz / d * (0.8 - d) * 0.5; } });
@@ -276,17 +351,17 @@
   const arUi = document.createElement('div'); arUi.id = 'arena-ui'; arUi.hidden = true; document.body.appendChild(arUi);
   function arenaUi() { const on = zona === 'arena'; arUi.hidden = !on; if (!on) return; arUi.classList.toggle('mural', ARENA.cam.modo === 'mural'); ARENA.uiT -= 1 / 60; if (ARENA.uiT > 0) return; ARENA.uiT = 0.5;
     const L = Object.values(ARENA.lut).sort((p, q) => q.kills - p.kills || p.mortes - q.mortes).slice(0, 5), med = ['👑', '🥈', '🥉'];
-    arUi.innerHTML = `<div class="ar-rk"><b class="tt">🏆 TOP DA ARENA</b>${L.length ? L.map((x, i) => `<div class="ln${i < 3 ? ' t' + (i + 1) : ''}"><span>${med[i] || (i + 1) + 'º'}</span>${arenaFoto(x, 'mi')}<em>${Object.values(x.itens).map(P => P.ic).join('')}${x.nome}</em><i>⚔️ ${x.kills}</i></div>`).join('') : '<p>Ninguém lutando ainda. Comente LUTAR pra entrar! ⚔️</p>'}
+    arUi.innerHTML = `<div class="ar-rk"><b class="tt">🏆 RODADA ${RD.n} · ⏱ ${arenaRelogio()}</b>${RD.camp ? `<div class="ar-camp">👑 Campeão: <b>${RD.camp.nome}</b></div>` : ''}${arenaPlacarTimes()}${L.length ? L.map((x, i) => `<div class="ln${i < 3 ? ' t' + (i + 1) : ''}"><span>${med[i] || (i + 1) + 'º'}</span>${arenaFoto(x, 'mi')}<em>${x.time ? (x.time === 'r' ? '🔴' : '🔵') : ''}${Object.values(x.itens).map(P => P.ic).join('')}${x.nome}</em><i>⚔️ ${x.kills}</i></div>`).join('') : '<p>Ninguém lutando ainda. Comente LUTAR pra entrar! ⚔️</p>'}
       <small class="dc">👀 ${Object.keys(ARENA.plat).length} na arquibancada · 💬 comente LUTAR</small></div>
       <div class="ar-feed">${ARENA.feed.filter(f => performance.now() - f.em < 9000).map(f => `<div>${f.t}</div>`).join('')}</div>
-      <div class="ar-bt"><button data-a="bot">➕ Espectador de teste</button><button data-a="lutar">💬 LUTAR de teste</button><button data-a="pres">🎁 Presente de teste</button><button data-a="tema">🎨 ${ARENA_TEMAS[ARENA_TEMA].nome}</button><button data-a="voz">${VOZ.on ? '🔊 Voz ligada' : '🔇 Voz desligada'}</button><button data-a="sai">🚪 Sair</button></div>`;
+      <div class="ar-bt"><button data-a="bot">➕ Espectador de teste</button><button data-a="lutar">💬 LUTAR de teste</button><button data-a="pres">🎁 Presente de teste</button><button data-a="duelo">⚔️ Duelo teste</button><button data-a="time">🔴🔵 Time teste</button><button data-a="like">👍 Curtidas teste</button><button data-a="meta">🎯 Meta teste</button><button data-a="tema">🎨 ${ARENA_TEMAS[ARENA_TEMA].nome}</button><button data-a="voz">${VOZ.on ? '🔊 Voz ligada' : '🔇 Voz desligada'}</button><button data-a="sai">🚪 Sair</button></div>`;
     arUi.querySelectorAll('[data-a]').forEach(b => tapBtn(b, () => { const a = b.dataset.a;
-      if (a === 'tema') { arenaMonta((ARENA_TEMA + 1) % ARENA_TEMAS.length); try { localStorage.setItem('arenaTema2', String(ARENA_TEMA)); } catch (e) {} } else if (a === 'voz') { VOZ.on = !VOZ.on; VOZ.fila = []; try { localStorage.setItem('arenaVoz', VOZ.on ? '1' : '0'); } catch (e) {} if (VOZ.on) arenaFala('Voz da arena ligada!', true); } else if (a === 'sai') arenaSai(); else if (a === 'lutar') { const Ps = Object.values(ARENA.plat); const S = Ps[Math.floor(Math.random() * Ps.length)]; if (S) arenaEvento({ type: 'chat', id: S.id, name: S.nome, text: 'bora LUTAR!' }); } else if (a === 'bot') { const id = 'teste' + Math.random().toString(36).slice(2, 7); arenaEvento({ type: 'join', id, name: 'Teste ' + id.slice(-3).toUpperCase() }); }
+      if (a === 'duelo' || a === 'time' || a === 'like' || a === 'meta') arenaTesteShow(a); else if (a === 'tema') { arenaMonta((ARENA_TEMA + 1) % ARENA_TEMAS.length); try { localStorage.setItem('arenaTema2', String(ARENA_TEMA)); } catch (e) {} } else if (a === 'voz') { VOZ.on = !VOZ.on; VOZ.fila = []; try { localStorage.setItem('arenaVoz', VOZ.on ? '1' : '0'); } catch (e) {} if (VOZ.on) arenaFala('Voz da arena ligada!', true); } else if (a === 'sai') arenaSai(); else if (a === 'lutar') { const Ps = Object.values(ARENA.plat); const S = Ps[Math.floor(Math.random() * Ps.length)]; if (S) arenaEvento({ type: 'chat', id: S.id, name: S.nome, text: 'bora LUTAR!' }); } else if (a === 'bot') { const id = 'teste' + Math.random().toString(36).slice(2, 7); arenaEvento({ type: 'join', id, name: 'Teste ' + id.slice(-3).toUpperCase() }); }
       else { const Ps = Object.values(ARENA.plat), Ls = Ps.length ? Ps : Object.values(ARENA.lut); if (!Ls.length) return; const L = Ls[Math.floor(Math.random() * Ls.length)]; const G = ARENA_PRES[Math.floor(Math.random() * ARENA_PRES.length)]; arenaEvento({ type: 'gift', id: L.id, name: L.nome, gift: G.nomes[0], diamonds: G.nv >= 4 ? 500 : G.nv === 3 ? 100 : G.nv === 2 ? 10 : 1 }); } ARENA.uiT = 0; })); }
   // ----- entrar / sair (só ADM) -----
   function arenaEntra() { if (!souAdmin()) { aviso('🔒 A Arena da Live é só do Administrador.', '#ff6a6a'); return; } if (zona === 'arena') return; if (montado) montar(false); if (voando) voa(false);
     ARENA.volta = { zona, x: heroi.position.x, z: heroi.position.z, dentro }; ARENA.on = true; zona = 'arena'; dentro = false; heroi.position.set(ARENA.X, 0, ARENA.Z); heroi.visible = false;
-    ARENA.cam.modo = 'sobe'; ARENA.cam.t = 2.6; ARENA.cam.a = Math.PI; cam.position.set(ARENA.X, 6, ARENA.Z - ARENA.R - 6); ARENA.cam.pos = cam.position.clone(); ARENA.cam.look.set(ARENA.X, 1, ARENA.Z); document.body.classList.add('arena-on'); arenaRetrato(true);
+    ARENA.cam.modo = 'sobe'; ARENA.cam.t = 2.6; ARENA.cam.a = Math.PI; cam.position.set(ARENA.X, 6, ARENA.Z - ARENA.R - 6); ARENA.cam.pos = cam.position.clone(); ARENA.cam.look.set(ARENA.X, 1, ARENA.Z); document.body.classList.add('arena-on'); arenaRetrato(true); NR.t = 4; NR.i = -1;
     aviso('🏟️ Arena da Live aberta! Quem entrar na live vai aparecer lutando.' + (LIVE.ws ? '' : ' (Ligue a live no 📡 ou use o Lutador de teste.)'), '#ffd86a'); }
   function arenaSai() { if (zona !== 'arena' || arenaTravada()) return; const V = ARENA.volta || { zona: 'vila', x: 0, z: 4.2 }; ARENA.on = false; zona = V.zona === 'arena' ? 'vila' : V.zona; dentro = !!V.dentro; heroi.position.set(V.x, 0, V.z); heroi.visible = true; document.body.classList.remove('arena-on'); arenaRetrato(false); }
   /* tela sempre acesa enquanto o jogo estiver aberto (no app o Android já faz isso) */
