@@ -11846,7 +11846,7 @@ const ArcaneWingSystem = (function () {
     else { BO.golpe += dt; const w = 1.0;
       if (BO.golpe < w) e.arms.forEach(a => a.rotation.x = -(BO.golpe / w) * 2.7);
       else { e.arms.forEach(a => a.rotation.x = 0.5); if (!BO.bateu) { BO.bateu = true; fx('fumo', [BO.x, 0.3, BO.z], 0.8); fx('vento', [BO.x, 0.3, BO.z], 0.6); tremor = Math.max(tremor, 0.25); try { som('golem_soco', 0.7, 0.8); } catch (x) {}
-          vivos.forEach(o => { const dx = o.x - BO.x, dz = o.z - BO.z, d = Math.hypot(dx, dz); if (d < 8.5) { const dano = Math.round(18 + Math.random() * 14); o.hp -= dano; try { numero(o.c.position, String(dano), '#ff5a5a', 2.2); } catch (x) {} if (d > 1e-3) { o.x += dx / d * 2.2; o.z += dz / d * 2.2; } if (o.hp <= 0) { o.hp = 0; o.morto = 3; o.mortes++; arenaFeed('👹 O Titã esmagou <b>' + o.nome + '</b>!'); } } }); }
+          vivos.forEach(o => { const dx = o.x - BO.x, dz = o.z - BO.z, d = Math.hypot(dx, dz); if (d < 8.5) { const dano = Math.round(18 + Math.random() * 14); o.hp -= dano; try { numero(o.c.position, String(dano), '#ff5a5a', 2.2); } catch (x) {} if (d > 1e-3) { o.x += dx / d * 2.2; o.z += dz / d * 2.2; } if (o.hp <= 0) { o.hp = 0; o.morto = 3; o.mortes++; o.seq = 0; arenaFeed('👹 O Titã esmagou <b>' + o.nome + '</b>!'); } } }); }
         if (BO.golpe > w + 0.6) { BO.golpe = -1; BO.bateu = false; BO.cd = 2.2 + Math.random() * 1.2 - (BO.hp < BO.max / 2 ? 0.8 : 0); } } }
     boBar.querySelector('i').style.width = (BO.hp / BO.max * 100).toFixed(1) + '%'; boBar.querySelector('small').textContent = Math.ceil(BO.hp) + ' / ' + BO.max + (vivos.length ? ' · ' + vivos.length + ' lutando' : ' · esperando lutadores'); }
   /* ----- VOZ da arena (ElevenLabs pelo servidor da live; sem chave usa a voz do aparelho) ----- */
@@ -11923,7 +11923,7 @@ const ArcaneWingSystem = (function () {
   function arenaDueloFim(venc, perd) { if (!DU.on) return; DU.on = false; duAnel.visible = false; [DU.a, DU.b].forEach(x => { if (x) x.h = ''; });
     if (venc) { venc.kills += 3; venc.hp = venc.max; arenaFeed('🏆 <b>' + venc.nome + '</b> venceu o duelo contra <b>' + perd.nome + '</b>! (+3)'); aviso('🏆 ' + venc.nome + ' venceu o duelo!', '#ffd23c'); arenaFala(venc.nome + ' venceu o duelo contra ' + perd.nome + '!', true); arenaFoca(venc, 3.5); }
     else { arenaFeed('⏱️ O duelo deu empate por tempo!'); arenaFala('O duelo terminou empatado!', true); } DU.a = DU.b = null; }
-  function arenaAbate(L, A) { if (L.time && A.time && L.time !== A.time) { TIM[L.time]++; } else if (L.time && !A.time) TIM[L.time]++;
+  function arenaAbate(L, A) { arenaLocAbate(L, A); if (L.time && A.time && L.time !== A.time) { TIM[L.time]++; } else if (L.time && !A.time) TIM[L.time]++;
     if (DU.on && ((L === DU.a && A === DU.b) || (L === DU.b && A === DU.a))) arenaDueloFim(L, A); }
   /* ---- meta de presentes ---- */
   function arenaMeta(n, L) { MT.n += n; if (MT.n >= MT.alvo) { MT.n = 0; MT.ev++; arenaMetaCompleta(L); MT.alvo += 10; } }
@@ -11953,13 +11953,58 @@ const ArcaneWingSystem = (function () {
     'Tem meta de presentes na tela! Quando completar, cai uma chuva de itens pra todo mundo e aparece o Titã Dourado!',
     'A cada cinco minutos acaba a rodada. Quem tiver mais abates vira campeão e ganha a coroa!',
     'Curte a live! Muitas curtidas juntas fazem uma chuva de corações que cura todos os lutadores!'];
+  /* ===================== LOCUTOR: comenta a luta o tempo todo, sem repetir ===================== */
+  const LOC_HYPE = ['Que batalha, galera! A arena está pegando fogo!', 'Olha a pancadaria! Ninguém quer perder aqui!', 'Isso aqui é a Arena da Live, onde só os fortes sobrevivem!', 'Que golpe! Vocês viram isso?', 'A arquibancada está agitada hoje!',
+    'Tá muito disputado! Qualquer um pode virar o jogo!', 'Espadas pra todo lado! Que confusão boa!', 'Quem vai ser o próximo campeão? Ainda dá tempo!', 'Essa live está demais! Chama os amigos pra assistir!', 'Tá vindo gente nova aí! Sejam bem-vindos à arena!',
+    'Olha a velocidade desses lutadores!', 'Ninguém está seguro nessa arena!', 'Segura que vem mais luta por aí!', 'Que energia! Continua comentando que a arena fica cada vez melhor!', 'A arena está lotada de guerreiros!',
+    'Isso que é batalha de verdade!', 'Ataque, defesa, e muita coragem! Assim que se faz!', 'O clima está quente na arena!', 'Tem lutador apanhando muito aí, hein!', 'Bora, bora! Mais guerreiros na arena!'];
+  const LOC_CHAMA = ['Ainda está só olhando? Comenta lutar e desce pra arena!', 'Quem comentar lutar agora entra direto na batalha!', 'Manda um presente e veja seu lutador ficar gigante com a corrente de luz!', 'Uma rosinha já te dá uma espada nova! Bora!',
+    'Quer ver seu nome no topo do ranking? Comenta lutar!', 'Chama o seu amigo pro duelo! Escreve duelo e o nome dele!', 'Time vermelho ou time azul? Comenta aí e escolhe seu lado!', 'Segue a live que seu lutador volta com a vida cheia!',
+    'Curtiu? Toca na tela! Muita curtida vira chuva de corações!', 'Compartilha a live! Quanto mais gente, mais louca fica a arena!', 'O Titã está esperando alguém corajoso! Comenta lutar!', 'Cada presente conta pra meta! Falta pouco pra chuva de itens!'];
+  const LOC = { saco: {}, lider: null, m50: false, m20: false, ult60: false, ult10: false, pBlood: false, rd: 0, vazio: 0 };
+  function locPega(nome, lista) { let b = LOC.saco[nome]; if (!b || !b.length) { b = LOC.saco[nome] = lista.map((_, i) => i).sort(() => Math.random() - 0.5); } return lista[b.pop()]; }
+  function locDinamico() { const ls = Object.values(ARENA.lut), vivos = ls.filter(L => !L.morto), top = ls.slice().sort((p, q) => q.kills - p.kills)[0], ops = [];
+    if (top && top.kills > 0) ops.push(top.nome + ' lidera a rodada com ' + top.kills + ' abates! Quem vai parar esse guerreiro?', 'De olho no ' + top.nome + '! Está no topo do ranking!');
+    if (ls.length) ops.push('Temos ' + ls.length + ' lutadores na arena agora!');
+    const pl = Object.keys(ARENA.plat).length; if (pl > 0) ops.push(pl + ' pessoas na arquibancada! Comenta lutar e desce pra luta!');
+    if (RD.t < 280 && ls.length >= 2) ops.push('Faltam ' + Math.ceil(RD.t / 60) + ' minutos pro fim da rodada ' + RD.n + '!');
+    if (TIM.r || TIM.b) ops.push(TIM.r === TIM.b ? 'Os times estão empatados, ' + TIM.r + ' a ' + TIM.b + '!' : 'Time ' + (TIM.r > TIM.b ? 'vermelho' : 'azul') + ' na frente, ' + Math.max(TIM.r, TIM.b) + ' a ' + Math.min(TIM.r, TIM.b) + '!');
+    if (BO.vivo) ops.push('O Titã ainda tem ' + Math.round(BO.hp / BO.max * 100) + ' por cento da vida! Ataquem!');
+    const forte = ls.slice().sort((p, q) => Object.keys(q.itens).length - Object.keys(p.itens).length)[0]; if (forte && Object.keys(forte.itens).length >= 2) ops.push(forte.nome + ' está todo equipado com ' + Object.keys(forte.itens).length + ' itens! Cuidado com ele!');
+    const nv = ls.slice().sort((p, q) => (q.up || 0) - (p.up || 0))[0]; if (nv && nv.up >= 2) ops.push(nv.nome + ' já está no nível ' + (1 + nv.up) + '! Ficou enorme!');
+    if (RD.camp) ops.push('O campeão da última rodada foi ' + RD.camp.nome + '! Será que ele defende a coroa?');
+    if (DU.on && DU.a && DU.b) ops.push('O duelo entre ' + DU.a.nome + ' e ' + DU.b.nome + ' está pegando fogo!');
+    const fraco = vivos.filter(L => L.hp < L.max * 0.25)[0]; if (fraco) ops.push(fraco.nome + ' está quase sem vida! Alguém salva ele!');
+    return ops.length ? ops[Math.floor(Math.random() * ops.length)] : null; }
+  function arenaLocutor() { if (VOZ.tocando || VOZ.fila.length) { NR.t = 6; return; } LOC.vez = ((LOC.vez || 0) + 1) % 5; const ls = Object.keys(ARENA.lut).length;
+    let f = null; if (LOC.vez === 0) f = locPega('narra', NARRA); else if (LOC.vez === 2 || !ls) f = locPega('chama', LOC_CHAMA); else if (LOC.vez === 4) f = locPega('hype', LOC_HYPE); else f = locDinamico() || locPega('hype', LOC_HYPE);
+    if (f) arenaFala(f); }
+  function arenaLocAbate(L, A) { L.seq = (L.seq || 0) + 1; const vinga = A.matouMe === L.id; A.ultSeq = A.seq || 0; A.seq = 0; A.matouMe = L.id;
+    let f = null; if (!LOC.pBlood) { LOC.pBlood = true; f = 'Primeiro sangue da rodada! ' + L.nome + ' derrubou ' + A.nome + '!'; }
+    else if (vinga) f = 'Vingança! ' + L.nome + ' devolveu pra cima do ' + A.nome + '!';
+    else if (L.seq === 3) f = L.nome + ' está pegando fogo! Três abates seguidos!';
+    else if (L.seq === 5) f = 'Imparável! ' + L.nome + ' com cinco abates sem morrer!';
+    else if (L.seq === 8 || L.seq === 12) f = 'Ninguém segura o ' + L.nome + '! ' + L.seq + ' abates seguidos! É um monstro!';
+    else if ((A.ultSeq || 0) >= 4) f = 'Acabou a sequência do ' + A.nome + '! ' + L.nome + ' parou ele!';
+    else if (Math.random() < 0.25) f = locPega('abate', [L.nome + ' derrubou ' + A.nome + '!', 'Que golpe do ' + L.nome + '!', A.nome + ' foi pro chão! Ponto pro ' + L.nome + '!', L.nome + ' não perdoou o ' + A.nome + '!', 'Mais um pro ' + L.nome + '!']);
+    A.ultSeq = 0; if (f) arenaFala(f, L.seq >= 3 || vinga); }
+  function arenaLocutorEventos(dt) { const ls = Object.values(ARENA.lut);
+    // troca de líder
+    const top = ls.slice().sort((p, q) => q.kills - p.kills)[0]; if (top && top.kills >= 2 && LOC.lider !== top.id) { const ant = LOC.lider && ARENA.lut[LOC.lider]; LOC.lider = top.id; arenaFala(ant ? top.nome + ' passou o ' + ant.nome + ' e assumiu a liderança!' : top.nome + ' assumiu a liderança da rodada!', true); }
+    // Titã
+    if (BO.vivo) { const p = BO.hp / BO.max; if (p > 0.95) { LOC.m50 = LOC.m20 = false; } if (!LOC.m50 && p < 0.5) { LOC.m50 = true; arenaFala('O Titã está na metade da vida! Não para agora!', true); } if (!LOC.m20 && p < 0.2) { LOC.m20 = true; arenaFala('O Titã está quase caindo! Quem vai dar o golpe final?', true); } }
+    // rodada
+    if (LOC.rd !== RD.n) { LOC.rd = RD.n; LOC.ult60 = LOC.ult10 = LOC.pBlood = false; LOC.lider = null; ls.forEach(L => { L.seq = 0; }); }
+    if (ls.length >= 2) { if (!LOC.ult60 && RD.t < 60) { LOC.ult60 = true; arenaFala('Último minuto da rodada! Tudo pode mudar!', true); } if (!LOC.ult10 && RD.t < 10) { LOC.ult10 = true; arenaFala('Dez segundos! Dez segundos pro fim da rodada!', true); } }
+    // arena vazia há muito tempo
+    if (!ls.length) { LOC.vazio += dt; if (LOC.vazio > 40) { LOC.vazio = 0; arenaFala(locPega('vazia', ['A arena está esperando! Quem vai ser o primeiro? Comenta lutar!', 'Ninguém tem coragem de enfrentar o Titã? Comenta lutar!', 'Bora galera! A arena está vazia, comenta lutar e entra!'])); } } else LOC.vazio = 0; }
   function arenaShowFrame(dt) { if (zona !== 'arena') { showEl.hidden = true; return; }
     const ls = Object.values(ARENA.lut);
     if (ls.length >= 2) { RD.t -= dt; if (RD.t <= 0) arenaRodadaFim(); }
     if (DU.on) { DU.t -= dt; const a = DU.a, b = DU.b; if (!a || !b || !ARENA.lut[a.id] || !ARENA.lut[b.id]) arenaDueloFim(null); else if (DU.t <= 0) arenaDueloFim(null); else { duAnel.visible = true; duAnel.position.set((a.x + b.x) / 2, 0.1, (a.z + b.z) / 2); duAnel.scale.setScalar(Math.max(1, Math.hypot(a.x - b.x, a.z - b.z) / 4 + 0.6)); duAnel.material.color.setHSL(0.13 + Math.sin(gT * 4) * 0.03, 1, 0.55); } }
     if (CR.cd > 0) CR.cd -= dt;
     for (let i = CR.sprs.length - 1; i >= 0; i--) { const s = CR.sprs[i]; s.position.y -= s.userData.v * dt; s.position.x += Math.sin(gT * 2 + s.userData.f) * dt * 0.8; if (s.position.y < 0.3) { world.remove(s); CR.sprs.splice(i, 1); } }
-    NR.t -= dt; if (NR.t <= 0) { NR.t = 55; NR.i = ((NR.i || 0) + 1) % NARRA.length; arenaFala(NARRA[NR.i]); }
+    NR.t -= dt; if (NR.t <= 0) { NR.t = 16 + Math.random() * 10; arenaLocutor(); } arenaLocutorEventos(dt);
     const pct = Math.min(100, MT.n / MT.alvo * 100);
     const h = `<div class="mt"><b>🎯 META DE PRESENTES</b><span><i style="width:${pct.toFixed(1)}%"></i></span><small>${MT.n} / ${MT.alvo} · completou = chuva de itens + Titã Dourado</small></div>`;
     if (showEl._h !== h) { showEl._h = h; showEl.innerHTML = h; } showEl.hidden = false; }
@@ -12004,7 +12049,7 @@ const ArcaneWingSystem = (function () {
   // ----- entrar / sair (só ADM) -----
   function arenaEntra() { if (!souAdmin()) { aviso('🔒 A Arena da Live é só do Administrador.', '#ff6a6a'); return; } if (zona === 'arena') return; if (montado) montar(false); if (voando) voa(false);
     ARENA.volta = { zona, x: heroi.position.x, z: heroi.position.z, dentro }; ARENA.on = true; zona = 'arena'; dentro = false; heroi.position.set(ARENA.X, 0, ARENA.Z); heroi.visible = false;
-    ARENA.cam.modo = 'sobe'; ARENA.cam.t = 2.6; ARENA.cam.a = Math.PI; cam.position.set(ARENA.X, 6, ARENA.Z - ARENA.R - 6); ARENA.cam.pos = cam.position.clone(); ARENA.cam.look.set(ARENA.X, 1, ARENA.Z); document.body.classList.add('arena-on'); arenaRetrato(true); NR.t = 4; NR.i = -1;
+    ARENA.cam.modo = 'sobe'; ARENA.cam.t = 2.6; ARENA.cam.a = Math.PI; cam.position.set(ARENA.X, 6, ARENA.Z - ARENA.R - 6); ARENA.cam.pos = cam.position.clone(); ARENA.cam.look.set(ARENA.X, 1, ARENA.Z); document.body.classList.add('arena-on'); arenaRetrato(true); NR.t = 14; setTimeout(() => arenaFala(NARRA[0], true), 2500);
     aviso('🏟️ Arena da Live aberta! Quem entrar na live vai aparecer lutando.' + (LIVE.ws ? '' : ' (Ligue a live no 📡 ou use o Lutador de teste.)'), '#ffd86a'); }
   function arenaSai() { if (zona !== 'arena' || arenaTravada()) return; const V = ARENA.volta || { zona: 'vila', x: 0, z: 4.2 }; ARENA.on = false; zona = V.zona === 'arena' ? 'vila' : V.zona; dentro = !!V.dentro; heroi.position.set(V.x, 0, V.z); heroi.visible = true; document.body.classList.remove('arena-on'); arenaRetrato(false); }
   /* tela sempre acesa enquanto o jogo estiver aberto (no app o Android já faz isso) */
