@@ -267,10 +267,10 @@
   let voz = null; function calaVoz() { if (voz) { voz.pause(); voz = null; } }
   function configDesenha() { const L = [['geral', '🔊', 'Volume geral'], ['efeitos', '⚔️', 'Efeitos (golpes, magias, botões)'], ['amb', '🌳', 'Som ambiente (passarinhos, vento)'], ['voz', '🗣️', 'Vozes dos personagens']];
     $('cfg-lista').innerHTML = L.map(([k, ic, t]) => `<div class="cfg-l"><span class="ic">${ic}</span><div class="tx"><b>${t}</b><input type="range" min="0" max="100" step="5" value="${Math.round(VOL[k] * 100)}" data-k="${k}"></div><em>${Math.round(VOL[k] * 100)}%</em></div>`).join('')
-      + `<button id="cfg-mudo" class="${VOL.mudo ? 'on' : ''}">${VOL.mudo ? '🔇 Som desligado (toque pra ligar)' : '🔈 Desligar todo o som'}</button>`;
+      + `<button id="cfg-mudo" class="${VOL.mudo ? 'on' : ''}">${VOL.mudo ? '🔇 Som desligado (toque pra ligar)' : '🔈 Desligar todo o som'}</button>` + `<button id="cfg-apar">🧍 Mudar aparência do personagem</button>`;
     $('cfg-lista').querySelectorAll('input[type=range]').forEach(r => { ['touchstart', 'touchmove', 'mousedown'].forEach(ev => r.addEventListener(ev, e => e.stopPropagation(), { passive: true }));
       r.oninput = () => { VOL[r.dataset.k] = +r.value / 100; r.parentNode.parentNode.querySelector('em').textContent = r.value + '%'; volSalva(); }; r.onchange = () => som('clique', 1, 1); });
-    tapBtn($('cfg-mudo'), () => { VOL.mudo = !VOL.mudo; volSalva(); configDesenha(); }); }
+    tapBtn($('cfg-mudo'), () => { VOL.mudo = !VOL.mudo; volSalva(); configDesenha(); }); tapBtn($('cfg-apar'), () => { $('cfg').hidden = true; abrirAparencia(); }); }
   tapBtn($('cfg-btn'), () => { if (conversa || cenaQ) return; $('cfg').hidden = false; configDesenha(); }); tapBtn($('cfg-fecha'), () => { $('cfg').hidden = true; });
   function tocaVoz(id) { calaVoz(); if (!id || window.__entrou === false) return; voz = new Audio('vozes/' + id + '.mp3'); voz.volume = Math.min(1, volVoz()); if (volVoz() > 0) voz.play().catch(() => {}); }
   function falaAtual() { const q = conversa.quem, f = q.falas[conversa.i]; return typeof f === 'string' ? { t: f, n: q.nome, v: q.vozes && q.vozes[conversa.i] } : { t: f.t, n: f.n || q.nome, v: f.v }; }
@@ -1879,9 +1879,11 @@
 
   // ---- aparência ----
   const PELES = ['#f2b48e', '#f8d0b8', '#e8a878', '#c88a5e', '#9a6440', '#6a4430'];
-  const COR_CAB = ['#1c1a28', '#5a3a1e', '#a8742e', '#e8d27a', '#f0f0fa', '#c83a2a', '#3a6ae8', '#9a4ad8'];
+  const COR_CAB = ['#1c1a28', '#5a3a1e', '#8a4a2a', '#a8742e', '#e8d27a', '#f0f0fa', '#c83a2a', '#3a6ae8', '#9a4ad8'];
   const OLHOS = ['#6a3e1e', '#2a8a4a', '#2a6ac8', '#8a8a9a', '#c83a3a', '#e8a018'];
-  const ROUPAS = ['classe', '#3a7ae8', '#e8503a', '#3faa4a', '#9a5ae0', '#ffb03c', '#f4f0e6', '#c8925a'];
+  const LINHO = '#cdc4ac'; const ROUPAS = ['classe', LINHO, '#3a7ae8', '#e8503a', '#3faa4a', '#9a5ae0', '#ffb03c', '#f4f0e6', '#c8925a'];
+  const BASES = [['masc', 'Aventureiro', 'icones/base_masc.jpg', { pele: '#f2b48e', cabelo: 'curto', corCab: '#5a3a1e', olhos: '#6a3e1e', roupa: LINHO }],
+    ['fem', 'Aventureira', 'icones/base_fem.jpg', { pele: '#f8d0b8', cabelo: 'rabo', corCab: '#8a4a2a', olhos: '#2a8a4a', roupa: LINHO }]];
   const ESTILOS = [['espetado', 'Espetado'], ['curto', 'Curto'], ['longo', 'Longo'], ['rabo', 'Rabo de cavalo'], ['moicano', 'Moicano'], ['careca', 'Careca']];
   AR.visual = Object.assign({ nome: 'Leonardo', pele: PELES[0], cabelo: 'espetado', corCab: COR_CAB[0], olhos: OLHOS[0], roupa: 'classe' }, AR.visual || {});
   const HM = k => HMAT[k]; const MH = { pele: HM('#f2b48e'), cab: HM('#1c1a28'), olho: HM('#6a3e1e'), top: HM('#8a6a40'), top2: HM('#6a4a2a'), calca: HM('#4a3a2a') };
@@ -1895,7 +1897,7 @@
   function tom(c, k) { const x = new T3.Color(c); x.multiplyScalar(k); return '#' + x.getHexString(); }
   function aplicaVisual(cls) { const V = AR.visual; const CLx = CLASSES[cls || AR.classe];
     MH.pele.color.set(V.pele); MH.cab.color.set(V.corCab); MH.olho.color.set(V.olhos);
-    const r = V.roupa === 'classe' ? (CLx ? CLx.roupa : '#8a6a40') : V.roupa; const rv = vivo(r); MH.top.color.set(rv); MH.top2.color.set(tom(rv, 0.78)); MH.calca.color.set(tom(rv, 0.62));
+    const r = V.roupa === 'classe' ? (CLx ? CLx.roupa : '#8a6a40') : V.roupa; const rv = r === LINHO ? r : vivo(r); MH.top.color.set(rv); MH.top2.color.set(tom(rv, 0.78)); MH.calca.color.set(r === LINHO ? '#c4ba9e' : tom(rv, 0.62));
     cabOrig.forEach(o => o.visible = V.cabelo === 'espetado'); Object.keys(CABG).forEach(k => CABG[k].visible = V.cabelo === k);
     const n = (V.nome || 'Leonardo').slice(0, 16); $('pn-nome').textContent = n; }
 
@@ -1951,6 +1953,7 @@
 
   // ---- tela de criação: classe + aparência ----
   let crSel = null, crTrava = false;
+  function abrirAparencia() { abrirCriar(2); crSel = CLASSES[AR.classe] ? AR.classe : 'aventureiro'; desenhaCriar(2); }
   function abrirCriar(passo, trava) { crTrava = true; passo = 2; crSel = 'aventureiro'; $('criar').hidden = false; desenhaCriar(passo || 1); }
   function previewClasse(id) { crSel = id; const c = CLASSES[id]; if (c.arma) { Object.keys(ARMAG).forEach(k => ARMAG[k].visible = k === c.arma); Object.keys(ARMAE).forEach(k => ARMAE[k].visible = k === c.arma); } aplicaVisual(id); }
   function barraStat(n, v, max) { return `<div class="cst"><small>${n}</small><i><b style="width:${Math.min(100, v / max * 100)}%"></b></i></div>`; }
@@ -1959,6 +1962,7 @@
       const A = ARMAS[c.arma], H = PW[c.hab]; $('cr-det').innerHTML = `<p>${c.desc}</p><div class="csts">${barraStat('Vida', c.vida, 160)}${barraStat('Mana', c.mana, 150)}${barraStat('Ataque', c.atk, 1.3)}${barraStat('Defesa', c.def + 5, 35)}${barraStat('Velocidade', c.vel - 0.8, 0.35)}${barraStat('Crítico', c.crit, 0.25)}</div><div class="cinfo"><span>${A.icone} <b>${A.nome}</b></span><span>${H.icone} <b>${H.nome}</b>: ${H.desc}</span></div>`; return; }
     const V = AR.visual; $('cr-nome').value = V.nome || 'Leonardo';
     const linha = (id, lista, campo, rot) => { const el = $(id); el.innerHTML = ''; lista.forEach(v => { const val = Array.isArray(v) ? v[0] : v; const b = document.createElement('button'); b.className = 'sw' + (V[campo] === val ? ' on' : '') + (rot ? ' tx' : ''); if (rot) b.textContent = v[1]; else if (val === 'classe') { b.textContent = 'Classe'; b.classList.add('tx'); } else b.style.background = val; tapBtn(b, () => { V[campo] = val; aplicaVisual(crSel); desenhaCriar(2); }); el.appendChild(b); }); };
+    { const el = $('cr-base'); el.innerHTML = ''; BASES.forEach(([k, nm, img, o]) => { const b = document.createElement('button'); const on = Object.keys(o).every(c => V[c] === o[c]); b.className = 'crb' + (on ? ' on' : ''); b.innerHTML = `<img src="${img}" alt=""><b>${nm}</b>`; tapBtn(b, () => { Object.assign(V, o); aplicaVisual(crSel); desenhaCriar(2); }); el.appendChild(b); }); }
     linha('cr-pele', PELES, 'pele'); linha('cr-cab', ESTILOS, 'cabelo', true); linha('cr-corcab', COR_CAB, 'corCab'); linha('cr-olhos', OLHOS, 'olhos'); linha('cr-roupa', ROUPAS, 'roupa'); }
   $('cr-nome').addEventListener('input', () => { AR.visual.nome = $('cr-nome').value.slice(0, 16); aplicaVisual(crSel); });
   ['keydown', 'keyup'].forEach(t => $('criar').addEventListener(t, e => e.stopPropagation()));
