@@ -24,7 +24,7 @@ for i, p in enumerate(prompts):
         img = p.get("imagem")
         if not img:
             r = flux.predict(prompt=p["texto"], seed=p.get("seed", 1234), randomize_seed=False, width=p.get('w', 768), height=p.get('h', 1024),
-                             num_inference_steps=4, api_name="/infer")
+                             num_inference_steps=p.get('passos_arte', 4), api_name="/infer")
             img = caminho(r[0])
             shutil.copy(img, f"saida/arte_{n}.webp" if img.endswith(".webp") else f"saida/arte_{n}.png")
             print(n, "arte pronta:", img)
@@ -33,8 +33,8 @@ for i, p in enumerate(prompts):
             continue
         if hy is None:
             hy = Client(os.environ.get("ESPACO_3D") or "tencent/Hunyuan3D-2.1", token=token, verbose=False)
-        r = hy.predict(image=handle_file(img), steps=30, guidance_scale=5.0, seed=p.get("seed", 1234),
-                       octree_resolution=256, check_box_rembg=True, num_chunks=8000, randomize_seed=False,
+        r = hy.predict(image=handle_file(img), steps=p.get('passos', 30), guidance_scale=p.get('guia', 5.0), seed=p.get("seed", 1234),
+                       octree_resolution=p.get('octree', 256), check_box_rembg=True, num_chunks=p.get('chunks', 8000), randomize_seed=False,
                        api_name="/generation_all")
         for k, f in enumerate(r[:2]):
             f = caminho(f)
