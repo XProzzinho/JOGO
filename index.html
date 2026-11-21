@@ -11752,7 +11752,7 @@ const ArcaneWingSystem = (function () {
     });
   }
   // diagnóstico da live: etiqueta de versão + botão imediato com ?live=1
-  try { const vt = document.createElement('div'); vt.textContent = 'versão live-5'; vt.style.cssText = 'position:fixed;right:6px;bottom:4px;z-index:9999;font:11px sans-serif;color:#fff;background:rgba(0,0,0,.6);padding:2px 6px;border-radius:6px;pointer-events:none'; document.body.appendChild(vt); setTimeout(() => vt.remove(), 15000);
+  try { const vt = document.createElement('div'); vt.textContent = 'versão live-6'; vt.style.cssText = 'position:fixed;right:6px;bottom:4px;z-index:9999;font:11px sans-serif;color:#fff;background:rgba(0,0,0,.6);padding:2px 6px;border-radius:6px;pointer-events:none'; document.body.appendChild(vt); setTimeout(() => vt.remove(), 15000);
     if (/[?&]live=1/.test(location.search)) liveBtn().hidden = false; } catch (e) { console.error('live', e); }
   // a live roda no próprio laço (não precisa mexer no jogo.js)
   let liveUlt = 0;
@@ -11945,6 +11945,39 @@ const ArcaneWingSystem = (function () {
     if (m.type === 'chat' && m.text) { S.fala = arenaEsc(m.text); S.falaT = performance.now() + 5000; arenaFala(S.nome + ' disse: ' + m.text); }
     else if (m.type === 'follow') arenaFeed('❤️ <b>' + S.nome + '</b> seguiu a live!'); }
   { const _le = liveEvento; liveEvento = function (m) { if (ARENA.on && m && souAdmin()) { try { arenaEvento(m); } catch (e) { console.warn('arena', e); } return; } return _le(m); }; }
+  /* ----- PAINEL TIKTOK (só ADM): lista de quem está na live; escolhe a pessoa e aperta o botão (arena, guerreiro, poder, vida, tirar) ----- */
+  const PTK = { gente: {}, sel: null, aberto: false, t: 0 };
+  { const _le2 = liveEvento; liveEvento = function (m) { try { if (m && m.id != null && m.type !== 'like_total') { const id = String(m.id), g = PTK.gente[id] || (PTK.gente[id] = { id, nome: arenaEsc(m.name) || 'Visitante', foto: '' }); if (m.name) g.nome = arenaEsc(m.name); const f = arenaFotoUrl(m.foto); if (f) g.foto = f; g.t = performance.now(); if (PTK.aberto) PTK.t = 0; } } catch (e) {} return _le2(m); }; }
+  const ptBtn = document.createElement('button'); ptBtn.className = 'arena-keep'; ptBtn.innerHTML = '🎵 TikTok'; ptBtn.hidden = true;
+  ptBtn.style.cssText = 'position:fixed;left:8px;bottom:60px;z-index:270;height:38px;padding:0 12px;border-radius:19px;border:2px solid #fff;background:linear-gradient(90deg,#25f4ee,#fe2c55);color:#fff;font:800 14px system-ui;text-shadow:0 1px 2px #000a;box-shadow:0 2px 8px #0008';
+  document.body.appendChild(ptBtn);
+  const ptPn = document.createElement('div'); ptPn.className = 'arena-keep'; ptPn.hidden = true;
+  ptPn.style.cssText = 'position:fixed;left:6px;right:6px;bottom:104px;max-height:62vh;z-index:270;display:flex;flex-direction:column;background:rgba(14,8,24,.94);border:2px solid #fe2c55;border-radius:16px;color:#fff;font:600 13px system-ui;overflow:hidden;max-width:460px';
+  ptPn.innerHTML = '<div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:linear-gradient(90deg,#25f4ee33,#fe2c5533)"><b style="flex:1">🎵 Quem está na live <span class="pt-n"></span></b><button class="pt-x" style="border:0;background:#fff2;color:#fff;border-radius:10px;width:32px;height:30px;font-size:16px">✕</button></div>'
+    + '<div class="pt-l" style="overflow:auto;flex:1;min-height:60px;padding:4px 6px"></div>'
+    + '<div class="pt-s" style="padding:6px 10px;border-top:1px solid #fff2;font-size:12px;color:#ffd86a">Toque numa pessoa pra escolher</div>'
+    + '<div class="pt-b" style="display:flex;flex-wrap:wrap;gap:5px;padding:0 8px 8px"></div>';
+  document.body.appendChild(ptPn);
+  const ptBotoes = [['arena', '🏟️ Arena', '#2a8aff'], ['lutar', '⚔️ Guerreiro', '#ff8a2a'], ['vida', '❤️ Vida cheia', '#ff4a6a'], ['tirar', '🚪 Tirar', '#555']].concat(ARENA_PRES.map(P => ['p:' + P.k, P.ic + ' ' + P.item, P.cor]));
+  ptPn.querySelector('.pt-b').innerHTML = ptBotoes.map(([k, t, c]) => '<button data-a="' + k + '" style="flex:1 1 30%;min-height:36px;border:0;border-radius:10px;background:' + c + ';color:#fff;font:700 12px system-ui;text-shadow:0 1px 2px #000a;padding:4px">' + t + '</button>').join('');
+  function ptOnde(id) { const L = ARENA.lut[id]; if (L) return L.esq ? '🤡 palhaço' : '⚔️ guerreiro'; if (ARENA.plat[id]) return '🪑 arquibancada'; return '— fora da arena'; }
+  function ptLista() { const ls = Object.values(PTK.gente).sort((a, b) => b.t - a.t).slice(0, 80); ptPn.querySelector('.pt-n').textContent = '(' + ls.length + ')';
+    const html = ls.length ? ls.map(g => '<div data-id="' + g.id + '" style="display:flex;align-items:center;gap:8px;padding:5px 6px;margin:2px 0;border-radius:10px;' + (PTK.sel === g.id ? 'background:#fe2c5566;outline:2px solid #fe2c55' : 'background:#ffffff10') + '">' + arenaFoto(g) + '<span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + g.nome + '</span><small style="color:#cfc6e0">' + ptOnde(g.id) + '</small></div>').join('')
+      : '<div style="padding:14px;text-align:center;color:#cfc6e0">Ninguém ainda. Ligue a live no 📡 — quem entrar, comentar ou curtir aparece aqui.</div>'; if (PTK.html !== html) { PTK.html = html; ptPn.querySelector('.pt-l').innerHTML = html; }
+    const g = PTK.gente[PTK.sel]; ptPn.querySelector('.pt-s').innerHTML = g ? 'Escolhido: <b>' + g.nome + '</b> · ' + ptOnde(g.id) : 'Toque numa pessoa pra escolher'; }
+  ptBtn.onclick = () => { PTK.aberto = !PTK.aberto; ptPn.hidden = !PTK.aberto; if (PTK.aberto) ptLista(); };
+  ptPn.querySelector('.pt-x').onclick = () => { PTK.aberto = false; ptPn.hidden = true; };
+  ptPn.querySelector('.pt-l').onclick = e => { const r = e.target.closest('[data-id]'); if (!r) return; PTK.sel = r.dataset.id; ptLista(); };
+  ptPn.querySelector('.pt-b').onclick = e => { const b = e.target.closest('[data-a]'); if (!b) return; const g = PTK.gente[PTK.sel]; if (!g) { aviso('Escolha uma pessoa da lista primeiro', '#ffb84a'); return; }
+    if (zona !== 'arena') { aviso('Abra a Arena (🏟️) primeiro', '#ffb84a'); return; }
+    const a = b.dataset.a, base = { id: g.id, name: g.nome, foto: g.foto };
+    try { if (a === 'arena') { if (ARENA.lut[g.id]) arenaFoca(ARENA.lut[g.id], 5); else if (!arenaPalhaco(base, g.id, g.foto)) aviso('Arena lotada', '#ffb84a'); }
+      else if (a === 'lutar') arenaEvento({ type: 'chat', ...base, text: 'LUTAR' });
+      else if (a === 'vida') { if (!ARENA.lut[g.id]) arenaPalhaco(base, g.id, g.foto); arenaEvento({ type: 'follow', ...base }); }
+      else if (a === 'tirar') { arenaTira(g.id); arenaPlatTira(g.id); }
+      else if (a.startsWith('p:')) { const P = ARENA_PRES.find(x => 'p:' + x.k === a); arenaEvento({ type: 'gift', ...base, gift: P.nomes[0], count: 1, diamonds: 0 }); } } catch (er) { console.warn('painel', er); }
+    ptLista(); };
+  function ptFrame(dt) { const ok = souAdmin() && zona === 'arena'; ptBtn.hidden = !ok; if (!ok && PTK.aberto) { PTK.aberto = false; ptPn.hidden = true; } if (PTK.aberto) { PTK.t -= dt; if (PTK.t <= 0) { PTK.t = 1.5; ptLista(); } } }
   // ----- câmera de transmissão: foca quem entrou, sobe igual drone e fica rodeando -----
   // próximo guerreiro (quem não é palhaço) pra câmera mostrar, um de cada vez
   function arenaProxGuerreiro() { const C = ARENA.cam, W = Object.values(ARENA.lut).filter(L => !L.esq && !L.morto).sort((a, b) => a.id < b.id ? -1 : 1); if (!W.length) return null; const i = W.indexOf(C.alvo); return W[(i + 1) % W.length]; }
@@ -12433,7 +12466,7 @@ const ArcaneWingSystem = (function () {
   arBtn.style.cssText = 'position:fixed;left:60px;bottom:8px;z-index:250;width:44px;height:44px;border-radius:50%;border:3px solid #2b2340;background:#ffe08a;font-size:20px;opacity:.95;padding:0'; document.body.appendChild(arBtn);
   arBtn.className = 'arena-keep'; arBtn.onclick = () => { if (zona === 'arena') arenaSai(); else arenaEntra(); };
   let arChk = 0; function arenaTravada() { return zona === 'arena' && LIVE.quer; }
-  function arenaLoop(dt) { arChk -= dt; if (arChk <= 0) { arChk = 0.5; const trava = arenaTravada(); arBtn.hidden = !souAdmin() || trava; if (LIVE.btn) LIVE.btn.style.display = trava ? 'none' : ''; document.body.classList.toggle('arena-travada', trava); if (LIVE.btn) LIVE.btn.classList.add('arena-keep'); if (zona === 'arena' && !souAdmin()) arenaSai(); } try { arenaFrame(dt); } catch (e) { console.warn('arena', e); } }
+  function arenaLoop(dt) { arChk -= dt; if (arChk <= 0) { arChk = 0.5; const trava = arenaTravada(); arBtn.hidden = !souAdmin() || trava; if (LIVE.btn) LIVE.btn.style.display = trava ? 'none' : ''; document.body.classList.toggle('arena-travada', trava); if (LIVE.btn) LIVE.btn.classList.add('arena-keep'); if (zona === 'arena' && !souAdmin()) arenaSai(); } try { arenaFrame(dt); } catch (e) { console.warn('arena', e); } try { ptFrame(dt); } catch (e) {} }
 
   window.__dbg = { ev: s => eval(s), set camYaw(v) { camYaw = v; }, aviso, atualizaMM, visAtual, visRecebe, mpFxRecebe, lendRemoto: (...a) => lendRemoto(...a), get MPO() { return MP.outros; }, get NAC() { return NAC; }, SIM, simCria, simGuerra, simPara, temVoo, nacaoEntra: () => nacaoEntra(), voaTeste: on => { vooLiberado = true; voa(on); }, setZona: z => { zona = z; dentro = false; }, aroMostra: s => aroMostra(s), get NPCS() { return NPCS; }, divVeste: k => divVeste(k), get ARC() { return ARC; }, get _in() { return [input.x, input.y, vel, facing, dashT, Object.keys(keys).join()]; }, danoHeroi, abrirLoja, aprimora, falar, dano, CAL, DGS, calEntra, MIS, abreMural, get PRACA() { return PRACA; }, staffArmas, equipaArma, MONT3D, PET3D, get MONT() { return MONT; }, montar, petChama, MQ, set GMB(v) { GMB = v; gmHud(); }, gmPct, ASAT, COSM, vesteCosm, CB_LISTA, abrirLivros, trocaPag, get mana() { return mana; }, set mana(v) { mana = v; }, ARMAG, T3, vesteCosm, voa, get voando() { return voando; }, input, mpRecebe, entraMasmorra, saiMasmorra, MM, mmFaseAtual, mmMorte, setaFrame, equipaArma, abrirGuilda, arthurNPC, vestePeca, atualizaPecas, PECAS, BLOCOS, modoBatalha, bmLiga, bmDesliga, BMS, ORB, get BM() { return BM; }, get hora() { return hora; }, set hora(v) { hora = v; }, usarHab2: id => classePoder2(id), BUFF, abrirCriar, aplicaClasse, CLASSES, get desp() { return desp; }, set desp(v) { desp = v; }, usarHab: id => classePoder(id), renderer, scene, world, ganhaXp, vesteFantasia, abrirPerfil, fazRetrato, irValdren, Q, heroi, ativo, AR, FERAS, golem, atacar, get vida() { return vida; }, set vida(v) { vida = v; }, abrirLoja, usarPoder: id => usarPoder(PW[id]), acao: () => acao(), get alvo() { return alvo; } };
   // ---------- laço do jogo ----------

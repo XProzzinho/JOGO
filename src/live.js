@@ -79,7 +79,7 @@
     });
   }
   // diagnóstico da live: etiqueta de versão + botão imediato com ?live=1
-  try { const vt = document.createElement('div'); vt.textContent = 'versão live-5'; vt.style.cssText = 'position:fixed;right:6px;bottom:4px;z-index:9999;font:11px sans-serif;color:#fff;background:rgba(0,0,0,.6);padding:2px 6px;border-radius:6px;pointer-events:none'; document.body.appendChild(vt); setTimeout(() => vt.remove(), 15000);
+  try { const vt = document.createElement('div'); vt.textContent = 'versão live-6'; vt.style.cssText = 'position:fixed;right:6px;bottom:4px;z-index:9999;font:11px sans-serif;color:#fff;background:rgba(0,0,0,.6);padding:2px 6px;border-radius:6px;pointer-events:none'; document.body.appendChild(vt); setTimeout(() => vt.remove(), 15000);
     if (/[?&]live=1/.test(location.search)) liveBtn().hidden = false; } catch (e) { console.error('live', e); }
   // a live roda no próprio laço (não precisa mexer no jogo.js)
   let liveUlt = 0;
