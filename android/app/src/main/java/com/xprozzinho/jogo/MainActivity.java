@@ -13,6 +13,8 @@ import android.webkit.WebViewClient;
 import android.webkit.WebChromeClient;
 import android.webkit.JavascriptInterface;
 import android.content.pm.ActivityInfo;
+import android.app.GameManager;
+import android.os.Build;
 
 public class MainActivity extends Activity {
     private WebView web;
@@ -38,6 +40,9 @@ public class MainActivity extends Activity {
         web.addJavascriptInterface(new Object() {
             @JavascriptInterface
             public void retrato(final boolean on) { runOnUiThread(() -> setRequestedOrientation(on ? ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT : ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE)); }
+            /* modo jogo do celular: 0 sem suporte, 1 padrão, 2 desempenho, 3 economia de bateria, 4 personalizado */
+            @JavascriptInterface
+            public int modoJogo() { return lerModoJogo(); }
         }, "AndroidTela");
         setContentView(web);
         telaCheia();
@@ -54,6 +59,11 @@ public class MainActivity extends Activity {
     @Override
     protected void onPause() { super.onPause(); web.onPause(); }
 
+    private int lerModoJogo() {
+        try { if (Build.VERSION.SDK_INT >= 31) { GameManager g = (GameManager) getSystemService(GAME_SERVICE); if (g != null) return g.getGameMode(); } } catch (Throwable e) {}
+        return 0;
+    }
+
     @Override
-    protected void onResume() { super.onResume(); web.onResume(); }
+    protected void onResume() { super.onResume(); web.onResume(); final int m = lerModoJogo(); web.evaluateJavascript("window.modoJogoMuda&&modoJogoMuda(" + m + ")", null); }
 }

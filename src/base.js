@@ -9,6 +9,11 @@
   const cv = document.getElementById('jogo-cv');
   const renderer = new T3.WebGLRenderer({ canvas: cv, antialias: true, powerPreference: 'high-performance' });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  /* MODO JOGO do celular (Desempenho / Equilibrado / Economia de bateria): o app avisa e o jogo ajusta a qualidade */
+  window.modoJogoMuda = n => { const d = window.devicePixelRatio || 1, ant = window.__modoJogo; window.__modoJogo = n;
+    renderer.setPixelRatio(n === 3 ? Math.min(d, 1) : n === 2 ? Math.min(d, 2) : Math.min(d, 1.75)); try { renderer.setSize(innerWidth, innerHeight); } catch (e) {}
+    if (ant !== undefined && ant !== n && typeof aviso === 'function') aviso({ 1: '🎮 Modo jogo: Equilibrado', 2: '🎮 Modo jogo: Desempenho', 3: '🔋 Modo jogo: Economia de bateria', 4: '🎮 Modo jogo: Personalizado' }[n] || '🎮 Modo jogo', '#8a9aff'); };
+  try { if (window.AndroidTela && AndroidTela.modoJogo) { const n = AndroidTela.modoJogo(); if (n > 0) setTimeout(() => window.modoJogoMuda(n), 0); } } catch (e) {}
   renderer.outputColorSpace = T3.SRGBColorSpace;
   const scene = new T3.Scene();
   const cam = new T3.PerspectiveCamera(55, 1, 0.1, 800);

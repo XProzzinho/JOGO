@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Avisa o Android que o Aetherion é um JOGO e aceita os modos de jogo do celular (Desempenho / Economia de bateria) -->
+<game-mode-config xmlns:android="http://schemas.android.com/apk/res/android"
+    android:supportsPerformanceGameMode="true"
+    android:supportsBatteryGameMode="true"
+    android:allowGameDownscaling="true"
+    android:allowGameFpsOverride="true" />
