@@ -88,7 +88,14 @@ if (!user) {
       .then(() => console.log('Conectado na live de', user))
       .catch(e => { console.log('Não conectou (a live está ligada?):', e.message || e); setTimeout(connect, 15000); });
 
-    live.on('member', d => send({ type: 'join', ...who(d) }));
+    /* o TikTok nem sempre manda o aviso de "entrou" pra todo mundo: também usa a lista de quem está assistindo,
+       compartilhamento e outras ações pra colocar a pessoa no jogo (cada pessoa só 1 vez a cada 10 min) */
+    const visto = new Map();
+    const entra = u => { const w = who(u); if (!w.name || w.name === 'anônimo') return; const t = visto.get(w.id); if (t && Date.now() - t < 600000) return; visto.set(w.id, Date.now()); if (visto.size > 2000) visto.delete(visto.keys().next().value); send({ type: 'join', ...w }); };
+    live.on('member', d => { const w = who(d); visto.set(w.id, Date.now()); send({ type: 'join', ...w }); });
+    live.on('roomUser', d => { (d && (d.topViewers || d.ranksList) || []).forEach(v => entra(v.user || v)); });
+    live.on('share', d => entra(d));
+    live.on('social', d => entra(d));
     live.on('chat', d => send({ type: 'chat', ...who(d), text: d.comment }));
     live.on('gift', d => send({ type: 'gift', ...who(d), gift: d.giftName || (d.giftDetails && d.giftDetails.giftName), count: d.repeatCount || 1, diamonds: d.diamondCount || (d.giftDetails && d.giftDetails.diamondCount) || 0 }));
     live.on('like', d => send({ type: 'like', ...who(d) }));

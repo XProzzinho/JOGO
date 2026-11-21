@@ -11752,7 +11752,7 @@ const ArcaneWingSystem = (function () {
     });
   }
   // diagnóstico da live: etiqueta de versão + botão imediato com ?live=1
-  try { const vt = document.createElement('div'); vt.textContent = 'versão live-4'; vt.style.cssText = 'position:fixed;right:6px;bottom:4px;z-index:9999;font:11px sans-serif;color:#fff;background:rgba(0,0,0,.6);padding:2px 6px;border-radius:6px;pointer-events:none'; document.body.appendChild(vt); setTimeout(() => vt.remove(), 15000);
+  try { const vt = document.createElement('div'); vt.textContent = 'versão live-5'; vt.style.cssText = 'position:fixed;right:6px;bottom:4px;z-index:9999;font:11px sans-serif;color:#fff;background:rgba(0,0,0,.6);padding:2px 6px;border-radius:6px;pointer-events:none'; document.body.appendChild(vt); setTimeout(() => vt.remove(), 15000);
     if (/[?&]live=1/.test(location.search)) liveBtn().hidden = false; } catch (e) { console.error('live', e); }
   // a live roda no próprio laço (não precisa mexer no jogo.js)
   let liveUlt = 0;
@@ -11891,7 +11891,7 @@ const ArcaneWingSystem = (function () {
     const tag = document.createElement('div'); tag.className = 'mp-tag ar-tag'; mpTags.appendChild(tag);
     const a = Math.random() * Math.PI * 2, r = ARENA.R * (0.4 + Math.random() * 0.5);
     const L = { id, nome: arenaEsc(nome) || 'Visitante', foto: foto || '', y: 0, c, tag, x: ARENA.X + Math.sin(a) * r, z: ARENA.Z + Math.cos(a) * r, rot: a + Math.PI, hp: 100, max: 100, kills: 0, mortes: 0, esq: !!esq, alvo: null, cd: 1 + Math.random(), atkT: -9, morto: 0, lam, div: null, divT: '', itens: {}, dano: 1, vel: 1, regen: 0, escudo: null, aura: null, fala: '', falaT: 0, t: performance.now(), h: '' };
-    if (esq) { L.hp = L.max = 45; L.dano = 0.45; L.vel = 0.8; tag.classList.add('esq'); }
+    if (esq) { L.hp = L.max = 45; L.dano = 0.85; L.vel = 0.8; tag.classList.add('esq'); }
     c.position.set(L.x, 0, L.z); return L; }
   function arenaLut(id, nome, foto, esq) { let L = ARENA.lut[id]; if (L) { L.t = performance.now(); if (nome && L.nome === 'Visitante') L.nome = arenaEsc(nome); if (foto && !L.foto) { L.foto = foto; L.h = ''; } return L; }
     const ks = Object.keys(ARENA.lut); if (ks.length >= ARENA.max) { const todos = ks.map(k => ARENA.lut[k]), esqs = todos.filter(x => x.esq); if (esq && !esqs.length) return null; const fora = (esqs.length ? esqs : todos).sort((p, q) => (p.kills - q.kills) || (p.t - q.t))[0]; if (esq && fora.kills > 0) return null; arenaTira(fora.id); }
@@ -11907,7 +11907,7 @@ const ArcaneWingSystem = (function () {
       else { const m = createSpectralCloak3D(T3); const g = new T3.Group(); g.add(m.group); m.group.scale.setScalar(0.42); m.group.position.set(0, -0.22, 0); const [arm, asas, capa] = m.group.children; arm.position.z = 0.42; arm.scale.setScalar(0.8); arm.position.y = 1.2; asas.position.z = -0.55; capa.position.z = -0.5; m.group.children[3].position.z = -0.6; sp.add(g); o = { g, up: t => m.update(t, { windSpeed: 1, windAmp: 1, energyIntensity: 0.38 }) }; }
       o.g.traverse(x => { if (x.isMesh) x.frustumCulled = false; }); } catch (e) { console.warn('arena divino', e); o = null; }
     L.div = o; }
-  function arenaStats(L) { let dano = 1, vida = 0, vel = 1, regen = 0; Object.values(L.itens).forEach(P => { dano *= P.dano || 1; vida += P.vida || 0; vel = Math.max(vel, P.vel || 1); regen += P.regen || 0; }); L.dano = dano; L.max = 100 + vida; L.vel = vel; L.regen = regen; if (L.esq) { L.dano *= 0.45; L.max = Math.round(45 + vida * 0.5); L.vel *= 0.8; } }
+  function arenaStats(L) { let dano = 1, vida = 0, vel = 1, regen = 0; Object.values(L.itens).forEach(P => { dano *= P.dano || 1; vida += P.vida || 0; vel = Math.max(vel, P.vel || 1); regen += P.regen || 0; }); L.dano = dano; L.max = 100 + vida; L.vel = vel; L.regen = regen; if (L.esq) { L.dano *= 0.85; L.max = Math.round(45 + vida * 0.5); L.vel *= 0.8; } }
   function arenaPresente(L, nome, dia, premio) { const P = arenaPresenteDe(nome, dia), novo = !L.itens[P.k]; L.itens[P.k] = P;
     if (P.div) { const top = Object.values(L.itens).filter(x => x.div).sort((a, b) => b.nv - a.nv)[0]; if (top === P && L.divT !== P.div) { arenaDivVisual(L, P.div); L.divT = P.div; } }
     if (P.k === 'rosa' && L.lam) { L.lam.material = L.lam.material.clone(); L.lam.material.color.set('#ff7aa8'); if (L.lam.material.emissive) L.lam.material.emissive.set('#ff2a6a'); }
@@ -11921,6 +11921,13 @@ const ArcaneWingSystem = (function () {
   function arenaFeed(t) { ARENA.feed.unshift({ t, em: performance.now() }); ARENA.feed.length = Math.min(ARENA.feed.length, 4); ARENA.uiT = 0; }
   // ----- eventos da live -----
   function arenaQuerLutar(t) { const n = String(t || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ''); return /\blutar\b|\bluta\b|⚔/.test(n); }
+  function arenaPalhaco(m, id, foto) { const S0 = ARENA.plat[id]; if (S0 && Object.keys(ARENA.lut).length >= ARENA.max) return false;
+    const nome = (S0 && S0.nome) || m.name, f0 = foto || (S0 && S0.foto); if (S0) arenaPlatTira(id);
+    const E = arenaLut(id, nome, f0, true); if (!E) return false;
+    if (!BO.vivo && !BO.queda) BO.espera = Math.min(BO.espera, 1.5); E.alvo = BO.vivo ? BO : null; // vai direto pro monstro
+    arenaFeed('🤡 ' + arenaFoto(E, 'mi') + ' <b>' + E.nome + '</b> entrou como <b>palhaço</b> e foi direto pro monstro!'); arenaFoca(E, 7);
+    arenaFala(E.nome + ' acabou de entrar na live e já caiu na arena como palhaço! O palhaço luta sem arma e ganha poucos pontos no ranking. Pra virar guerreiro com espada de verdade, é só mandar um presente. Seja bem-vindo, ' + E.nome + '! ' + (Object.keys(ARENA.lut).length > 1 ? 'Agora são ' + Object.keys(ARENA.lut).length + ' lutadores na arena.' : 'Por enquanto é o único lutador na arena.'), true);
+    if (m.type === 'chat' && m.text) { E.fala = arenaEsc(m.text); E.falaT = performance.now() + 5000; } return true; }
   function arenaEvento(m) { const id = String(m.id), foto = arenaFotoUrl(m.foto); let L = ARENA.lut[id];
     if (m.type === 'like') arenaCurtida(+m.count || 1);
     if (L && L.esq && (m.type === 'gift' || (m.type === 'chat' && arenaQuerLutar(m.text)))) { L = arenaVira(L); if (m.type === 'chat') { L.fala = '⚔️ LUTAR!'; L.falaT = performance.now() + 4000; return; } }
@@ -11931,9 +11938,8 @@ const ArcaneWingSystem = (function () {
       else if (m.type === 'like') { L.hp = Math.min(L.max, L.hp + 6); }
       else if (m.type === 'follow') { L.hp = L.max; arenaFeed('❤️ <b>' + L.nome + '</b> seguiu a live!'); } return; }
     if (m.type === 'chat' && arenaQuerLutar(m.text)) { const S0 = ARENA.plat[id], nome = (S0 && S0.nome) || m.name, f0 = foto || (S0 && S0.foto); if (S0) arenaPlatTira(id); L = arenaLut(id, nome, f0); L.fala = '⚔️ LUTAR!'; L.falaT = performance.now() + 4000; arenaFala(L.nome + ' entrou na luta!', true); arenaFeed(arenaFoto(L, 'mi') + ' <b>' + L.nome + '</b> comentou LUTAR e ' + (S0 ? 'desceu da arquibancada pra luta!' : 'entrou na luta!')); arenaFoca(L, 3.2); return; }
-    // quem entra na live já entra lutando como ESQUELETO (fraco); se a arena lotar, vai pra arquibancada
-    if (!ARENA.plat[id]) { const E = arenaLut(id, m.name, foto, true); if (E) { arenaFeed('🤡 ' + arenaFoto(E, 'mi') + ' <b>' + E.nome + '</b> entrou como <b>palhaço</b>! Comente LUTAR ou mande presente pra virar guerreiro'); arenaFoca(E, 7);
-        arenaFala(E.nome + ' acabou de entrar na live e já caiu na arena como palhaço! O palhaço luta sem arma, tem ' + E.max + ' de vida e ganha poucos pontos no ranking. Pra virar guerreiro com espada de verdade, é só mandar um presente. Seja bem-vindo, ' + E.nome + '! ' + (Object.keys(ARENA.lut).length > 1 ? 'Agora são ' + Object.keys(ARENA.lut).length + ' lutadores na arena.' : 'Por enquanto é o único lutador na arena.'), true); if (m.type === 'chat' && m.text) { E.fala = arenaEsc(m.text); E.falaT = performance.now() + 5000; } return; } }
+    // quem entra na live já entra lutando como PALHAÇO (fraco); se a arena lotar, vai pra arquibancada (e desce assim que abrir vaga)
+    if (arenaPalhaco(m, id, foto)) return;
     const novo = !ARENA.plat[id], S = arenaPlat(id, m.name, foto);
     if (novo) { arenaFeed(arenaFoto(S, 'mi') + ' <b>' + S.nome + '</b> chegou na arquibancada'); arenaFoca(S, 7); arenaFala(S.nome + ' acabou de entrar na live! A arena está lotada com ' + Object.keys(ARENA.lut).length + ' lutadores, então ' + S.nome + ' ficou na arquibancada torcendo. Mandando um presente, desce direto pra luta como guerreiro!', true); }
     if (m.type === 'chat' && m.text) { S.fala = arenaEsc(m.text); S.falaT = performance.now() + 5000; arenaFala(S.nome + ' disse: ' + m.text); }
@@ -12113,19 +12119,19 @@ const ArcaneWingSystem = (function () {
     const M = MONSTROS[BO.idx]; BO.M = M; BO.nome = M.nome; BO.r = M.r;
     if (!BO.cache[M.id]) { const e = M.monta(); ARG.G.add(e.g); e.g.position.set(0, 0, 0); e.aura = glowSpr(e.g, 0, 2.2, 0, 9, M.cor, 0.35); BO.cache[M.id] = e; }
     const e = BO.cache[M.id]; BO.e = e; BO.aura = e.aura; BO.aura.material.color.set(M.cor); BO.x = ARENA.X; BO.z = ARENA.Z; BO.salto = null; BO.marcas = null; BO.fase = 0;
-    e.g.visible = true; e.g.rotation.set(0, 0, 0); e.g.position.set(0, 0, 0); e.b.scale.set(1, 1, 1); BO.max = 4000 + 300 * Object.keys(ARENA.lut).length; BO.hp = BO.max; BO.vivo = true; BO.queda = 0; BO.cd = 3; BO.golpe = -1; BO.ult = null; Object.values(ARENA.lut).forEach(L => { L.danoBoss = 0; });
+    e.g.visible = true; e.g.rotation.set(0, 0, 0); e.g.position.set(0, 0, 0); e.b.scale.set(1, 1, 1); BO.max = 2000 + 300 * Object.keys(ARENA.lut).length; BO.hp = BO.max; BO.vivo = true; BO.queda = 0; BO.cd = 3; BO.golpe = -1; BO.ult = null; Object.values(ARENA.lut).forEach(L => { L.danoBoss = 0; });
     boBar.querySelector('b').textContent = M.ic + ' ' + M.nome.toUpperCase(); boBar.style.setProperty('--bo', M.cor);
     fx('luz', [BO.x, 0, BO.z], 1.5); fx('fumo', [BO.x, 0, BO.z], 1.5); try { som('portal', 0.8, 0.6); } catch (x) {}
     { const C = ARENA.cam; if (C.modo !== 'fixa') { C.modo = 'boss'; C.t = 4.5; C.a = BO.rot + 0.35; } }
     if (!dourado) { arenaFeed(M.ic + ' <b>' + M.nome.toUpperCase() + '</b> apareceu! Ele ' + M.dica + '. Comente LUTAR pra derrubar!'); arenaFala(M.nome + ' apareceu na arena! Cuidado, ele ' + M.dica + '! Todo mundo pra cima dele!', true); }
     else arenaFeed('👑 <b>' + M.nome.split(',')[0].toUpperCase() + ' DOURADO</b> apareceu! Vale o dobro de pontos!'); }
-  function arenaBossMorre(L) { BO.vivo = false; BO.hp = 0; BO.queda = 0.001; const ptF = arenaPts(L, BO.dourado ? 1000 : 500); const M = BO.M, nm = M.nome.split(',')[0]; if (BO.dourado) { BO.dourado = false; if (BO.aura) BO.aura.material.color.set(M.cor); }
+  function arenaBossMorre(L) { BO.vivo = false; BO.hp = 0; BO.queda = 0.001; BO.espera = 8; const ptF = arenaPts(L, BO.dourado ? 1000 : 500); const M = BO.M, nm = M.nome.split(',')[0]; if (BO.dourado) { BO.dourado = false; if (BO.aura) BO.aura.material.color.set(M.cor); }
     if (BO.e.fogoB) { BO.e.fogoB.material.opacity = 0; } BO.e.g.position.y = 0; BO.salto = null; BO.marcas = null; const top = Object.values(ARENA.lut).sort((p, q) => (q.danoBoss || 0) - (p.danoBoss || 0))[0];
     const ptT = top && top !== L ? arenaPts(top, 300) : 0; fx('fogo', [BO.x, 2, BO.z], 1.5); fx('luz', [BO.x, 0, BO.z], 1.5); try { som('magia', 1, 0.6); } catch (x) {} tremor = 0.6;
     arenaFeed('💥 <b>' + L.nome + '</b> deu o golpe final em ' + M.ic + ' ' + nm.toUpperCase() + '! (+' + ptF + ')' + (ptT ? ' · <b>' + top.nome + '</b> causou mais dano (+' + ptT + ')' : '')); aviso('💥 ' + nm.toUpperCase() + ' DERROTADO por ' + L.nome + '! O próximo monstro vem aí...', '#ffd23c'); arenaFala(nm + ' foi derrotado por ' + L.nome + '! Agora é todo mundo contra todo mundo, e o próximo monstro já está vindo!', true); arenaFoca(L, 4); }
   function arenaBossFrame(dt, vivos) { const on = zona === 'arena'; bfxFrame(dt);
     if (!on) { boBar.hidden = true; return; }
-    if (!BO.vivo && !BO.queda && Object.keys(ARENA.lut).length === 0) { BO.espera -= dt; if (BO.espera <= 0) arenaBossNasce(); } else if (!BO.vivo) BO.espera = 2.5;
+    if (!BO.vivo && !BO.queda) { BO.espera -= dt; if (BO.espera <= 0) arenaBossNasce(); }
     const e = BO.e; boBar.hidden = !(BO.vivo || BO.queda); if (!e) return; const M = BO.M;
     if (BO.queda) { BO.queda += dt; e.g.rotation.x = -Math.min(1.45, BO.queda * 1.1); e.g.position.y = -Math.max(0, BO.queda - 1.5) * 2; if (BO.queda > 4) { BO.queda = 0; e.g.visible = false; } }
     if (!BO.vivo) { boBar.querySelector('i').style.width = '0%'; return; }
@@ -12201,7 +12207,7 @@ const ArcaneWingSystem = (function () {
   function arenaNorm(t) { return String(t || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, ''); }
   function arenaParaLuta(id, nome, foto) { let L = ARENA.lut[id]; if (L) return L; const S0 = ARENA.plat[id]; if (S0) arenaPlatTira(id); L = arenaLut(id, (S0 && S0.nome) || nome, foto || (S0 && S0.foto)); arenaFoca(L, 3); return L; }
   /* comentários especiais: VERMELHO / AZUL (times) e DUELO nome */
-  function arenaComando(m, id, foto) { const n = arenaNorm(m.text); const perg = arenaPergunta(n); if (perg) { arenaExplica(perg); if (perg !== 'lutar') { if (!ARENA.lut[id]) arenaPlat(id, m.name, foto); return true; } }
+  function arenaComando(m, id, foto) { const n = arenaNorm(m.text); const perg = arenaPergunta(n); if (perg) { arenaExplica(perg); if (perg !== 'lutar') { if (!ARENA.lut[id] && !arenaPalhaco(m, id, foto)) arenaPlat(id, m.name, foto); return true; } }
     const du = n.match(/\bduelo\b\s*@?\s*([^\s].{0,30})?/);
     if (du) { const L = arenaParaLuta(id, m.name, foto); const alvoTxt = (du[1] || '').trim(); arenaDuelo(L, alvoTxt); return true; }
     const tm = /\bvermelho\b/.test(n) ? 'r' : /\bazul\b/.test(n) ? 'b' : '';
@@ -12418,6 +12424,10 @@ const ArcaneWingSystem = (function () {
     document.addEventListener('visibilitychange', pede); document.addEventListener('fullscreenchange', pede); ['click', 'touchstart'].forEach(ev => document.addEventListener(ev, pede, { passive: true })); pede(); }
   /* modo retrato (celular em pé) enquanto estiver na arena, pra live do TikTok */
   function arenaRetrato(on) { try { if (window.AndroidTela) { AndroidTela.retrato(!!on); return; } } catch (e) {} try { if (on) { const el = document.documentElement; const f = document.fullscreenElement ? Promise.resolve() : (el.requestFullscreen ? el.requestFullscreen() : Promise.resolve()); f.then(() => screen.orientation && screen.orientation.lock && screen.orientation.lock('portrait')).catch(() => {}); } else if (screen.orientation && screen.orientation.lock) screen.orientation.lock('landscape').catch(() => { try { screen.orientation.unlock(); } catch (e) {} }); } catch (e) {} }
+  /* na arena o celular tem que ficar em pé (TikTok mostra a tela inteira): se virou deitado ou saiu da tela cheia (ex.: depois do PIN do 📡), força em pé de novo */
+  { let ult = 0; const reforca = () => { if (zona !== 'arena') return; const agora = performance.now(); if (agora - ult < 800) return; const deitado = innerWidth > innerHeight, semTC = !document.fullscreenElement && !document.webkitFullscreenElement && !window.AndroidTela; if (!deitado && !semTC) return; ult = agora; arenaRetrato(true); };
+    ['resize', 'orientationchange'].forEach(ev => addEventListener(ev, () => setTimeout(reforca, 300)));
+    ['pointerdown', 'touchend', 'click'].forEach(ev => document.addEventListener(ev, reforca, { capture: true, passive: true })); setInterval(reforca, 3000); }
   function arenaLimita(p) { p.x = ARENA.X; p.z = ARENA.Z; p.y = 0; }
   const arBtn = document.createElement('button'); arBtn.textContent = '🏟️'; arBtn.hidden = true; arBtn.title = 'Arena da Live';
   arBtn.style.cssText = 'position:fixed;left:60px;bottom:8px;z-index:250;width:44px;height:44px;border-radius:50%;border:3px solid #2b2340;background:#ffe08a;font-size:20px;opacity:.95;padding:0'; document.body.appendChild(arBtn);
