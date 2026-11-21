@@ -58,6 +58,11 @@ async function tts(req, res) {
    (GET com ?acao=...&nome=... ou POST com JSON {"acao":"...","nome":"{{username}}","foto":"{{avatar}}","presente":"...","texto":"{{message}}"})
    acao: arena (entra como palhaço) · lutar (vira guerreiro) · poder (dá o item do presente) · chat (fala na arena)
    /online?key=SEU_PIN mostra quem apareceu na live nos últimos 10 minutos */
+/* O TikTok não avisa quando alguém SAI da live. Então: quem fica 2 minutos sem aparecer
+   (lista de quem está assistindo, curtida, comentário, presente, compartilhar) é considerado fora:
+   o boneco sai da arena e a pessoa some da lista da TV. Se aparecer de novo, entra de novo. */
+const SAI_MS = 120000;
+const SAIU = new Set();
 const PESSOAS = new Map(); // nome/@ em minúsculo -> { id, name, foto, t }
 function lembra(r, ...nomes) { r.t = Date.now(); nomes.concat(r.name).forEach(n => { if (n) PESSOAS.set(String(n).toLowerCase().replace(/^@/, ''), r); }); if (PESSOAS.size > 5000) PESSOAS.delete(PESSOAS.keys().next().value); }
 function lumia(req, res) {
@@ -107,7 +112,7 @@ const paraPainel = (o, menos) => { const s = JSON.stringify(o); wss.clients.forE
    o jogo manda {type:'estado'} (quem está na arena) e o servidor repassa pros painéis. */
 const PRES_NOME = { rosa: 'rosa', sorvete: 'casquinha', gg: 'bom jogo', coracao: 'heart me', dino: 'mini dino', controle: 'controle', bau: 'baú' };
 let ESTADO = null;
-function online() { const vis = new Set(), lista = []; PESSOAS.forEach(p => { if (!vis.has(p.id) && Date.now() - p.t < 1800000) { vis.add(p.id); lista.push({ id: p.id, nome: p.name, foto: p.foto || '', t: p.t }); } }); return lista.sort((a, b) => b.t - a.t).slice(0, 150); }
+function online() { const vis = new Set(), lista = []; PESSOAS.forEach(p => { if (!vis.has(p.id) && Date.now() - p.t < SAI_MS && !SAIU.has(p.id)) { vis.add(p.id); lista.push({ id: p.id, nome: p.name, foto: p.foto || '', t: p.t }); } }); return lista.sort((a, b) => b.t - a.t).slice(0, 150); }
 // avisa o jogo quantos painéis estão olhando a telinha (se ninguém olha, o jogo não gasta bateria mandando imagem)
 function avisaTela() { setTimeout(() => { let n = 0; wss.clients.forEach(c => { if (c.papel === 'painel' && c.readyState === 1) n++; }); const s = JSON.stringify({ type: 'tela', n }); wss.clients.forEach(c => c.papel !== 'painel' && c.readyState === 1 && c.send(s)); }, 300); }
 wss.on('connection', (ws, req) => {
@@ -133,6 +138,16 @@ wss.on('connection', (ws, req) => {
   });
 });
 setInterval(() => paraPainel({ type: 'online', lista: online() }), 3000);
+// a cada 10 s: quem sumiu há 2 min sai da arena
+setInterval(() => {
+  const ult = new Map();
+  PESSOAS.forEach(p => { if (!ult.has(p.id) || ult.get(p.id).t < p.t) ult.set(p.id, p); });
+  ult.forEach(p => {
+    if (SAIU.has(p.id) || p.painel) return;
+    if (Date.now() - p.t > SAI_MS && Date.now() - p.t < SAI_MS + 3600000) { SAIU.add(p.id); send({ type: 'tirar', id: p.id, name: p.name, saiu: true }); }
+  });
+  if (SAIU.size > 5000) SAIU.clear();
+}, 10000);
 
 server.listen(PORT, '0.0.0.0', () => console.log('Servidor no ar na porta', PORT));
 
@@ -152,7 +167,10 @@ if (!user) {
       const pp = x.profilePicture || {}, lista = pp.url || pp.urls || pp.urlList || [];
       const foto = x.profilePictureUrl || (Array.isArray(lista) ? lista[0] : '') || '';
       const r = { id: String(x.userId || x.uniqueId || x.nickname || Math.random()), name: x.nickname || x.uniqueId || 'anônimo', foto };
-      lembra(r, x.uniqueId, x.nickname); return r;
+      lembra(r, x.uniqueId, x.nickname);
+      // voltou pra live depois de ter saído: entra de novo
+      if (SAIU.has(r.id)) { SAIU.delete(r.id); setTimeout(() => send({ type: 'join', ...r }), 50); }
+      return r;
     };
 
     const live = new Conn(user.replace('@', ''), {});

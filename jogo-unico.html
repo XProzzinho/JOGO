@@ -11764,6 +11764,7 @@ const ArcaneWingSystem = (function () {
   function liveLoop(now) { const dt = Math.min(0.1, (now - (liveUlt || now)) / 1000); liveUlt = now; try { liveFrame(dt, heroi.position); } catch (e) { console.error('live', e); } requestAnimationFrame(liveLoop); }
   requestAnimationFrame(liveLoop);
   // ===================== ARENA DA LIVE (só ADM): quem entra na live do TikTok vira lutador, batalha sozinho, sobe no ranking; presente = artefato divino =====================
+  const ARENA_SALVO = {}; // quem saiu da live: pontos guardados pra quando voltar
   const ARENA = { on: false, X: -1400, Z: 0, R: 25, lut: {}, plat: {}, maxPlat: 44, max: 30, feed: [], fila: [], cam: { modo: 'orbita', alvo: null, t: 0, a: 0, look: new T3.Vector3() }, volta: null, uiT: 0 };
   /* presentes da live -> poder na arena. nv maior = item mais forte (presente mais caro) */
   const ARENA_PRES = [
@@ -11900,7 +11901,8 @@ const ArcaneWingSystem = (function () {
     c.position.set(L.x, 0, L.z); return L; }
   function arenaLut(id, nome, foto, esq) { let L = ARENA.lut[id]; if (L) { L.t = performance.now(); if (nome && L.nome === 'Visitante') L.nome = arenaEsc(nome); if (foto && !L.foto) { L.foto = foto; L.h = ''; } return L; }
     const ks = Object.keys(ARENA.lut); if (ks.length >= ARENA.max) { const todos = ks.map(k => ARENA.lut[k]), esqs = todos.filter(x => x.esq); if (esq && !esqs.length) return null; const fora = (esqs.length ? esqs : todos).sort((p, q) => (p.kills - q.kills) || (p.t - q.t))[0]; if (esq && fora.kills > 0) return null; arenaTira(fora.id); }
-    L = ARENA.lut[id] = arenaNovo(id, nome, foto, esq); fx('luz', [L.x, 0, L.z], 1); try { som('portal', 0.5, 1.2); } catch (e) {} return L; }
+    const sv = ARENA_SALVO[id]; if (sv && Date.now() - sv.t < 6 * 3600000) { esq = sv.esq; delete ARENA_SALVO[id]; } else if (sv) delete ARENA_SALVO[id];
+    L = ARENA.lut[id] = arenaNovo(id, nome, foto, esq); if (sv) { L.kills = sv.kills; L.mortes = sv.mortes; } fx('luz', [L.x, 0, L.z], 1); try { som('portal', 0.5, 1.2); } catch (e) {} return L; }
   // esqueleto vira guerreiro de verdade (comentou LUTAR ou mandou presente); mantém os pontos
   function arenaVira(L) { const x = L.x, z = L.z, pts = L.kills, mortes = L.mortes, time = L.time; arenaTira(L.id); const N = ARENA.lut[L.id] = arenaNovo(L.id, L.nome, L.foto, false); N.x = x; N.z = z; N.c.position.set(x, 0, z); N.kills = pts; N.mortes = mortes; N.time = time;
     fx('luz', [x, 0, z], 1); fx('fogo', [x, 1, z], 0.6); try { som('magia', 0.6, 1.2); } catch (e) {} arenaFeed('⚔️ ' + arenaFoto(N, 'mi') + ' <b>' + N.nome + '</b> deixou de ser palhaço e virou <b>GUERREIRO</b>!'); arenaFala(N.nome + ' deixou de ser palhaço e virou guerreiro de verdade!', true); arenaFoca(N, 7); return N; }
@@ -11954,7 +11956,11 @@ const ArcaneWingSystem = (function () {
   const PTK = { gente: {}, sel: null, aberto: false, t: 0 };
   { const _le2 = liveEvento; liveEvento = function (m) { if (!m || !/^(join|chat|gift|like|follow|tirar)$/.test(m.type) || m.id == null) return; // painel da TV
     if (m.painel && souAdmin() && zona !== 'arena') { try { arenaEntra(); } catch (e) {} }
-    if (m.type === 'tirar') { if (souAdmin()) { arenaTira(String(m.id)); arenaPlatTira(String(m.id)); } return; }
+    if (m.type === 'tirar') { if (souAdmin()) { const id = String(m.id), L = ARENA.lut[id];
+        // saiu da live (2 min sem aparecer): guarda os pontos pra quando voltar, e o boneco some
+        if (m.saiu && L) { ARENA_SALVO[id] = { kills: L.kills, mortes: L.mortes, esq: L.esq, t: Date.now() }; try { fx('luz', [L.x, 0, L.z], 1); } catch (e) {} arenaFeed('👋 <b>' + L.nome + '</b> saiu da live'); }
+        if (m.saiu && ARENA.cam.alvo === L) ARENA.cam.t = 0;
+        arenaTira(id); arenaPlatTira(id); if (m.saiu) delete PTK.gente[id]; } return; }
     try { if (m && m.id != null && m.type !== 'like_total') { const id = String(m.id), g = PTK.gente[id] || (PTK.gente[id] = { id, nome: arenaEsc(m.name) || 'Visitante', foto: '' }); if (m.name) g.nome = arenaEsc(m.name); const f = arenaFotoUrl(m.foto); if (f) g.foto = f; g.t = performance.now(); if (PTK.aberto) PTK.t = 0; } } catch (e) {} return _le2(m); }; }
   const ptBtn = document.createElement('button'); ptBtn.className = 'arena-keep'; ptBtn.innerHTML = '🎵 TikTok'; ptBtn.hidden = true;
   ptBtn.style.cssText = 'position:fixed;left:8px;bottom:60px;z-index:270;height:38px;padding:0 12px;border-radius:19px;border:2px solid #fff;background:linear-gradient(90deg,#25f4ee,#fe2c55);color:#fff;font:800 14px system-ui;text-shadow:0 1px 2px #000a;box-shadow:0 2px 8px #0008';
