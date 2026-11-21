@@ -11924,6 +11924,7 @@ const ArcaneWingSystem = (function () {
     if (C.modo === 'fixa') { /* câmera parada (pra gravar vídeo/prints) */ } else if (C.modo === 'foco') { const L = C.alvo; if (!L || (ARENA.lut[L.id] !== L && ARENA.plat[L.id] !== L)) { C.modo = 'sobe'; C.t = 2.4; } else { C.t -= dt;
         if (L.plat) { _cv.set(L.x + Math.sin(L.rot) * 3.6, L.y + 1.9, L.z + Math.cos(L.rot) * 3.6); _lv.set(L.x, L.y + 1.2, L.z); } else { { const dd = innerHeight > innerWidth ? 6 : 4.2; _cv.set(L.x - Math.sin(L.rot) * dd, 2.3 + (dd - 4.2) * 0.5, L.z - Math.cos(L.rot) * dd); } _lv.set(L.x, 1.3, L.z); } C.pos.lerp(_cv, 1 - Math.exp(-dt * 4)); C.look.lerp(_lv, 1 - Math.exp(-dt * 6));
         if (C.t <= 0) { const prox = ARENA.fila.shift(); if (prox && (ARENA.lut[prox.id] === prox || ARENA.plat[prox.id] === prox)) { C.alvo = prox; C.t = 2.5; C.ini = performance.now(); } else { C.modo = 'sobe'; C.t = 2.6; C.a = Math.atan2(C.pos.x - ARENA.X, C.pos.z - ARENA.Z); } } } }
+    else if (C.modo === 'boss') { C.t -= dt; const r = (innerHeight > innerWidth ? 17 : 13) * (BO.M && BO.M.id === 'tita' ? 1.7 : 1); C.a += (BO.rot + 0.35 - C.a) * Math.min(1, dt * 1.5); _cv.set(BO.x + Math.sin(C.a) * r, BO.M && BO.M.id === 'tita' ? 9 : 6.5, BO.z + Math.cos(C.a) * r); _lv.set(BO.x, 3.6, BO.z); C.pos.lerp(_cv, 1 - Math.exp(-dt * 2.4)); C.look.lerp(_lv, 1 - Math.exp(-dt * 3)); if (C.t <= 0) { C.modo = 'sobe'; C.t = 2.6; C.ot = 0; } }
     else if (C.modo === 'mural') { C.t -= dt; _cv.set(MURAL.x, MURAL.y - 1.5, MURAL.z - (innerHeight > innerWidth ? 24 : 13)); _lv.set(MURAL.x, MURAL.y - 0.3, MURAL.z); C.pos.lerp(_cv, 1 - Math.exp(-dt * 2.2)); C.look.lerp(_lv, 1 - Math.exp(-dt * 3)); if (C.t <= 0) { C.modo = 'sobe'; C.t = 2.6; C.ot = 0; C.a = Math.atan2(C.pos.x - ARENA.X, C.pos.z - ARENA.Z); } }
     else { if (C.modo === 'sobe') { C.t -= dt; if (C.t <= 0) { C.modo = 'orbita'; C.ot = 0; } } else { C.ot = (C.ot || 0) + dt; if (C.ot > 10) { C.ciclo = (C.ciclo || 0) + 1; const Ls = Object.values(ARENA.lut).filter(L => !L.morto); if (C.ciclo % 2 && Ls.length) { Ls.sort((p, q) => q.kills - p.kills); const a1 = Ls[0], a2 = Ls[1 + Math.floor(Math.random() * Math.max(0, Ls.length - 1))]; C.modo = 'foco'; C.alvo = a1; C.t = 4; C.ini = performance.now(); ARENA.fila = a2 && a2 !== a1 ? [a2] : []; } else { C.modo = 'mural'; C.t = 6.5; } } } C.a += dt * 0.12; const pe = innerHeight > innerWidth, r = ARENA.R + (pe ? 20 : 9), y = (C.modo === 'sobe' ? 12 + (2.6 - C.t) * 5 : 24 + Math.sin(gT * 0.3) * 2) + (pe ? 10 : 0);
       _cv.set(ARENA.X + Math.sin(C.a) * r, y, ARENA.Z + Math.cos(C.a) * r); _lv.set(ARENA.X, 0.5, ARENA.Z); C.pos.lerp(_cv, C.modo === 'sobe' ? 1 - Math.exp(-dt * 1.8) : k); C.look.lerp(_lv, 1 - Math.exp(-dt * 2.2)); }
@@ -11936,36 +11937,172 @@ const ArcaneWingSystem = (function () {
     Object.values(ARENA.plat).forEach(S => { const d = cam.position.distanceTo(S.c.position), falando = S.fala && agora < S.falaT; if (d > (falando ? 70 : 26)) { S.tag.hidden = true; return; } S.tag.hidden = false;
       const h = arenaFoto(S) + '<b>' + S.nome + '</b>' + (falando ? '<small>💬 ' + S.fala + '</small>' : ''); if (S.h !== h) { S.h = h; S.tag.innerHTML = h; } guildPosition(S.tag, S.c, 1.9); S.tag.style.transform = 'translate(-50%,-100%) scale(' + clamp(1.15 - d / 30, 0.45, 1.1).toFixed(2) + ')'; S.tag.style.zIndex = String(150 - Math.round(d)); }); }
   /* ----- TITÃ DA ARENA: chefe gigante no meio enquanto ninguém luta; a galera derruba ele e depois duela ----- */
-  const BO = { boss: true, id: '__boss', nome: 'Titã da Arena', x: ARENA.X, z: ARENA.Z, r: 3.4, hp: 0, max: 3000, vivo: false, morto: 0, e: null, pos: new T3.Vector3(), cd: 3, golpe: -1, ult: null, espera: 1.5, rot: 0, queda: 0 };
+  const BO = { boss: true, id: '__boss', nome: 'Titã da Arena', x: ARENA.X, z: ARENA.Z, r: 3.4, hp: 0, max: 3000, vivo: false, morto: 0, e: null, pos: new T3.Vector3(), cd: 3, golpe: -1, ult: null, espera: 1.5, rot: 0, queda: 0, idx: -1, M: null, cache: {} };
   const boBar = document.createElement('div'); boBar.id = 'arena-boss'; boBar.className = 'arena-keep'; boBar.hidden = true; boBar.innerHTML = '<b>👹 TITÃ DA ARENA</b><span><i></i></span><small></small>'; document.body.appendChild(boBar);
-  function arenaBossNasce(dourado) { if (!BO.e) { const e = fera('golem'); try { e.hp.remove(); } catch (x) {} world.remove(e.g); ARG.G.add(e.g); e.g.position.set(0, 0, 0); e.g.scale.setScalar(2.7);
-      e.g.traverse(o => { if (o.isMesh && o.material && o.material.color && !o.material.transparent) { o.material = o.material.clone(); o.material.color.lerp(new T3.Color('#7a3aff'), 0.35); } });
-      for (let i = 0; i < 5; i++) { const k = part(e.b, CONE, '#ffd23c', (i - 2) * 0.32, 4.75 + (i % 2 ? 0 : 0.12), 0.15, 0.13, 0.5, 0.13, 0.02, true); k.rotation.z = (i - 2) * -0.12; }
-      BO.aura = glowSpr(e.g, 0, 2.2, 0, 9, '#a060ff', 0.35); BO.e = e; }
-    BO.e.g.visible = true; BO.e.g.rotation.set(0, 0, 0); BO.e.g.position.y = 0; BO.max = 4000 + 300 * Object.keys(ARENA.lut).length; BO.hp = BO.max; BO.vivo = true; BO.queda = 0; BO.cd = 3; BO.golpe = -1; BO.ult = null; Object.values(ARENA.lut).forEach(L => { L.danoBoss = 0; });
-    fx('luz', [BO.x, 0, BO.z], 1.5); fx('fumo', [BO.x, 0, BO.z], 1.5); try { som('portal', 0.8, 0.6); } catch (x) {} if (!dourado) { arenaFeed('👹 O <b>TITÃ DA ARENA</b> apareceu! Comente LUTAR pra derrubar ele!'); arenaFala('O Titã da Arena apareceu! Comente lutar pra derrubar ele!', true); } else arenaFeed('👑 O <b>TITÃ DOURADO</b> apareceu! Vale o dobro de pontos!'); }
-  function arenaBossMorre(L) { BO.vivo = false; BO.hp = 0; BO.queda = 0.001; L.kills += BO.dourado ? 6 : 3; if (BO.dourado) { BO.dourado = false; if (BO.aura) BO.aura.material.color.set('#a060ff'); setTimeout(() => { boBar.querySelector('b').textContent = '👹 TITÃ DA ARENA'; }, 4000); } const top = Object.values(ARENA.lut).sort((p, q) => (q.danoBoss || 0) - (p.danoBoss || 0))[0];
+  /* ----- MONSTROS PERSONALIZADOS da arena: cada um com visual, ataque e falas próprias; revezam a cada aparição ----- */
+  const bv = (g, geo, c, x, y, z, sx, sy, sz, glow) => part(g, geo, c, x, y, z, sx, sy, sz == null ? sx : sz, 0.03, glow);
+  const MONSTROS = [
+    { id: 'tita', nome: 'Titã da Arena', ic: '👹', cor: '#a060ff', r: 3.4, ataque: 'soco', dica: 'soco no chão que empurra todo mundo',
+      monta() { const e = fera('golem'); try { e.hp.remove(); } catch (x) {} world.remove(e.g); e.g.scale.setScalar(2.7);
+        e.g.traverse(o => { if (o.isMesh && o.material && o.material.color && !o.material.transparent) { o.material = o.material.clone(); o.material.color.lerp(new T3.Color('#7a3aff'), 0.35); } });
+        for (let i = 0; i < 5; i++) { const k = part(e.b, CONE, '#ffd23c', (i - 2) * 0.32, 4.75 + (i % 2 ? 0 : 0.12), 0.15, 0.13, 0.5, 0.13, 0.02, true); k.rotation.z = (i - 2) * -0.12; } return { g: e.g, b: e.b, arms: e.arms }; } },
+    { id: 'dragao', nome: 'Ignarok, o Dragão Rubro', ic: '🐉', cor: '#ff5a2a', r: 3.6, ataque: 'fogo', dica: 'cospe fogo em leque na direção do alvo',
+      monta() { const g = new T3.Group(), b = grp(g), c = '#b8222a', c2 = '#ffb84a', ch = '#3a1a1a';
+        bv(b, SPH, c, 0, 2.6, 0, 1.6, 1.3, 2.2); bv(b, SPH, c2, 0, 2.2, 0.5, 1.15, 0.9, 1.6);
+        for (let i = 0; i < 5; i++) bv(b, CONE, ch, 0, 3.8 - i * 0.05, 1.2 - i * 0.65, 0.18, 0.6, 0.18).rotation.x = -0.3;
+        const pes = grp(b, 0, 3.2, 1.8); for (let i = 0; i < 4; i++) bv(pes, SPH, c, 0, i * 0.55, i * 0.35, 0.62 - i * 0.05, 0.62 - i * 0.05, 0.62 - i * 0.05);
+        const cab = grp(pes, 0, 2.3, 1.5); bv(cab, SPH, c, 0, 0, 0, 0.8, 0.65, 1.0); bv(cab, BOX, c, 0, -0.15, 0.85, 0.75, 0.38, 0.9); const maxi = grp(cab, 0, -0.38, 0.4); bv(maxi, BOX, c2, 0, -0.08, 0.5, 0.65, 0.18, 0.85);
+        [-1, 1].forEach(s => { bv(cab, CONE, '#f4e4c0', s * 0.45, 0.6, -0.3, 0.16, 0.95, 0.16).rotation.set(-0.7, 0, s * -0.35); bv(cab, SPH, '#ffe24a', s * 0.42, 0.18, 0.55, 0.13, 0.1, 0.08, true); });
+        const fogoB = glowSpr(cab, 0, -0.2, 1.4, 0.1, '#ff8a2a', 0);
+        const asas = [-1, 1].map(s => { const a = grp(b, s * 1.1, 3.4, 0.2); const m = grp(a); m.rotation.z = s * 0.25; bv(m, CYL, ch, s * 1.7, 0.6, 0, 0.12, 3.6, 0.12).rotation.z = s * -1.1;
+          for (let k = 0; k < 3; k++) { const p = bv(m, BOX, '#7a1a22', s * (1.2 + k * 0.7), 0.1 - k * 0.35, 0, 1.2, 0.05, 1.8 - k * 0.3); p.rotation.set(0, 0, s * (-0.4 + k * 0.25)); } return a; });
+        const cauda = grp(b, 0, 2.4, -2); for (let i = 0; i < 6; i++) bv(cauda, SPH, c, 0, -i * 0.25, -i * 0.65, 0.55 - i * 0.07, 0.5 - i * 0.07, 0.6); bv(cauda, CONE, ch, 0, -1.6, -4.1, 0.35, 0.9, 0.12).rotation.x = -1.8;
+        const pernas = [[-0.9, 1.0], [0.9, 1.0], [-0.9, -1.0], [0.9, -1.0]].map(([x, z]) => { const l = grp(b, x, 1.9, z); bv(l, CYL, c, 0, -0.9, 0, 0.4, 1.8, 0.4); bv(l, SPH, ch, 0, -1.85, 0.2, 0.45, 0.25, 0.6); return l; });
+        return { g, b, arms: asas, pes, cab, maxi, fogoB, cauda, pernas }; },
+      idle(m, t) { m.arms.forEach((a, i) => a.rotation.z = (i ? -1 : 1) * Math.sin(t * 2.4) * 0.35); m.cauda.rotation.y = Math.sin(t * 1.3) * 0.4; m.pes.rotation.x = Math.sin(t * 1.1) * 0.08; m.maxi.rotation.x = 0; } },
+    { id: 'aranha', nome: 'Aracnys, a Rainha Tecelã', ic: '🕷️', cor: '#b04aff', r: 3.4, ataque: 'teia', dica: 'lança teia que prende e deixa lento',
+      monta() { const g = new T3.Group(), b = grp(g), c = '#2a1a3a', c2 = '#6a2a9a';
+        bv(b, SPH, c, 0, 2.6, -1.6, 2.0, 1.7, 2.3); for (let i = 0; i < 3; i++) bv(b, SPH, '#c86aff', 0, 3.3 + i * 0.3 - 0.4, -1.0 - i * 0.9, 0.5 - i * 0.1, 0.12, 0.35, true);
+        bv(b, SPH, c2, 0, 2.3, 0.8, 1.1, 0.9, 1.2); const cab = grp(b, 0, 2.5, 1.8); bv(cab, SPH, c, 0, 0, 0, 0.75, 0.65, 0.7);
+        [[-0.25, 0.25, 0.12], [0.25, 0.25, 0.12], [-0.45, 0.05, 0.08], [0.45, 0.05, 0.08], [-0.15, -0.1, 0.07], [0.15, -0.1, 0.07]].forEach(([x, y, s]) => bv(cab, SPH, '#ff2a4a', x, y, 0.62, s, s, s * 0.6, true));
+        [-1, 1].forEach(s => bv(cab, CONE, '#e8e0f0', s * 0.25, -0.5, 0.5, 0.12, 0.6, 0.12).rotation.x = 2.6);
+        bv(b, ICO, '#ffd23c', 0, 3.3, 0.8, 0.25, 0.25, 0.25, true);
+        const pernas = []; for (let s of [-1, 1]) for (let k = 0; k < 4; k++) { const l = grp(b, s * 0.9, 2.4, 1.3 - k * 0.6); l.rotation.y = s * (0.6 - k * 0.4); const a = grp(l); a.rotation.z = s * 0.8; bv(a, CYL, c, s * 1.2, 0, 0, 0.16, 2.6, 0.16).rotation.z = s * Math.PI / 2;
+          const j = grp(a, s * 2.4, 0, 0); j.rotation.z = s * -1.6; bv(j, CYL, c2, s * 1.2, 0, 0, 0.13, 2.6, 0.13).rotation.z = s * Math.PI / 2; bv(j, CONE, '#e8e0f0', s * 2.6, 0, 0, 0.12, 0.4, 0.12).rotation.z = s * -Math.PI / 2; l.userData.k = k + (s > 0 ? 4 : 0); pernas.push(l); }
+        return { g, b, arms: [], cab, pernas }; },
+      idle(m, t) { m.pernas.forEach((l, i) => l.children[0].rotation.x = Math.sin(t * 5 + i * 1.3) * 0.12); m.cab.rotation.x = Math.sin(t * 1.7) * 0.1; } },
+    { id: 'gelo', nome: 'Glacius, o Colosso de Gelo', ic: '🧊', cor: '#6ad8ff', r: 3.2, ataque: 'gelo', dica: 'pisa no chão e congela quem estiver perto',
+      monta() { const g = new T3.Group(), b = grp(g), c = '#9ad8ff', c2 = '#e8f8ff', esc = '#3a6a9a';
+        bv(b, ICO, c, 0, 3.6, 0, 1.7, 1.9, 1.3); bv(b, ICO, '#2af0ff', 0, 3.7, 0.9, 0.5, 0.5, 0.4, true); glowSpr(b, 0, 3.7, 1.1, 2.5, '#6ae8ff', 0.6);
+        const cab = grp(b, 0, 5.8, 0.2); bv(cab, ICO, c2, 0, 0, 0, 0.75, 0.7, 0.7); [-1, 1].forEach(s => bv(cab, BOX, '#2af0ff', s * 0.28, 0.05, 0.6, 0.22, 0.08, 0.05, true));
+        for (let i = 0; i < 5; i++) bv(cab, CONE, c2, (i - 2) * 0.3, 0.7 + (i % 2 ? 0 : 0.25), -0.1, 0.13, 0.8, 0.13).rotation.z = (i - 2) * -0.18;
+        const arms = [-1, 1].map(s => { const a = grp(b, s * 2.0, 4.8, 0); bv(a, ICO, c, 0, 0, 0, 0.9, 0.9, 0.9); for (let k = 0; k < 3; k++) bv(a, CONE, c2, s * 0.2, 0.7, -0.3 + k * 0.3, 0.2, 1.2, 0.2).rotation.z = s * -0.4;
+          bv(a, CYL, c, 0, -1.4, 0, 0.55, 2.4, 0.55); bv(a, ICO, c2, 0, -3.0, 0.1, 0.9, 1.0, 0.9); return a; });
+        [-0.8, 0.8].forEach(x => { bv(b, CYL, esc, x, 1.2, 0, 0.6, 2.4, 0.6); bv(b, ICO, c, x, 0.3, 0.2, 0.8, 0.5, 1.0); });
+        return { g, b, arms, cab }; },
+      idle(m, t) { m.arms.forEach((a, i) => a.rotation.x = Math.sin(t * 1.2 + i * Math.PI) * 0.2); m.b.children[1].rotation.y = t; } },
+    { id: 'hidra', nome: 'Hidra do Pântano Sombrio', ic: '🐍', cor: '#5aff6a', r: 3.6, ataque: 'cuspe', dica: 'três cabeças cospem veneno',
+      monta() { const g = new T3.Group(), b = grp(g), c = '#2a6a3a', c2 = '#a8d86a';
+        bv(b, SPH, c, 0, 2.0, -0.4, 2.2, 1.6, 2.4); bv(b, SPH, c2, 0, 1.6, 0.6, 1.6, 1.1, 1.5); for (let i = 0; i < 6; i++) bv(b, CONE, '#1a3a2a', 0, 3.5 - i * 0.1, 0.9 - i * 0.7, 0.2, 0.6, 0.2);
+        const pes = [-1.1, 0, 1.1].map((x, i) => { const n = grp(b, x, 2.8, 1.0); n.rotation.z = -x * 0.25; for (let k = 0; k < 6; k++) bv(n, SPH, c, 0, k * 0.5, k * 0.15, 0.42 - k * 0.03, 0.42, 0.42 - k * 0.03);
+          const cab = grp(n, 0, 3.1, 1.0); bv(cab, SPH, c, 0, 0, 0, 0.55, 0.45, 0.75); bv(cab, BOX, c2, 0, -0.2, 0.55, 0.45, 0.15, 0.55); [-1, 1].forEach(s => { bv(cab, SPH, '#ffe24a', s * 0.28, 0.15, 0.45, 0.1, 0.1, 0.07, true); bv(cab, CONE, '#1a3a2a', s * 0.25, 0.4, -0.3, 0.1, 0.5, 0.1).rotation.x = -0.8; });
+          bv(cab, CONE, '#f4f0d0', 0.12, -0.3, 0.8, 0.05, 0.22, 0.05).rotation.x = Math.PI; bv(cab, CONE, '#f4f0d0', -0.12, -0.3, 0.8, 0.05, 0.22, 0.05).rotation.x = Math.PI; n.userData.cab = cab; return n; });
+        bv(b, SPH, c, 0, 1.4, -2.6, 0.8, 0.6, 1.4); [[-1.2, 1], [1.2, 1], [-1.2, -1.2], [1.2, -1.2]].forEach(([x, z]) => bv(b, CYL, c, x, 0.6, z, 0.45, 1.2, 0.45));
+        return { g, b, arms: [], pes }; },
+      idle(m, t) { m.pes.forEach((n, i) => { n.rotation.x = Math.sin(t * 1.4 + i * 2) * 0.18; n.rotation.y = Math.sin(t * 0.9 + i) * 0.2; }); } },
+    { id: 'raio', nome: 'Voltarion, Senhor da Tempestade', ic: '⚡', cor: '#2ae8ff', r: 3.0, ataque: 'raios', dica: 'marca o chão e solta raios do céu',
+      monta() { const g = new T3.Group(), b = grp(g); bv(b, SPH, '#bff8ff', 0, 4.2, 0, 1.1, 1.1, 1.1, true); glowSpr(b, 0, 4.2, 0, 6, '#2ae8ff', 0.8);
+        const an = [0, 1, 2].map(i => { const a = grp(b, 0, 4.2, 0); bv(a, TOR, i === 1 ? '#ffe24a' : '#2ae8ff', 0, 0, 0, 1.8 + i * 0.5, 1.8 + i * 0.5, 1.8 + i * 0.5, true); a.rotation.set(i * 0.9, i * 0.5, 0); return a; });
+        const coroa = grp(b, 0, 5.4, 0); for (let i = 0; i < 7; i++) { const a = i / 7 * Math.PI * 2; bv(coroa, CONE, '#ffe24a', Math.cos(a) * 0.7, 0.4, Math.sin(a) * 0.7, 0.15, 0.9, 0.15, true); }
+        const orb = [0, 1, 2, 3].map(i => { const o = grp(b, 0, 4.2, 0); bv(o, ICO, '#e8fbff', 3.2, 0, 0, 0.3, 0.3, 0.3, true); glowSpr(o, 3.2, 0, 0, 1.2, '#2ae8ff', 0.8); o.rotation.y = i * Math.PI / 2; return o; });
+        [-1, 1].forEach(s => bv(b, SPH, '#0a2a3a', s * 0.4, 4.4, 1.0, 0.18, 0.12, 0.05));
+        const nuv = grp(b, 0, 1.0, 0); for (let i = 0; i < 8; i++) { const a = i / 8 * Math.PI * 2; bv(nuv, SPH, '#4a5a7a', Math.cos(a) * 1.4, 0, Math.sin(a) * 1.4, 0.9, 0.5, 0.9); }
+        return { g, b, arms: [], an, orb, nuv }; },
+      idle(m, t) { m.an.forEach((a, i) => { a.rotation.x += 0.02 * (i + 1); a.rotation.y += 0.015; }); m.orb.forEach(o => o.rotation.y += 0.03); m.b.position.y = 0.6 + Math.sin(t * 1.5) * 0.3; m.nuv.rotation.y = t * 0.6; } },
+    { id: 'ossos', nome: 'Ossário, o Rei Esqueleto', ic: '💀', cor: '#ff3a3a', r: 3.0, ataque: 'giro', dica: 'gira a espada gigante e acerta tudo em volta',
+      monta() { const g = new T3.Group(), b = grp(g), o = '#ece4d0', o2 = '#b8ac90';
+        bv(b, CYL, o2, 0, 4.2, 0, 0.25, 3.0, 0.25); for (let i = 0; i < 5; i++) { const r = bv(b, TOR, o, 0, 4.9 - i * 0.38, 0.2, 1.0 - i * 0.09, 0.9 - i * 0.08, 1.0 - i * 0.09); r.rotation.x = Math.PI / 2; }
+        bv(b, SPH, o2, 0, 2.7, 0, 1.0, 0.45, 0.7); const cab = grp(b, 0, 6.3, 0.1); bv(cab, SPH, o, 0, 0, 0, 0.75, 0.8, 0.8); bv(cab, BOX, o, 0, -0.55, 0.25, 0.6, 0.3, 0.55);
+        [-1, 1].forEach(s => { bv(cab, SPH, '#120a0a', s * 0.28, 0.05, 0.62, 0.2, 0.22, 0.12); bv(cab, SPH, '#ff3a3a', s * 0.28, 0.05, 0.7, 0.08, 0.08, 0.05, true); }); glowSpr(cab, 0, 0.05, 0.7, 1.6, '#ff3a3a', 0.5);
+        const cor = grp(cab, 0, 0.75, 0); bv(cor, CYL, '#d8a83a', 0, 0, 0, 0.6, 0.25, 0.6); for (let i = 0; i < 6; i++) { const a = i / 6 * Math.PI * 2; bv(cor, CONE, '#d8a83a', Math.cos(a) * 0.55, 0.3, Math.sin(a) * 0.55, 0.1, 0.45, 0.1); }
+        bv(b, BOX, '#3a1a2a', 0, 5.6, -0.6, 2.4, 3.4, 0.1).rotation.x = 0.15;
+        const arms = [-1, 1].map(s => { const a = grp(b, s * 1.35, 5.4, 0); bv(a, CYL, o, 0, -1.0, 0, 0.18, 2.0, 0.18); bv(a, SPH, o2, 0, -2.0, 0, 0.25, 0.25, 0.25); bv(a, CYL, o, 0, -2.9, 0.2, 0.15, 1.8, 0.15); bv(a, SPH, o, 0, -3.9, 0.3, 0.3, 0.3, 0.3); return a; });
+        const esp = grp(arms[1], 0, -3.9, 0.3); bv(esp, BOX, '#3a3a4a', 0, 0, 0, 0.18, 0.18, 0.9); bv(esp, BOX, '#d8a83a', 0, 0, 0.5, 1.0, 0.18, 0.15); bv(esp, BOX, '#ffb8b8', 0, 0, 2.8, 0.35, 0.08, 4.2, true); glowSpr(esp, 0, 0, 2.8, 3, '#ff3a3a', 0.35);
+        [-0.6, 0.6].forEach(x => { bv(b, CYL, o, x, 1.4, 0, 0.18, 2.6, 0.18); bv(b, BOX, o, x, 0.1, 0.25, 0.4, 0.2, 0.8); });
+        return { g, b, arms, cab, esp }; },
+      idle(m, t) { m.arms.forEach((a, i) => a.rotation.x = Math.sin(t * 1.4 + i * Math.PI) * 0.15 - (i ? 0.6 : 0)); m.cab.rotation.z = Math.sin(t * 2) * 0.06; } },
+    { id: 'gosma', nome: 'Gelatão, o Rei Gosma', ic: '🟢', cor: '#7aff4a', r: 3.4, ataque: 'pulo', dica: 'pula em cima de quem estiver longe',
+      monta() { const g = new T3.Group(), b = grp(g); const corpo = new T3.Mesh(SPH, new T3.MeshToonMaterial({ color: '#5ae84a', gradientMap: GRAD, transparent: true, opacity: 0.78 })); corpo.position.y = 2.4; corpo.scale.set(3, 2.4, 3); b.add(corpo);
+        bv(b, SPH, '#2a8a2a', 0, 1.9, 0, 1.6, 1.1, 1.6); for (let i = 0; i < 7; i++) bv(b, SPH, '#c8ffb0', Math.sin(i * 2.3) * 1.6, 1.4 + (i % 3) * 0.9, Math.cos(i * 2.3) * 1.4, 0.2 + (i % 2) * 0.1, 0.2 + (i % 2) * 0.1, 0.2 + (i % 2) * 0.1);
+        [-1, 1].forEach(s => { bv(b, SPH, '#ffffff', s * 0.9, 3.4, 2.5, 0.55, 0.65, 0.3); bv(b, SPH, '#101010', s * 0.9, 3.35, 2.75, 0.25, 0.3, 0.12); });
+        bv(b, TOR, '#1a3a1a', 0, 2.4, 2.75, 0.6, 0.35, 0.6).rotation.z = Math.PI; const cor = grp(b, 0, 4.7, 0); bv(cor, CYL, '#ffd23c', 0, 0, 0, 0.9, 0.35, 0.9); for (let i = 0; i < 5; i++) { const a = i / 5 * Math.PI * 2; bv(cor, CONE, '#ffd23c', Math.cos(a) * 0.8, 0.45, Math.sin(a) * 0.8, 0.14, 0.6, 0.14); bv(cor, SPH, ['#ff4a6a', '#4ad8ff', '#ffe24a'][i % 3], Math.cos(a) * 0.9, 0.05, Math.sin(a) * 0.9, 0.12, 0.12, 0.1, true); }
+        return { g, b, arms: [], corpo, cor }; },
+      idle(m, t) { const s = Math.sin(t * 3); m.b.scale.set(1 + s * 0.05, 1 - s * 0.06, 1 + s * 0.05); } }];
+  const MONSTRO = id => MONSTROS.find(m => m.id === id);
+  const aLoc = (x, z) => [x - ARENA.X, z - ARENA.Z];
+  const BFX = [];   // efeitos do monstro (marcas no chão, raios, cuspes)
+  function bfxMarca(x, z, r, cor, dur) { const m = new T3.Mesh(new T3.RingGeometry(r * 0.85, r, 40), new T3.MeshBasicMaterial({ color: cor, transparent: true, opacity: 0.85, side: T3.DoubleSide, depthWrite: false, toneMapped: false })); m.rotation.x = -Math.PI / 2; const [lx, lz] = aLoc(x, z); m.position.set(lx, 0.08, lz); ARG.G.add(m);
+    const d = new T3.Mesh(new T3.CircleGeometry(r * 0.85, 40), new T3.MeshBasicMaterial({ color: cor, transparent: true, opacity: 0.18, depthWrite: false, toneMapped: false })); d.rotation.x = -Math.PI / 2; d.position.copy(m.position); ARG.G.add(d); BFX.push({ obs: [m, d], t: 0, dur, pulsa: true }); }
+  function bfxRaio(x, z, cor) { const [lx, lz] = aLoc(x, z); const m = new T3.Mesh(new T3.CylinderGeometry(0.25, 0.5, 30, 8, 1, true), new T3.MeshBasicMaterial({ color: cor, transparent: true, opacity: 1, blending: T3.AdditiveBlending, depthWrite: false, toneMapped: false })); m.position.set(lx, 15, lz); ARG.G.add(m);
+    const s = glowSpr(ARG.G, lx, 1, lz, 6, cor, 1); BFX.push({ obs: [m, s], t: 0, dur: 0.45, some: true }); }
+  function bfxLimpa(o) { o.obs.forEach(m => { ARG.G.remove(m); if (m.geometry) m.geometry.dispose(); if (m.material) m.material.dispose(); }); }
+  function bfxFrame(dt) { for (let i = BFX.length - 1; i >= 0; i--) { const o = BFX[i]; o.t += dt; const u = o.t / o.dur; if (o.pulsa) o.obs[0].material.opacity = 0.5 + 0.4 * Math.sin(o.t * 18); if (o.some) o.obs.forEach(m => m.material.opacity = Math.max(0, 1 - u));
+      if (o.passo) o.passo(dt, o); if (u >= 1 || o.fim) { bfxLimpa(o); BFX.splice(i, 1); } } }
+  // dano do monstro num lutador
+  function boAcerta(o, dano, cor, empurra) { if (o.morto) return; o.hp -= dano; try { numero(o.c.position, String(dano), cor || '#ff5a5a', 2.2); } catch (x) {} if (empurra) { const dx = o.x - BO.x, dz = o.z - BO.z, d = Math.hypot(dx, dz); if (d > 1e-3) { o.x += dx / d * empurra; o.z += dz / d * empurra; } }
+    if (o.hp <= 0) { o.hp = 0; o.morto = 3; o.mortes++; o.seq = 0; arenaFeed(BO.M.ic + ' ' + BO.M.nome.split(',')[0] + ' derrubou <b>' + o.nome + '</b>!'); } }
+  // ataques: cada um tem preparo (t < w) e acerto
+  const ATQ = {
+    soco: { w: 1.0, fim: 1.6, prepara(m, u) { m.arms.forEach(a => a.rotation.x = -u * 2.7); },
+      acerta(m, vivos) { m.arms.forEach(a => a.rotation.x = 0.5); fx('fumo', [BO.x, 0.3, BO.z], 0.8); fx('vento', [BO.x, 0.3, BO.z], 0.6); tremor = Math.max(tremor, 0.25); try { som('golem_soco', 0.7, 0.8); } catch (x) {}
+        vivos.forEach(o => { if (Math.hypot(o.x - BO.x, o.z - BO.z) < 8.5) boAcerta(o, Math.round(18 + Math.random() * 14), '#ff5a5a', 2.2); }); } },
+    fogo: { w: 0.9, fim: 2.4, prepara(m, u) { m.pes.rotation.x = -u * 0.5; m.maxi.rotation.x = u * 0.5; },
+      acerta(m, vivos, alvo) { BO.dirF = BO.rot; try { som('fogo', 0.8, 0.7); } catch (x) {} },
+      dura(m, vivos, dt, u) { m.pes.rotation.x = 0.25; m.maxi.rotation.x = 0.6; m.fogoB.material.opacity = 0.9; m.fogoB.scale.setScalar(2.5 + Math.random()); const a = BO.dirF + Math.sin(u * 6) * 0.35; BO.rot = a;
+        const L = 3 + Math.random() * 7; fx('chama', [BO.x + Math.sin(a) * L, 1.2, BO.z + Math.cos(a) * L], 0.3, a); if (Math.random() < 0.5) fx('fogo', [BO.x + Math.sin(a) * L, 0.8, BO.z + Math.cos(a) * L], 0.4);
+        BO.tick = (BO.tick || 0) + dt; if (BO.tick > 0.3) { BO.tick = 0; vivos.forEach(o => { const dx = o.x - BO.x, dz = o.z - BO.z, d = Math.hypot(dx, dz); let da = Math.atan2(dx, dz) - a; while (da > Math.PI) da -= Math.PI * 2; while (da < -Math.PI) da += Math.PI * 2; if (d < 11 && Math.abs(da) < 0.55) { boAcerta(o, Math.round(8 + Math.random() * 6), '#ff8a2a'); o.queima = 3; } }); } },
+      solta(m) { m.fogoB.material.opacity = 0; m.fogoB.scale.setScalar(0.1); } },
+    teia: { w: 0.8, fim: 1.4, prepara(m, u) { m.cab.rotation.x = -u * 0.4; },
+      acerta(m, vivos) { m.cab.rotation.x = 0.2; try { som('magia', 0.5, 1.3); } catch (x) {} boLanca(vivos, 3, '#e8e0ff', (o) => { boAcerta(o, 12, '#c86aff'); o.lento = 4; o.congela = Math.max(o.congela || 0, 0.8); arenaFeed('🕸️ <b>' + o.nome + '</b> ficou preso na teia!'); }); } },
+    cuspe: { w: 0.8, fim: 1.5, prepara(m, u) { m.pes.forEach(n => n.rotation.x = -u * 0.5); },
+      acerta(m, vivos) { m.pes.forEach(n => n.rotation.x = 0.35); try { som('magia', 0.5, 0.8); } catch (x) {} boLanca(vivos, 3, '#7aff4a', (o) => { boAcerta(o, 14, '#7aff4a'); o.queima = 4; fx('cura', [o.x, 1, o.z], 0.5); }); } },
+    gelo: { w: 1.1, fim: 1.8, prepara(m, u) { m.b.position.y = u * 1.2; m.arms.forEach(a => a.rotation.x = -u * 2.2); if (u < 0.05) bfxMarca(BO.x, BO.z, 7.5, '#6ad8ff', 1.1); },
+      acerta(m, vivos) { m.b.position.y = 0; m.arms.forEach(a => a.rotation.x = 0.4); fx('gelo', [BO.x, 0.6, BO.z], 1.2); fx('vento', [BO.x, 0.3, BO.z], 0.8); tremor = Math.max(tremor, 0.3); try { som('gelo', 0.8, 0.7); } catch (x) {}
+        vivos.forEach(o => { if (Math.hypot(o.x - BO.x, o.z - BO.z) < 7.5) { boAcerta(o, Math.round(12 + Math.random() * 8), '#9ae8ff', 1); o.congela = 2.2; } }); } },
+    raios: { w: 1.3, fim: 1.8, prepara(m, u) { if (!BO.marcas) { BO.marcas = BO.vivosR.slice().sort(() => Math.random() - 0.5).slice(0, 4).map(o => [o.x, o.z]); for (let i = 0; i < 2; i++) { const a = Math.random() * 6.28, r = Math.random() * (ARENA.R - 3); BO.marcas.push([ARENA.X + Math.cos(a) * r, ARENA.Z + Math.sin(a) * r]); } BO.marcas.forEach(([x, z]) => bfxMarca(x, z, 2.6, '#2ae8ff', 1.3)); } },
+      acerta(m, vivos) { tremor = Math.max(tremor, 0.3); try { som('magia', 1, 1.5); } catch (x) {} (BO.marcas || []).forEach(([x, z]) => { bfxRaio(x, z, '#bff8ff'); fx('luz', [x, 0.5, z], 0.6); vivos.forEach(o => { if (Math.hypot(o.x - x, o.z - z) < 2.6) boAcerta(o, Math.round(26 + Math.random() * 10), '#2ae8ff', 1.5); }); }); BO.marcas = null; } },
+    giro: { w: 0.6, fim: 2.4, prepara(m, u) { m.arms[1].rotation.x = -0.6 - u * 1.0; m.arms[1].rotation.z = u * 1.2; },
+      acerta() { try { som('espada', 0.8, 0.6); } catch (x) {} },
+      dura(m, vivos, dt) { BO.rot += dt * 9; m.arms[1].rotation.set(-1.57, 0, 1.3); if (Math.random() < 0.4) fx('vento', [BO.x, 1, BO.z], 0.3); BO.tick = (BO.tick || 0) + dt;
+        if (BO.tick > 0.3) { BO.tick = 0; vivos.forEach(o => { if (Math.hypot(o.x - BO.x, o.z - BO.z) < 7) boAcerta(o, Math.round(9 + Math.random() * 6), '#ff3a3a', 1.2); }); } },
+      solta(m) { m.arms[1].rotation.set(-0.6, 0, 0); } },
+    pulo: { w: 1.4, fim: 2.0, prepara(m, u, alvo) { if (!BO.salto) { const A = alvo || { x: ARENA.X, z: ARENA.Z }; BO.salto = { x0: BO.x, z0: BO.z, x1: A.x, z1: A.z }; bfxMarca(A.x, A.z, 6, '#7aff4a', 1.4); }
+        const S = BO.salto; if (u < 0.25) { m.b.scale.set(1.2, 0.7, 1.2); } else { const k = (u - 0.25) / 0.75; BO.x = S.x0 + (S.x1 - S.x0) * k; BO.z = S.z0 + (S.z1 - S.z0) * k; m.g.position.y = Math.sin(k * Math.PI) * 9; m.b.scale.set(0.85, 1.25, 0.85); } },
+      acerta(m, vivos) { m.g.position.y = 0; m.b.scale.set(1.35, 0.6, 1.35); fx('fumo', [BO.x, 0.3, BO.z], 1); fx('cura', [BO.x, 0.5, BO.z], 0.8); tremor = Math.max(tremor, 0.45); try { som('golem_soco', 0.9, 0.6); } catch (x) {}
+        vivos.forEach(o => { if (Math.hypot(o.x - BO.x, o.z - BO.z) < 6) boAcerta(o, Math.round(22 + Math.random() * 12), '#7aff4a', 3); }); BO.salto = null; } } };
+  // projéteis (teia / veneno): vão até o alvo
+  function boLanca(vivos, n, cor, hit) { vivos.slice().sort((a, b) => Math.hypot(a.x - BO.x, a.z - BO.z) - Math.hypot(b.x - BO.x, b.z - BO.z)).slice(0, n).forEach((A, i) => {
+    const s = glowSpr(ARG.G, BO.x - ARENA.X, 3, BO.z - ARENA.Z, 1.6, cor, 1), m = new T3.Mesh(SPH, new T3.MeshBasicMaterial({ color: cor, toneMapped: false })); m.scale.setScalar(0.35); s.add(m);
+    BFX.push({ obs: [s], t: -i * 0.12, dur: 3, passo(dt, o) { if (o.t < 0) return; const tx = A.x - ARENA.X, tz = A.z - ARENA.Z, dx = tx - s.position.x, dz = tz - s.position.z, d = Math.hypot(dx, dz), v = 16 * dt; s.position.y = 1.2 + Math.max(0, d / 6);
+      if (d < 0.8 || A.morto) { o.fim = true; if (!A.morto) hit(A); fx('luz', [A.x, 1, A.z], 0.3); } else { s.position.x += dx / d * Math.min(v, d); s.position.z += dz / d * Math.min(v, d); } } }); }); }
+  function arenaBossNasce(dourado, forca) { const ant = BO.M; if (BO.e) BO.e.g.visible = false;
+    if (forca && MONSTRO(forca)) BO.idx = MONSTROS.indexOf(MONSTRO(forca)); else if (!dourado || !ant) BO.idx = (BO.idx + 1) % MONSTROS.length;
+    const M = MONSTROS[BO.idx]; BO.M = M; BO.nome = M.nome; BO.r = M.r;
+    if (!BO.cache[M.id]) { const e = M.monta(); ARG.G.add(e.g); e.g.position.set(0, 0, 0); e.aura = glowSpr(e.g, 0, 2.2, 0, 9, M.cor, 0.35); BO.cache[M.id] = e; }
+    const e = BO.cache[M.id]; BO.e = e; BO.aura = e.aura; BO.aura.material.color.set(M.cor); BO.x = ARENA.X; BO.z = ARENA.Z; BO.salto = null; BO.marcas = null; BO.fase = 0;
+    e.g.visible = true; e.g.rotation.set(0, 0, 0); e.g.position.set(0, 0, 0); e.b.scale.set(1, 1, 1); BO.max = 4000 + 300 * Object.keys(ARENA.lut).length; BO.hp = BO.max; BO.vivo = true; BO.queda = 0; BO.cd = 3; BO.golpe = -1; BO.ult = null; Object.values(ARENA.lut).forEach(L => { L.danoBoss = 0; });
+    boBar.querySelector('b').textContent = M.ic + ' ' + M.nome.toUpperCase(); boBar.style.setProperty('--bo', M.cor);
+    fx('luz', [BO.x, 0, BO.z], 1.5); fx('fumo', [BO.x, 0, BO.z], 1.5); try { som('portal', 0.8, 0.6); } catch (x) {}
+    { const C = ARENA.cam; if (C.modo !== 'fixa') { C.modo = 'boss'; C.t = 4.5; C.a = BO.rot + 0.35; } }
+    if (!dourado) { arenaFeed(M.ic + ' <b>' + M.nome.toUpperCase() + '</b> apareceu! Ele ' + M.dica + '. Comente LUTAR pra derrubar!'); arenaFala(M.nome + ' apareceu na arena! Cuidado, ele ' + M.dica + '! Comente lutar pra derrubar ele!', true); }
+    else arenaFeed('👑 <b>' + M.nome.split(',')[0].toUpperCase() + ' DOURADO</b> apareceu! Vale o dobro de pontos!'); }
+  function arenaBossMorre(L) { BO.vivo = false; BO.hp = 0; BO.queda = 0.001; L.kills += BO.dourado ? 6 : 3; const M = BO.M, nm = M.nome.split(',')[0]; if (BO.dourado) { BO.dourado = false; if (BO.aura) BO.aura.material.color.set(M.cor); }
+    if (BO.e.fogoB) { BO.e.fogoB.material.opacity = 0; } BO.e.g.position.y = 0; BO.salto = null; BO.marcas = null; const top = Object.values(ARENA.lut).sort((p, q) => (q.danoBoss || 0) - (p.danoBoss || 0))[0];
     if (top && top !== L) top.kills += 2; fx('fogo', [BO.x, 2, BO.z], 1.5); fx('luz', [BO.x, 0, BO.z], 1.5); try { som('magia', 1, 0.6); } catch (x) {} tremor = 0.6;
-    arenaFeed('💥 <b>' + L.nome + '</b> deu o golpe final no TITÃ! (+3)' + (top && top !== L ? ' · <b>' + top.nome + '</b> causou mais dano (+2)' : '')); aviso('💥 TITÃ DERROTADO por ' + L.nome + '! Agora é todo mundo contra todo mundo!', '#ffd23c'); arenaFala('O Titã foi derrotado por ' + L.nome + '! Agora é todo mundo contra todo mundo!', true); arenaFoca(L, 4); }
-  function arenaBossFrame(dt, vivos) { const on = zona === 'arena';
+    arenaFeed('💥 <b>' + L.nome + '</b> deu o golpe final em ' + M.ic + ' ' + nm.toUpperCase() + '! (+3)' + (top && top !== L ? ' · <b>' + top.nome + '</b> causou mais dano (+2)' : '')); aviso('💥 ' + nm.toUpperCase() + ' DERROTADO por ' + L.nome + '! O próximo monstro vem aí...', '#ffd23c'); arenaFala(nm + ' foi derrotado por ' + L.nome + '! Agora é todo mundo contra todo mundo, e o próximo monstro já está vindo!', true); arenaFoca(L, 4); }
+  function arenaBossFrame(dt, vivos) { const on = zona === 'arena'; bfxFrame(dt);
     if (!on) { boBar.hidden = true; return; }
     if (!BO.vivo && !BO.queda && Object.keys(ARENA.lut).length === 0) { BO.espera -= dt; if (BO.espera <= 0) arenaBossNasce(); } else if (!BO.vivo) BO.espera = 2.5;
-    const e = BO.e; boBar.hidden = !(BO.vivo || BO.queda); if (!e) return;
+    const e = BO.e; boBar.hidden = !(BO.vivo || BO.queda); if (!e) return; const M = BO.M;
     if (BO.queda) { BO.queda += dt; e.g.rotation.x = -Math.min(1.45, BO.queda * 1.1); e.g.position.y = -Math.max(0, BO.queda - 1.5) * 2; if (BO.queda > 4) { BO.queda = 0; e.g.visible = false; } }
     if (!BO.vivo) { boBar.querySelector('i').style.width = '0%'; return; }
-    BO.pos.set(BO.x, 9, BO.z); const t = gT;
-    // vira pro lutador mais perto
+    const t = gT; BO.vivosR = vivos;
+    // volta devagar pro centro (depois de um pulo)
+    if (!BO.salto) { const dx = ARENA.X - BO.x, dz = ARENA.Z - BO.z, d = Math.hypot(dx, dz); if (d > 0.2) { const v = Math.min(d, dt * 2.2); BO.x += dx / d * v; BO.z += dz / d * v; } }
+    e.g.position.x = BO.x - ARENA.X; e.g.position.z = BO.z - ARENA.Z; BO.pos.set(BO.x, 9, BO.z);
     let alvo = null, bd = 1e9; vivos.forEach(o => { const d = Math.hypot(o.x - BO.x, o.z - BO.z); if (d < bd) { bd = d; alvo = o; } });
-    if (alvo) { let dr = Math.atan2(alvo.x - BO.x, alvo.z - BO.z) - BO.rot; while (dr > Math.PI) dr -= Math.PI * 2; while (dr < -Math.PI) dr += Math.PI * 2; BO.rot += dr * clamp(dt * 1.5); } else BO.rot += dt * 0.2;
-    e.g.rotation.y = BO.rot; e.b.position.y = Math.sin(t * 1.6) * 0.06;
-    // golpe no chão: levanta os braços e bate, acerta quem está perto
-    if (BO.golpe < 0) { e.arms.forEach((a, i) => a.rotation.x = Math.sin(t * 1.4 + i * Math.PI) * 0.25); BO.cd -= dt; if (BO.cd <= 0 && alvo && bd < 9) { BO.golpe = 0; } }
-    else { BO.golpe += dt; const w = 1.0;
-      if (BO.golpe < w) e.arms.forEach(a => a.rotation.x = -(BO.golpe / w) * 2.7);
-      else { e.arms.forEach(a => a.rotation.x = 0.5); if (!BO.bateu) { BO.bateu = true; fx('fumo', [BO.x, 0.3, BO.z], 0.8); fx('vento', [BO.x, 0.3, BO.z], 0.6); tremor = Math.max(tremor, 0.25); try { som('golem_soco', 0.7, 0.8); } catch (x) {}
-          vivos.forEach(o => { const dx = o.x - BO.x, dz = o.z - BO.z, d = Math.hypot(dx, dz); if (d < 8.5) { const dano = Math.round(18 + Math.random() * 14); o.hp -= dano; try { numero(o.c.position, String(dano), '#ff5a5a', 2.2); } catch (x) {} if (d > 1e-3) { o.x += dx / d * 2.2; o.z += dz / d * 2.2; } if (o.hp <= 0) { o.hp = 0; o.morto = 3; o.mortes++; o.seq = 0; arenaFeed('👹 O Titã esmagou <b>' + o.nome + '</b>!'); } } }); }
-        if (BO.golpe > w + 0.6) { BO.golpe = -1; BO.bateu = false; BO.cd = 2.2 + Math.random() * 1.2 - (BO.hp < BO.max / 2 ? 0.8 : 0); } } }
+    if (M.ataque === 'pulo' && vivos.length) alvo = vivos.slice().sort((a, b) => Math.hypot(b.x - BO.x, b.z - BO.z) - Math.hypot(a.x - BO.x, a.z - BO.z))[0];
+    const A = ATQ[M.ataque];
+    if (BO.golpe < 0 || BO.golpe >= A.w) { if (alvo) { let dr = Math.atan2(alvo.x - BO.x, alvo.z - BO.z) - BO.rot; while (dr > Math.PI) dr -= Math.PI * 2; while (dr < -Math.PI) dr += Math.PI * 2; if (!(BO.golpe >= 0 && A.dura)) BO.rot += dr * clamp(dt * 1.5); } else BO.rot += dt * 0.2; }
+    e.g.rotation.y = BO.rot;
+    if (BO.golpe < 0) { if (M.idle) M.idle(e, t); else { e.arms.forEach((a, i) => a.rotation.x = Math.sin(t * 1.4 + i * Math.PI) * 0.25); e.b.position.y = Math.sin(t * 1.6) * 0.06; }
+      if (M.ataque !== 'pulo' && M.id !== 'raio') e.b.scale.set(1, 1, 1); if (M.ataque === 'pulo') M.idle(e, t);
+      BO.cd -= dt; const alc = { soco: 9, gelo: 9, giro: 9, fogo: 12, teia: 20, cuspe: 20, raios: 40, pulo: 40 }[M.ataque]; if (BO.cd <= 0 && alvo && bd < alc) { BO.golpe = 0; BO.bateu = false; BO.tick = 0; } }
+    else { BO.golpe += dt; if (BO.golpe < A.w) A.prepara(e, BO.golpe / A.w, alvo);
+      else { if (!BO.bateu) { BO.bateu = true; A.acerta(e, vivos, alvo); } else if (A.dura) A.dura(e, vivos, dt, (BO.golpe - A.w) / (A.fim - A.w));
+        if (BO.golpe > A.fim) { if (A.solta) A.solta(e); BO.golpe = -1; BO.bateu = false; BO.cd = 2.2 + Math.random() * 1.2 - (BO.hp < BO.max / 2 ? 0.8 : 0); } } }
     boBar.querySelector('i').style.width = (BO.hp / BO.max * 100).toFixed(1) + '%'; boBar.querySelector('small').textContent = Math.ceil(BO.hp) + ' / ' + BO.max + (vivos.length ? ' · ' + vivos.length + ' lutando' : ' · esperando lutadores'); }
+  window.__arenaMonstro = id => { if (zona !== 'arena') return 'entre na arena'; if (BO.vivo) { BO.vivo = false; BO.e.g.visible = false; } arenaBossNasce(false, id); return BO.nome; };
   /* ----- VOZ da arena (ElevenLabs pelo servidor da live; sem chave usa a voz do aparelho) ----- */
   const VOZ = { on: true, fila: [], tocando: false, base: '', falhou: 0, cta: 0 };
   try { VOZ.on = localStorage.getItem('arenaVoz') !== '0'; } catch (e) {}
@@ -11983,7 +12120,7 @@ const ArcaneWingSystem = (function () {
   function arenaCtaLista() { const L = ['💬 Comente <b>LUTAR</b> e seu personagem entra na arena!', '👀 Só assistindo? Você fica na <b>arquibancada</b> torcendo', '⚔️ Comente <b>LUTAR</b> e desça da arquibancada pra batalha!'];
     ARENA_PRES.forEach(P => L.push(P.ic + ' Mande <b>' + P.nomes[0].replace(/^./, c => c.toUpperCase()) + '</b> = ' + P.item + ' <span style="color:' + P.cor + '">(' + P.fx + ')</span>'));
     L.push('⚔️ Comente <b>DUELO</b> e o nome de alguém pra desafiar!', '🔴🔵 Comente <b>VERMELHO</b> ou <b>AZUL</b> e entre num time!', '🎯 Meta: faltam <b>' + (MT.alvo - MT.n) + '</b> presentes pra chuva de itens!', '⏱ Rodada acaba em <b>' + arenaRelogio() + '</b>: o campeão ganha a coroa 👑', '👍 Muitas curtidas = <b>CHUVA DE CORAÇÕES</b> e cura pra todos!', '🎁 Qualquer presente também te coloca na luta na hora!', '🏆 Quem mais derrotar fica no <b>TOPO</b> do ranking!', '❤️ Seguiu a live? Seu lutador recupera a vida toda!', '👍 Curtidas curam seu lutador durante a luta!');
-    if (BO.vivo) L.push('👹 O <b>TITÃ</b> está no meio da arena! Comente LUTAR e ajude a derrubar!', '💥 Golpe final no Titã vale <b>+3</b> no ranking!');
+    if (BO.vivo) L.push(BO.M.ic + ' <b>' + BO.M.nome.split(',')[0].toUpperCase() + '</b> está no meio da arena! Comente LUTAR e ajude a derrubar!', '💥 Golpe final no monstro vale <b>+3</b> no ranking!', '⚠️ Cuidado: ' + BO.M.nome.split(',')[0] + ' ' + BO.M.dica + '!');
     const top = Object.values(ARENA.lut).sort((p, q) => q.kills - p.kills)[0]; if (top && top.kills > 0) L.push('👑 <b>' + top.nome + '</b> está no topo com ' + top.kills + ' abates. Quem derruba?');
     return L; }
   function arenaCtaFrame(dt) { if (zona !== 'arena') { ctaEl.hidden = true; return; } CTA.t -= dt; if (CTA.t > 0) return;
@@ -12044,9 +12181,9 @@ const ArcaneWingSystem = (function () {
     if (DU.on && ((L === DU.a && A === DU.b) || (L === DU.b && A === DU.a))) arenaDueloFim(L, A); }
   /* ---- meta de presentes ---- */
   function arenaMeta(n, L) { MT.n += n; if (MT.n >= MT.alvo) { MT.n = 0; MT.ev++; arenaMetaCompleta(L); MT.alvo += 10; } }
-  function arenaMetaCompleta(L) { aviso('🎯 META BATIDA! Chuva de itens pra todo mundo!', '#2af0ff'); arenaFeed('🎯 <b>META DE PRESENTES BATIDA!</b> Chuva de itens + Titã Dourado!'); arenaFala('Meta de presentes batida! Chuva de itens pra todo mundo, e o Titã Dourado vai aparecer!', true);
+  function arenaMetaCompleta(L) { aviso('🎯 META BATIDA! Chuva de itens pra todo mundo!', '#2af0ff'); arenaFeed('🎯 <b>META DE PRESENTES BATIDA!</b> Chuva de itens + Monstro Dourado!'); arenaFala('Meta de presentes batida! Chuva de itens pra todo mundo, e um monstro dourado vai aparecer!', true);
     const baratos = ARENA_PRES.filter(P => P.nv === 1); Object.values(ARENA.lut).forEach((x, i) => setTimeout(() => { if (ARENA.lut[x.id]) { const P = baratos[Math.floor(Math.random() * baratos.length)]; arenaPresente(x, P.nomes[0], 1, true); } }, 400 + i * 350));
-    setTimeout(() => { if (!BO.vivo && zona === 'arena') { arenaBossNasce(true); BO.max *= 2; BO.hp = BO.max; BO.dourado = true; if (BO.aura) BO.aura.material.color.set('#ffd23c'); boBar.querySelector('b').textContent = '👑 TITÃ DOURADO'; arenaFala('O Titã Dourado apareceu! Ele vale o dobro de pontos!', true); } }, 2500); }
+    setTimeout(() => { if (!BO.vivo && zona === 'arena') { arenaBossNasce(true); BO.max *= 2; BO.hp = BO.max; BO.dourado = true; if (BO.aura) BO.aura.material.color.set('#ffd23c'); boBar.querySelector('b').textContent = '👑 ' + BO.M.nome.split(',')[0].toUpperCase() + ' DOURADO'; arenaFala(BO.M.nome.split(',')[0] + ' Dourado apareceu! Ele vale o dobro de pontos!', true); } }, 2500); }
   /* ---- rodadas com campeão ---- */
   function arenaCoroa(L) { Object.values(ARENA.lut).forEach(x => { if (x.coroa) { x.c.userData.P.head.remove(x.coroa); x.coroa = null; x.h = ''; } }); if (!L) return;
     const g = grp(L.c.userData.P.head, 0, 0.36, 0); part(g, CYL, '#ffd23c', 0, 0, 0, 0.2, 0.08, 0.2, 0.02, true); for (let i = 0; i < 5; i++) { const a = i / 5 * Math.PI * 2; part(g, CONE, '#ffd23c', Math.sin(a) * 0.17, 0.1, Math.cos(a) * 0.17, 0.05, 0.14, 0.05, 0.02, true); } glowSpr(g, 0, 0.1, 0, 0.8, '#ffd23c', 0.6); L.coroa = g; L.h = ''; }
@@ -12069,8 +12206,8 @@ const ArcaneWingSystem = (function () {
     times: ['🔴🔵 <b>TIMES:</b> comente <b>VERMELHO</b> ou <b>AZUL</b> · time não se ataca', 'Como funcionam os times: comente vermelho ou azul pra escolher seu lado. Quem é do mesmo time não se ataca, então vocês lutam juntos contra o outro time. Cada abate soma um ponto pro seu time no placar. Qual time escolher? Entra no time que está perdendo pra ajudar a virar, ou no time do seu amigo pra lutar junto com ele!'],
     presentes: ['🎁 <b>PRESENTES:</b> entra na luta + item de poder + sobe de nível', 'Como funcionam os presentes: qualquer presente coloca você direto na luta e dá um item de poder. Rosa dá uma espada com mais dano, casquinha dá um escudo com mais vida, bom jogo dá botas de velocidade, e o coração faz você se curar sozinho. Cada presente também sobe seu nível, e seu lutador fica maior.'],
     divinos: ['✨ <b>ARTEFATOS DIVINOS</b> têm poderes: sol de fogo, gelo e fogo espectral', 'Os artefatos divinos têm poderes de verdade! O Emblema Flamejante joga um sol de fogo que explode e queima os inimigos. O Astrolábio Arcano solta o corte glacial, pilares de gelo que congelam e o juízo congelado que cai do céu. E o Manto do Abismo queima quem chega perto com fogo espectral e avança com as asas roubando vida. Mini dino dá o Emblema, o controle dá o Astrolábio, e os presentes grandes dão o Manto.'],
-    meta: ['🎯 <b>META:</b> completou = chuva de itens + Titã Dourado', 'Como funciona a meta de presentes: a barra na tela enche com cada presente. Quando completar, cai uma chuva de itens pra todo mundo que está lutando, e aparece o Titã Dourado, que vale o dobro de pontos.'],
-    tita: ['👹 <b>TITÃ:</b> todos atacam juntos · golpe final +3 · mais dano +2', 'Como funciona o Titã: ele é o chefe gigante do meio da arena. Enquanto ele estiver vivo, todo mundo ataca ele junto. Quem der o golpe final ganha três pontos, e quem causar mais dano ganha dois. Cuidado com o soco no chão, que acerta todo mundo perto dele!'],
+    meta: ['🎯 <b>META:</b> completou = chuva de itens + Monstro Dourado', 'Como funciona a meta de presentes: a barra na tela enche com cada presente. Quando completar, cai uma chuva de itens pra todo mundo que está lutando, e aparece o Titã Dourado, que vale o dobro de pontos.'],
+    tita: ['👹 <b>MONSTROS:</b> 8 chefes diferentes revezam · golpe final +3 · mais dano +2', 'Como funcionam os monstros: um chefe gigante aparece no meio da arena e todo mundo ataca ele junto. São oito monstros diferentes que revezam: o Titã, o Dragão Ignarok que cospe fogo, a Aranha Aracnys que prende na teia, o Colosso de Gelo que congela, a Hidra que cospe veneno, o Voltarion que solta raios, o Rei Esqueleto que gira a espada e o Rei Gosma que pula em cima de quem está longe. Quem der o golpe final ganha três pontos, e quem causar mais dano ganha dois!'],
     rodada: ['👑 <b>RODADA:</b> 5 minutos · mais abates = campeão com coroa', 'Como funcionam as rodadas: cada rodada dura cinco minutos. No fim, quem tiver mais abates vira o campeão e ganha uma coroa dourada na cabeça. Depois os pontos zeram e começa tudo de novo, então sempre dá tempo de ganhar!'],
     curtidas: ['👍 <b>CURTIDAS</b> curam · muitas juntas = chuva de corações', 'Curtidas também ajudam! Cada curtida cura um pouco o seu lutador, e quando a galera curte muito junto, cai uma chuva de corações que cura todo mundo. E se você seguir a live, seu lutador volta com a vida cheia!'] };
   const NARRA = ['Bem-vindos à Arena da Live! Quem só assiste fica na arquibancada. Comente lutar e o seu personagem entra na batalha! Comente duelo pra desafiar alguém, ou vermelho e azul pra entrar num time!'].concat(Object.values(EXPLICA).map(x => x[1]));
@@ -12079,7 +12216,7 @@ const ArcaneWingSystem = (function () {
     ctaEl.innerHTML = '📖 ' + E[0]; ctaEl.hidden = false; void ctaEl.offsetWidth; ctaEl.classList.add('on'); CTA.on = true; CTA.t = 10; }
   /* pergunta no chat ("como funciona o duelo?") -> o locutor explica */
   function arenaPergunta(n) { if (!/\bcomo\b|\?|\bqual\b|\bo que\b|\bexplica|\bajuda|\bnao entendi/.test(n)) return null;
-    const M = [['duelo', /duelo|desafi/], ['times', /time|vermelho|azul|lado/], ['divinos', /divin|artefat|poder|emblema|astrolabio|manto/], ['presentes', /presente|rosa|item|nivel/], ['meta', /meta|barra/], ['tita', /tita|boss|chefe|gigante/], ['rodada', /rodada|coroa|campeao/], ['curtidas', /curti|coracao|like/], ['lutar', /lut|entr|jog|particip|funciona|faz/]];
+    const M = [['duelo', /duelo|desafi/], ['times', /time|vermelho|azul|lado/], ['divinos', /divin|artefat|poder|emblema|astrolabio|manto/], ['presentes', /presente|rosa|item|nivel/], ['meta', /meta|barra/], ['tita', /tita|boss|chefe|gigante|monstro|chefe|boss|drag|aranha|hidra|gelo|raio|esquelet|gosma/], ['rodada', /rodada|coroa|campeao/], ['curtidas', /curti|coracao|like/], ['lutar', /lut|entr|jog|particip|funciona|faz/]];
     const m = M.find(x => x[1].test(n)); return m ? m[0] : null; }
   /* ===================== LOCUTOR: comenta a luta o tempo todo, sem repetir ===================== */
   const LOC_HYPE = ['Que batalha, galera! A arena está pegando fogo!', 'Olha a pancadaria! Ninguém quer perder aqui!', 'Isso aqui é a Arena da Live, onde só os fortes sobrevivem!', 'Que golpe! Vocês viram isso?', 'A arquibancada está agitada hoje!',
@@ -12088,7 +12225,7 @@ const ArcaneWingSystem = (function () {
     'Isso que é batalha de verdade!', 'Ataque, defesa, e muita coragem! Assim que se faz!', 'O clima está quente na arena!', 'Tem lutador apanhando muito aí, hein!', 'Bora, bora! Mais guerreiros na arena!'];
   const LOC_CHAMA = ['Ainda está só olhando? Comenta lutar e desce pra arena!', 'Quem comentar lutar agora entra direto na batalha!', 'Manda um presente e veja seu lutador ficar gigante com a corrente de luz!', 'Uma rosinha já te dá uma espada nova! Bora!',
     'Quer ver seu nome no topo do ranking? Comenta lutar!', 'Chama o seu amigo pro duelo! Escreve duelo e o nome dele!', 'Time vermelho ou time azul? Comenta aí e escolhe seu lado!', 'Segue a live que seu lutador volta com a vida cheia!',
-    'Curtiu? Toca na tela! Muita curtida vira chuva de corações!', 'Compartilha a live! Quanto mais gente, mais louca fica a arena!', 'O Titã está esperando alguém corajoso! Comenta lutar!', 'Cada presente conta pra meta! Falta pouco pra chuva de itens!'];
+    'Curtiu? Toca na tela! Muita curtida vira chuva de corações!', 'Compartilha a live! Quanto mais gente, mais louca fica a arena!', 'O monstro da arena está esperando alguém corajoso! Comenta lutar!', 'Cada presente conta pra meta! Falta pouco pra chuva de itens!'];
   const LOC = { saco: {}, lider: null, m50: false, m20: false, ult60: false, ult10: false, pBlood: false, rd: 0, vazio: 0 };
   function locPega(nome, lista) { let b = LOC.saco[nome]; if (!b || !b.length) { b = LOC.saco[nome] = lista.map((_, i) => i).sort(() => Math.random() - 0.5); } return lista[b.pop()]; }
   function locDinamico() { const ls = Object.values(ARENA.lut), vivos = ls.filter(L => !L.morto), top = ls.slice().sort((p, q) => q.kills - p.kills)[0], ops = [];
@@ -12097,7 +12234,7 @@ const ArcaneWingSystem = (function () {
     const pl = Object.keys(ARENA.plat).length; if (pl > 0) ops.push(pl + ' pessoas na arquibancada! Comenta lutar e desce pra luta!');
     if (RD.t < 280 && ls.length >= 2) ops.push('Faltam ' + Math.ceil(RD.t / 60) + ' minutos pro fim da rodada ' + RD.n + '!');
     if (TIM.r || TIM.b) ops.push(TIM.r === TIM.b ? 'Os times estão empatados, ' + TIM.r + ' a ' + TIM.b + '!' : 'Time ' + (TIM.r > TIM.b ? 'vermelho' : 'azul') + ' na frente, ' + Math.max(TIM.r, TIM.b) + ' a ' + Math.min(TIM.r, TIM.b) + '!');
-    if (BO.vivo) ops.push('O Titã ainda tem ' + Math.round(BO.hp / BO.max * 100) + ' por cento da vida! Ataquem!');
+    if (BO.vivo) ops.push(BO.M.nome.split(',')[0] + ' ainda tem ' + Math.round(BO.hp / BO.max * 100) + ' por cento da vida! Ataquem!');
     const forte = ls.slice().sort((p, q) => Object.keys(q.itens).length - Object.keys(p.itens).length)[0]; if (forte && Object.keys(forte.itens).length >= 2) ops.push(forte.nome + ' está todo equipado com ' + Object.keys(forte.itens).length + ' itens! Cuidado com ele!');
     const nv = ls.slice().sort((p, q) => (q.up || 0) - (p.up || 0))[0]; if (nv && nv.up >= 2) ops.push(nv.nome + ' já está no nível ' + (1 + nv.up) + '! Ficou enorme!');
     if (RD.camp) ops.push('O campeão da última rodada foi ' + RD.camp.nome + '! Será que ele defende a coroa?');
@@ -12120,7 +12257,7 @@ const ArcaneWingSystem = (function () {
     // troca de líder
     const top = ls.slice().sort((p, q) => q.kills - p.kills)[0]; if (top && top.kills >= 2 && LOC.lider !== top.id) { const ant = LOC.lider && ARENA.lut[LOC.lider]; LOC.lider = top.id; arenaFala(ant ? top.nome + ' passou o ' + ant.nome + ' e assumiu a liderança!' : top.nome + ' assumiu a liderança da rodada!', true); }
     // Titã
-    if (BO.vivo) { const p = BO.hp / BO.max; if (p > 0.95) { LOC.m50 = LOC.m20 = false; } if (!LOC.m50 && p < 0.5) { LOC.m50 = true; arenaFala('O Titã está na metade da vida! Não para agora!', true); } if (!LOC.m20 && p < 0.2) { LOC.m20 = true; arenaFala('O Titã está quase caindo! Quem vai dar o golpe final?', true); } }
+    if (BO.vivo) { const p = BO.hp / BO.max; if (p > 0.95) { LOC.m50 = LOC.m20 = false; } if (!LOC.m50 && p < 0.5) { LOC.m50 = true; arenaFala(BO.M.nome.split(',')[0] + ' está na metade da vida! Não para agora!', true); } if (!LOC.m20 && p < 0.2) { LOC.m20 = true; arenaFala(BO.M.nome.split(',')[0] + ' está quase caindo! Quem vai dar o golpe final?', true); } }
     // rodada
     if (LOC.rd !== RD.n) { LOC.rd = RD.n; LOC.ult60 = LOC.ult10 = LOC.pBlood = false; LOC.lider = null; ls.forEach(L => { L.seq = 0; }); }
     if (ls.length >= 2) { if (!LOC.ult60 && RD.t < 60) { LOC.ult60 = true; arenaFala('Último minuto da rodada! Tudo pode mudar!', true); } if (!LOC.ult10 && RD.t < 10) { LOC.ult10 = true; arenaFala('Dez segundos! Dez segundos pro fim da rodada!', true); } }
@@ -12134,7 +12271,7 @@ const ArcaneWingSystem = (function () {
     for (let i = CR.sprs.length - 1; i >= 0; i--) { const s = CR.sprs[i]; s.position.y -= s.userData.v * dt; s.position.x += Math.sin(gT * 2 + s.userData.f) * dt * 0.8; if (s.position.y < 0.3) { world.remove(s); CR.sprs.splice(i, 1); } }
     NR.t -= dt; if (NR.t <= 0) { NR.t = 16 + Math.random() * 10; arenaLocutor(); } arenaLocutorEventos(dt);
     const pct = Math.min(100, MT.n / MT.alvo * 100);
-    const h = `<div class="mt"><b>🎯 META DE PRESENTES</b><span><i style="width:${pct.toFixed(1)}%"></i></span><small>${MT.n} / ${MT.alvo} · completou = chuva de itens + Titã Dourado</small></div>`;
+    const h = `<div class="mt"><b>🎯 META DE PRESENTES</b><span><i style="width:${pct.toFixed(1)}%"></i></span><small>${MT.n} / ${MT.alvo} · completou = chuva de itens + Monstro Dourado</small></div>`;
     if (showEl._h !== h) { showEl._h = h; showEl.innerHTML = h; } showEl.hidden = false; }
   function arenaTesteShow(a) { const ls = Object.values(ARENA.lut), ps = Object.values(ARENA.plat), rnd = v => v[Math.floor(Math.random() * v.length)];
     if (a === 'duelo') { const x = rnd(ls.length ? ls : ps); if (x) arenaEvento({ type: 'chat', id: x.id, name: x.nome, text: 'duelo' }); }
@@ -12215,9 +12352,9 @@ const ArcaneWingSystem = (function () {
     arUi.innerHTML = `<div class="ar-rk"><b class="tt">🏆 RODADA ${RD.n} · ⏱ ${arenaRelogio()}</b>${RD.camp ? `<div class="ar-camp">👑 Campeão: <b>${RD.camp.nome}</b></div>` : ''}${arenaPlacarTimes()}${L.length ? L.map((x, i) => `<div class="ln${i < 3 ? ' t' + (i + 1) : ''}"><span>${med[i] || (i + 1) + 'º'}</span>${arenaFoto(x, 'mi')}<em>${x.time ? (x.time === 'r' ? '🔴' : '🔵') : ''}${Object.values(x.itens).map(P => P.ic).join('')}${x.nome}</em><i>⚔️ ${x.kills}</i></div>`).join('') : '<p>Ninguém lutando ainda. Comente LUTAR pra entrar! ⚔️</p>'}
       <small class="dc">👀 ${Object.keys(ARENA.plat).length} na arquibancada · 💬 comente LUTAR</small></div>
       <div class="ar-feed">${ARENA.feed.filter(f => performance.now() - f.em < 9000).map(f => `<div>${f.t}</div>`).join('')}</div>
-      <div class="ar-bt"><button data-a="bot">➕ Espectador de teste</button><button data-a="lutar">💬 LUTAR de teste</button><button data-a="pres">🎁 Presente de teste</button><button data-a="duelo">⚔️ Duelo teste</button><button data-a="time">🔴🔵 Time teste</button><button data-a="like">👍 Curtidas teste</button><button data-a="meta">🎯 Meta teste</button><button data-a="tema">🎨 ${ARENA_TEMAS[ARENA_TEMA].nome}</button><button data-a="voz">${VOZ.on ? '🔊 Voz ligada' : '🔇 Voz desligada'}</button><button data-a="sai">🚪 Sair</button></div>`;
+      <div class="ar-bt"><button data-a="bot">➕ Espectador de teste</button><button data-a="lutar">💬 LUTAR de teste</button><button data-a="pres">🎁 Presente de teste</button><button data-a="duelo">⚔️ Duelo teste</button><button data-a="monstro">👹 Próximo monstro</button><button data-a="time">🔴🔵 Time teste</button><button data-a="like">👍 Curtidas teste</button><button data-a="meta">🎯 Meta teste</button><button data-a="tema">🎨 ${ARENA_TEMAS[ARENA_TEMA].nome}</button><button data-a="voz">${VOZ.on ? '🔊 Voz ligada' : '🔇 Voz desligada'}</button><button data-a="sai">🚪 Sair</button></div>`;
     arUi.querySelectorAll('[data-a]').forEach(b => tapBtn(b, () => { const a = b.dataset.a;
-      if (a === 'duelo' || a === 'time' || a === 'like' || a === 'meta') arenaTesteShow(a); else if (a === 'tema') { arenaMonta((ARENA_TEMA + 1) % ARENA_TEMAS.length); try { localStorage.setItem('arenaTema2', String(ARENA_TEMA)); } catch (e) {} } else if (a === 'voz') { VOZ.on = !VOZ.on; VOZ.fila = []; try { localStorage.setItem('arenaVoz', VOZ.on ? '1' : '0'); } catch (e) {} if (VOZ.on) arenaFala('Voz da arena ligada!', true); } else if (a === 'sai') arenaSai(); else if (a === 'lutar') { const Ps = Object.values(ARENA.plat); const S = Ps[Math.floor(Math.random() * Ps.length)]; if (S) arenaEvento({ type: 'chat', id: S.id, name: S.nome, text: 'bora LUTAR!' }); } else if (a === 'bot') { const id = 'teste' + Math.random().toString(36).slice(2, 7); arenaEvento({ type: 'join', id, name: 'Teste ' + id.slice(-3).toUpperCase() }); }
+      if (a === 'monstro') { const M = MONSTROS[(BO.idx + 1) % MONSTROS.length]; window.__arenaMonstro(M.id); } else if (a === 'duelo' || a === 'time' || a === 'like' || a === 'meta') arenaTesteShow(a); else if (a === 'tema') { arenaMonta((ARENA_TEMA + 1) % ARENA_TEMAS.length); try { localStorage.setItem('arenaTema2', String(ARENA_TEMA)); } catch (e) {} } else if (a === 'voz') { VOZ.on = !VOZ.on; VOZ.fila = []; try { localStorage.setItem('arenaVoz', VOZ.on ? '1' : '0'); } catch (e) {} if (VOZ.on) arenaFala('Voz da arena ligada!', true); } else if (a === 'sai') arenaSai(); else if (a === 'lutar') { const Ps = Object.values(ARENA.plat); const S = Ps[Math.floor(Math.random() * Ps.length)]; if (S) arenaEvento({ type: 'chat', id: S.id, name: S.nome, text: 'bora LUTAR!' }); } else if (a === 'bot') { const id = 'teste' + Math.random().toString(36).slice(2, 7); arenaEvento({ type: 'join', id, name: 'Teste ' + id.slice(-3).toUpperCase() }); }
       else { const Ps = Object.values(ARENA.plat), Ls = Ps.length ? Ps : Object.values(ARENA.lut); if (!Ls.length) return; const L = Ls[Math.floor(Math.random() * Ls.length)]; const G = ARENA_PRES[Math.floor(Math.random() * ARENA_PRES.length)]; arenaEvento({ type: 'gift', id: L.id, name: L.nome, gift: G.nomes[0], diamonds: G.nv >= 4 ? 500 : G.nv === 3 ? 100 : G.nv === 2 ? 10 : 1 }); } ARENA.uiT = 0; })); }
   // ----- entrar / sair (só ADM) -----
   function arenaEntra() { if (!souAdmin()) { aviso('🔒 A Arena da Live é só do Administrador.', '#ff6a6a'); return; } if (zona === 'arena') return; if (montado) montar(false); if (voando) voa(false);
