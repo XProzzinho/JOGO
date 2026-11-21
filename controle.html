@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Painel da Live · Arena</title>
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;min-height:100vh;background:#0e0818;color:#fff;font:600 18px system-ui,sans-serif}
+  header{display:flex;align-items:center;gap:12px;padding:12px 18px;background:linear-gradient(90deg,#25f4ee33,#fe2c5533);border-bottom:2px solid #fe2c55}
+  header h1{margin:0;font-size:24px;flex:1}
+  #st{font-size:15px;padding:6px 12px;border-radius:20px;background:#555}
+  #st.on{background:#1f9d55}
+  main{display:flex;gap:14px;padding:14px;height:calc(100vh - 66px)}
+  #lista{flex:1.2;overflow:auto;display:flex;flex-direction:column;gap:6px;padding-right:4px}
+  #lado{flex:1;display:flex;flex-direction:column;gap:10px;min-width:300px}
+  .p{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:14px;background:#ffffff12;border:3px solid transparent;color:#fff;font:inherit;text-align:left;width:100%;cursor:pointer}
+  .p:focus{outline:none;border-color:#25f4ee}
+  .p.sel{background:#fe2c5566;border-color:#fe2c55}
+  .fo{position:relative;width:46px;height:46px;border-radius:50%;overflow:hidden;flex:none;display:flex;align-items:center;justify-content:center;font-weight:800;border:2px solid #ffcf5a}
+  .fo img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+  .nm{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:20px}
+  .on{font-size:15px;color:#cfc6e0;white-space:nowrap}
+  #esc{padding:12px;border-radius:14px;background:#ffffff10;color:#ffd86a;font-size:20px;min-height:52px}
+  #bts{display:grid;grid-template-columns:1fr 1fr;gap:8px;overflow:auto}
+  #bts button{min-height:58px;border:3px solid transparent;border-radius:14px;color:#fff;font:800 18px system-ui;text-shadow:0 1px 2px #000a;cursor:pointer}
+  #bts button:focus{outline:none;border-color:#fff;transform:scale(1.04)}
+  #msg{font-size:16px;color:#9affc0;min-height:22px}
+  #pin{position:fixed;inset:0;background:#0e0818f2;display:none;align-items:center;justify-content:center;flex-direction:column;gap:14px}
+  #pin input{font:700 26px system-ui;padding:12px;border-radius:12px;border:2px solid #fe2c55;width:260px;text-align:center}
+  #pin button{font:800 22px system-ui;padding:12px 30px;border-radius:12px;border:0;background:#fe2c55;color:#fff}
+  .vazio{padding:30px;text-align:center;color:#cfc6e0}
+  @media (max-width:700px){main{flex-direction:column;height:auto}#lista{max-height:50vh}#lado{min-width:0}}
+</style>
+</head>
+<body>
+<header><h1>🎵 Painel da Live · Arena</h1><span id="st">desconectado</span></header>
+<main>
+  <div id="lista"><div class="vazio">Esperando gente da live...</div></div>
+  <div id="lado">
+    <div id="esc">Escolha uma pessoa na lista</div>
+    <div id="bts"></div>
+    <div id="msg"></div>
+  </div>
+</main>
+<div id="pin"><div>PIN da live</div><input id="pinIn" type="password" inputmode="numeric"><button id="pinOk">Entrar</button></div>
+<script>
+const BOTOES = [['arena', '🏟️ Arena', '#2a8aff'], ['lutar', '⚔️ Guerreiro', '#ff8a2a'], ['vida', '❤️ Vida cheia', '#ff4a6a'], ['tirar', '🚪 Tirar', '#555'],
+  ['p:rosa', '🌹 Espada de Rosa', '#ff5a8a'], ['p:sorvete', '🍦 Escudo Gelado', '#4ab0e0'], ['p:gg', '🏆 Botas GG', '#d8a820'], ['p:coracao', '❤️ Coração Vital', '#e83a4a'],
+  ['p:dino', '🦖 Emblema Flamejante', '#ff7a2a'], ['p:controle', '🎮 Astrolábio Arcano', '#3aa8e0'], ['p:bau', '💎 Manto do Abismo', '#9a5aff']];
+const $ = id => document.getElementById(id);
+const esc = s => String(s == null ? '' : s).replace(/[<>&"]/g, '');
+let ws = null, sel = null, online = [], estado = { lut: [], plat: [] }, pin = '';
+$('bts').innerHTML = BOTOES.map(([k, t, c]) => `<button data-a="${k}" style="background:${c}">${t}</button>`).join('');
+try { pin = new URLSearchParams(location.search).get('key') || localStorage.getItem('painelPin') || ''; } catch (e) {}
+function hash(s) { let h = 0; for (const c of String(s)) h = (h * 31 + c.charCodeAt(0)) | 0; return Math.abs(h); }
+function onde(id) { const L = (estado.lut || []).find(x => x.id === id); if (L) return L.esq ? '🤡 palhaço' : '⚔️ guerreiro · ⭐' + L.pts; if ((estado.plat || []).some(x => x.id === id)) return '🪑 arquibancada'; return '— fora'; }
+function gente() { const m = new Map(); online.forEach(p => m.set(p.id, p)); [].concat(estado.lut || [], estado.plat || []).forEach(x => { if (!m.has(x.id)) m.set(x.id, { id: x.id, nome: x.nome, foto: x.foto, t: 0 }); }); return [...m.values()]; }
+let ultHtml = '';
+function desenha() {
+  const ls = gente(); const foco = document.activeElement && document.activeElement.dataset ? document.activeElement.dataset.id : null;
+  const html = ls.length ? ls.map(p => `<button class="p${p.id === sel ? ' sel' : ''}" data-id="${esc(p.id)}"><span class="fo" style="background:hsl(${hash(p.id) % 360},55%,42%)">${esc((p.nome || '?').charAt(0).toUpperCase())}${/^https:\/\//.test(p.foto || '') ? `<img src="${esc(p.foto)}" referrerpolicy="no-referrer" onerror="this.remove()">` : ''}</span><span class="nm">${esc(p.nome)}</span><span class="on">${onde(p.id)}</span></button>`).join('')
+    : '<div class="vazio">Ninguém ainda. Quem entrar, comentar, curtir ou mandar presente na live aparece aqui.</div>';
+  if (html !== ultHtml) { ultHtml = html; $('lista').innerHTML = html; if (foco) { const b = $('lista').querySelector(`[data-id="${CSS.escape(foco)}"]`); if (b) b.focus(); } }
+  const p = ls.find(x => x.id === sel); $('esc').innerHTML = p ? `Escolhido: <b>${esc(p.nome)}</b> · ${onde(p.id)}` : 'Escolha uma pessoa na lista';
+}
+$('lista').addEventListener('click', e => { const b = e.target.closest('[data-id]'); if (!b) return; sel = b.dataset.id; desenha(); const a = $('bts').querySelector('button'); if (a) a.focus(); });
+$('bts').addEventListener('click', e => { const b = e.target.closest('[data-a]'); if (!b) return;
+  if (!sel) { $('msg').textContent = 'Escolha uma pessoa primeiro'; return; }
+  if (!ws || ws.readyState !== 1) { $('msg').textContent = 'Sem conexão com o servidor'; return; }
+  ws.send(JSON.stringify({ cmd: 'acao', acao: b.dataset.a, id: sel }));
+  const p = gente().find(x => x.id === sel); $('msg').textContent = '✔ ' + b.textContent + ' → ' + (p ? p.nome : ''); });
+function liga() {
+  const u = (location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host + '/?papel=painel' + (pin ? '&key=' + encodeURIComponent(pin) : '');
+  let abriu = false; ws = new WebSocket(u);
+  ws.onopen = () => { abriu = true; $('st').textContent = 'conectado'; $('st').className = 'on'; try { localStorage.setItem('painelPin', pin); } catch (e) {} };
+  ws.onmessage = e => { let o; try { o = JSON.parse(e.data); } catch (er) { return; }
+    if (o.type === 'online') { online = o.lista || []; desenha(); }
+    else if (o.type === 'estado') { estado = o; desenha(); }
+    else if (o.id != null && o.name && !online.some(p => p.id === String(o.id))) { online.unshift({ id: String(o.id), nome: o.name, foto: o.foto || '', t: Date.now() }); desenha(); } };
+  ws.onclose = () => { $('st').textContent = 'desconectado'; $('st').className = ''; if (!abriu) { $('pin').style.display = 'flex'; $('pinIn').focus(); } else setTimeout(liga, 3000); };
+}
+$('pinOk').onclick = () => { pin = $('pinIn').value.trim(); $('pin').style.display = 'none'; liga(); };
+$('pinIn').onkeydown = e => { if (e.key === 'Enter') $('pinOk').click(); };
+liga();
+</script>
+</body>
+</html>

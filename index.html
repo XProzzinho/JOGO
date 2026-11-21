@@ -11752,7 +11752,7 @@ const ArcaneWingSystem = (function () {
     });
   }
   // diagnóstico da live: etiqueta de versão + botão imediato com ?live=1
-  try { const vt = document.createElement('div'); vt.textContent = 'versão live-7'; vt.style.cssText = 'position:fixed;right:6px;bottom:4px;z-index:9999;font:11px sans-serif;color:#fff;background:rgba(0,0,0,.6);padding:2px 6px;border-radius:6px;pointer-events:none'; document.body.appendChild(vt); setTimeout(() => vt.remove(), 15000);
+  try { const vt = document.createElement('div'); vt.textContent = 'versão live-8'; vt.style.cssText = 'position:fixed;right:6px;bottom:4px;z-index:9999;font:11px sans-serif;color:#fff;background:rgba(0,0,0,.6);padding:2px 6px;border-radius:6px;pointer-events:none'; document.body.appendChild(vt); setTimeout(() => vt.remove(), 15000);
     if (/[?&]live=1/.test(location.search)) liveBtn().hidden = false; } catch (e) { console.error('live', e); }
   // a live roda no próprio laço (não precisa mexer no jogo.js)
   let liveUlt = 0;
@@ -11947,7 +11947,10 @@ const ArcaneWingSystem = (function () {
   { const _le = liveEvento; liveEvento = function (m) { if (ARENA.on && m && souAdmin()) { try { arenaEvento(m); } catch (e) { console.warn('arena', e); } return; } return _le(m); }; }
   /* ----- PAINEL TIKTOK (só ADM): lista de quem está na live; escolhe a pessoa e aperta o botão (arena, guerreiro, poder, vida, tirar) ----- */
   const PTK = { gente: {}, sel: null, aberto: false, t: 0 };
-  { const _le2 = liveEvento; liveEvento = function (m) { try { if (m && m.id != null && m.type !== 'like_total') { const id = String(m.id), g = PTK.gente[id] || (PTK.gente[id] = { id, nome: arenaEsc(m.name) || 'Visitante', foto: '' }); if (m.name) g.nome = arenaEsc(m.name); const f = arenaFotoUrl(m.foto); if (f) g.foto = f; g.t = performance.now(); if (PTK.aberto) PTK.t = 0; } } catch (e) {} return _le2(m); }; }
+  { const _le2 = liveEvento; liveEvento = function (m) { if (!m || !/^(join|chat|gift|like|follow|tirar)$/.test(m.type) || m.id == null) return; // painel da TV
+    if (m.painel && souAdmin() && zona !== 'arena') { try { arenaEntra(); } catch (e) {} }
+    if (m.type === 'tirar') { if (souAdmin()) { arenaTira(String(m.id)); arenaPlatTira(String(m.id)); } return; }
+    try { if (m && m.id != null && m.type !== 'like_total') { const id = String(m.id), g = PTK.gente[id] || (PTK.gente[id] = { id, nome: arenaEsc(m.name) || 'Visitante', foto: '' }); if (m.name) g.nome = arenaEsc(m.name); const f = arenaFotoUrl(m.foto); if (f) g.foto = f; g.t = performance.now(); if (PTK.aberto) PTK.t = 0; } } catch (e) {} return _le2(m); }; }
   const ptBtn = document.createElement('button'); ptBtn.className = 'arena-keep'; ptBtn.innerHTML = '🎵 TikTok'; ptBtn.hidden = true;
   ptBtn.style.cssText = 'position:fixed;left:8px;bottom:60px;z-index:270;height:38px;padding:0 12px;border-radius:19px;border:2px solid #fff;background:linear-gradient(90deg,#25f4ee,#fe2c55);color:#fff;font:800 14px system-ui;text-shadow:0 1px 2px #000a;box-shadow:0 2px 8px #0008';
   document.body.appendChild(ptBtn);
@@ -11977,6 +11980,10 @@ const ArcaneWingSystem = (function () {
       else if (a === 'tirar') { arenaTira(g.id); arenaPlatTira(g.id); }
       else if (a.startsWith('p:')) { const P = ARENA_PRES.find(x => 'p:' + x.k === a); arenaEvento({ type: 'gift', ...base, gift: P.nomes[0], count: 1, diamonds: 0 }); } } catch (er) { console.warn('painel', er); }
     ptLista(); };
+  function ptEstado() { const w = LIVE.ws; if (!w || w.readyState !== 1 || !souAdmin()) return;
+    const um = L => ({ id: L.id, nome: L.nome, foto: L.foto || '', esq: !!L.esq, pts: L.kills || 0 });
+    try { w.send(JSON.stringify({ type: 'estado', arena: zona === 'arena', lut: Object.values(ARENA.lut).map(um), plat: Object.values(ARENA.plat).map(um) })); } catch (e) {} }
+  setInterval(ptEstado, 2000);
   function ptFrame(dt) { const ok = souAdmin(); ptBtn.hidden = !ok; if (!ok && PTK.aberto) { PTK.aberto = false; ptPn.hidden = true; } if (PTK.aberto) { PTK.t -= dt; if (PTK.t <= 0) { PTK.t = 1.5; ptLista(); } } }
   // ----- câmera de transmissão: foca quem entrou, sobe igual drone e fica rodeando -----
   // próximo guerreiro (quem não é palhaço) pra câmera mostrar, um de cada vez

@@ -15,6 +15,7 @@ const server = http.createServer((req, res) => {
   if (req.url.startsWith('/lumia') || req.url.startsWith('/online')) return lumia(req, res);
   let p = decodeURIComponent(req.url.split('?')[0]);
   if (p === '/') p = '/index.html';
+  if (p === '/painel') p = '/controle.html';
   const f = path.join(ROOT, path.normalize(p));
   if (!f.startsWith(ROOT) || /server\.js$|package\.json$/.test(f)) { res.writeHead(403); return res.end(); }
   fs.readFile(f, (e, d) => {
@@ -95,10 +96,37 @@ const wss = new WebSocketServer({
     return new URL(req.url, 'http://x').searchParams.get('key') === ADMIN_KEY;
   }
 });
-const send = o => {
+const send = o => { // vai pro jogo e pro painel
   const s = JSON.stringify(o);
   wss.clients.forEach(c => c.readyState === 1 && c.send(s));
 };
+const paraPainel = (o, menos) => { const s = JSON.stringify(o); wss.clients.forEach(c => c !== menos && c.papel === 'painel' && c.readyState === 1 && c.send(s)); };
+
+/* ---------- PAINEL DE CONTROLE (abre no navegador da TV ou do celular: /painel) ----------
+   o painel manda {cmd:'acao', acao, id}; o servidor repassa pro jogo como se fosse da live.
+   o jogo manda {type:'estado'} (quem está na arena) e o servidor repassa pros painéis. */
+const PRES_NOME = { rosa: 'rosa', sorvete: 'casquinha', gg: 'bom jogo', coracao: 'heart me', dino: 'mini dino', controle: 'controle', bau: 'baú' };
+let ESTADO = null;
+function online() { const vis = new Set(), lista = []; PESSOAS.forEach(p => { if (!vis.has(p.id) && Date.now() - p.t < 1800000) { vis.add(p.id); lista.push({ id: p.id, nome: p.name, foto: p.foto || '', t: p.t }); } }); return lista.sort((a, b) => b.t - a.t).slice(0, 150); }
+wss.on('connection', (ws, req) => {
+  ws.papel = new URL(req.url, 'http://x').searchParams.get('papel') || 'jogo';
+  if (ws.papel === 'painel') { ws.send(JSON.stringify({ type: 'online', lista: online() })); if (ESTADO) ws.send(JSON.stringify(ESTADO)); }
+  ws.on('message', d => {
+    let o; try { o = JSON.parse(String(d).slice(0, 50000)); } catch (e) { return; }
+    if (o.type === 'estado' && ws.papel !== 'painel') { ESTADO = o; return paraPainel(o, ws); }
+    if (ws.papel !== 'painel' || o.cmd !== 'acao') return;
+    const id = String(o.id || ''); let p = null; PESSOAS.forEach(x => { if (x.id === id) p = x; });
+    if (!p && ESTADO) [].concat(ESTADO.lut || [], ESTADO.plat || []).forEach(x => { if (x.id === id) p = { id, name: x.nome, foto: x.foto || '' }; });
+    if (!p) return;
+    const base = { id: p.id, name: p.name, foto: p.foto || '', painel: true }, a = String(o.acao || '');
+    if (a === 'lutar') send({ type: 'chat', ...base, text: 'LUTAR' });
+    else if (a === 'vida') send({ type: 'follow', ...base });
+    else if (a === 'tirar') send({ type: 'tirar', ...base });
+    else if (a.startsWith('p:')) send({ type: 'gift', ...base, gift: PRES_NOME[a.slice(2)] || 'rosa', count: 1, diamonds: 0 });
+    else send({ type: 'join', ...base });
+  });
+});
+setInterval(() => paraPainel({ type: 'online', lista: online() }), 3000);
 
 server.listen(PORT, '0.0.0.0', () => console.log('Servidor no ar na porta', PORT));
 
