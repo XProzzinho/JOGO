@@ -11,7 +11,7 @@
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
   /* MODO JOGO do celular (Desempenho / Equilibrado / Economia de bateria): o app avisa e o jogo ajusta a qualidade */
   window.modoJogoMuda = n => { const d = window.devicePixelRatio || 1, ant = window.__modoJogo; window.__modoJogo = n;
-    renderer.setPixelRatio(n === 3 ? Math.min(d, 1) : n === 2 ? Math.min(d, 2) : Math.min(d, 1.75)); try { renderer.setSize(innerWidth, innerHeight); } catch (e) {}
+    renderer.setPixelRatio(n === 3 ? Math.min(d, 1) : n === 2 ? Math.min(d, 2) : Math.min(d, 1.75)); try { renderer.domElement.style.width = ''; renderer.domElement.style.height = ''; resize(); } catch (e) {}
     if (ant !== undefined && ant !== n && typeof aviso === 'function') aviso({ 1: '🎮 Modo jogo: Equilibrado', 2: '🎮 Modo jogo: Desempenho', 3: '🔋 Modo jogo: Economia de bateria', 4: '🎮 Modo jogo: Personalizado' }[n] || '🎮 Modo jogo', '#8a9aff'); };
   try { if (window.AndroidTela && AndroidTela.modoJogo) { const n = AndroidTela.modoJogo(); if (n > 0) setTimeout(() => window.modoJogoMuda(n), 0); } } catch (e) {}
   renderer.outputColorSpace = T3.SRGBColorSpace;
