@@ -209,7 +209,7 @@
   ptPn.querySelector('.pt-x').onclick = () => { PTK.aberto = false; ptPn.hidden = true; };
   ptPn.querySelector('.pt-l').onclick = e => { const r = e.target.closest('[data-id]'); if (!r) return; PTK.sel = r.dataset.id; ptLista(); };
   ptPn.querySelector('.pt-b').onclick = e => { const b = e.target.closest('[data-a]'); if (!b) return; const g = PTK.gente[PTK.sel]; if (!g) { aviso('Escolha uma pessoa da lista primeiro', '#ffb84a'); return; }
-    if (zona !== 'arena') { aviso('Abra a Arena (🏟️) primeiro', '#ffb84a'); return; }
+    if (zona !== 'arena') { arenaEntra(); if (zona !== 'arena') return; }
     const a = b.dataset.a, base = { id: g.id, name: g.nome, foto: g.foto };
     try { if (a === 'arena') { if (ARENA.lut[g.id]) arenaFoca(ARENA.lut[g.id], 5); else if (!arenaPalhaco(base, g.id, g.foto)) aviso('Arena lotada', '#ffb84a'); }
       else if (a === 'lutar') arenaEvento({ type: 'chat', ...base, text: 'LUTAR' });
@@ -217,7 +217,7 @@
       else if (a === 'tirar') { arenaTira(g.id); arenaPlatTira(g.id); }
       else if (a.startsWith('p:')) { const P = ARENA_PRES.find(x => 'p:' + x.k === a); arenaEvento({ type: 'gift', ...base, gift: P.nomes[0], count: 1, diamonds: 0 }); } } catch (er) { console.warn('painel', er); }
     ptLista(); };
-  function ptFrame(dt) { const ok = souAdmin() && zona === 'arena'; ptBtn.hidden = !ok; if (!ok && PTK.aberto) { PTK.aberto = false; ptPn.hidden = true; } if (PTK.aberto) { PTK.t -= dt; if (PTK.t <= 0) { PTK.t = 1.5; ptLista(); } } }
+  function ptFrame(dt) { const ok = souAdmin(); ptBtn.hidden = !ok; if (!ok && PTK.aberto) { PTK.aberto = false; ptPn.hidden = true; } if (PTK.aberto) { PTK.t -= dt; if (PTK.t <= 0) { PTK.t = 1.5; ptLista(); } } }
   // ----- câmera de transmissão: foca quem entrou, sobe igual drone e fica rodeando -----
   // próximo guerreiro (quem não é palhaço) pra câmera mostrar, um de cada vez
   function arenaProxGuerreiro() { const C = ARENA.cam, W = Object.values(ARENA.lut).filter(L => !L.esq && !L.morto).sort((a, b) => a.id < b.id ? -1 : 1); if (!W.length) return null; const i = W.indexOf(C.alvo); return W[(i + 1) % W.length]; }
