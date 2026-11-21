@@ -229,7 +229,7 @@
   function arenaTelaCaptura() { const w = LIVE.ws; if (zona !== 'arena' || !w || w.readyState !== 1 || !LIVE.telaN || !souAdmin()) return; const now = performance.now(); if (now - TELA.t < 200 || TELA.ocup || w.bufferedAmount > 150000) return; TELA.t = now;
     try { const src = renderer.domElement, H = 512, W = Math.round(H * src.width / src.height) || 288; if (!TELA.cv) { TELA.cv = document.createElement('canvas'); TELA.g = TELA.cv.getContext('2d'); } if (TELA.cv.width !== W) { TELA.cv.width = W; TELA.cv.height = H; }
       TELA.g.drawImage(src, 0, 0, W, H); TELA.ocup = true; TELA.cv.toBlob(b => { TELA.ocup = false; if (b && w.readyState === 1) try { w.send(b); } catch (e) {} }, 'image/jpeg', 0.62); } catch (e) { TELA.ocup = false; } }
-  function ptFrame(dt) { const ok = souAdmin(); ptBtn.hidden = !ok; if (!ok && PTK.aberto) { PTK.aberto = false; ptPn.hidden = true; } if (PTK.aberto) { PTK.t -= dt; if (PTK.t <= 0) { PTK.t = 1.5; ptLista(); } } }
+  function ptFrame(dt) { const ok = souAdmin(); ptBtn.hidden = true; if (!ok && PTK.aberto) { PTK.aberto = false; ptPn.hidden = true; } if (PTK.aberto) { PTK.t -= dt; if (PTK.t <= 0) { PTK.t = 1.5; ptLista(); } } }
   // ----- câmera de transmissão: foca quem entrou, sobe igual drone e fica rodeando -----
   // próximo guerreiro (quem não é palhaço) pra câmera mostrar, um de cada vez
   function arenaProxGuerreiro() { const C = ARENA.cam, W = Object.values(ARENA.lut).filter(L => !L.esq && !L.morto).sort((a, b) => a.id < b.id ? -1 : 1); if (!W.length) return null; const i = W.indexOf(C.alvo); return W[(i + 1) % W.length]; }
