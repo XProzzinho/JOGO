@@ -12,6 +12,7 @@ process.on('unhandledRejection', e => console.log('Erro:', (e && e.message) || e
 
 const server = http.createServer((req, res) => {
   if (req.url.startsWith('/tts')) return tts(req, res);
+  if (req.url.startsWith('/lumia') || req.url.startsWith('/online')) return lumia(req, res);
   let p = decodeURIComponent(req.url.split('?')[0]);
   if (p === '/') p = '/index.html';
   const f = path.join(ROOT, path.normalize(p));
@@ -51,6 +52,42 @@ async function tts(req, res) {
   } catch (e) { console.log('TTS falhou:', e.message || e); res.writeHead(500); res.end(); }
 }
 
+/* ---------- LUMIA STREAM (ou qualquer app que mande webhook) ----------
+   O Lumia manda pra https://SEU-SERVIDOR/lumia?key=SEU_PIN
+   (GET com ?acao=...&nome=... ou POST com JSON {"acao":"...","nome":"{{username}}","foto":"{{avatar}}","presente":"...","texto":"{{message}}"})
+   acao: arena (entra como palhaço) · lutar (vira guerreiro) · poder (dá o item do presente) · chat (fala na arena)
+   /online?key=SEU_PIN mostra quem apareceu na live nos últimos 10 minutos */
+const PESSOAS = new Map(); // nome/@ em minúsculo -> { id, name, foto, t }
+function lembra(r, ...nomes) { r.t = Date.now(); nomes.concat(r.name).forEach(n => { if (n) PESSOAS.set(String(n).toLowerCase().replace(/^@/, ''), r); }); if (PESSOAS.size > 5000) PESSOAS.delete(PESSOAS.keys().next().value); }
+function lumia(req, res) {
+  const u = new URL(req.url, 'http://x');
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  if (ADMIN_KEY && u.searchParams.get('key') !== ADMIN_KEY) { res.writeHead(403); return res.end('PIN errado'); }
+  if (u.pathname === '/online') {
+    const vis = new Set(), lista = [];
+    PESSOAS.forEach(p => { if (!vis.has(p.id) && Date.now() - p.t < 600000) { vis.add(p.id); lista.push(p.name); } });
+    res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' }); return res.end(JSON.stringify({ online: lista.length, nomes: lista }));
+  }
+  let corpo = '';
+  req.on('data', c => { corpo += c; if (corpo.length > 20000) req.destroy(); });
+  req.on('end', () => {
+    let d = {}; try { d = corpo ? JSON.parse(corpo) : {}; } catch (e) { d = {}; }
+    const q = k => String(d[k] != null ? d[k] : (u.searchParams.get(k) || '')).trim();
+    const acao = q('acao').toLowerCase() || 'arena', nome = q('nome') || q('username') || q('usuario');
+    if (!nome) { res.writeHead(400); return res.end('falta o nome'); }
+    const k = nome.toLowerCase().replace(/^@/, ''), conhecido = PESSOAS.get(k);
+    const p = conhecido || { id: 'lumia_' + k, name: nome.replace(/^@/, ''), foto: '' };
+    const foto = q('foto') || q('avatar'); if (foto && !p.foto) p.foto = foto; lembra(p, k);
+    const base = { id: p.id, name: p.name, foto: p.foto };
+    if (acao === 'lutar' || acao === 'guerreiro') send({ type: 'chat', ...base, text: 'LUTAR' });
+    else if (acao === 'poder' || acao === 'presente') send({ type: 'gift', ...base, gift: q('presente') || q('gift') || 'rosa', count: +q('quantidade') || 1, diamonds: +q('moedas') || 0 });
+    else if (acao === 'chat') send({ type: 'chat', ...base, text: q('texto') || q('message') });
+    else if (acao === 'vida') send({ type: 'follow', ...base });
+    else send({ type: 'join', ...base });
+    res.writeHead(200, { 'Content-Type': 'text/plain; charset=utf-8' }); res.end('ok: ' + acao + ' ' + p.name);
+  });
+}
+
 const wss = new WebSocketServer({
   server,
   verifyClient: ({ req }) => {
@@ -80,7 +117,8 @@ if (!user) {
       const x = (u && u.user) || u || {};
       const pp = x.profilePicture || {}, lista = pp.url || pp.urls || pp.urlList || [];
       const foto = x.profilePictureUrl || (Array.isArray(lista) ? lista[0] : '') || '';
-      return { id: String(x.userId || x.uniqueId || x.nickname || Math.random()), name: x.nickname || x.uniqueId || 'anônimo', foto };
+      const r = { id: String(x.userId || x.uniqueId || x.nickname || Math.random()), name: x.nickname || x.uniqueId || 'anônimo', foto };
+      lembra(r, x.uniqueId, x.nickname); return r;
     };
 
     const live = new Conn(user.replace('@', ''), {});
