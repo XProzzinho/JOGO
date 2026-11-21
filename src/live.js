@@ -55,7 +55,7 @@
     let w; try { w = new WebSocket(LIVE.url + (pin ? '?key=' + encodeURIComponent(pin) : '')); } catch (e) { aviso('Live: endereço inválido', '#ff6a6a'); LIVE.quer = false; return; }
     LIVE.ws = w;
     w.onopen = () => { aviso('📺 Live conectada!', '#5aff9a'); liveCor(true); };
-    w.onmessage = e => { try { liveEvento(JSON.parse(e.data)); } catch (er) {} };
+    w.onmessage = e => { try { const m = JSON.parse(e.data); if (m && m.type === 'tela') { LIVE.telaN = m.n || 0; return; } liveEvento(m); } catch (er) {} };
     w.onclose = () => { liveCor(false); if (LIVE.quer) setTimeout(() => { if (LIVE.quer) liveLiga(pin); }, 4000); };
   }
   function liveFrame(dt, p) {

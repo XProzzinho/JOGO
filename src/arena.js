@@ -224,6 +224,11 @@
     const um = L => ({ id: L.id, nome: L.nome, foto: L.foto || '', esq: !!L.esq, pts: L.kills || 0 });
     try { w.send(JSON.stringify({ type: 'estado', arena: zona === 'arena', lut: Object.values(ARENA.lut).map(um), plat: Object.values(ARENA.plat).map(um) })); } catch (e) {} }
   setInterval(ptEstado, 2000);
+  /* TELINHA DA TV: manda a imagem da arena (pequena, ~5 por segundo) pro painel do Lumi TV, só quando alguém está olhando */
+  const TELA = { cv: null, g: null, t: 0, ocup: false };
+  function arenaTelaCaptura() { const w = LIVE.ws; if (zona !== 'arena' || !w || w.readyState !== 1 || !LIVE.telaN || !souAdmin()) return; const now = performance.now(); if (now - TELA.t < 200 || TELA.ocup || w.bufferedAmount > 150000) return; TELA.t = now;
+    try { const src = renderer.domElement, H = 512, W = Math.round(H * src.width / src.height) || 288; if (!TELA.cv) { TELA.cv = document.createElement('canvas'); TELA.g = TELA.cv.getContext('2d'); } if (TELA.cv.width !== W) { TELA.cv.width = W; TELA.cv.height = H; }
+      TELA.g.drawImage(src, 0, 0, W, H); TELA.ocup = true; TELA.cv.toBlob(b => { TELA.ocup = false; if (b && w.readyState === 1) try { w.send(b); } catch (e) {} }, 'image/jpeg', 0.62); } catch (e) { TELA.ocup = false; } }
   function ptFrame(dt) { const ok = souAdmin(); ptBtn.hidden = !ok; if (!ok && PTK.aberto) { PTK.aberto = false; ptPn.hidden = true; } if (PTK.aberto) { PTK.t -= dt; if (PTK.t <= 0) { PTK.t = 1.5; ptLista(); } } }
   // ----- câmera de transmissão: foca quem entrou, sobe igual drone e fica rodeando -----
   // próximo guerreiro (quem não é palhaço) pra câmera mostrar, um de cada vez
@@ -437,7 +442,7 @@
   try { VOZ.on = localStorage.getItem('arenaVoz') !== '0'; } catch (e) {}
   function vozLimpa(t) { return String(t || '').replace(/<[^>]+>/g, ' ').replace(/\s=\s/g, ' e ganhe ').replace(/·/g, ',').replace(/\bx(\d)/g, 'vezes $1').replace(/\+(\d)/g, 'mais $1').replace(/[()]/g, ' ').replace(/\bGG\b/g, 'gê gê').replace(/\p{Lu}{3,}/gu, w => w.toLowerCase()).replace(/\s+,/g, ',').replace(/\p{Extended_Pictographic}|\uFE0F|\u200D/gu, ' ').replace(/https?:\S+/g, '').replace(/\s+/g, ' ').trim().slice(0, 420); }
   function arenaFala(t, prio) { if (!VOZ.on || zona !== 'arena') return; t = vozLimpa(t); if (t.length < 2) return; if (prio) { VOZ.fila = VOZ.fila.filter(x => x.prio); VOZ.fila.push({ t, prio }); if (VOZ.fila.length > 4) VOZ.fila.splice(0, VOZ.fila.length - 4); } else if (VOZ.fila.length < 2) VOZ.fila.push({ t }); vozProx(); }
-  function vozDispositivo(t, fim) { try { const s = window.speechSynthesis; if (!s) return fim(); const u = new SpeechSynthesisUtterance(t); u.lang = 'pt-BR'; u.rate = 1.05; u.onend = fim; u.onerror = fim; s.speak(u); setTimeout(fim, 12000); } catch (e) { fim(); } }
+  function vozDispositivo(t, fim) { try { const s = window.speechSynthesis; if (!s) return fim(); const u = new SpeechSynthesisUtterance(t); u.lang = 'pt-BR'; u.rate = 1.05; u.onend = fim; u.onerror = fim; s.speak(u); setTimeout(fim, 32000); } catch (e) { fim(); } }
   function vozProx() { if (VOZ.tocando || !VOZ.fila.length) return; const { t } = VOZ.fila.shift(); VOZ.tocando = true; let feito = false; const fim = () => { if (feito) return; feito = true; VOZ.tocando = false; setTimeout(vozProx, 250); };
     let pin = ''; try { pin = localStorage.getItem('liveKey') || ''; } catch (e) {} const base = LIVE.url.replace(/^ws/, 'http').replace(/\/$/, '');
     if (VOZ.falhou >= 3) return vozDispositivo(t, fim);

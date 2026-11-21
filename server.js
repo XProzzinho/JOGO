@@ -34,7 +34,7 @@ async function tts(req, res) {
   if (ADMIN_KEY && u.searchParams.get('key') !== ADMIN_KEY) { res.writeHead(403); return res.end(); }
   const KEY = process.env.ELEVENLABS_API_KEY;
   if (u.pathname === '/tts-ok') { res.writeHead(200, { 'Content-Type': 'application/json' }); return res.end(JSON.stringify({ ok: !!KEY })); }
-  const t = String(u.searchParams.get('t') || '').slice(0, 220).trim();
+  const t = String(u.searchParams.get('t') || '').slice(0, 450).trim();
   if (!KEY || !t) { res.writeHead(KEY ? 400 : 503); return res.end(); }
   const voz = process.env.ELEVENLABS_VOICE_ID || 'pNInz6obpgDQGcFmaJgB';
   const k = voz + '|' + t;
@@ -108,10 +108,16 @@ const paraPainel = (o, menos) => { const s = JSON.stringify(o); wss.clients.forE
 const PRES_NOME = { rosa: 'rosa', sorvete: 'casquinha', gg: 'bom jogo', coracao: 'heart me', dino: 'mini dino', controle: 'controle', bau: 'baú' };
 let ESTADO = null;
 function online() { const vis = new Set(), lista = []; PESSOAS.forEach(p => { if (!vis.has(p.id) && Date.now() - p.t < 1800000) { vis.add(p.id); lista.push({ id: p.id, nome: p.name, foto: p.foto || '', t: p.t }); } }); return lista.sort((a, b) => b.t - a.t).slice(0, 150); }
+// avisa o jogo quantos painéis estão olhando a telinha (se ninguém olha, o jogo não gasta bateria mandando imagem)
+function avisaTela() { setTimeout(() => { let n = 0; wss.clients.forEach(c => { if (c.papel === 'painel' && c.readyState === 1) n++; }); const s = JSON.stringify({ type: 'tela', n }); wss.clients.forEach(c => c.papel !== 'painel' && c.readyState === 1 && c.send(s)); }, 300); }
 wss.on('connection', (ws, req) => {
   ws.papel = new URL(req.url, 'http://x').searchParams.get('papel') || 'jogo';
   if (ws.papel === 'painel') { ws.send(JSON.stringify({ type: 'online', lista: online() })); if (ESTADO) ws.send(JSON.stringify(ESTADO)); }
-  ws.on('message', d => {
+  avisaTela();
+  ws.on('close', avisaTela);
+  ws.on('message', (d, bin) => {
+    // TELINHA: o jogo manda a imagem da arena (jpg pequeno) e o servidor repassa pros painéis da TV
+    if (bin) { if (ws.papel !== 'painel' && d.length < 120000) wss.clients.forEach(c => c.papel === 'painel' && c.readyState === 1 && c.bufferedAmount < 400000 && c.send(d, { binary: true })); return; }
     let o; try { o = JSON.parse(String(d).slice(0, 50000)); } catch (e) { return; }
     if (o.type === 'estado' && ws.papel !== 'painel') { ESTADO = o; return paraPainel(o, ws); }
     if (ws.papel !== 'painel' || o.cmd !== 'acao') return;

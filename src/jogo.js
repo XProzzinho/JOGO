@@ -2582,7 +2582,7 @@
     if (tremor > 0) { tremor -= dt; cam.position.x += (Math.random() - .5) * tremor; cam.position.y += (Math.random() - .5) * tremor; }
     cam.lookAt(p.x, p.y + 0.95, p.z); cam.updateMatrixWorld(); bordaG.visible = zona === 'vila' || zona === 'valdren'; if (zona === 'arena') { try { arenaCam(dt); } catch (e) { console.warn(e); } }
     sun.position.set(p.x + 12, 30, p.z + 10); sun.target.position.set(p.x, 0, p.z); sun.target.updateMatrixWorld();
-    guildFrame(); guardaFrame(); coordFrame(dt, p); try { rankFrame(dt); } catch (e) {} arenaLoop(dt); mpFrame(dt, p); tituloFrame(dt); ambienteFrame(dt, p); renderer.render(scene, cam); requestAnimationFrame(loop);
+    guildFrame(); guardaFrame(); coordFrame(dt, p); try { rankFrame(dt); } catch (e) {} arenaLoop(dt); mpFrame(dt, p); tituloFrame(dt); ambienteFrame(dt, p); renderer.render(scene, cam); try { arenaTelaCaptura(); } catch (e) {} requestAnimationFrame(loop);
   }
   cam.position.set(0, 2.6, 9.6); requestAnimationFrame(loop);
   mostrarLugar('Vila de Brumafria');

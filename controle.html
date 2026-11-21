@@ -31,6 +31,13 @@
   #pin button{font:800 22px system-ui;padding:12px 30px;border-radius:12px;border:0;background:#fe2c55;color:#fff}
   .vazio{padding:30px;text-align:center;color:#cfc6e0}
   @media (max-width:700px){main{flex-direction:column;height:auto}#lista{max-height:50vh}#lado{min-width:0}}
+#tela{position:fixed;right:16px;bottom:16px;height:46vh;aspect-ratio:9/16;padding:0;border:3px solid #fe2c55;border-radius:16px;overflow:hidden;background:#000;box-shadow:0 6px 24px #000c,0 0 18px #fe2c5566;z-index:5;transition:height .3s;cursor:pointer}
+#tela:focus{outline:none;border-color:#25f4ee;box-shadow:0 0 0 4px #25f4ee88}
+#tela.grande{height:92vh}#tela img{width:100%;height:100%;object-fit:cover;display:block}
+#tela b{position:absolute;left:8px;top:8px;background:#fe2c55;color:#fff;font:900 13px/1 system-ui;padding:5px 9px;border-radius:7px;animation:pisca 1.4s infinite}
+#tela small{position:absolute;left:0;right:0;bottom:10px;text-align:center;color:#fff;font:600 14px system-ui;text-shadow:0 1px 4px #000}
+#tela.off b{background:#555;animation:none}@keyframes pisca{50%{opacity:.5}}
+#lado{padding-right:calc(46vh * 9 / 16 + 24px)}
 </style>
 </head>
 <body>
@@ -43,6 +50,7 @@
     <div id="msg"></div>
   </div>
 </main>
+<button id="tela" title="Arena ao vivo"><img alt=""><b>● AO VIVO</b><small>esperando a arena...</small></button>
 <div id="pin"><div>PIN da live</div><input id="pinIn" type="password" inputmode="numeric"><button id="pinOk">Entrar</button></div>
 <script>
 const BOTOES = [['arena', '🏟️ Arena', '#2a8aff'], ['lutar', '⚔️ Guerreiro', '#ff8a2a'], ['vida', '❤️ Vida cheia', '#ff4a6a'], ['tirar', '🚪 Tirar', '#555'],
@@ -70,11 +78,16 @@ $('bts').addEventListener('click', e => { const b = e.target.closest('[data-a]')
   if (!ws || ws.readyState !== 1) { $('msg').textContent = 'Sem conexão com o servidor'; return; }
   ws.send(JSON.stringify({ cmd: 'acao', acao: b.dataset.a, id: sel }));
   const p = gente().find(x => x.id === sel); $('msg').textContent = '✔ ' + b.textContent + ' → ' + (p ? p.nome : ''); });
+// TELINHA: a arena ao vivo (imagens que o jogo manda) — OK/clique aumenta e diminui
+let telaUrl = null, telaT = 0;
+function telaQuadro(b) { const u = URL.createObjectURL(b), im = $('tela').querySelector('img'); im.onload = () => { if (telaUrl) URL.revokeObjectURL(telaUrl); telaUrl = u; }; im.src = u; telaT = Date.now(); $('tela').classList.remove('off'); $('tela').querySelector('small').hidden = true; }
+setInterval(() => { if (Date.now() - telaT > 4000) { $('tela').classList.add('off'); const s = $('tela').querySelector('small'); s.hidden = false; s.textContent = telaT ? 'arena fora do ar' : 'esperando a arena...'; } }, 1000);
+$('tela').onclick = () => $('tela').classList.toggle('grande');
 function liga() {
   const u = (location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host + '/?papel=painel' + (pin ? '&key=' + encodeURIComponent(pin) : '');
-  let abriu = false; ws = new WebSocket(u);
+  let abriu = false; ws = new WebSocket(u); ws.binaryType = 'blob';
   ws.onopen = () => { abriu = true; $('st').textContent = 'conectado'; $('st').className = 'on'; try { localStorage.setItem('painelPin', pin); } catch (e) {} };
-  ws.onmessage = e => { let o; try { o = JSON.parse(e.data); } catch (er) { return; }
+  ws.onmessage = e => { if (e.data instanceof Blob) return telaQuadro(e.data); let o; try { o = JSON.parse(e.data); } catch (er) { return; }
     if (o.type === 'online') { online = o.lista || []; desenha(); }
     else if (o.type === 'estado') { estado = o; desenha(); }
     else if (o.id != null && o.name && !online.some(p => p.id === String(o.id))) { online.unshift({ id: String(o.id), nome: o.name, foto: o.foto || '', t: Date.now() }); desenha(); } };
