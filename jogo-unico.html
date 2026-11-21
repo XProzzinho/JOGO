@@ -3366,8 +3366,9 @@ const glowA = cv(128, (x) => { const g = x.createRadialGradient(64, 64, 0, 64, 6
   const PELES = ['#f2b48e', '#f8d0b8', '#e8a878', '#c88a5e', '#9a6440', '#6a4430'];
   const COR_CAB = ['#1c1a28', '#5a3a1e', '#8a4a2a', '#a8742e', '#e8d27a', '#f0f0fa', '#c83a2a', '#3a6ae8', '#9a4ad8'];
   const OLHOS = ['#6a3e1e', '#2a8a4a', '#2a6ac8', '#8a8a9a', '#c83a3a', '#e8a018'];
-  const LINHO = '#cdc4ac'; const ROUPAS = ['classe', LINHO, '#3a7ae8', '#e8503a', '#3faa4a', '#9a5ae0', '#ffb03c', '#f4f0e6', '#c8925a'];
+  const LINHO = '#cdc4ac', LINHO2 = '#dcd2b8'; const CALCA_FIXA = { [LINHO]: '#c4ba9e', [LINHO2]: '#4a3626' }; const ROUPAS = ['classe', LINHO, LINHO2, '#3a7ae8', '#e8503a', '#3faa4a', '#9a5ae0', '#ffb03c', '#f4f0e6', '#c8925a'];
   const BASES = [['masc', 'Aventureiro', 'icones/base_masc.jpg', { pele: '#f2b48e', cabelo: 'curto', corCab: '#5a3a1e', olhos: '#6a3e1e', roupa: LINHO }],
+    ['viaj', 'Viajante', 'icones/base_viajante.jpg', { pele: '#f8d0b8', cabelo: 'curto', corCab: '#8a4a2a', olhos: '#6a3e1e', roupa: LINHO2 }],
     ['fem', 'Aventureira', 'icones/base_fem.jpg', { pele: '#f8d0b8', cabelo: 'rabo', corCab: '#8a4a2a', olhos: '#2a8a4a', roupa: LINHO }]];
   const ESTILOS = [['espetado', 'Espetado'], ['curto', 'Curto'], ['longo', 'Longo'], ['rabo', 'Rabo de cavalo'], ['moicano', 'Moicano'], ['careca', 'Careca']];
   AR.visual = Object.assign({ nome: 'Leonardo', pele: PELES[0], cabelo: 'espetado', corCab: COR_CAB[0], olhos: OLHOS[0], roupa: 'classe' }, AR.visual || {});
@@ -3382,7 +3383,7 @@ const glowA = cv(128, (x) => { const g = x.createRadialGradient(64, 64, 0, 64, 6
   function tom(c, k) { const x = new T3.Color(c); x.multiplyScalar(k); return '#' + x.getHexString(); }
   function aplicaVisual(cls) { const V = AR.visual; const CLx = CLASSES[cls || AR.classe];
     MH.pele.color.set(V.pele); MH.cab.color.set(V.corCab); MH.olho.color.set(V.olhos);
-    const r = V.roupa === 'classe' ? (CLx ? CLx.roupa : '#8a6a40') : V.roupa; const rv = r === LINHO ? r : vivo(r); MH.top.color.set(rv); MH.top2.color.set(tom(rv, 0.78)); MH.calca.color.set(r === LINHO ? '#c4ba9e' : tom(rv, 0.62));
+    const r = V.roupa === 'classe' ? (CLx ? CLx.roupa : '#8a6a40') : V.roupa; const rv = CALCA_FIXA[r] ? r : vivo(r); MH.top.color.set(rv); MH.top2.color.set(tom(rv, 0.78)); MH.calca.color.set(CALCA_FIXA[r] || tom(rv, 0.62));
     cabOrig.forEach(o => o.visible = V.cabelo === 'espetado'); Object.keys(CABG).forEach(k => CABG[k].visible = V.cabelo === k);
     const n = (V.nome || 'Leonardo').slice(0, 16); $('pn-nome').textContent = n; }
 
