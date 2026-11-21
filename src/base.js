@@ -14,6 +14,23 @@
     renderer.setPixelRatio(n === 3 ? Math.min(d, 1) : n === 2 ? Math.min(d, 2) : Math.min(d, 1.75)); try { renderer.domElement.style.width = ''; renderer.domElement.style.height = ''; resize(); } catch (e) {}
     if (ant !== undefined && ant !== n && typeof aviso === 'function') aviso({ 1: '🎮 Modo jogo: Equilibrado', 2: '🎮 Modo jogo: Desempenho', 3: '🔋 Modo jogo: Economia de bateria', 4: '🎮 Modo jogo: Personalizado' }[n] || '🎮 Modo jogo', '#8a9aff'); };
   try { if (window.AndroidTela && AndroidTela.modoJogo) { const n = AndroidTela.modoJogo(); if (n > 0) setTimeout(() => window.modoJogoMuda(n), 0); } } catch (e) {}
+  /* POWER DELIVERY: com o celular na tomada mostra se está carregando ou se o Game Booster pausou a carga (⚡ direto da tomada).
+     tocar abre o Game Booster da Samsung pra ligar o "Pausar USB Power Delivery" */
+  try { if (window.AndroidTela && AndroidTela.bateria) { const pd = document.createElement('button'); pd.id = 'pd-pill';
+    pd.style.cssText = 'position:fixed;left:8px;top:8px;z-index:9000;height:30px;padding:0 11px;border-radius:15px;border:1.5px solid #fff8;color:#fff;font:700 12px system-ui;text-shadow:0 1px 2px #000a;box-shadow:0 2px 8px #0006;display:none;opacity:.92;transition:all .4s';
+    let curto = 0, ult = '';
+    pd.onclick = () => { curto = 0; try { const r = AndroidTela.gameBooster(); if (typeof aviso === 'function') aviso(r === 'booster' ? '⚡ Ligue "Pausar USB Power Delivery" e volte pro jogo' : r === 'launcher' ? '⚡ No Game Launcher: Game Booster → Pausar USB Power Delivery' : 'Não achei o Game Booster neste celular'); } catch (e) {} };
+    document.body.appendChild(pd);
+    const olha = () => { try { const [nv, tom, carr, ma] = String(AndroidTela.bateria()).split(',').map(Number);
+      if (!tom) { pd.style.display = 'none'; curto = 0; ult = ''; return; }
+      const direto = !carr && Math.abs(ma) < 150; // na tomada, sem entrar carga na bateria = Power Delivery funcionando
+      const est = direto ? 'pd' : 'carga'; if (est !== ult) { curto = 0; ult = est; }
+      curto++;
+      pd.style.display = 'block';
+      pd.style.background = direto ? 'linear-gradient(90deg,#16a34a,#22c55e)' : 'linear-gradient(90deg,#d97706,#f59e0b)';
+      pd.textContent = curto > 4 ? (direto ? '⚡' : '🔋 ' + nv + '%') : direto ? '⚡ Power Delivery ligado — direto da tomada' : '🔋 Carregando ' + nv + '% — toque pra ligar o Power Delivery';
+    } catch (e) {} };
+    setInterval(olha, 4000); setTimeout(olha, 1500); } } catch (e) {}
   renderer.outputColorSpace = T3.SRGBColorSpace;
   const scene = new T3.Scene();
   const cam = new T3.PerspectiveCamera(55, 1, 0.1, 800);

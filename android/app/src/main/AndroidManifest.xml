@@ -2,6 +2,11 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android" xmlns:tools="http://schemas.android.com/tools">
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <!-- pra conseguir abrir o Game Booster / Game Launcher da Samsung -->
+    <queries>
+        <package android:name="com.samsung.android.game.gametools" />
+        <package android:name="com.samsung.android.game.gamehome" />
+    </queries>
     <application android:label="Aetherion" android:icon="@drawable/icone" android:hardwareAccelerated="true" android:theme="@style/Tela" android:appCategory="game" android:isGame="true" tools:targetApi="33">
         <!-- modo jogo do celular (Game Booster / Game Launcher / Painel de jogos) -->
         <meta-data android:name="android.game_mode_config" android:resource="@xml/game_mode_config" />
