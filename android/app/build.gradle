@@ -10,6 +10,13 @@ android {
         versionName '1.1'
     }
     buildTypes { release { minifyEnabled false } }
+    buildFeatures { buildConfig true }
+    // duas versões: celular e TV (Fire Stick / Android TV)
+    flavorDimensions 'alvo'
+    productFlavors {
+        celular { dimension 'alvo' }
+        firetv { dimension 'alvo'; applicationId 'com.brumafria.tv' }
+    }
     compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }
 }
 

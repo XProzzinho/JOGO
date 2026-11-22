@@ -37,5 +37,6 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           TAG="apk-$(date -u +%Y%m%d-%H%M)"
-          cp android/app/build/outputs/apk/debug/app-debug.apk "/tmp/Jogo-do-Rafael.apk"
-          gh release create "$TAG" "/tmp/Jogo-do-Rafael.apk" --repo "${{ github.repository }}" --title "Jogo do Rafael — APK ($(date -u +%d/%m/%Y))" --notes "Baixe o arquivo Jogo-do-Rafael.apk e instale no celular."
+          cp android/app/build/outputs/apk/celular/debug/app-celular-debug.apk "/tmp/Jogo-do-Rafael.apk"
+          cp android/app/build/outputs/apk/firetv/debug/app-firetv-debug.apk "/tmp/Jogo-do-Rafael-FireTV.apk"
+          gh release create "$TAG" "/tmp/Jogo-do-Rafael.apk" "/tmp/Jogo-do-Rafael-FireTV.apk" --repo "${{ github.repository }}" --title "Jogo do Rafael — APK ($(date -u +%d/%m/%Y))" --notes "Celular: Jogo-do-Rafael.apk · TV (Fire Stick / Android TV): Jogo-do-Rafael-FireTV.apk"
