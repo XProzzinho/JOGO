@@ -51,6 +51,9 @@
   window.__entrou = false;
   // jogar sem conta (fica salvo só no celular)
   tap($('lg-convidado'), () => { try { sessionStorage.setItem('aetherion-convidado', '1'); } catch (e) {} fecha(); });
+  // na TV (Fire Stick / Android TV) não tem login e senha: entra direto como convidado, jogando online com todo mundo
+  let naTv = false; try { naTv = !!(window.AndroidTela && AndroidTela.ehTv && AndroidTela.ehTv()); } catch (e) {}
+  if (naTv) { try { sessionStorage.setItem('aetherion-convidado', '1'); } catch (e) {} }
   let convidado = false; try { convidado = sessionStorage.getItem('aetherion-convidado') === '1'; } catch (e) {}
 
   const cfg = window.FIREBASE_CONFIG;
